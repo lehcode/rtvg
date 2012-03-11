@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configdata>
+	<movies>
+		<teleguide>
+			<active>1</active>
+			<baseUrl>http://www.teleguide.info</baseUrl>
+			<startUri>/sort</startUri>
+			<proxy>
+				<enabled>1</enabled>
+				<host>sakura</host>
+				<port>8118</port>
+				<type></type>
+			</proxy>
+		</teleguide>
+	</movies>
+	<series />
+	<actors />
+	<directors />
+</configdata>

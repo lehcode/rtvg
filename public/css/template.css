@@ -1,0 +1,78 @@
+@CHARSET "UTF-8";
+
+#xmltv{}
+
+#channels{}
+
+	#channels .channeltitle {}
+
+		#channels .channeltitle .channellink {
+			width:100%;
+			text-align: left;
+		}
+		#channels .channeltitle .channellink:after{
+			clear:both;
+		}
+		#channels .channeltitle .channellink img {
+			width:40px;
+			height:40px;
+		}
+		
+#programslist {
+	margin: 24px 0 0;
+}
+	
+	#programslist .programcontainer {
+		background: none repeat scroll 0 0 #CFCFCF;
+	    height: 360px;
+	    margin-top: 11%;
+	    overflow: hidden;
+	    padding: 0 18px;
+	}
+		
+	#programslist .programcontainer:after {
+		
+	}
+		#programslist .programtitle:after {
+			clear:both;
+		}
+		#programslist .programtitle * {
+			line-height: 48px; 
+		}
+		#programslist .programtitle h3 {
+			
+		}
+		
+		#programslist .programtitle p {
+			 font-family: "Lucida Sans", Arial, Helvetica, sans-serif;
+			 font-size: 22px;
+		}
+		
+			#programslist .programtitle p span {
+			    font-family: "Lucida Sans", Arial, Helvetica, sans-serif;
+			    font-size: 28px;
+			    font-weight: bold;
+			    padding: 0 12px;
+			}
+		
+			#programslist .programtitle p span.start_time {
+				
+			}
+			#programslist .programtitle p span.end_time {
+				
+			}
+			
+.carousel-control {
+    background: none repeat scroll 0 0 #222222;
+    border: 3px solid #FFFFFF;
+    border-radius: 23px 23px 23px 23px;
+    color: #FFFFFF;
+    font-size: 40px;
+    font-weight: 100;
+    height: 30px;
+    left: 15px;
+    line-height: 20px;
+    margin-top: -20px;
+    top: 8%;
+    width: 48px;
+}
