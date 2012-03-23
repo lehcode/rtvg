@@ -2,6 +2,11 @@
 
 class Admin_GrabController extends Zend_Controller_Action
 {
+	
+	public function __call($method,$arguments) {
+		$this->_helper->FlashMessenger('Requested page does not exist.');
+		$this->_forward('index', 'index', $this->getRequest()->getModuleName());
+	}
 
     public function init()
     {
@@ -68,13 +73,11 @@ class Admin_GrabController extends Zend_Controller_Action
 		die(__METHOD__.': '.__LINE__);
     }
     
-    public function seriesAction()
-    {
+    public function seriesAction() {
 		die(__METHOD__);
     }
     
-    public function xmlAction()
-    {
+    public function xmlAction() {
 		die(__METHOD__);
     }
 
@@ -87,5 +90,8 @@ class Admin_GrabController extends Zend_Controller_Action
 		if($siteObj)
 		return $siteObj;
     }
+    
+	
+    
 }
 
