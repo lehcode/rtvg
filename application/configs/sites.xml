@@ -2,6 +2,7 @@
 <configdata>
 	<movies>
 		<teleguide>
+			<title>teleguide.info</title>
 			<active>1</active>
 			<baseUrl>http://www.teleguide.info</baseUrl>
 			<startUri>/sort</startUri>
@@ -14,6 +15,37 @@
 		</teleguide>
 	</movies>
 	<series />
-	<actors />
+	<actors>
+		<source>
+			<title>kinofilms.ua</title>
+			<alias>kinofilmsua</alias>
+			<active>1</active>
+			<baseUrl>http://www.kinofilms.ua</baseUrl>
+			<searchUri>/</searchUri>
+			<searchArg>q</searchArg>
+			<proxy>
+				<enabled>1</enabled>
+				<host>sakura</host>
+				<port>8118</port>
+				<type></type>
+			</proxy>
+		</source>
+	</actors>
 	<directors />
+	<news>
+		<plitkar>
+			<title>plitkar.com.ua</title>
+			<alias>plitkarcomua</alias>
+			<active>1</active>
+			<baseUrl>http://plitkar.com.ua</baseUrl>
+			<searchUri>/</searchUri>
+			<searchArg>q</searchArg>
+			<proxy>
+				<enabled>1</enabled>
+				<host>sakura</host>
+				<port>8118</port>
+				<type></type>
+			</proxy>
+		</plitkar>
+	</news>
 </configdata>
