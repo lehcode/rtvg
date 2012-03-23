@@ -62,10 +62,10 @@ class Admin_DuplicatesController extends Zend_Controller_Action
 		$request = $this->_request->getParams();
 		$filter_id = new Zend_Filter_Digits();
 	   	$id = $filter_id->filter($request['id']);
-		$actors = new Admin_Model_DbTable_Actors();
+		$table = new Admin_Model_DbTable_Actors();
 		
 		try{
-			$actors->delete("`id`='$id'");
+			$table->delete("`id`='$id'");
 		} catch (Exception $e) {
 			echo $e->getMessage();
 			die(__FILE__.': '.__LINE__);
@@ -74,6 +74,48 @@ class Admin_DuplicatesController extends Zend_Controller_Action
 		$this->_forward('actors');
 		
 	}
+	
+	public function deleteDirectorAction(){
+		
+		$request = $this->_request->getParams();
+		$filter_id = new Zend_Filter_Digits();
+	   	$id = $filter_id->filter($request['id']);
+		$table = new Admin_Model_DbTable_Directors();
+		
+		try{
+			$table->delete("`id`='$id'");
+		} catch (Exception $e) {
+			echo $e->getMessage();
+			die(__FILE__.': '.__LINE__);
+		}
+		
+		$this->_forward('actors');
+		
+	}
+	
+	public function directorsNamesAction(){
+		
+		ini_set('max_execution_time', 0);
+		$model = new Admin_Model_Directors();
+		$model->fixNames();
+    	$this->_forward('index');
+		
+	}
+	
+	public function directorsAction() {
+    	ini_set('max_execution_time', 0);
+    	$model = new Admin_Model_Directors();
+    	$dupes  = $model->getDuplicates();
+    	$this->view->assign('origin', $dupes['origin']);
+    	$this->view->assign('clones', $dupes['clones']);
+    	$total = $dupes['total'];
+    	$this->view->assign('total', $dupes['total']);
+    	$total = $dupes['processed'];
+    	$this->view->assign('processed', $dupes['processed']);
+    	$processed_pct = round($dupes['processed']/(($dupes['total']/100)), 2);
+    	$this->view->assign('processed_pct', $processed_pct);
+		$this->render('directors-duplicates');
+    }
 
 
 }
