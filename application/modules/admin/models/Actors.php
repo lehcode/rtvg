@@ -59,13 +59,13 @@ class Admin_Model_Actors
 		foreach ($chunks as $chunk) {
 			foreach ($chunk as $item) {
 				
-				$expl = explode(' ', $item['name']);
+				$parts = explode(' ', $item['name']);
 				
-				if (count($expl)>3) {
+				if (count($parts)>3) {
 					$actors->delete("`id`='".$item['id']."'");
-				} elseif (count($expl)==3) {
-					$item['name'] = trim($expl[0]);
-					$m_name = trim($expl[1]);
+				} elseif (count($parts)==3) {
+					$item['name'] = trim($parts[0]);
+					$m_name = trim($parts[1]);
 					if (mb_strstr($m_name, '(')) {
 						$actors->delete("`id`='".$item['id']."'");
 					} else {
@@ -75,13 +75,13 @@ class Admin_Model_Actors
 					}
 					//var_dump($item);
 					//die(__FILE__.': '.__LINE__);
-				} elseif (count($expl)==2) {
+				} elseif (count($parts)==2) {
 					$f = $this->_fixNameRank($item);
-					$expl = explode(' ', $f['name']);
-					$name = trim($expl[0]);
+					$parts = explode(' ', $f['name']);
+					$name = trim($parts[0]);
 					if (mb_strlen($name)>2) {
 						$f['f_name'] = $name;
-						$f['s_name'] = trim($expl[1]);
+						$f['s_name'] = trim($parts[1]);
 						$actors->update($f, "`id`='".$f['id']."'");
 					} elseif (mb_strlen($name)>=32) {
 						$actors->delete("`id`='".$item['id']."'");

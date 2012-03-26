@@ -149,9 +149,10 @@ class Admin_ImportController extends Zend_Controller_Action
     			preg_match ( '/(<'.$nodeName.' start="[0-9]{14} \+[0-9]{4}" stop="[0-9]{14} \+[0-9]{4}" channel="[0-9]+">.+<\/' . $nodeName . '>).*$/imsU', $xml, $m );
 				if (@isset ( $m [1] )) {
 					
-					if ($cnt==500)
-					die(__FILE__.": ".__LINE__);
-					else $cnt++;
+					//if ($cnt==500)
+					//die(__FILE__.": ".__LINE__);
+					//else 
+					//$cnt++;
 					
 					$xml   = new SimpleXMLElement ( $m [1] );
 					$info  = array();
@@ -168,52 +169,50 @@ class Admin_ImportController extends Zend_Controller_Action
 					$info ['start'] = $dates['start']->toString($date_mysql);
 					$info ['end']   = $dates['end']->toString($date_mysql);
 					
-					$ch_id  = (int)$attrs->channel;
-					$info['desc'] = @isset($xml->desc) ? $programs_model->getDescription((string)$xml->desc) : null ;
-					//var_dump($info);
-					//die(__FILE__.": ".__LINE__);
-					if (is_array($info['desc'])) {
-						$info['credits'] = $programs_model->getCredits((string)$xml->desc);
-						$programs_model->saveCredits($info['credits']);
-						//$programs_model->saveDescription($info['desc']);
-					}
-					var_dump($info);
-					die(__FILE__.": ".__LINE__);
+					$info ['hash']  = $programs_model->getHash ( (int)$attrs->channel, $info ['start'], $info ['end'] );
+					$info ['title'] = ( string ) $xml->title;
+					$info = $programs_model->makeTitles ( $info );
+					$info ['alias'] = $programs_model->makeProgramAlias ( $info ['title'] );
+					$info ['ch_id'] = (int)$attrs->channel;
 					
-					$info['hash']  = md5($ch_id.$info ['start'].$info ['end']);
-					$info['title'] = $programs_model->cleanProgramTitle((string)$xml->title);
 					
-					//if (strstr(Xmltv_String::strtolower($info['title']), 'премьера'))
-					//$info = $programs_model->setPremiere($info);
-
-					$info ['alias'] = $programs_model->makeProgramAlias($info['title']);
-					$info ['ch_id'] = $ch_id;
-					
+					/*
+					 * категория
+					 */
 					$cat_title = @isset($xml->category) ? (string)$xml->category : 0 ;
 					$info = $programs_model->setProgramCategory($info, $cat_title);
-					
-					var_dump($info);
-					//die(__FILE__.": ".__LINE__);
 					try {
-						$new  = $programs->insert($info);
-						if (strstr(Xmltv_String::strtolower($info['title']), 'премьера')) {
-							try {
-								$saved = $programs->find($new);
-								$info['id']=$saved->id;
-								$programs_model->savePremiere($info);
-							} catch (Exception $e) {
-								echo $e->getMessage();
-								die();
-							}
-						}
-						
+						$new_hash  = $programs->insert($info);
 					} catch(Exception $e) {
-						continue;
+						if ($e->getCode()==1062) {
+							continue;
+						} else {
+							echo $e->getMessage();
+							die(__FILE__.": ".__LINE__);
+						}
 					}
+					$new = $programs->find($new_hash)->current()->toArray();
+					
+					/*
+					 * описание
+					 */
+					$desc = @isset($xml->desc) ? $programs_model->getDescription((string)$xml->desc) : null ;
+					if ($desc && !empty($desc)) {
+						$credits = $programs_model->getCredits((string)$xml->desc);
+						$programs_model->saveCredits($credits, $info);
+						$programs_model->saveDescription((string)$xml->desc, $new['alias']);
+					}
+					
+					
+					$tolower = new Zend_Filter_StringToLower();
+					if (Xmltv_String::stristr($tolower->filter($info['title']), 'премьера')) {
+						$info  = $programs_model->savePremiere($new);
+					}
+					
 				}
     		}
     		
-    		die(__FILE__.": ".__LINE__);
+    		//die(__FILE__.": ".__LINE__);
     	}
     	
 		die(__FILE__.": ".__LINE__);
@@ -327,6 +326,8 @@ class Admin_ImportController extends Zend_Controller_Action
 		return new Zend_Config_Ini(APPLICATION_PATH.'/configs/application.ini', $mode);
 	
 	}
+	
+	
 	
 }
 
