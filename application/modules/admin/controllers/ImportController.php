@@ -169,20 +169,21 @@ class Admin_ImportController extends Zend_Controller_Action
 					$info ['start'] = $dates['start']->toString($date_mysql);
 					$info ['end']   = $dates['end']->toString($date_mysql);
 					
-					$info ['hash']  = $programs_model->getHash ( (int)$attrs->channel, $info ['start'], $info ['end'] );
-					$info ['title'] = ( string ) $xml->title;
-					$info = $programs_model->makeTitles ( $info );
-					$info ['alias'] = $programs_model->makeProgramAlias ( $info ['title'] );
 					$info ['ch_id'] = (int)$attrs->channel;
 					
-					
-					/*
-					 * категория
-					 */
 					$cat_title = @isset($xml->category) ? (string)$xml->category : 0 ;
 					$info = $programs_model->setProgramCategory($info, $cat_title);
+					
+					$info ['hash']  = $programs_model->getHash ( (int)$attrs->channel, $info ['start'], $info ['end'] );
+					
+					$info ['title'] = ( string ) $xml->title;
+					$info = $programs_model->makeTitles ( $info );
+					
+					$info ['alias'] = $programs_model->makeProgramAlias ( $info ['title'] );
+					
 					try {
-						$new_hash  = $programs->insert($info);
+						$info['alias'] = str_replace('--', '-', $info['alias']);
+						$new_hash = $programs->insert($info);
 					} catch(Exception $e) {
 						if ($e->getCode()==1062) {
 							continue;
@@ -199,14 +200,14 @@ class Admin_ImportController extends Zend_Controller_Action
 					$desc = @isset($xml->desc) ? $programs_model->getDescription((string)$xml->desc) : null ;
 					if ($desc && !empty($desc)) {
 						$credits = $programs_model->getCredits((string)$xml->desc);
-						$programs_model->saveCredits($credits, $info);
+						$programs_model->saveCredits($credits, $new);
 						$programs_model->saveDescription((string)$xml->desc, $new['alias']);
 					}
 					
 					
 					$tolower = new Zend_Filter_StringToLower();
 					if (Xmltv_String::stristr($tolower->filter($info['title']), 'премьера')) {
-						$info  = $programs_model->savePremiere($new);
+						$programs_model->savePremiere($new);
 					}
 					
 				}
