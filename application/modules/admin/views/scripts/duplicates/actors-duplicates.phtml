@@ -19,23 +19,23 @@ if (!empty($this->origin) && !empty($this->clones)) { ?>
 	<tbody>
 		<tr>
 			<td><?php echo $this->origin['id'] ?></td>
-			<td><?php echo $this->origin['name'] ?></td>
+			<td><?php echo $this->origin['f_name'] ?></td>
 			<td><?php echo $this->origin['m_name'] ?></td>
 			<td><?php echo $this->origin['s_name'] ?></td>
 			<td><?php echo $this->origin['rank'] ?></td>
 			<td><?php echo $this->origin['name_en'] ?></td>
-			<td><a href="/admin/duplicates/delete-actor/id/<?php echo $this->origin['id'] ?>">Удалить</a></td>
+			<td><a href="/admin/duplicates/main-actor/id/<?php echo $this->origin['id'] ?>">Удалить остальных</a></td>
 		  </tr>
 		  
 		  <?php $i=1; foreach ($this->clones as $clone) : ?>
 		  <tr>
 		  	<td><?php echo $clone['id'] ?></td>
-		    <td><?php echo $clone['name'] ?></td>
+		    <td><?php echo $clone['f_name'] ?></td>
 		    <td><?php echo $clone['m_name'] ?></td>
 		    <td><?php echo $clone['s_name'] ?></td>
 		    <td><?php echo $clone['rank'] ?></td>
 		    <td><?php echo $clone['name_en'] ?></td>
-		    <td><a href="/admin/duplicates/delete-actor/id/<?php echo $clone['id'] ?>">Удалить</a></td>
+		    <td><a href="/admin/duplicates/main-actor/id/<?php echo $clone['id'] ?>">Удалить остальных</a></td>
 		   </tr>
 		  <?php $i++; endforeach; ?>
 	  </tbody>

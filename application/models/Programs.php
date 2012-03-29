@@ -2,14 +2,25 @@
 
 class Xmltv_Model_Programs
 {
+	
+	public $debug=false;
+	
+	public function __construct(){
+		$siteConfig = Zend_Registry::get('site_config')->site;
+		$this->debug = (bool)$siteConfig->get('debug', false);
+	}
+	
 	public function getProgramsForDay($date=null, $ch_id=null){
 		
 		$day = $date->toString(DATE_MYSQL_SHORT);
-		$table = new Xmltv_Model_DbTable_Programs();
+		$programs_table = new Xmltv_Model_DbTable_Programs();
 		try {
-			$rows = $table->fetchAll(array("`start` LIKE '$day%'", "`ch_id`='$ch_id'"), "start ASC");
+			$rows = $programs_table->fetchAll(array("`start` LIKE '$day%'", "`ch_id`='$ch_id'"), "start ASC");
 		} catch (Exception $e) {
-			$e->getMessage();
+			if ($this->debug) {
+				echo $e->getMessage();
+				var_dump ($e->getTrace());
+			}
 			return false;
 		}
 		
@@ -32,7 +43,7 @@ class Xmltv_Model_Programs
 			
 			$list[$c]['start_timestamp'] = $prog_start->toString(Zend_Date::TIMESTAMP);
 			$list[$c]['new'] = (int)$list[$c]['new'];
-			
+			/*
 			$serializer = Zend_Serializer::factory('Json');
 			try {
 				$list[$c]['image'] = $serializer->unserialize($list[$c]['image']);
@@ -47,11 +58,11 @@ class Xmltv_Model_Programs
 			    $prog->save();
 			    $list[$c]['image'] = $serializer->unserialize($s);
 			}
-			
-			$desc = $desc_table->fetchRow("prog_id='$prog->id'");
-			$list[$c]['desc'] = array('intro'=>$desc->desc_intro, 'body'=>$desc->desc_body);
+			*/
+			$desc = $desc_table->fetchRow("title_alias='$prog->alias'");
+			$list[$c]['desc']  = array('intro'=>$desc->intro, 'body'=>$desc->body);
 			$list[$c]['start'] = new Zend_Date($prog->start);
-			$list[$c]['end'] = new Zend_Date($prog->end);
+			$list[$c]['end']   = new Zend_Date($prog->end);
 			
 			$c++;
 		}

@@ -1,4 +1,12 @@
 <?php
+/**
+ * Backend import controller
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: ImportController.php,v 1.4 2012-03-29 18:16:52 dev Exp $
+ *
+ */
 class Admin_ImportController extends Zend_Controller_Action
 {
 	

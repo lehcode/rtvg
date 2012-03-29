@@ -2,11 +2,18 @@
 
 class Xmltv_Model_Channels
 {
+	
+	public $debug=false;
+	
+	public function __construct(){
+		$siteConfig = Zend_Registry::get('site_config')->site;
+		$this->debug = (bool)$siteConfig->get('debug', false);
+	}
 
 	public function getPublished(){
 		$table = new Xmltv_Model_DbTable_Channels();
 		try {
-			$rows = $table->fetchAll("`published`='1' AND `parse`='1' ");
+			$rows = $table->fetchAll("`published`='1' AND `parse`='1' ", 'title ASC');
 		} catch (Zend_Exception $e) {
 			echo $e->getMessage();
 			die(__CLASS__.':'.__METHOD__);

@@ -2,22 +2,18 @@
 
 class ChannelController extends Zend_Controller_Action
 {
+	
+	public function init() {
+		die(__FILE__.': '.__LINE__);
+	}
 
-    public function init()
-    {
-        /* Initialize action controller here */
-    }
-
-    public function indexAction()
-    {
-    	die(__FILE__.': '.__LINE__);
-       // header('HTTP/1.0 404 Not Found');
-		//$view = Zend::registry('view'); //assumes $view created and registered in index.php
-		//echo $view->render('404.php');
+    public function indexAction(){
+    	
+    	$this->_forward('day');
+    	
     }
     
-    public function dayAction()
-    {
+    public function dayAction() {
     	
     	$request = $this->_getAllParams();
     	$filters = array(
@@ -63,18 +59,18 @@ class ChannelController extends Zend_Controller_Action
 		
     }
     
-	public function noRouteAction()
-	{
+	public function noRouteAction() {
 		header('HTTP/1.0 404 Not Found');
-		//$this->view->setScriptPath(APPLICATION_PATH.'/views/scripts/error');
-		$this->view->render();
+		$this->_helper->layout->setLayout('error');
+		//$this->view->render();
 	}
 	
 	public function __call($method,$arguments)
 	{
 		header('HTTP/1.0 404 Not Found');
+		//$this->_helper->layout->setLayout('error');
 		//$this->view->setScriptPath(APPLICATION_PATH.'/views/scripts/error');
-		$this->view->render();
+		//$this->view->render();
 	}
 
 

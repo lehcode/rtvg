@@ -6,12 +6,6 @@
 			<active>1</active>
 			<baseUrl>http://www.teleguide.info</baseUrl>
 			<startUri>/sort</startUri>
-			<proxy>
-				<enabled>1</enabled>
-				<host>sakura</host>
-				<port>8118</port>
-				<type></type>
-			</proxy>
 		</teleguide>
 	</movies>
 	<series />
@@ -23,12 +17,6 @@
 			<baseUrl>http://www.kinofilms.ua</baseUrl>
 			<searchUri>/</searchUri>
 			<searchArg>q</searchArg>
-			<proxy>
-				<enabled>1</enabled>
-				<host>sakura</host>
-				<port>8118</port>
-				<type></type>
-			</proxy>
 		</source>
 	</actors>
 	<directors />
@@ -40,12 +28,6 @@
 			<baseUrl>http://plitkar.com.ua</baseUrl>
 			<searchUri>/</searchUri>
 			<searchArg>q</searchArg>
-			<proxy>
-				<enabled>1</enabled>
-				<host>sakura</host>
-				<port>8118</port>
-				<type></type>
-			</proxy>
 		</plitkar>
 	</news>
 </configdata>

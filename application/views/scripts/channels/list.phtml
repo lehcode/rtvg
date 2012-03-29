@@ -9,6 +9,7 @@ $(function() {
 });
 ";
 $this->headScript()->prependScript($js);
+$tolower = new Zend_Filter_StringToLower(array('encoding'=>'UTF-8'));
 ?>
 <h1>Телепрограмма</h1>
 
@@ -18,13 +19,13 @@ $this->headScript()->prependScript($js);
 		foreach ($this->channels as $channel) {  ?>
 		<div class="channeltitle">
 			<span class="channellink btn btn-primary" id="#channeltitle<?php echo $channel['ch_id'] ?>" href="<?php echo urlencode('канал-'.$channel['title']) ?>" title="<?php printf('Телепрограмма канала %s', $channel['title']) ?>">
-				<img class="channelicon" width="40" src="<?php echo $channel['icon'] ?>" alt="<?php printf('%s лого', $channel['title']) ?>" />
+				<img class="channelicon" width="40" src="<?php echo $channel['icon'] ?>" alt="<?php printf('%s лого', $tolower->filter($channel['title'])) ?>" />
 				<?php printf('%s сегодня', $channel['title']) ?>
 			</span>
 			<a class="btn btn-mini btn-inverse moreaboutchannel" href="#channeldesc<?php echo $channel['ch_id'] ?>" title="<?php printf('Информация про телеканал %s', $channel['title'])?>">Больше об этом телеканале</a>
 		</div>
 		<div class="channeldesc">
-			<a class="btn btn-mini" href="<?php echo 'телепрограмма/'.strtolower($channel['alias']); ?>" title="<?php printf('Телепрограмма канала %s', $channel['title']) ?>">
+			<a class="btn btn-mini" href="<?php echo 'телепрограмма/'.$tolower->filter($channel['alias']); ?>" title="<?php printf('Телепрограмма канала %s', $channel['title']) ?>">
 				<?php printf('%s сегодня', $channel['title']) ?>
 			</a>
 			<?php /* <a class="btn btn-mini btn-info currentprogram" href="<?php echo $channel->current['link'] ?>" title="<?php echo JText::sprintf('COM_XMLTV_NOW_ON_CHANNEL', $channel->current['title'], $channel->display_name)?>">
