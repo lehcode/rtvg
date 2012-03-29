@@ -57,17 +57,52 @@ class Admin_DuplicatesController extends Zend_Controller_Action
     	$this->_forward('index');
     }
     
-	public function deleteActorAction(){
+	public function mainActorAction(){
 		
 		$request = $this->_request->getParams();
 		$filter_id = new Zend_Filter_Digits();
 	   	$id = $filter_id->filter($request['id']);
 		$table = new Admin_Model_DbTable_Actors();
+		$programs_props = new Admin_Model_DbTable_ProgramsProps();
 		
-		try{
-			$table->delete("`id`='$id'");
+		try {
+			$progs = $programs_props->fetchAll("`actors` LIKE '%,".$id."]' OR `actors` LIKE '[".$id.",%' OR `actors` LIKE '%,".$id.",%'");
 		} catch (Exception $e) {
 			echo $e->getMessage();
+			die(__FILE__.': '.__LINE__);
+		}
+		
+		if (count($progs)==0) {
+			try{
+				die(__FILE__.': '.__LINE__);
+				//$table->delete("`id`='$id'");
+			} catch (Exception $e) {
+				echo $e->getMessage();
+				die(__FILE__.': '.__LINE__);
+			}
+		} else {
+			
+			var_dump(count($progs));
+			
+			foreach ($progs as $p) {
+				$prog = $p->toArray();
+				var_dump($prog);
+				$serializer = new Zend_Serializer_Adapter_Json();
+				$actors = $serializer->unserialize($prog['actors']);
+				$model  = new Admin_Model_Actors();
+    			$main   = $model->getPersonByKey($id);
+    			$dupes  = $model->getPersonDuplicates($main);
+    			var_dump($main);
+    			die(__FILE__.': '.__LINE__);
+    			
+				if ($k = array_search($id, $actors)){
+					if ((int)$actors[$k] != (int)$dupes['origin']['id']) {
+						$actors[$k] = (int)$dupes['origin']['id'];
+					}
+				}
+				var_dump($actors);
+				die(__FILE__.': '.__LINE__);
+			}
 			die(__FILE__.': '.__LINE__);
 		}
 		

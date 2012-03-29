@@ -10,9 +10,13 @@ class Admin_ChannelsController extends Zend_Controller_Action
 
     public function indexAction()
     {
-        $this->_forward('login', 'index', 'admin');
+        $this->_forward('list');
     }
 
+	public function listAction()
+    {
+        //
+    }
 
 }
 

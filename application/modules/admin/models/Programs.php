@@ -418,46 +418,53 @@ class Admin_Model_Programs
 	 * @param array $info
 	 * @return void
 	 */
-	private function _updateProgramActors ($existing=array(), $info=array()) {
+	private function _updateProgramActors ($existing = array(), $info = array()) {
 		
 		if( empty( $existing ) ) return;
 		if( empty( $info ) ) return;
 		
-		$props=new Admin_Model_DbTable_ProgramsProps();
-		$serializer=new Zend_Serializer_Adapter_Json();
+		$props = new Admin_Model_DbTable_ProgramsProps();
+		$serializer = new Zend_Serializer_Adapter_Json();
 		
-		$p_props=$props->find( $info['alias'] );
+		$p_props = $props->find( $info['alias'] );
+		
 		if( count( $p_props ) == 0 ) {
-			
-			$p_props=$props->createRow();
-			$p_props->title_alias=$info['alias'];
+			$p_props = $props->createRow();
+			$p_props->title_alias = $info['alias'];
 			try {
-				$p_props->actors=$serializer->serialize( array($existing['id']) );
+				$p_props->actors = $serializer->serialize( array($existing['id']) );
 				$p_props->save();
 			} catch (Exception $e) {
+				var_dump($e->getCode());
 				echo "Не могу добавить актера: " . $e->getMessage();
+				var_dump($e->getTrace());
 				die( __FILE__ . ': ' . __LINE__ );
 			}
 		} else {
 			try {
 				$p_props = $p_props->current()->toArray();
 				$p_props['title_alias'] = $info['alias'];
-				try {
-					$actors = $serializer->unserialize( $p_props['actors'] );
-					if(  !( in_array( $existing['id'], $actors ) ) ) {
-						$actors[] = $existing['id'];
-					}
-				} catch (Exception $e) {
-					$actors = array();
+				$persons = $serializer->unserialize( $p_props['actors'] );
+				if(  !( in_array( $existing['id'], $persons ) ) ) {
+					$persons[] = $existing['id'];
 				}
-				$p_props['actors'] = $serializer->serialize( $actors );
-				$props->update( $p_props, "`title_alias`='".$info['alias']."'" );
+				$p_props['actors'] = $serializer->serialize( $persons );
+				$props->update( $p_props, "`title_alias`='" . $info['alias'] . "'" );
 			} catch (Exception $e) {
-				var_dump( func_get_args() );
-				echo "Не могу обновить актера: " . $e->getMessage();
-				var_dump( $e->getTrace() );
-				die( __FILE__ . ': ' . __LINE__ );
+				if( $e->getCode() == 0 ) {
+					$p_props['actors'] = $serializer->serialize( array($existing['id']) );
+					try {
+						$props->update( $p_props, "`title_alias`='" . $info['alias'] . "'" );
+					} catch (Exception $e) {
+						echo "Не могу обновить актера: " . $e->getMessage();
+						die( __FILE__ . ': ' . __LINE__ );
+					}
+				}
 			}
+			//$p_props['actors'] = $serializer->serialize( $actors );
+		//$props->update( $p_props, "`title_alias`='" . $info['alias'] . "'" );
+		
+
 		}
 	}
 
@@ -467,7 +474,7 @@ class Admin_Model_Programs
 	 * @param array $info
 	 * @return void
 	 */
-	private function _updateProgramDirectors ($existing=array(), $info=array()) {
+	private function _updateProgramDirectors ($existing = array(), $info = array()) {
 		
 		if( empty( $existing ) ) return;
 		if( empty( $info ) ) return;
@@ -477,20 +484,15 @@ class Admin_Model_Programs
 		
 
 
-		$props=new Admin_Model_DbTable_ProgramsProps();
-		$serializer=new Zend_Serializer_Adapter_Json();
-		$alias=Xmltv_String::str_ireplace( 'премьера', '', $info['alias'] );
-		$alias=Xmltv_String::str_ireplace( '--', '-', $alias );
-		$alias=Xmltv_String::trim( $alias, '- ' );
+		$props = new Admin_Model_DbTable_ProgramsProps();
+		$serializer = new Zend_Serializer_Adapter_Json();
+		$p_props = $props->find( $info['alias'] );
 		
-		$p_props=$props->find( $alias );
-		//var_dump($p_props);
-		//die(__FILE__.': '.__LINE__);
 		if( count( $p_props ) == 0 ) {
-			$p_props=$props->createRow();
-			$p_props->title_alias=$alias;
+			$p_props = $props->createRow();
+			$p_props->title_alias = $info['alias'];
 			try {
-				$p_props->directors=$serializer->serialize( array($existing['id']) );
+				$p_props->directors = $serializer->serialize( array($existing['id']) );
 				$p_props->save();
 			} catch (Exception $e) {
 				echo "Не могу добавить режиссера: " . $e->getMessage();
@@ -498,19 +500,19 @@ class Admin_Model_Programs
 			}
 		} else {
 			try {
-				$p_props=$p_props->current()->toArray();
-				$p_props['title_alias']=$alias;
-				$persons=$serializer->unserialize( $p_props['directors'] );
+				$p_props = $p_props->current()->toArray();
+				$p_props['title_alias'] = $info['alias'];
+				$persons = $serializer->unserialize( $p_props['directors'] );
 				if(  !( in_array( $existing['id'], $persons ) ) ) {
-					$persons[]=$existing['id'];
+					$persons[] = $existing['id'];
 				}
-				$p_props['directors']=$serializer->serialize( $persons );
-				$props->update( $p_props, "`title_alias`='$alias'" );
+				$p_props['directors'] = $serializer->serialize( $persons );
+				$props->update( $p_props, "`title_alias`='" . $info['alias'] . "'" );
 			} catch (Exception $e) {
 				if( $e->getCode() == 0 ) {
-					$p_props['directors']=$serializer->serialize( array($existing['id']) );
+					$p_props['directors'] = $serializer->serialize( array($existing['id']) );
 					try {
-						$props->update( $p_props, "`title_alias`='$alias'" );
+						$props->update( $p_props, "`title_alias`='" . $info['alias'] . "'" );
 					} catch (Exception $e) {
 						echo "Не могу обновить режиссера: " . $e->getMessage();
 						die( __FILE__ . ': ' . __LINE__ );

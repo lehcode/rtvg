@@ -3,6 +3,9 @@
 class Admin_Model_Actors
 {
 
+	private $_trim_options=array('charlist'=>' "\'.,:;-+');
+	private $_tolower_options=array('encoding'=>'UTF-8');
+	
 	public function getDuplicates(){
 		
 		$actors = new Admin_Model_DbTable_Actors();
@@ -11,6 +14,7 @@ class Admin_Model_Actors
 		$total  = count($all);
 		$chunks = array_chunk($all, 250);
 		$p=0;
+		$tolower = new Zend_Filter_StringToLower($this->_tolower_options);
 		foreach ($chunks as $chunk) {
 			foreach ($chunk as $item) {
 				$p++;
@@ -25,14 +29,16 @@ class Admin_Model_Actors
 			    	$origin = $result[0];
 			    	unset($result[0]);
 			    	foreach ($result as $dupe) {
-			    		$origin_f = mb_strtolower(str_replace('ё', 'е', $origin['f_name']));
-			    		$origin_m = mb_strtolower(str_replace('ё', 'е', $origin['m_name']));
-			    		$origin_s = mb_strtolower(str_replace('ё', 'е', $origin['s_name']));
-			    		$dupe_f = mb_strtolower(str_replace('ё', 'е', $dupe['f_name']));
-			    		$dupe_m = mb_strtolower(str_replace('ё', 'е', $dupe['m_name']));
-			    		$dupe_s = mb_strtolower(str_replace('ё', 'е', $dupe['s_name']));
-			    		$origin_name = $origin_f.' '.$origin_m.' '.$origin_s.' '.$origin['rank'];
-			    		$dupe_name   = $dupe_f.' '.$dupe_m.' '.$dupe_s.' '.$dupe['rank'];
+			    		/*
+			    		$origin_f = $tolower->filter(Xmltv_String::str_ireplace('ё', 'е', $origin['f_name']));
+			    		$origin_m = $tolower->filter(Xmltv_String::str_ireplace('ё', 'е', $origin['m_name']));
+			    		$origin_s = $tolower->filter(Xmltv_String::str_ireplace('ё', 'е', $origin['s_name']));
+			    		$dupe_f   = $tolower->filter(Xmltv_String::str_ireplace('ё', 'е', $dupe['f_name']));
+			    		$dupe_m   = $tolower->filter(Xmltv_String::str_ireplace('ё', 'е', $dupe['m_name']));
+			    		$dupe_s   = $tolower->filter(Xmltv_String::str_ireplace('ё', 'е', $dupe['s_name']));
+			    		*/
+			    		$origin_name = $origin['f_name'].' '.$origin['m_name'].' '.$origin['s_name'].' '.$origin['rank'];
+			    		$dupe_name   = $dupe['f_name'].' '.$dupe['m_name'].' '.$dupe['s_name'].' '.$dupe['rank'];
 			    		if ($origin_name==$dupe_name) {
 			    			$clones[]=$dupe;
 			    		}
@@ -106,34 +112,42 @@ class Admin_Model_Actors
 		//die(__FILE__.': '.__LINE__);
 	}
 	
-	private function _fixNameRank($data=null){
-		if (!$data) return;
-		if (stristr($data['name'], '-мл')) {
-			$data['name']=str_ireplace(array('-младший'),'',$data['name']);
-			$data['name']=str_ireplace(array('-мл'),'',$data['name']);
-			$data['rank']='мл.';
+	private function _fixNameRank ($data = null) {
+		if(  !$data ) return;
+		if( Xmltv_String::stristr( $data['name'], '-мл' ) ) {
+			$data['name'] = Xmltv_String::str_ireplace( '-младший', '', $data['name'] );
+			$data['name'] = Xmltv_String::str_ireplace( '-мл', '', $data['name'] );
+			$data['rank'] = 'мл.';
 		}
-		if (stristr($data['name'], '-ст')) {
-			$data['name']=str_ireplace(array('-старший'),'',$data['name']);
-			$data['name']=str_ireplace(array('-ст'),'',$data['name']);
-			$data['rank']='ст.';
+		if( Xmltv_String::stristr( $data['name'], '-ст' ) ) {
+			$data['name'] = Xmltv_String::str_ireplace( '-старший', '', $data['name'] );
+			$data['name'] = Xmltv_String::str_ireplace( '-ст', '', $data['name'] );
+			$data['rank'] = 'ст.';
 		}
 		return $data;
-		
+	
 	}
 	
 	
-	/*
-	public function getClonesOf($id=null, $name=null) {
+	
+	public function getClonesOf($id=null) {
 		
-		if (!$id || !$name) return;
+		if (!$id) return;
 		
-		var_dump(func_get_args());
+		$actors  = new Admin_Model_DbTable_Actors();
+		$origin  = $actors->find($id)->toArray();
+		$tolower = new Zend_Filter_StringToLower($this->_tolower_options);
+		$clones  = $actors->fetchAll(array(
+			//"`f_name` LIKE '".$tolower->filter($origin['f_name'])."'",
+			//"`m_name` LIKE '".$tolower->filter($origin['m_name'])."'",
+			"`s_name` LIKE '".$tolower->filter($origin['s_name'])."'",
+			"`id` != '$id'"
+		));
 		
-		$actors = new Admin_Model_DbTable_Actors();
-		$d = $this->getDuplicates();
-		//var_dump($actors);
-		//die();
+		var_dump($origin);
+		var_dump(count($clones));
+		die(__FILE__.': '.__LINE__);
+		
 		$r = array();
 		if (count($d)) {
 			foreach ($d as $row) {
@@ -144,6 +158,27 @@ class Admin_Model_Actors
 		return $r;
 		
 	}
-	*/
+	
+	public function getPersonByKey($key=null){
+		if (!$key) return;
+		$table = new Admin_Model_DbTable_Actors();
+		return $table->find($key)->toArray();
+	}
+	
+	/**
+	 * Get duplicates of actor
+	 * 
+	 * @param array $main	Person information
+	 */
+	
+	public function getPersonDuplicates($main=array()){
+		if (empty($main)) return;
+		$tolower = new Zend_Filter_StringToLower($this->_tolower_options);
+		$origin_f = $tolower->filter(Xmltv_String::str_ireplace('е', 'ё', $main['f_name']));
+    	$origin_m = $tolower->filter(Xmltv_String::str_ireplace('е', 'ё', $main['m_name']));
+    	$origin_s = $tolower->filter(Xmltv_String::str_ireplace('е', 'ё', $main['s_name']));
+    	
+	}
+	
 }
 

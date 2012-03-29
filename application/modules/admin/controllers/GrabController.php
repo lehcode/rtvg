@@ -5,13 +5,11 @@ class Admin_GrabController extends Zend_Controller_Action
 	
 	public function __call($method,$arguments) {
 		$this->_helper->FlashMessenger('Requested page does not exist.');
-		$this->_forward('index', 'index', $this->getRequest()->getModuleName());
+		$this->_forward('index', 'index', 'admin');
 	}
 
     public function init()
     {
-    	//var_dump($this->_helper);
-    	//die();
         $this->_helper->layout->disableLayout();
 		$this->_helper->viewRenderer->setNoRender(true);
     }
