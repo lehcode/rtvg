@@ -1,0 +1,37 @@
+<?php
+$this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
+$this->headScript()->setAllowArbitraryAttributes(true);
+$this->jQuery()
+	->enable()
+	//->setCdnSsl(true) // if need to load from ssl location
+	->setVersion('1.7.1')
+	->setUiVersion('1.8.18')
+	->addStylesheet('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css')
+	->uiEnable();
+?>
+<?php echo $this->doctype(); ?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
+<head>
+<?php 
+echo $this->headMeta();
+echo $this->headTitle();
+echo $this->jQuery();
+echo $this->headScript()
+	//->prependFile($this->baseUrl().'/js/bootstrap-dropdown.js')
+	//->prependFile($this->baseUrl().'/js/bootstrap-collapse.js')
+	->prependFile($this->baseUrl().'/js/bootstrap.min.js');
+echo $this->headLink()
+	->prependStylesheet($this->baseUrl().'/css/template.css')
+	->prependStylesheet($this->baseUrl().'/css/bootstrap.css');
+echo $this->headStyle();
+?>
+</head>
+<body>
+<div class="container">
+	<div class="span12">
+		<?php echo $this->layout()->content; ?>
+	</div>
+</div>
+<?php echo $this->inlineScript(); ?>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<?php 
+/**
+ * @author Antony Repin
+ */
+
+$this->headScript()->appendFile($this->baseUrl().'/js/select-grab-site.js');
+$styles = "#progress { padding: 6px; display: none; background-color: lightYellow; }
+#errors { padding: 6px; background-color: #FFB5BE; display: none; }
+";
+$this->headStyle()->appendStyle($styles);
+require 'nav.phtml';
+
+$form = new Zend_Form();
+$form->setAction( '/admin/movies/grab' )
+	->setMethod( 'post' )
+	->setName( 'grab_target' )
+	->setAttrib( 'id', 'grab_target' )
+	->setOptions( array( 'class'=>'form form-vertical' ) );
+$options = array();
+foreach ($this->sites as $k => $s) {
+	$options[$k]['key']   = $s['alias'];
+	$options[$k]['value'] = $s['title'];
+}
+$radios = new Zend_Form_Element_Radio( 'target_site' );
+$radios->setMultiOptions( $options )
+	->setRequired()
+	->setLabel('Доступные сайты');
+$btn = new Zend_Form_Element_Button( 'start_grab' );
+$btn->setName('Старт')
+	->setOptions( array('id'=>'start_grab', 'class'=>'btn btn-primary') );
+$form->setElementDecorators( array('ViewHelper') );
+$form->addElements(array($radios, $btn));
+?>
+<h1>Выберите сайт для сбора данных</h1>
+<?php echo $form; ?>
+<div id="progress"></div>
+<div id="errors"></div>
+<?php /*
+<table>
+	<thead>
+		<tr>
+			<th>Название</th>
+			<th>Базовый URL</th>
+			<th>URI старта</th>
+		</tr>
+	</thead>
+	<tbody>
+		<?php
+		foreach ($this->sites as $k => $s) {
+			?>
+		<tr>
+			<td><?php
+			echo $s['title']?></td>
+			<td><?php
+			echo $s['baseUrl']?></td>
+			<td><?php
+			echo $s['startUri']?></td>
+		</tr>
+		<?php
+		}
+		?>
+	</tbody>
+</table>
+*/ ?>
