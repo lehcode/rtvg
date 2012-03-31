@@ -5,20 +5,17 @@ class Admin_DuplicatesController extends Zend_Controller_Action
 	
     public function init()
     {
+    	parent::__construct();
         $this->_helper->layout->setLayout('admin');
 	    $request = $this->_request->getParams();
-			$filters = array(
-	    		'module'=>'StringTrim',
-	    		'controller'=>'StringTrim',
-	    		'action'=>'StringTrim'
-	    	);
+			$filters = array('*'=>'StringTrim', '*'=>'StringToLower');
 	    	$validators = array(
 	    		'module'=>array(
 	    			new Zend_Validate_Regex('/^[a-z]+$/u')),
 	    		'controller'=>array(
 	    			new Zend_Validate_Regex('/^[a-z]+$/')),
 	    		'action'=>array(
-	    			new Zend_Validate_Regex('/^[a-z]+$/')),	
+	    			new Zend_Validate_Regex('/^[a-z-]+$/')),	
 	    	);
 	    	$input = new Zend_Filter_Input($filters, $validators, $request);
 	    	if (!$input->isValid())

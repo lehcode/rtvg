@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ImportController.php,v 1.4 2012-03-29 18:16:52 dev Exp $
+ * @version $Id: ImportController.php,v 1.5 2012-03-31 23:00:52 dev Exp $
  *
  */
 class Admin_ImportController extends Zend_Controller_Action
@@ -14,7 +14,7 @@ class Admin_ImportController extends Zend_Controller_Action
 	
     public function init()
     {
-        $this->_helper->layout->setLayout('admin');
+    	$this->_helper->layout->setLayout('admin');
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
 		$ajaxContext->addActionContext('xmlparsechannels', 'json')
 			->addActionContext('xmlparseprograms', 'json')
@@ -36,6 +36,7 @@ class Admin_ImportController extends Zend_Controller_Action
    	 */
    	public function uploadAction()
     {
+    	
     	ini_set('max_execution_time', 0);
     	ini_set('max_input_time', -1);
     	
@@ -194,30 +195,39 @@ class Admin_ImportController extends Zend_Controller_Action
 						$new_hash = $programs->insert($info);
 					} catch(Exception $e) {
 						if ($e->getCode()==1062) {
-							continue;
+							$new_hash = $info ['hash'];
 						} else {
-							echo $e->getMessage();
+							if ($this->_debug) {
+								echo $e->getMessage();
+								Zend_Debug::dump($e->getTrace());
+							}
 							die(__FILE__.": ".__LINE__);
 						}
 					}
 					$new = $programs->find($new_hash)->current()->toArray();
-					
+					//die(__FILE__.": ".__LINE__);
 					/*
 					 * описание
 					 */
-					$desc = @isset($xml->desc) ? $programs_model->getDescription((string)$xml->desc) : null ;
+					$desc = @isset($xml->desc) ? $programs_model->cleanDescription((string)$xml->desc) : null ;
+					/*
+					if (!empty($desc)) {
+						var_dump($desc);
+						die(__FILE__.": ".__LINE__);
+					}
+					*/
 					if ($desc && !empty($desc)) {
 						$credits = $programs_model->getCredits((string)$xml->desc);
 						$programs_model->saveCredits($credits, $new);
-						$programs_model->saveDescription((string)$xml->desc, $new['alias']);
+						$programs_model->saveDescription($desc, $new['alias']);
 					}
 					
 					
 					$tolower = new Zend_Filter_StringToLower();
 					if (Xmltv_String::stristr($tolower->filter($info['title']), 'премьера')) {
+						if($new['new']==0)
 						$programs_model->savePremiere($new);
 					}
-					
 				}
     		}
     		

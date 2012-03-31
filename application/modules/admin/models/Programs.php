@@ -25,6 +25,10 @@ class Admin_Model_Programs
 		if(  !$title ) return;
 		$todash=new Zend_Filter_Word_SeparatorToDash();
 		$result=$todash->filter( $title );
+		$info['title']=Xmltv_String::str_ireplace( 'Премьера.', '', $info['title'] );
+		$info['title']=Xmltv_String::str_ireplace( ' Премьера', '', $info['title'] );
+		$info['title']=Xmltv_String::str_ireplace( ' Премьера ', '', $info['title'] );
+		$info['title']=Xmltv_String::str_ireplace( 'Премьера', '', $info['title'] );
 		$result=preg_replace( '/[:;_,\.\[\]\(\)\\`\{\}"\!\+\?]/ius', '-', $result );
 		$result=preg_replace( '/[0-9]+-я.*серия/ius', '', $result );
 		$result=preg_replace( '/[0-9]+-я.*-.*[0-9]+-я.*серии/ius', '', $result );
@@ -101,11 +105,13 @@ class Admin_Model_Programs
 		
 		$programs=new Admin_Model_DbTable_Programs();
 		$props=new Admin_Model_DbTable_ProgramsProps();
-		$info['title']=Xmltv_String::str_ireplace( 'Премьера.', '', $info['title'] );
-		$info['title']=Xmltv_String::str_ireplace( ' Премьера', '', $info['title'] );
-		$info['title']=Xmltv_String::str_ireplace( ' Премьера ', '', $info['title'] );
-		$info['title']=Xmltv_String::str_ireplace( 'Премьера', '', $info['title'] );
+		
 		$info['alias']=str_replace( '--', '-', $this->makeProgramAlias( $info['title'] ) );
+		$info['new']=1;
+		
+		//var_dump($info);
+		//die(__FILE__.': '.__LINE__);
+		
 		$new=$props->createRow();
 		$new->title_alias=$info['alias'];
 		$new->premiere=1;
@@ -209,38 +215,52 @@ class Admin_Model_Programs
 	}
 
 
-	public function getDescription ($input=null) {
+	public function cleanDescription ($input=null) {
 		
 		if(  !$input ) return;
-		
+
 		//var_dump($input);
 		//die(__FILE__.': '.__LINE__);
 		
-
-
+		$trim = new Zend_Filter_StringTrim(array('charlist'=>' :;.'));
+		
 		if( strstr( $input, '…' ) ) {
 			$d=explode( '…', $input );
 			$d=trim( $d[0] );
-			$expl=explode( '.', $d );
-			$desc['intro']=trim( $expl[0] ) . '. ' . trim( $expl[1] ) . '.';
-			unset( $expl[0] );
-			unset( $expl[1] );
-			$desc['body']=trim( implode( '. ', $expl ) ) . '.';
-			return $desc;
+			$parts=explode( '.', $d );
+			return $trim->filter( $parts[0] );
+			//$desc['intro']=trim( $parts[0] ) . '. ' . trim( $parts[1] ) . '.';
+			//unset( $parts[0] );
+			//unset( $parts[1] );
+			//$desc['body']=trim( implode( '. ', $parts ) ) . '.';
 		
 		} else {
 			
-			$last_space=Xmltv_String::strrpos( $input, '. ' );
-			$last_sentence=Xmltv_String::substr( $input, $last_space + 1 );
-			$first_dot=Xmltv_String::strpos( $last_sentence, '.' ) > 0 ? Xmltv_String::strpos( $last_sentence, '.' ) : Xmltv_String::strlen( 
-			$last_sentence );
-			$desc=Xmltv_String::substr( $input, 0, $last_space + 1 ) . ' ' . Xmltv_String::substr( $last_sentence, 0, 
-			$first_dot + 1 );
-			if( $desc ) {
-				return $desc;
+			if( Xmltv_String::stristr( $input, 'В ролях:' ) ) {
+				$parts = explode( 'В ролях:', $input );
+			} elseif( Xmltv_String::stristr( $input, 'Режиссер:' ) ) {
+				$parts = explode( 'Режиссер:', $input );
 			}
-			return;
+			
+			//$parts = explode( '.', $trim->filter( $parts[0] ) );
+			//$desc['intro'] = trim( $parts[0] ) . '. ' . trim( $parts[1] ) . '.';
+			//unset( $parts[0] );
+			//unset( $parts[1] );
+			//$desc['body'] = trim( implode( '. ', $parts ) ) . '.';
+			//var_dump($desc);
+			
+			/*
+			$last_space = Xmltv_String::strrpos( $desc, '. ' );
+			$last_sentence = Xmltv_String::substr( $desc, $last_space + 1 );
+			$first_dot = Xmltv_String::strpos( $last_sentence, '.' ) > 0 ? Xmltv_String::strpos( 
+			$last_sentence, '.' ) : Xmltv_String::strlen( $last_sentence );
+			$desc = Xmltv_String::substr( $desc, 0, $last_space + 1 ) . ' ' . Xmltv_String::substr( 
+			$last_sentence, 0, $first_dot + 1 );
+			*/
+			
 		}
+		
+		return;
 	}
 
 
@@ -314,9 +334,7 @@ class Admin_Model_Programs
 			} elseif( count( $parts ) > 3 ) {
 				/* ошибка в данных */
 				unset( $credits['actors'][$k] );
-			} else {
-				continue;
-			}
+			} 
 		
 		}
 		
