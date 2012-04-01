@@ -1,0 +1,52 @@
+<?php 
+/**
+ * Выборанная программа сегодня
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: program-today.phtml,v 1.1 2012-04-01 04:57:44 dev Exp $
+ *
+ */
+$today = new Zend_Date(null, null, 'ru');
+$start_times = array();
+foreach ($this->programs as $single) {
+	
+	$program_title = $single['title'];
+	$program_alias = $single['alias'];
+	
+	$start = new Zend_Date( $single['start'] );
+	$start_times[] = $start->toString( "HH:mm" );
+}
+$entities = new Zend_Filter_HtmlEntities();
+$tolower  = new Zend_Filter_StringToLower();
+$channel_alias = $tolower->filter($this->channel['alias']);
+?>
+<h1><?php echo $program_title ?></h1>
+<h3><strong><?php echo $this->channel['title'] ?></strong></h3>
+<p class="date"><?php echo Xmltv_String::ucfirst( $today->toString(Zend_Date::DATE_FULL) ) ?></p>
+<p>
+	<?php
+	$channel_link = '<a href="/телепрограмма/'.$channel_alias.'" title="Программа передач канала '.$this->channel['title'].' на '.$today->toString('d-mm-yyyy').' ">'.$this->channel['title'].'</a>';
+	$program_link = '<a href="/телепрограмма/'.$channel_alias.'/'.$program_alias.'/неделя" title="'.$program_title.' на этой неделе">'.$program_title.'</a>';
+	printf( $entities->filter('Cегодня вы можете посмотреть программу "%s" на канале %s в %s.'), $program_title, $channel_link,  implode(', ', $start_times)); 
+	?>
+	Смотреть <a href="/телепрограмма/<?php echo $channel_alias . '/' . $program_alias?>/неделя"><?php echo '"' . $program_title . '"'?> на этой неделе</a>
+</p>
+<?php echo $this->channel['desc_intro'].PHP_EOL.$this->channel['desc_body']; ?>
+
+<table class="table table-condensed">
+	<tbody>
+		<?php
+		foreach ($this->programs as $single) {
+		$start = new Zend_Date($single['start'], null, 'ru');
+		?>
+		<tr>
+			<td><?php echo $start->toString( "HH:mm" ); ?></td>
+			<td><?php echo $single['title'] ?></td>
+		</tr>
+		
+		<?php 
+}
+?>
+	</tbody>
+</table>
