@@ -5,36 +5,31 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.2 2012-03-29 18:16:52 dev Exp $
+ * @version $Id: ChannelsController.php,v 1.3 2012-04-01 04:55:49 dev Exp $
  *
  */
 class ChannelsController extends Zend_Controller_Action
 {
 
+
 	public function init () {
-		//var_dump($this->_getParam('site.debug', false));
+		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
+		$ajaxContext->addActionContext( 'typehead', 'json' )
+			->initContext();
+		$this->view->setScriptPath(APPLICATION_PATH . 
+					'/views/scripts/');
 	}
 
 
 	public function indexAction () {
 
-		$this->_redirect('/телепрограмма');
+		$this->_forward( 'frontpage', 'index' );
 	}
 
-	/*
-	public function noRouteAction () {
 
-		header( 'HTTP/1.0 404 Not Found' );
-		//$this->view->render( '404.phtml' );
-		//$this->_helper->layout->setLayout('error');
-	
-	}
-	*/
-	
 	public function __call ($method, $arguments) {
-
-		//$this->noRouteAction();
-	
+		throw new Exception("Ошибка сервера", 500);
+		$this->_redirect( '/error' );
 	}
 
 
@@ -52,7 +47,13 @@ class ChannelsController extends Zend_Controller_Action
 		}
 		$this->view->assign( 'channels', $channels );
 	}
-
+	
+	public function typeheadAction () {
+		$response=array();
+		$channels = new Xmltv_Model_Channels();
+		$response = $channels->getTypeheadItems();
+		$this->view->assign('response', $response);
+	}
 
 }
 

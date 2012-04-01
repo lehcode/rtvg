@@ -8,11 +8,11 @@
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
 
-	private $_env = 'production';
+	protected $_env = 'production';
 
 	protected $_request;
 
-	public $router;
+	protected $_router;
 
 
 	/**
@@ -22,9 +22,8 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	 * @return void
 	 */
 	public function __construct ($env = 'production') {
-
 		$this->setEnv( $env );
-	
+
 	}
 
 
@@ -54,31 +53,104 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 
 	public function routeShutdown (Zend_Controller_Request_Abstract $request) {
 
-		$controllerName = $this->getRequest()->getControllerName();
-		
-		switch ($controllerName) {
+		$moduleName = $request->getModuleName();
+		//var_dump($moduleName);
+		switch ($moduleName) {
+			case 'admin':
+				if( $request->getControllerName() == 'channels' ) 
+				$request->setControllerName( 'index' );
+			break;
 			default:
-				$request->setControllerName( 'channels' );
-				//$request->setActionNameName( 'list' );
-			break;
+		}
+		
+		if( $request->getModuleName() == 'admin' ) {
+			if( $request->getControllerName() == 'channels' ) 
+			$request->setControllerName( 'index' );
+		}
+		
+		//var_dump($request->getModuleName());
+		//var_dump($request->getControllerName());
+		//var_dump($request->getActionName());
+		
+	}
+
+
+	public function getRouter () {
+
+		if(  !$this->_router )
+		throw new Exception( "Не загружен роутер", 500);
+		
+		try {
+			$route = new Zend_Controller_Router_Route_Regex( 'телепрограмма\/?$', 
+			array('module'=>'default', 'controller'=>'channels', 'action'=>'list') );
+			$this->_router->addRoute( 'channels', $route );
 			
-			case 'channels':
-				//$request->setActionNameName( 'list' );
-			break;
-			case 'listings':
-			case 'program':
-			break;
+			$route = new Zend_Controller_Router_Route( 'телепрограмма/:channel', 
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'day') );
+			$this->_router->addRoute( 'day-today', $route );
+			
+			$route = new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', 
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'day-date') );
+			$this->_router->addRoute( 'day-date', $route );
+			
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/:channel/:program/сегодня', 
+			array('module'=>'default', 'controller'=>'listings', 
+			'action'=>'program-today') );
+			$this->_router->addRoute( 'program-today', $route );
+			
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/:channel/:program/:date', 
+			array('module'=>'default', 'controller'=>'listings', 
+			'action'=>'day') );
+			$this->_router->addRoute( 'program-date', $route );
+			
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/:channel/неделя', 
+			array('module'=>'default', 'controller'=>'listings', 
+			'action'=>'channel-week') );
+			$this->_router->addRoute( 'channel-week', $route );
+			
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/:channel/:program/неделя', 
+			array('module'=>'default', 'controller'=>'listings', 
+			'action'=>'program-week') );
+			$this->_router->addRoute( 'program-week', $route );
+			
+			/*
+			 * admin routes
+			 */
+			$route = new Zend_Controller_Router_Route( 'admin/movies/grab/:site',  array('module'=>'admin', 'controller'=>'movies', 'action'=>'grab'));
+			$this->_router->addRoute( 'admin/movies/grab', $route );
+			$this->_router->addRoute( 'admin/login', 
+			new Zend_Controller_Router_Route_Static( 'admin', 
+			array('module'=>'admin', 'controller'=>'index', 'action'=>'login') ) );
+			$this->_router->addRoute( 'admin', 
+			new Zend_Controller_Router_Route_Static( 'admin/index', array('module'=>'admin', 'controller'=>'index') ) );
+			$this->_router->addRoute( 'admin/tasks', 
+			new Zend_Controller_Router_Route_Static( 'admin/index', array('module'=>'admin', 'controller'=>'index') ) );
+			
+			return $this->_router;
+		
+		} catch (Exception $e) {
+			if( $this->debug ) {
+				echo $e->getMessage();
+				var_dump( $e->getTrace() );
+			} else {
+				throw new Exception( $e->getMessage() );
+			}
+			exit( __FILE__ . ': ' . __LINE__ );
 		}
 	
 	}
 
 
-	/**
-	 * @param $router 
-	 */
-	public function setRouter ($router) {
+	protected function _initActionHelpers () {
 
-		$this->router = $router;
+		Zend_Controller_Action_HelperBroker::addPath( 
+		APPLICATION_PATH . '/controllers/helpers' );
+		Zend_Controller_Action_HelperBroker::addPath( 
+		APPLICATION_PATH . '/modules/admin/controllers/helpers' );
 	}
 
 
@@ -124,70 +196,21 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	}
 
 
-	protected function _initActionHelpers () {
-
-		Zend_Controller_Action_HelperBroker::addPath( 
-		APPLICATION_PATH . '/controllers/helpers' );
-		Zend_Controller_Action_HelperBroker::addPath( 
-		APPLICATION_PATH . '/modules/admin/controllers/helpers' );
-	}
-
-
 	protected function _initConfig () {
+
 		//var_dump(APPLICATION_ENV);
-		$c = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', APPLICATION_ENV );
+		$c = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', 
+		APPLICATION_ENV );
 		Zend_Registry::set( "site_config", $c );
 	}
 
 
-	public function getRouter () {
+	/**
+	 * @param $router 
+	 */
+	public function setRouter ($router) {
 
-		if(  !$this->router ) return false;
-		try {
-			$route = new Zend_Controller_Router_Route_Regex( 'телепрограмма\/?$', 
-			array('module'=>'default', 'controller'=>'channels', 'action'=>'list') );
-			$this->router->addRoute( 'channels', $route );
-			
-			$route = new Zend_Controller_Router_Route('телепрограмма/:alias', 
-				array('module'=>'default', 'controller'=>'listings', 'action'=>'day'));
-			$this->router->addRoute( 'day-today', $route );
-			
-			$route = new Zend_Controller_Router_Route('телепрограмма/:alias/:date', 
-				array('module'=>'default', 'controller'=>'listings', 'action'=>'day'));
-			$this->router->addRoute( 'day-date', $route );
-			
-			$route = new Zend_Controller_Router_Route('телепрограмма/:alias/неделя/:date', 
-				array('module'=>'default', 'controller'=>'listings', 'action'=>'channel-week'));
-			$this->router->addRoute( 'channel-week', $route );
-			
-			//var_dump($route->assemble(array('mode' => 'month', 'value' => '5')));
-			/*
-			$route = new Zend_Controller_Router_Route_Regex( 'телепрограмма\/.+\/?$', 
-			array('module'=>'default', 'controller'=>'listings', 'action'=>'day') );
-			$this->router->addRoute( 'телепрограмма/:alias', $route );
-			*/
-			/*
-			$route = new Zend_Controller_Router_Route_Regex( 'телепрограмма\/.+\/?([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2})?\/?$', 
-			array('module'=>'default', 'controller'=>'channel', 'action'=>'day'), 'телепрограмма/:channel/:date' );
-			$this->router->addRoute( 'телепрограмма/:channel/', $route );
-			/
-			/*
-			$route = new Zend_Controller_Router_Route_Regex( 'телепрограмма\/.+\/.+\/неделя\/?$', 
-			array('controller'=>'channel', 'action'=>'week'), 'телепрограмма/:channel/:date/неделя' );
-			$router->addRoute( 'телепрограмма/:channel/:date/неделя/', $route);
-			*/
-			return $this->router;
-		
-		} catch (Exception $e) {
-			if( $this->debug ) {
-				echo $e->getMessage();
-				var_dump( $e->getTrace() );
-			} else {
-				throw new Exception( $e->getMessage() );
-			}
-			exit( __FILE__ . ': ' . __LINE__ );
-		}
-	
+		$this->_router = $router;
 	}
 
 }

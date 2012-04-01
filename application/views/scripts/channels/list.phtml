@@ -1,36 +1,35 @@
 <?php 
-$js = "
-$(function() {
-	$( '#channels' ).accordion({
-		autoHeight: false,
-		navigation: true,
-		clearStyle: true
-	});
-});
-";
-$this->headScript()->prependScript($js);
+$this->headMeta()->setName('title', 'Телепрограмма всех каналов');
+$this->headScript()->appendFile('/js/bootstrap-typeahead.js');
+$this->headScript()->appendFile('/js/channellist.js');
+$this->headStyle()->appendStyle('p.channeltitle { margin: 0 0 12px; }');
 $tolower = new Zend_Filter_StringToLower(array('encoding'=>'UTF-8'));
 ?>
-<h1>Телепрограмма</h1>
-
+<div id="fast_search">
+	<label for="channel_filter">Быстрый переход</label>
+	<input type="text" name="fast_search" data-provide="typeahead" />
+</div>
 <div id="xmltv">
 	<div id="channels">
 		<?php
 		foreach ($this->channels as $channel) {  ?>
-		<div class="channeltitle">
-			<span class="channellink btn btn-primary" id="#channeltitle<?php echo $channel['ch_id'] ?>" href="<?php echo urlencode('канал-'.$channel['title']) ?>" title="<?php printf('Телепрограмма канала %s', $channel['title']) ?>">
+		<p class="channeltitle">
+			<span class="channellink btn btn-primary" id="#channeltitle<?php echo $channel['ch_id'] ?>">
 				<img class="channelicon" width="40" src="<?php echo $channel['icon'] ?>" alt="<?php printf('%s лого', $tolower->filter($channel['title'])) ?>" />
 				<?php printf('%s сегодня', $channel['title']) ?>
 			</span>
 			<a class="btn btn-mini btn-inverse moreaboutchannel" href="#channeldesc<?php echo $channel['ch_id'] ?>" title="<?php printf('Информация про телеканал %s', $channel['title'])?>">Больше об этом телеканале</a>
-		</div>
+		</p>
 		<div class="channeldesc">
 			<a class="btn btn-mini" href="<?php echo 'телепрограмма/'.$tolower->filter($channel['alias']); ?>" title="<?php printf('Телепрограмма канала %s', $channel['title']) ?>">
 				<?php printf('%s сегодня', $channel['title']) ?>
 			</a>
-			<?php /* <a class="btn btn-mini btn-info currentprogram" href="<?php echo $channel->current['link'] ?>" title="<?php echo JText::sprintf('COM_XMLTV_NOW_ON_CHANNEL', $channel->current['title'], $channel->display_name)?>">
+			<?php 
+			/*
+			<a class="btn btn-mini btn-info currentprogram" href="<?php echo $channel->current['link'] ?>" title="<?php echo JText::sprintf('COM_XMLTV_NOW_ON_CHANNEL', $channel->current['title'], $channel->display_name)?>">
 				<?php echo $channel->current['start'].' - '. $channel->current['title'].' - '.$channel->current['end'] ?>
-			</a> */ ?>
+			</a> 
+			*/ ?>
 			<?php /* <a class="channelweek btn btn-info btn-mini" href="<?php echo JRoute::_($channel->week_link) ?>" title="<?php echo ucfirst( JText::sprintf('COM_XMLTV_CHANNEL_THIS_WEEK', $channel->display_name)) ?>"><?php echo ucfirst( JText::_('COM_XMLTV_PROGRAMS_CURRENT_WEEK')) ?></a> */ ?>
 			<h3>
 				<?php echo strip_tags($channel['desc_intro']) ?>

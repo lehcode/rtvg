@@ -1,7 +1,11 @@
 <?php
 
 /**
- * @author toshihir
+ * Frontend index controller
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: IndexController.php,v 1.2 2012-04-01 04:55:49 dev Exp $
  *
  */
 class IndexController extends Zend_Controller_Action
@@ -25,7 +29,7 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function indexAction () {
 
-		$this->_forward( 'index', 'channels' );
+		$this->_forward( 'index', 'frontpage' );
 	
 	}
 	
@@ -37,6 +41,10 @@ class IndexController extends Zend_Controller_Action
 		header( 'HTTP/1.0 404 Not Found' );
 		$this->_helper->layout->setLayout( 'error' );
 		$this->view->render();
+	}
+	
+	public function frontpageAction(){
+		
 	}
 
 

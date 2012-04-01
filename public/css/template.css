@@ -44,12 +44,21 @@
 	overflow:hidden;
 	min-height: 640px;
 }
+
+	#fast_search {
+		display: block;
+		padding: 24px 0;
+	}
+	
 	#programslist {
 		margin: 24px 0 0;
+		border: 1px solid #BEC8D3;
+		border-radius:16px;
+		overflow: hidden;
 	}
 		
 		#programslist .programcontainer {
-			background: none repeat scroll 0 0 #CFCFCF;
+			background: none repeat scroll 0 0 #EEF2F5;
 		    height: 360px;
 		    overflow: hidden;
 		    padding: 16px 24px;
@@ -65,22 +74,31 @@
 				clear:both;
 			}
 			#programslist .programcontainer .programtitle * {
-				line-height: 48px; 
+				line-height: 38px; 
 			}
 			#programslist .programcontainer .programtitle h3 {
-				
+				font-size: 22px;
 			}
 			
 			#programslist .programcontainer .programtitle p {
-				 font-family: "Lucida Sans", Arial, Helvetica, sans-serif;
-				 font-size: 22px;
+				font-family: "Lucida Sans", Arial, Helvetica, sans-serif;
+				font-size: 22px;
+				margin: 0;
+			}
+			
+			#programslist .programcontainer .programtitle p.desc {
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+				font-size: 15px;
+				line-height: 1.5em;
+				font-weight: bold;
+				margin: 22px 0;
 			}
 			
 				#programslist .programcontainer .programtitle p span {
 				    font-family: "Lucida Sans", Arial, Helvetica, sans-serif;
 				    font-size: 28px;
 				    font-weight: bold;
-				    padding: 0 12px;
+				    padding: 0 12px 0 0;
 				}
 			
 				#programslist .programcontainer .programtitle p span.start_time {
@@ -95,24 +113,38 @@
 				
 			#programslist .programdiv {
 				height: 32px;
-				width: 100%;
+				width: 95%;
+				padding: 0 12px;
+				border-radius:6px;
+			}
+			
+			#programslist .programdiv:after{
+				clear:both;
+			}
+			
+			#programslist .programdiv.active {
+				/* background: none repeat scroll 0 0 #DEDEDE; */
+				border: 2px solid #0088CC;
+				padding: 11px;
 			}
 			
 				#programslist .programdiv * {
 					 line-height: 32px;
 				}
 				#programslist .programdiv .programtitle {
-					
+					height: 32px;
+    				overflow: hidden;
 				}
 					#programslist .programdiv .programtitle p.start,
 					#programslist .programdiv .programtitle p.end {
-						font-size: 11px;
+						font-size: 14px;
 						float: left;
 						margin: 0;
 					}
 					
 					#programslist .programdiv .programtitle h3 {
 						float: left;
+						width: 80%;
 					}
 						#programslist .programdiv .programtitle h3 a {
 							font-size: 16px;
@@ -127,6 +159,10 @@
 				
 		#neighbor_days {
 			padding:16px;
+			border: 2px solid #BEC8D3;
+			border-radius:6px;
+			margin: 22px 0;
+			border-radius: 12px 12px 12px 12px;
 		}
 		
 			#neighbor_days a {
@@ -165,4 +201,5 @@
 	}
 	
 
+	
 	
