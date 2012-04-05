@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.2 2012-03-29 18:16:52 dev Exp $
+ * @version $Id: Bootstrap.php,v 1.3 2012-04-05 19:58:07 dev Exp $
  *
  */
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
@@ -29,8 +29,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		$config = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', 
 		APPLICATION_ENV );
-		$this->debug = (bool)$config->site->get( 'site.debug', false );
-		
+		//var_dump($config);
+		//die(__FILE__ . ': ' . __LINE__);
+		$this->debug = (bool)$config->site->get( 'debug', false );
+		//die(__FILE__ . ': ' . __LINE__);
 		//var_dump(APPLICATION_ENV);
 		//var_dump($this->debug);
 		//die(__FILE__ . ': ' . __LINE__);
@@ -39,27 +41,60 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$fc = Zend_Controller_Front::getInstance()
 			->setParam( 'useDefaultControllerAlways', false )
 			->registerPlugin( $init );
-			
-		if( $this->debug )
-			$fc->throwExceptions( true ); // disable ErrorController
-		else
-			$fc->throwExceptions( false ); // enable ErrorController
 		
-		$init->setRouter( $fc->getRouter() );
-		$fc->setRouter( $init->getRouter() );
-		
-		try {
-			$fc->dispatch();
-		} catch (Exception $e) {
-			if ($this->debug) {
-				echo $e->getMessage();
-				var_dump($e->getTrace());
-				exit(__FILE__ . ': ' . __LINE__);
-			}
+		if( $this->debug ) {
+			$fc->throwExceptions( true ); // disable ErrorController and logging
+			$fc->returnResponse (true);
+		} else {
+			$fc->throwExceptions( false ); // enable ErrorController and logging
+			$fc->returnResponse (false);
 		}
 		
+		$init->setRouter( $fc->getRouter() );
+		$fc->setRouter( $init->getRouter() );		
+		
+		try {
+			$response = $fc->dispatch();
+		} catch (Exception $e) {
+			$log = new Zend_Log( 
+			new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+			$log->debug( 
+			$e->getMessage() . PHP_EOL . $e->getTraceAsString() );
+			
+			if( $this->debug ) {
+				echo $e->getMessage();
+				Zend_Debug::dump($e->getTrace());
+			}
+			
+		}
+		
+		if ($response) {
+			if( $response->isException() ) {
+				$exception = $response->getException();
+				$log = new Zend_Log( 
+				new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+				$log->debug( 
+				$exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
+				Zend_Debug::dump($exception->getTrace());
+			} else {
+				$response->sendHeaders();
+				$response->outputBody();
+			}
+		}
+				
 	}
-
+	
+	protected function _initLog(){
+		defined( 'ROOT_PATH' ) || define( ROOT_PATH, 
+		str_replace( '/application', '', APPLICATION_PATH ) );
+		$front = $this->bootstrap( "frontController" )->frontController;
+		try {
+			$log = new Zend_Log( new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+		} catch (Exception $e) {
+			echo $e->getMessage();
+		}
+	}
+	
 
 	protected function _initAutoloader () {
 
@@ -81,40 +116,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$view = $this->getResource( 'view' );
 		$view->addHelperPath( "ZendX/JQuery/View/Helper", "ZendX_JQuery_View_Helper" );
 	}
-
-	/*
-	private function _getRoutesBackend () {
-
-		$fc = $this->bootstrap( "frontController" )->frontController;
-		$r = new Zend_Controller_Router_Rewrite();
-		
-		$r->addRoute( 'admin/movies/grab', 
-		new Zend_Controller_Router_Route( 'admin/movies/grab/:site', 
-		array('module'=>'admin', 'controller'=>'movies', 'action'=>'grab') ) );
-		$r->addRoute( 'admin/login', 
-		new Zend_Controller_Router_Route_Static( 'admin', 
-		array('module'=>'admin', 'controller'=>'index', 'action'=>'login') ) );
-		$r->addRoute( 'admin', 
-		new Zend_Controller_Router_Route_Static( 'admin/index', array('module'=>'admin', 'controller'=>'index') ) );
-		$r->addRoute( 'admin/tasks', 
-		new Zend_Controller_Router_Route_Static( 'admin/index', array('module'=>'admin', 'controller'=>'index') ) );
-		
-		$fc->setRouter($r);
-	}
-	*/
-
-	
-	/*
-	protected function _initRouter () {
-
-		$fc = $this->bootstrap( "frontController" )->frontController;
-		
-		
-		$fc->setRouter( $router );
-	}
-	*/
-
-	
 
 }
 
