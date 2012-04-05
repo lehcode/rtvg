@@ -6,7 +6,7 @@ $(document).ready(function(){
 	$('#parsechannels').click(function(e){
 		e.stopPropagation();
 		$.ajax({
-			url: '/admin/import/xmlparsechannels/ajax',
+			url: '/admin/import/xmlparsechannels/html',
 			data: $('form#parse_channels').serialize(),
 			dataType: 'html',
 			type: 'post',
