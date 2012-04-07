@@ -47,6 +47,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		}
 		$this->_initConfig();
 		$this->_initActionHelpers();
+		//$this->_initViewHelpers();
 	
 	}
 
@@ -86,8 +87,8 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 			$this->_router->addRoute( 'channels', $route );
 			
 			$route = new Zend_Controller_Router_Route( 'телепрограмма/:channel', 
-			array('module'=>'default', 'controller'=>'listings', 'action'=>'day') );
-			$this->_router->addRoute( 'day-today', $route );
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'day-listing') );
+			$this->_router->addRoute( 'day-listing', $route );
 			
 			$route = new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', 
 			array('module'=>'default', 'controller'=>'listings', 'action'=>'day-date') );
@@ -147,10 +148,9 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 
 	protected function _initActionHelpers () {
 
-		Zend_Controller_Action_HelperBroker::addPath( 
-		APPLICATION_PATH . '/controllers/helpers' );
-		Zend_Controller_Action_HelperBroker::addPath( 
-		APPLICATION_PATH . '/modules/admin/controllers/helpers' );
+		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH . '/controllers/helpers' );
+		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH . '/modules/admin/controllers/helpers' );
+		
 	}
 
 
@@ -211,6 +211,15 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	public function setRouter ($router) {
 
 		$this->_router = $router;
+	}
+	
+	public function _initViewHelpers(){
+		//Initialize and/or retrieve a ViewRenderer object on demand via the helper broker
+		$viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+		$viewRenderer->initView();
+		 
+		//add the global helper directory path
+		$viewRenderer->view->addHelperPath(ROOT_PATH.'/library/Xmltv/View/Helper/');
 	}
 
 }
