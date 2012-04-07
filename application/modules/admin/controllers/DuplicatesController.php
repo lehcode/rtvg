@@ -1,12 +1,18 @@
 <?php
-
+/**
+ * Duplicates Controller
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: DuplicatesController.php,v 1.5 2012-04-07 09:08:30 dev Exp $
+ *
+ */
 class Admin_DuplicatesController extends Zend_Controller_Action
 {
 	
     public function init()
     {
-    	parent::__construct();
-        $this->_helper->layout->setLayout('admin');
+    	$this->_helper->layout->setLayout('admin');
 	    $request = $this->_request->getParams();
 			$filters = array('*'=>'StringTrim', '*'=>'StringToLower');
 	    	$validators = array(

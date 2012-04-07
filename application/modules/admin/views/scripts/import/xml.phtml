@@ -1,5 +1,4 @@
 <?php $this->headScript()->appendFile($this->baseUrl().'/js/parsexml.js'); ?>
-<?php include ("nav.phtml"); ?>
 
 <h1>Импорт XML</h1>
 
@@ -39,48 +38,65 @@
 <?php
 if ($this->show_continue) {
 	try {
+		/*
+		 * Parse channels button
+		 */
 		$channels_form = new Zend_Form ();
 		$channels_form->setAction ( '' )
 			->setMethod ( 'post' )
 			->addAttribs ( array (
 				'id' => 'parse_channels',
 				'onSubmit' => 'validate(this)' ) );
-		$channels_button = new Zend_Form_Element_Submit ( 'submit', array (
-			'id' => 'parsechannels',
-			'class' => 'btn btn-primary' ) );
-		$channels_button->setLabel ( 'Обработка каналов' )->setDecorators ( array (  array (
-		 	'ViewHelper', array (
-		 		'helper' => 'formSubmit' 
-		) ) ) );
-		$channels_form->addElement ( $channels_button );
+		$button = new Zend_Form_Element_Button ( 'submit' );
+		$button->setLabel ( 'Обработка каналов' )
+			->setAttribs(array (
+				's' => 'parsechannels',
+				'class' => 'btn btn-primary' ));
+		$channels_form->addElement ( $button );
 		
 		//  add file field
-		$xml_file_ch = new Zend_Form_Element_Hidden ( 'xml_file_ch', array (
+		$xml_file = new Zend_Form_Element_Hidden ( 'xml_file', array (
 			'value' => $this->file_info ['filename'] ) );
-		$xml_file_pr = new Zend_Form_Element_Hidden ( 'xml_file_pr', array (
-			'value' => $this->file_info ['filename'] ) );
-		$channels_form->addElement ( $xml_file_ch );
+		$channels_form->addElement ( $xml_file );
 		
 		
 		//$channels_form->addElement ( $xml_file );
 		//$channels_form->setDecorators ( array ('FormElements', 'Form' ) );
 		
+		/*
+		 * Parse programs button
+		 */
 		$programs_form = new Zend_Form ();
 		$programs_form->setAction ( '' )
 			->setMethod ( 'post' )
 			->addAttribs ( array (
 				'id' => 'parse_programs',
 				'onSubmit' => 'validate(this)' ) );
-		$programs_button = new Zend_Form_Element_Submit ( 'submit', array (
-			'id' => 'parseprograms',
-			'class' => 'btn btn-primary' ) );
-		$programs_button->setLabel ( 'Обработка программ' )->setDecorators ( array (  array (
-		 	'ViewHelper', array (
-		 		'helper' => 'formSubmit' 
-		) ) ) );
-		$programs_form->addElement ( $programs_button );
+		$button = new Zend_Form_Element_Button ( 'submit' );
+		$button->setLabel ( 'Обработка программ' )
+			->setAttribs(array (
+				'id' => 'parseprograms',
+				'class' => 'btn btn-primary' ));
+		$programs_form->addElement ( $button );
 		$programs_form->setDecorators ( array ('FormElements', 'Form' ) );
-		$programs_form->addElement ( $xml_file_pr );
+		$programs_form->addElement ( $xml_file );
+		
+		/*
+		 * Search for premieres button
+		 */
+		$premieres_form = new Zend_Form ();
+		$premieres_form->setAction ( '' )
+			->setMethod ( 'post' )
+			->addAttribs ( array ( 'id' => 'premieres_search' ) );
+		$button = new Zend_Form_Element_Button ( 'submit' );
+		$button->setLabel ( 'Поиск премьер' )
+			->setAttribs(array(
+				'id'=>'premieres_start_search',
+				'class'=>'btn btn-primary'
+			));
+		$premieres_form->addElement ( $button );
+		$premieres_form->setDecorators ( array ('FormElements', 'Form' ) );
+		$premieres_form->addElement ( $xml_file );
 		
 	} catch ( Exception $e ) {
 		echo $e->getMessage ();
@@ -88,10 +104,14 @@ if ($this->show_continue) {
 	
 	echo $channels_form;
 	echo $programs_form;
+	echo $premieres_form;
 }
 ?>
 <div id="progress" style="padding: 6px; display: none; background-color: lightYellow;"></div>
 <div id="parseerrors" style="padding: 6px; background-color: #FFB5BE; display: none;"></div>
+<div id="zend-progressbar-container">
+    <div id="parsecounter"></div>
+</div>
 <?php
 /*$js = "
 

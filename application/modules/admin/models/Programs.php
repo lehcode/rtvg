@@ -27,7 +27,8 @@ class Admin_Model_Programs
 		$this->_programs_descs_table   = new Admin_Model_DbTable_ProgramsDescriptions();
 		//$this->_programs_ratings_table = new Admin_Model_DbTable_ProgramsRati
 	}
-
+	
+	/*
 	public function cleanProgramTitle ($title=null) {
 		
 		if(  !$title )
@@ -39,7 +40,7 @@ class Admin_Model_Programs
 		$result = $regex->filter($result);
 		return $result;
 	}
-
+	*/
 
 	public function cleanAlias ($alias=null) {
 		
@@ -187,20 +188,20 @@ class Admin_Model_Programs
 		$trim     = new Zend_Filter_StringTrim();
 		
 		$info['new']=1;
-		
-		
-		if ($info['hash'] != md5('12012-04-07 08:45:002012-04-07 09:00:00')) {
+		/*
+		if ($info['hash'] == md5('12012-04-07 08:45:002012-04-07 09:00:00')) {
 			var_dump($info);
+			//var_dump(md5('12012-04-07 08:45:002012-04-07 09:00:00'));
 			die(__FILE__.': '.__LINE__);
 		}
-		
+		*/
 		
 		$new = $props->createRow();
 		$new->hash=$info['hash'];
 		$new->premiere=1;
 		$new->premiere_date=$info['start'];
 		
-		$info['title'] = Xmltv_String::ucfirst( $trim->filter( preg_replace('/премьера[ \.]?/iu', '', $info['title']) ) );
+		//$info['title'] = Xmltv_String::ucfirst( $trim->filter( preg_replace('/премьера[ \.]?/iu', '', $info['title']) ) );
 		
 		try {
 			$new->save();
@@ -396,10 +397,10 @@ class Admin_Model_Programs
 		if( empty( $credits ) || empty( $info ) ) 
 		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);;
 		
-		$table=new Admin_Model_DbTable_Actors();
-		$tolower=new Zend_Filter_StringToLower( $this->_tolower_options );
-		$props=new Admin_Model_DbTable_ProgramsProps();
-		
+		$table   = new Admin_Model_DbTable_Actors();
+		$tolower = new Zend_Filter_StringToLower( $this->_tolower_options );
+		$props   = new Admin_Model_DbTable_ProgramsProps();
+		$cache   = new Xmltv_Cache();
 		//var_dump(func_get_args());
 		//die(__FILE__.': '.__LINE__);
 		
@@ -410,11 +411,20 @@ class Admin_Model_Programs
 			$parts=explode( ' ', $p );
 			if( count( $parts ) == 3 ) {
 				
+				$hash = md5($tolower->filter( $parts[0] ).$tolower->filter( $parts[1] ).$tolower->filter( $parts[2] ));
+				if (!$snames = $cache->load($hash, 'Function')){
+					$snames = $table->fetchAll( 
+					"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' 
+					AND `m_name` LIKE '%" . $tolower->filter( $parts[1] ) . "%' 
+					AND `s_name` LIKE '%" . $tolower->filter( $parts[2] ) . "%'" );
+					$cache->save($snames, $hash, 'Function');
+				} 
+				/*
 				$snames=$table->fetchAll( 
 				"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' 
 					AND `m_name` LIKE '%" . $tolower->filter( $parts[1] ) . "%' 
 					AND `s_name` LIKE '%" . $tolower->filter( $parts[2] ) . "%'" );
-				
+				*/
 				if( count( $snames ) > 0 ) {
 					foreach ($snames as $sn) {
 						$existing=$tolower->filter( sprintf( "%s %s %s", $sn->f_name, $sn->m_name, $sn->s_name ) );
@@ -434,9 +444,18 @@ class Admin_Model_Programs
 			
 			} elseif( count( $parts ) == 2 ) {
 				
+				$hash = md5($tolower->filter( $parts[0] ).$tolower->filter( $parts[1] ));
+				if (!$snames = $cache->load($hash, 'Function')){
+					$snames=$table->fetchAll( 
+					"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' AND `s_name` LIKE '%" . $tolower->filter( 
+					$parts[1] ) . "%'" );
+					$cache->save($snames, $hash, 'Function');
+				}
+				/*
 				$snames=$table->fetchAll( 
 				"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' AND `s_name` LIKE '%" . $tolower->filter( 
 				$parts[1] ) . "%'" );
+				*/
 				if( count( $snames ) > 0 ) {
 					foreach ($snames as $sn) {
 						$existing=$tolower->filter( sprintf( "%s %s", $sn->f_name, $sn->s_name ) );
@@ -543,12 +562,12 @@ class Admin_Model_Programs
 				array('f_name'=>$parts[0], 'm_name'=>$parts[1], 's_name'=>$parts[2]) );
 			}
 			
-			$new=$new->save();
-			$new=$table->find( $new )->current()->toArray();
-			return $new;
+			$id=$new->save();
+			$new->id=(int)$id;
+			return $new->toArray();
 		
 		} catch (Exception $e) {
-			echo "Не могу сохранить запись актера";
+			echo __METHOD__.": Не могу сохранить запись";
 			die( __FILE__ . ': ' . __LINE__ );
 		}
 		//die(__FILE__.': '.__LINE__);
@@ -602,12 +621,12 @@ class Admin_Model_Programs
 					$persons[] = $existing['id'];
 				}
 				$p_props['actors'] = $serializer->serialize( $persons );
-				$props->update( $p_props, "`title_alias`='" . $info['alias'] . "'" );
+				$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
 			} catch (Exception $e) {
 				if( $e->getCode() == 0 ) {
 					$p_props['actors'] = $serializer->serialize( array($existing['id']) );
 					try {
-						$props->update( $p_props, "`title_alias`='" . $info['alias'] . "'" );
+						$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
 					} catch (Exception $e) {
 						echo "Не могу обновить актера: " . $e->getMessage();
 						die( __FILE__ . ': ' . __LINE__ );
@@ -1139,42 +1158,40 @@ class Admin_Model_Programs
 		$cat_title = @isset($xml->category) ? (string)$xml->category : 0 ;
 		$info = $this->setProgramCategory($info, $cat_title);
 		/*
-		 * program title
-		 */
-		$info ['title'] = ( string ) $xml->title;
-		$info = $this->makeTitles ( $info );
-		
-		//var_dump($info);
-		//die(__FILE__.': '.__LINE__);
-		
-		/*
-		 * program alias
-		 */
-		$a = isset($info ['alias']) && !empty($info['alias']) ? $info['alias'] : $info['title'] ;
-		//if (empty($a)) {
-		$info ['alias'] = $this->cleanAlias ( $a );
-		//}
-		//var_dump($info);
-		//die(__FILE__.': '.__LINE__);
-		/*
 		 * program hash
 		 */
-		$info ['hash']  = $this->getHash ( (int)$attrs->channel, $info ['start'], $info ['end'] );
-		/*
-		if ($info['hash']=='9a8298a407354469ac9a2e9a620da9b9') {
-			var_dump($info);
-			die(__FILE__.": ".__LINE__);
+		$info ['hash'] = $this->getHash ( (int)$attrs->channel, $info ['start'], $info ['end'] );
+		$info_found = $this->_table->find($info ['hash'])->current();
+		//$info_found = $info_found->toArray();
+		if ($this->_table->find($info ['hash'])->current()) {
+			//var_dump($info_found->toArray());
+			//die(__FILE__.': '.__LINE__);
+			$info = $this->_table->find($info ['hash'])->current()->toArray();
+		} else {
+			/*
+			 * program title
+			 */
+			$info ['title'] = ( string ) $xml->title;
+			$info = $this->makeTitles ( $info );
+			
+			//var_dump($info);
+			//die(__FILE__.': '.__LINE__);
+			
+			/*
+			 * program alias
+			 */
+			$a = isset($info ['alias']) && !empty($info['alias']) ? $info['alias'] : $info['title'] ;
+			//if (empty($a)) {
+			$info ['alias'] = $this->cleanAlias ( $a );
+			
+			/*
+			 * premiere processing
+			 */
+			if (Xmltv_String::stristr($tolower->filter((string)$xml->title), 'премьера') ||
+			Xmltv_String::stristr($tolower->filter((string)$xml->title), 'premiere')) {
+				$info = $this->savePremiere($info);
+			}
 		}
-		*/
-		/*
-		 * premiere processing
-		 */
-		if (Xmltv_String::stristr($tolower->filter((string)$xml->title), 'премьера') ||
-		Xmltv_String::stristr($tolower->filter((string)$xml->title), 'premiere'))
-		$info = $this->savePremiere($info);
-		
-		//var_dump($info);
-		//die(__FILE__.': '.__LINE__);
 		
 		return $info;
 		
@@ -1268,8 +1285,8 @@ class Admin_Model_Programs
 			$hash = $this->_table->insert($info);
 		} catch (Exception $e) {
 			if ($e->getCode()==1062) {
-				$this->_table->update($info, "`hash`='".$info['hash']."'");
-				$hash = $info['hash'];
+				//$this->_table->update($info, "`hash`='".$info['hash']."'");
+				return $info['hash'];
 			} else {
 				echo __METHOD__.' error#'.$e->getCode().': '.$e->getMessage();
 				die(__FILE__.': '.__LINE__);
@@ -1289,6 +1306,10 @@ class Admin_Model_Programs
 		
 		return $this->_table->find($hash)->current();
 		
+	}
+	
+	public function getProgramsCountForWeek(Zend_Date $weekStart, Zend_Date $weekEnd){
+		return $this->_table->getProgramsCountForWeek($weekStart, $weekEnd);
 	}
 	
 	

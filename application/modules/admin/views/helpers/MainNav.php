@@ -10,7 +10,13 @@ class Zend_View_Helper_MainNav extends Zend_View_Helper_Abstract
 		?>
 		<ul class="nav nav-pills">
 			<li><a href="/admin">Главная</a></li>
-			<li><a href="/admin/programs">Программы</a></li>
+			<li class="dropdown">
+				<a class="dropdown-toggle" href="#" data-toggle="dropdown">Программы<b class="caret"></b></a>
+				<ul class="dropdown-menu">
+					<li><a href="/admin/programs/list">Список</a></li>
+					<li><a href="/admin/programs/premieres">Поиск премьер</a></li>
+				</ul>
+			</li>
 			<li><a href="/admin/channels">Каналы</a></li>
 			<li><a href="/admin/series">Фильмы</a></li>
 			<li><a href="/admin/movies">Сериалы</a></li>
@@ -29,7 +35,7 @@ class Zend_View_Helper_MainNav extends Zend_View_Helper_Abstract
 					<li><a href="/admin/directors/duplicates">Дубликаты</a></li>
 				</ul>
 			</li>
-			<li><a href="/admin/duplicates">Дубликаты записей</a></li>
+			<li><a href="/admin/duplicates">Дубликаты</a></li>
 			<li><a href="/admin/import">Импорт</a>
 			</li>
 			<?php if (strtolower($controller)=='grab'): ?>

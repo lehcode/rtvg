@@ -1,20 +1,82 @@
 <?php
 
+/**
+ * Grabbing Controller
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: GrabController.php,v 1.4 2012-04-07 09:08:30 dev Exp $
+ *
+ */
 class Admin_GrabController extends Zend_Controller_Action
 {
 	
-	public function __call($method,$arguments) {
-		$this->_helper->FlashMessenger('Requested page does not exist.');
-		$this->_forward('index', 'index', 'admin');
+	protected $site_config;
+	private $_debug=false;
+	
+	public function __call($method, $arguments) {
+		$this->_forward('index', 'grab', 'admin');
 	}
 
     public function init()
     {
-        $this->_helper->layout->disableLayout();
-		$this->_helper->viewRenderer->setNoRender(true);
+        $this->_helper->layout->setLayout('admin');
+        $ajaxContext = $this->_helper->getHelper('AjaxContext');
+		$ajaxContext->addActionContext('grab-listings', 'json')
+			->initContext();
+		
+		$this->view->setScriptPath(APPLICATION_PATH . '/modules/admin/views/scripts/');
+			
+		$this->site_config = Xmltv_Config::getConfig('site')->site;
+		$this->_debug = (bool)$this->site_config->site->debug;
     }
 
-    public function moviesAction()
+
+	public function indexAction () {
+		// display sites choice
+	}
+
+    
+    public function grabListingsAction(){
+    	
+    	$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
+    	$validators = array(
+    		'module'=>array( new Zend_Validate_Regex('/^[a-z]+$/u') ),
+    		'controller'=>array( new Zend_Validate_Regex('/^[a-z]+$/') ),
+    		'action'=>array( new Zend_Validate_Regex('/^[a-z-]+$/') ),
+    		'target'=>array( new Zend_Validate_Regex('/^[a-z]+$/') ),
+    		'format'=>array( new Zend_Validate_Regex('/^html|json$/') ),
+    	);
+    	$input = new Zend_Filter_Input($filters, $validators, $this->_request->getParams());
+    	if (!$input->isValid()) throw new Exception("Неверные данные", 500);
+    	
+    	if ($this->_debug) $lifetime = 60;
+    	else $lifetime = Xmltv_Config::getCacheLifetime();
+    	
+    	$model   = new Admin_Model_Grab(array('cache_lifetime'=>$lifetime));
+    	$request = $this->_getAllParams();
+    	$model->setDebug(true);
+    	$model->setSite($request['target']);
+    	
+    	if (Xmltv_Config::getProxyEnabled()===true) {
+    		$model->enableProxy(array('host'=>Xmltv_Config::getProxyHost(), 'port'=>Xmltv_Config::getProxyPort()));
+    	}
+    	$model->enableCookies(ROOT_PATH.'/cookies/'.$request['target'].'.txt', ROOT_PATH.'/cookies/'.$request['target'].'-jar.txt');
+    	
+    	if ($request['target']=='vsetvcom')
+    	$model->setEncoding('windows-1251');
+    	
+    	if (Xmltv_Config::getCaching()===true)
+    	$model->setCaching(true, Xmltv_Config::getCacheLifetime());
+    	
+    	$model->setConnectTimeout(30);
+    	$model->setChannelsInfo($request['target']);
+    	
+    	var_dump($model);
+    	die(__FILE__.': '.__LINE__);
+    }
+    
+    public function grabMoviesAction()
     {
     	$request = $this->_getAllParams();
     	$siteKey = $this->_getParam('site', null);
@@ -27,7 +89,7 @@ class Admin_GrabController extends Zend_Controller_Action
     	var_dump($siteKey);
     	
     	//var_dump(get_include_path());
-    	//die();
+    	die(__FILE__.': '.__LINE__);
     	
     	$site_table = new Admin_Model_DbTable_Site();
     	$site_model = new Admin_Model_Site();
@@ -71,25 +133,13 @@ class Admin_GrabController extends Zend_Controller_Action
 		die(__METHOD__.': '.__LINE__);
     }
     
-    public function seriesAction() {
+    public function grabSeriesAction() {
 		die(__METHOD__);
     }
     
-    public function xmlAction() {
-		die(__METHOD__);
-    }
-
-
-	private function _getClass($key=null) {
-		if(!$key)
-		return;
-		$siteClass = "Xmltv_Site_" . str_replace(' ', '', ucwords(str_replace('-', ' ', $key)));
-		$siteObj = new $siteClass;	
-		if($siteObj)
-		return $siteObj;
-    }
     
-	
+    
+
     
 }
 
