@@ -1,0 +1,9 @@
+Готово!
+<?php
+if (!empty($this->response) && ($this->response['success']===true)) {
+	foreach ($this->response['data'] as $item) {
+		var_dump($item);
+	}
+} else {
+	echo $this->response['error'];
+}
