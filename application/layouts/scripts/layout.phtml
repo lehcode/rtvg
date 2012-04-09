@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.3 2012-04-01 04:56:26 dev Exp $
+ * @version $Id: layout.phtml,v 1.4 2012-04-09 12:36:03 dev Exp $
  *
  */
 $this->headScript()->setAllowArbitraryAttributes(true);
@@ -17,17 +17,13 @@ $this->jQuery()->enable() //enable jquery ;
 /*
  * Initialize content blocks
  */
-$page_parts = array(
-	'premieres',
-	'header',
-	'sidebar_Left',
-	'sidebar_Right',
-	'footer'
-);
-foreach ($page_parts as $class) {
-	$block_class = 'Xmltv_Block_'.Xmltv_String::ucfirst($class);
-	$$class = new $block_class();
-}
+$header    = $this->header();
+$premieres = $this->premieres();
+$fpMenu    = $this->fpMenu();
+$footer    = $this->footer();
+$sidebarLeft = $this->sidebarLeft();
+$sidebarRight = $this->sidebarRight();
+$featuredChannels = $this->featuredChannels();
 /*
  * XHTML
  */
@@ -51,13 +47,6 @@ echo $this->jQuery();
 $this->headScript()->prependFile($this->baseUrl().'/js/jcarousel-7bb2e0a/lib/jquery.jcarousel.min.js')
 	->prependFile($this->baseUrl().'/js/bootstrap.min.js')
 	->prependFile('http://userapi.com/js/api/openapi.js?49');
-
-foreach ($page_parts as $class) {
-	$block_class = 'Xmltv_Block_'.Xmltv_String::ucfirst($class);
-	$$class    = new $block_class();
-	if ($js=$$class->getJs())
-	$this->headScript()->appendScript($js);
-}
 echo $this->headScript();
 /*
  * css files
@@ -70,35 +59,60 @@ echo $this->headLink();
 /*
  * add styles
  */
-foreach ($page_parts as $class) {
-	$block_class = 'Xmltv_Block_'.Xmltv_String::ucfirst($class);
-	$$class    = new $block_class();
-	if ($css=$$class->getCss())
-	$this->headStyle()->appendStyle($css);
-}
 echo $this->headStyle();
-
-
 ?>
 </head>
 <body>
 <div class="container">
-	<?php echo $header->getHtml(); ?>
+	
+	<?php if (!$this->is_frontpage): ?>
+	<div class="span12" id="header">
+		<?php echo $header; ?>
+	</div>
+	<?php endif; ?>
+	
 	<div class="span12">
+		
+		<?php 
+		if ($this->is_frontpage) { ?>
+		
+		<div class="span12" id="maincontent">
+			<?php echo $fpMenu; ?>
+			<div class="span12" id="premieres">
+				<?php echo $premieres; ?>
+			</div>
+		</div>
+		
+		<div class="span12">
+			<?php echo $featuredChannels; ?>
+		</div>
+		
+		<?php 
+		} else { ?>
+		
+		<?php if (!empty($premieres)): ?>
 		<div class="span12" id="premieres">
-			<?php echo $premieres->getHtml(); ?>
+			<?php echo $premieres; ?>
 		</div>
+		<?php endif; ?>
+		
 		<div class="span2" id="col_l">
-			<?php echo $sidebar_Left->getHtml(); ?>
+			<?php echo $sidebarLeft; ?>
 		</div>
+		
 		<div class="span6" id="maincontent">
 			<?php echo $this->layout()->content; ?>
 		</div>
+		
 		<div class="span4" id="col_r">
-			<?php echo $sidebar_Right->getHtml(); ?>
+			<?php echo $sidebarRight; ?>
 		</div>
+		
+		<?php 
+		} ?>
+		
 	</div>
-	<?php echo $footer->getHtml(); ?>
+	<?php echo $footer; ?>
 </div>
 </body>
 </html>
