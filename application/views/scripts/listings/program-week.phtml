@@ -1,0 +1,49 @@
+<?php
+/**
+ * Программа на неделе
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: program-week.phtml,v 1.1 2012-04-09 16:36:06 dev Exp $
+ *
+ */
+
+$channelAlias = Xmltv_String::strtolower($this->channel->alias);
+$programTitle = $this->list[0]['title'];
+//var_dump(Zend_Date::DATE_FULL);
+$weekStart = $this->dates['start']->toString('EEEE, d MMMM');
+$weekEnd = $this->dates['end']->toString('EEEE, d MMMM');
+//var_dump($this->list);
+?>
+
+<div id="fast_search">
+	<?php $form = new Xmltv_Form_FastChannelSearchForm(); echo $form; ?>
+</div>
+<h4><?php echo $weekStart; ?> - <?php echo $weekEnd; ?></h4>
+<h1><?php printf('Программа <em>%s</em> на канале <em>%s</em>', $programTitle, $this->channel->title) ?></h1>
+<?php 
+$startDates = array();
+foreach ($this->list as $single) {
+	$start = new Zend_Date($single['start']);
+	$startDates[]= '<li><a href="/телепрограмма/'.$channelAlias.'/'.$single['alias'].'/'.$start->toString('yyyy-MM-dd').'">'.Xmltv_String::ucfirst( $start->toString( 'd MMMM(EEEE)', null, 'ru' ) ).'</a></li>';
+}
+?>
+<p><?php printf('Программу <strong>%s</strong> можно позже посмотрть на этой неделе на канале <a href="%s">%s</a> в следующие дни:<br/>%s', $programTitle, '/телепрограмма/'.$channelAlias, $this->channel->title, '<ul>'.implode(PHP_EOL, $startDates)).'</ul>' ?></p>
+<?php /*
+<table class="table table-condensed">
+	<tbody>
+		<?php
+		foreach ($this->list as $single) {
+		$start = new Zend_Date($single['start']);
+		?>
+		<tr>
+			<td><?php echo Xmltv_String::ucfirst( $start->toString( 'EEEE, d MMMM', null, 'ru' ) ); ?></td>
+			<td><?php echo $single['title'] ?></td>
+		</tr>
+		
+		<?php 
+}
+?>
+	</tbody>
+</table>
+*/ ?>
