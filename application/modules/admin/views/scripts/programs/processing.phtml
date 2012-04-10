@@ -1,0 +1,189 @@
+<?php 
+$this->headScript()->appendFile('/js/schedule-processing.js');
+$css = "#premiere_search button:before, #premiere_search button:after { clear: both; }
+#premiere_search dd label { float:left; }";
+//$this->headStyle()->appendStyle($css);
+?>
+<h1>Обработка расписаний</h1>
+
+<div class="tabbable">
+	<ul class="nav nav-tabs">
+		<li class="active"><a href="#pane-re-parse" data-toggle="tab">Нормализация</a></li>
+		<li><a href="#pane-premieres-search" data-toggle="tab">Поиск премьер</a></li>
+		<li><a href="#pane-delete-programs" data-toggle="tab">Удаление программ</a></li>
+	</ul>
+	<div class="tab-content">
+		<div class="tab-pane active" id="pane-re-parse">
+			<h3>Нормализация</h3>
+			<div>&nbsp;</div>
+		</div>
+		<div class="tab-pane" id="pane-premieres-search">
+			<h3>Поиск премьер</h3>
+			<div>
+				<?php
+				$form = new Zend_Form();
+				$form->setAction ( '' )
+					->setMethod ( 'post' )
+					->addAttribs ( array (
+						'id' => 'premiere_search' ) );
+				
+				$options = new Zend_Form_Element_Radio( 'type' );
+				$options->addMultiOptions( array(
+					array('key'=>'fast', 'value'=>'Быстрый поиск'),
+					array('key'=>'full', 'value'=>'Полный поиск')) )
+					->setLabel( 'Тип поиска' );
+							
+				$button = new Zend_Form_Element_Button ( 'submit' );
+				$button->setLabel( 'Начать поиск' )
+					->setAttribs(array(
+						'id'=>'start-search',
+						'class'=>'btn btn-primary'
+					))
+					->removeDecorator('DtDdWrapper')
+					->removeDecorator('Tooltip');
+				$form->addElements ( array($options, $button) );
+				$form->setDecorators ( array ('FormElements', 'Form' ) );
+				echo $form;
+				?>
+			</div>
+		</div>
+		
+		<div class="tab-pane" id="pane-delete-programs">
+			<h3>Удаление программ</h3>
+			<div>
+				<?php 
+				$cleanupForm = new ZendX_JQuery_Form();
+				$cleanupForm->setAction ( '' )
+					->setMethod ( 'post' )
+					->addAttribs ( array (
+						'id' => 'delete_programs' ) );
+					
+				$cleanPrograms = new Zend_Form_Element_Checkbox( 'delete-programs' );
+				$cleanPrograms->setLabel( 'Удалить программы' )
+					->setRequired()
+					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-programs'));
+				
+				$cleanData = new Zend_Form_Element_Checkbox( 'delete-info' );
+				$cleanData->setLabel( 'Удалить свойства программ?' )
+					->setRequired()
+					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-info'));
+				/*
+				$cleanDescs = new Zend_Form_Element_Checkbox( 'delete-descs' );
+				$cleanDescs->setLabel( 'Удалить описания программ' )
+					->setRequired()
+					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-descs'));
+				*/
+				$button = new Zend_Form_Element_Button ( 'submit' );
+				$button->setLabel( 'Старт' )
+					->setAttribs(array(
+						'id'=>'delete_start_btn',
+						'class'=>'btn btn-primary'
+					))
+					//->removeDecorator('DtDdWrapper')
+					->removeDecorator('Tooltip');
+				
+				$dateStart = new ZendX_JQuery_Form_Element_DatePicker( 'delete_start');
+				$dateStart->setLabel('Дата начала');
+				$dateEnd = new ZendX_JQuery_Form_Element_DatePicker( 'delete_end');
+				$dateEnd->setLabel('Дата конца');
+
+							
+					
+				$cleanupForm->addElements ( array($dateStart, $dateEnd, $cleanPrograms, $cleanData, $button) );
+				echo $cleanupForm;
+				?>
+			</div>
+		</div>
+		
+	</div>
+</div>
+<?php /*
+<table class="table table-bordered">
+	<caption>Действия</caption>
+	<thead>
+		<tr>
+			<th>Поиск премьер</th>
+			<th>Нормализация</th>
+			<th>Удаление программ</th>
+			<th>Удаление ВСЕХ описаний</th>
+			<th>Удаление ВСЕХ свойств программ</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<?php
+				$form = new Zend_Form();
+				$form->setAction ( '' )
+					->setMethod ( 'post' )
+					->addAttribs ( array (
+						'id' => 'premiere_search' ) );
+				
+				$options = new Zend_Form_Element_Radio( 'type' );
+				$options->addMultiOptions( array(
+					array('key'=>'fast', 'value'=>'Быстрый поиск'),
+					array('key'=>'full', 'value'=>'Полный поиск')) )
+					->setLabel( 'Тип поиска' );
+							
+				$button = new Zend_Form_Element_Button ( 'submit' );
+				$button->setLabel( 'Начать поиск' )
+					->setAttribs(array(
+						'id'=>'start-search',
+						'class'=>'btn btn-primary'
+					))
+					->removeDecorator('DtDdWrapper')
+					->removeDecorator('Tooltip');
+				$form->addElements ( array($options, $button) );
+				$form->setDecorators ( array ('FormElements', 'Form' ) );
+				echo $form;
+				?>
+			</td>
+			
+			<td></td>
+			
+			<td>
+				<?php 
+				$cleanupForm = new ZendX_JQuery_Form();
+				$cleanupForm->setAction ( '' )
+					->setMethod ( 'post' )
+					->addAttribs ( array (
+						'id' => 'delete_programs' ) );
+					
+				$cleanPrograms = new Zend_Form_Element_Checkbox( 'delete-programs' );
+				$cleanPrograms->setLabel( 'Удалить программы' )
+					->setRequired()
+					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-programs'));
+				
+				$cleanData = new Zend_Form_Element_Checkbox( 'delete-info' );
+				$cleanData->setLabel( 'Удалить свойства программ?' )
+					->setRequired()
+					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-info'));
+				
+				$button = new Zend_Form_Element_Button ( 'submit' );
+				$button->setLabel( 'Старт' )
+					->setAttribs(array(
+						'id'=>'delete_start_btn',
+						'class'=>'btn btn-primary'
+					))
+					//->removeDecorator('DtDdWrapper')
+					->removeDecorator('Tooltip');
+				
+				$dateStart = new ZendX_JQuery_Form_Element_DatePicker( 'delete_start');
+				$dateStart->setLabel('Дата начала');
+				$dateEnd = new ZendX_JQuery_Form_Element_DatePicker( 'delete_end');
+				$dateEnd->setLabel('Дата конца');
+
+							
+					
+				$cleanupForm->addElements ( array($dateStart, $dateEnd, $cleanPrograms, $cleanData, $button) );
+				echo $cleanupForm;
+				?>
+			</td>
+			
+			<td></td>
+			<td></td>
+		</tr>
+	</tbody>
+</table>
+*/ ?>
+<div id="result"></div>
