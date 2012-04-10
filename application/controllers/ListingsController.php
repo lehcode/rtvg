@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.2 2012-04-01 04:55:49 dev Exp $
+ * @version $Id: ListingsController.php,v 1.3 2012-04-10 13:32:00 dev Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -38,62 +38,110 @@ class ListingsController extends Zend_Controller_Action
 
 
 	public function dayDateAction(){
-		$this->_forward('day');
+		$this->_forward('day-listing');
 	}
 	
-	public function dayAction () {
+	public function dayListingAction () {
 
 		if( !$this->_validateRequest() ) {
 			throw new Zend_Exception("Неверные данные", 500);
 			$this->_redirect('/error', array('exit'=>true));
 		}
 		
-		$table = new Xmltv_Model_DbTable_Channels();
-		$ch = $table->find( $this->_requestParams['channel'] );
-		$ch = $ch->toArray();
-		$ch = $ch[0];
+		$listings = new Xmltv_Model_Programs();
+		$channels = new Xmltv_Model_Channels();
+		$channel  = $channels->getByAlias($this->_requestParams['channel']);
 		
-		$today = @isset( $this->_requestParams['date'] ) ? new Zend_Date( 
-		$this->_requestParams['date'], null, 'ru' ) : new Zend_Date( null, null, 'ru' );
+		//var_dump($channel);
+		//die(__FILE__.': '.__LINE__);
 		
-		$model = new Xmltv_Model_Programs();
+		$paramDate = $this->_getParam('date');
+		$today = @isset( $paramDate ) ? new Zend_Date( $paramDate, 'yyyy-MM-dd', 'ru' ) : new Zend_Date( null, null, 'ru' );
+		$cache = new Xmltv_Cache();
+		$hash = $cache->getHash(__METHOD__.'_'.$channel['ch_id'].'_'.$today->toString('yyyyMMdd'));
 		try {
-			$list = $model->getProgramsForDay( $today, $ch['ch_id'] );
+			if (Xmltv_Config::getCaching()){
+				if (!$list = $cache->load($hash, 'Function')) {
+					$list = $listings->getProgramsForDay( $today, $channel['ch_id'] );
+					$cache->save($list, $hash, 'Function');
+				}
+			} else {
+				$list = $listings->getProgramsForDay( $today, $channel['ch_id'] );
+			}
 		} catch (Exception $e) {
 			echo $e->getMessage();
 		}
 		
-		$this->view->assign( 'channel', $ch );
+		//var_dump($list);
+		//die(__FILE__.': '.__LINE__);
+		
+		$this->view->assign( 'channel', $channel );
 		$this->view->assign( 'programs', $list );
 		$this->view->assign( 'today', $today );
+		
+		$channels->addHit($channel['ch_id']);
 		
 	}
 
 
 	public function programTodayAction () {
-
-		if( !$this->_validateRequest() ) {
-			throw new Zend_Exception("Неверные данные", 500);
-			$this->_redirect('/error', array('exit'=>true));
 		
-		} else {
+		//var_dump($this->_getAllParams());
+		//var_dump($this->_validateRequest());
+		//die(__FILE__.': '.__LINE__);
+		
+		if( $this->_validateRequest() ) {
 			
 			$programs = new Xmltv_Model_Programs();
 			$channels = new Xmltv_Model_Channels();
-			$listing = $programs->getProgramThisDay( $this->_requestParams['program'], 
-			$this->_requestParams['channel'] );
-			$this->view->assign( 'programs', $listing );
-			$this->view->assign( 'program_alias', $this->_requestParams['program'] );
-			$this->view->assign( 'channel', 
-			$channels->getByAlias( $this->_requestParams['channel'] ) );
-			$this->render();
+			$channel  = $channels->getByAlias( $this->_getParam('channel') );
+			
+			if ($this->_getParam('date')=='сегодня')
+			$list = $programs->getProgramThisDay( $this->_getParam('program'), $this->_getParam('channel'), new Zend_Date() );
+			else
+			$list = $programs->getProgramThisDay( $this->_getParam('program'), $this->_getParam('channel'), new Zend_Date( $this->_getParam('date') ) );
+
+			$this->view->assign( 'programs', $list );
+			$this->view->assign( 'program_alias', $this->_getParam('program') );
+			$this->view->assign( 'channel', $channel  );
+			
+			$programs->addHit($this->_getParam('program'));
 		
+		} else {
+			throw new Zend_Exception("Неверные данные", 500);
+			$this->_redirect('/error', array('exit'=>true));
 		}
 	}
 	
 	public function programWeekAction(){
 		
+		//var_dump($this->_getAllParams());
+		//var_dump($this->_validateRequest());
+		//die(__FILE__.': '.__LINE__);
 		
+		if( $this->_validateRequest() ) {
+			
+			$programs = new Xmltv_Model_Programs();
+			$channels = new Xmltv_Model_Channels();
+			$channel  = $channels->getByAlias( $this->_getParam('channel') );
+			$dates = $programs->getWeekDates();
+			
+			if (!$this->_getParam('date'))
+			$list = $programs->getProgramThisWeek( $this->_getParam('program'), $this->_getParam('channel'), new Zend_Date() );
+			else
+			$list = $programs->getProgramThisWeek( $this->_getParam('program'), $this->_getParam('channel'), new Zend_Date( $this->_getParam('date') ) );
+
+			$this->view->assign( 'dates', $dates );
+			$this->view->assign( 'list', $list );
+			$this->view->assign( 'program_alias', $this->_getParam('program') );
+			$this->view->assign( 'channel', $channel  );
+			
+			$programs->addHit($this->_getParam('program'));
+			
+		} else {
+			throw new Zend_Exception("Неверные данные", 500);
+			$this->_redirect('/error', array('exit'=>true));
+		}
 		
 	}
 	
@@ -105,11 +153,11 @@ class ListingsController extends Zend_Controller_Action
 			'program'=>array(new Zend_Validate_Regex( '/^[\p{L}0-9- ]+$/iu' )), 
 			'module'=>array(new Zend_Validate_Regex( '/^[a-z]+$/u' )), 
 			'controller'=>array(new Zend_Validate_Regex( '/^[a-z]+$/' )), 
-			'action'=>array(new Zend_Validate_Regex( '/^[a-z-]+$/' ))
+			'action'=>array(new Zend_Validate_Regex( '/^[a-z-]+$/' )),
 		);
 		if( @isset( $this->_requestParams['date'] ) ) {
 			$validators['date'] = array(
-			new Zend_Validate_Regex( '/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/' ));
+			new Zend_Validate_Regex( '/^([0-9]{4}-[0-9]{2}-[0-9]{2})|(сегодня)$/ui' ));
 		}
 		$input = new Zend_Filter_Input( $filters, $validators, $this->_requestParams );
 		
@@ -118,22 +166,6 @@ class ListingsController extends Zend_Controller_Action
 		}
 		return false;
 	}
-	/**
-	 * @return array
-	 */
-	public function getRequestParams () {
-
-		return $this->_requestParams;
-	}
-
-	/**
-	 * @param $requestParams 
-	 */
-	public function setRequestParams ($requestParams=null) {
-		
-		$this->_requestParams = $requestParams;
-	}
-
 
 	
 }

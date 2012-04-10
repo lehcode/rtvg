@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configdata>
+	<listings>
+		<vsetvcom>
+			<title>vsetv.com</title>
+			<active>1</active>
+			<baseUrl>http://www.vsetv.com</baseUrl>
+			<startUri>/channels.html</startUri>
+			<encoding>windows-1251</encoding>
+		</vsetvcom>
+		<teleguideinfo>
+			<title>teleguide.info</title>
+			<active>0</active>
+			<baseUrl>http://www.teleguide.info</baseUrl>
+			<startUri>/</startUri>
+		</teleguideinfo>
+	</listings>
 	<movies>
-		<teleguide>
+		<teleguideinfo>
 			<title>teleguide.info</title>
 			<active>1</active>
 			<baseUrl>http://www.teleguide.info</baseUrl>
 			<startUri>/sort</startUri>
-		</teleguide>
+		</teleguideinfo>
 	</movies>
 	<series />
 	<actors>

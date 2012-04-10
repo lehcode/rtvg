@@ -4,72 +4,196 @@ class Xmltv_Model_Programs
 {
 	
 	public $debug=false;
+	private $_table;
+	private $_descriptions_table;
+	private $_props_table;
+	private $siteConfig;
 	
-	public function __construct(){
+	public function __construct($config=array()){
 		$siteConfig = Zend_Registry::get('site_config')->site;
 		$this->debug = (bool)$siteConfig->get('debug', false);
+		$this->_table = new Xmltv_Model_DbTable_Programs();
+		$this->_descriptions_table = new Xmltv_Model_DbTable_ProgramsDescriptions();
+		$this->_properties_table = new Xmltv_Model_DbTable_ProgramsProps();
+		
 	}
 	
-	public function getProgramsForDay($date=null, $ch_id=null){
+	public function getProgramsForDay(Zend_Date $date=null, $ch_id=null){
 		
-		$day = $date->toString(DATE_MYSQL_SHORT);
-		$programs_table = new Xmltv_Model_DbTable_Programs();
+		//var_dump($date->toString('yyyy-MM-dd'));
+		//die(__FILE__.': '.__LINE__);
+		
+		$day = $date->toString('yyyy-MM-dd');
 		try {
-			$rows = $programs_table->fetchAll(array("`start` LIKE '$day%'", "`ch_id`='$ch_id'"), "start ASC");
+			$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'));
 		} catch (Exception $e) {
-			if ($this->debug) {
-				echo $e->getMessage();
-				var_dump ($e->getTrace());
-			}
-			return false;
+			echo $e->getMessage();
+			die(__FILE__.': '.__LINE__);
 		}
+		
+		//var_dump(count($rows));
+		//die(__FILE__.': '.__LINE__);
 		
 		$list = array();
-		$c=0;
-		
-		$desc_table = new Xmltv_Model_DbTable_ProgramsDescriptions();
-		foreach ($rows as $prog) {
-			
-			$prog_start = new Zend_Date($prog->start);
-			$prog_end = new Zend_Date($prog->end);
-			$list[$c]=$prog->toArray();
-			$list[$c]['now_showing'] = false;
-			
-			$compare_start = $prog_start->compare(Zend_Date::now());
-			$compare_end   = $prog_end->compare(Zend_Date::now());
-			
-			if (($compare_start==-1 || $compare_start==0) && ($compare_end==1 || $compare_end==0))
-			$list[$c]['now_showing'] = true;
-			
-			$list[$c]['start_timestamp'] = $prog_start->toString(Zend_Date::TIMESTAMP);
-			$list[$c]['new'] = (int)$list[$c]['new'];
-			/*
-			$serializer = Zend_Serializer::factory('Json');
-			try {
-				$list[$c]['image'] = $serializer->unserialize($list[$c]['image']);
-			} catch (Zend_Serializer_Exception $e) {
-			    $image = array(
-			    	'url'=>'',
-			    	'width'=>'',
-			    	'height'=>'',
-			    );
-			    $s = $serializer->serialize($image);
-			    $prog->image = $s;
-			    $prog->save();
-			    $list[$c]['image'] = $serializer->unserialize($s);
+		$channel_desc=false;
+		if (count($rows)>0) {
+			foreach ($rows as $k=>$prog) {
+				
+				$prog_start = new Zend_Date($prog->start);
+				$prog_end = new Zend_Date($prog->end);
+				$rows[$k]->now_showing = false;
+				
+				$compare_start = $prog_start->compare(Zend_Date::now());
+				$compare_end   = $prog_end->compare(Zend_Date::now());
+				
+				if (($compare_start==-1 || $compare_start==0) && ($compare_end==1 || $compare_end==0))
+				$rows[$k]->now_showing = true;
+				
+				$rows[$k]->start_timestamp = $prog_start->toString(Zend_Date::TIMESTAMP);
+				
 			}
-			*/
-			$desc = $desc_table->fetchRow("title_alias='$prog->alias'");
-			$list[$c]['desc']  = array('intro'=>$desc->intro, 'body'=>$desc->body);
-			$list[$c]['start'] = new Zend_Date($prog->start);
-			$list[$c]['end']   = new Zend_Date($prog->end);
-			
-			$c++;
+		} else {
+			return;
 		}
-		//die();
-		return $list;
+		
+		return $rows;
 		
 	}
 
+
+	public function getProgramThisDay ($prog_alias=null, $channel_alias=null, Zend_Date $date) {
+		
+		if(  !$prog_alias ||  !$channel_alias )
+		throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
+		
+		if (!$date)
+		$date = new Zend_Date(null, null, 'ru');
+		
+		$result = $this->_table->fetchProgramThisDay($prog_alias, $channel_alias, $date);
+		
+		$actors         = array();
+		$directors      = array();
+		$serializer     = new Zend_Serializer_Adapter_Json();
+		$actorsTable    = new Xmltv_Model_DbTable_Actors();
+		$directorsTable = new Xmltv_Model_DbTable_Directors();
+		
+		foreach ($result as $k=>$r) {
+			
+			if (!empty($r['actors'])) {
+				$ids = $serializer->unserialize($r['actors']);
+				$result[$k]['actors'] = $actorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
+			}
+			
+			if (!empty($r['directors'])) {
+				$ids = $serializer->unserialize($r['directors']);
+				$result[$k]['directors'] = $directorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
+			}
+			
+		}
+		
+		return $result;
+		
+	}
+	
+	
+	public function getProgramThisWeek ($prog_alias=null, $channel_alias=null, Zend_Date $date) {
+		
+		if(  !$prog_alias ||  !$channel_alias )
+		throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
+		
+		if (!$date)
+		$date = new Zend_Date(null, null, 'ru');
+		
+		$result = $this->_table->fetchProgramThisWeek($prog_alias, $channel_alias, $date);
+		
+		$actors         = array();
+		$directors      = array();
+		$serializer     = new Zend_Serializer_Adapter_Json();
+		$actorsTable    = new Xmltv_Model_DbTable_Actors();
+		$directorsTable = new Xmltv_Model_DbTable_Directors();
+		
+		foreach ($result as $k=>$r) {
+			
+			if (!empty($r['actors'])) {
+				$ids = $serializer->unserialize($r['actors']);
+				$result[$k]['actors'] = $actorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
+			}
+			
+			if (!empty($r['directors'])) {
+				$ids = $serializer->unserialize($r['directors']);
+				$result[$k]['directors'] = $directorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
+			}
+			
+		}
+		
+		return $result;
+		
+	}
+
+
+	public function getPremieres (Zend_Date $start, Zend_Date $end) {
+
+		if( !is_a( $end, 'Zend_Date' ) )
+		return;
+		
+		if( !is_a( $start, 'Zend_Date' ) )
+		$start = new Zend_Date();
+		
+		if (Xmltv_Config::getCaching()) {
+			$cache = new Xmltv_Cache();
+			$hash = $cache->getHash(__METHOD__);
+			if (!$r = $cache->load($hash, 'Function')){
+				$r = $this->_table->getPremieres($start, $end);
+				$cache->save($r, $hash, 'Function');
+			} 
+		} else {
+			$r = $this->_table->getPremieres($start, $end);
+		}
+		
+		return $r;
+	
+	}
+	
+	private function makePersonName($info=null){
+	
+	}
+	
+	public function getItemsCount(){
+		return $this->_table->getCount();
+	}
+
+	public function addHit($title_alias=null){
+		$table = new Xmltv_Model_DbTable_ProgramsRatings();
+		$table->addHit($title_alias);
+	}
+	
+	
+	public function getWeekDates($week_start=null, $week_end=null){
+	
+		$result = array('start', 'end');
+		
+		if (!$week_start)
+		$d = new Zend_Date();
+		
+		do{
+			if ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>1)
+			$d->subDay(1);
+			//var_dump($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru'));
+		} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>1);
+		$result['start'] = $d;
+		
+		if (!$week_end)
+		$d = new Zend_Date();
+		else
+		$d = new Zend_Date($week_end);
+		
+		do{
+			$d->addDay(1);
+		} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>0);
+		$result['end'] = $d;
+		
+		return $result;
+		
+	}
 }
 

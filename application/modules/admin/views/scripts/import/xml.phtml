@@ -50,7 +50,7 @@ if ($this->show_continue) {
 		$button = new Zend_Form_Element_Button ( 'submit' );
 		$button->setLabel ( 'Обработка каналов' )
 			->setAttribs(array (
-				's' => 'parsechannels',
+				'id' => 'parsechannels',
 				'class' => 'btn btn-primary' ));
 		$channels_form->addElement ( $button );
 		
@@ -108,10 +108,10 @@ if ($this->show_continue) {
 }
 ?>
 <div id="progress" style="padding: 6px; display: none; background-color: lightYellow;"></div>
-<div id="parseerrors" style="padding: 6px; background-color: #FFB5BE; display: none;"></div>
 <div id="zend-progressbar-container">
     <div id="parsecounter"></div>
 </div>
+<div id="parseerrors" style="padding: 6px; background-color: #FFB5BE; display: none;"></div>
 <?php
 /*$js = "
 

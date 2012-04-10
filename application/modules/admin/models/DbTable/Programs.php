@@ -59,5 +59,39 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		return (int)$result[0]['amount'];
     }
 
+    public function deleteProgramsWithInfo(Zend_Date $start, Zend_Date $end){
+    	
+    	$props = new Admin_Model_DbTable_ProgramsProps();
+    	$descs = new Admin_Model_DbTable_ProgramsDescriptions();
+    	$ratings = new Zend_Db_Table(array('name'=>'rtvg_programs_ratings'));
+    	
+    	//var_dump($ratings->fetchAll());
+    	//die(__FILE__.': '.__LINE__);
+    	
+    	$programs = $this->fetchAll(array(
+    		"`start`>='".$start->toString('yyyy-MM-dd')." 00:00:00'",
+			"`start`<='".$end->toString('yyyy-MM-dd')." 00:00:00'"
+    	));
+    	foreach ($programs as $item) {
+    		
+    		if ($f = $descs->find($item['hash']))
+    		$descs->delete("`hash`='".$item['hash']."'");
+    		
+    		if ($p = $props->find($item['hash']))
+    		$props->delete("`hash`='".$item['hash']."'");
+    		
+    		if ($r = $ratings->find($item['alias']))
+    		$ratings->delete("`alias`='".$item['alias']."'");
+    		
+    		$this->delete("`hash`='".$item['hash']."'" );
+    		
+    		//var_dump($d->toArray());
+    		//die(__FILE__.': '.__LINE__);
+    		
+    	}
+    	
+    	//die(__FILE__.': '.__LINE__);
+    	
+    }
 }
 

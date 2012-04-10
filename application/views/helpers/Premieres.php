@@ -4,12 +4,14 @@ class Zend_View_Helper_Premieres extends Zend_View_Helper_Abstract
 	
 	public function premieres(){
 		
+		$config = new Zend_Config_Xml(APPLICATION_PATH . '/configs/view-helpers.xml', 'premieres');
 		$programs = new Xmltv_Model_Programs();
 		$date = new Zend_Date(null, null, 'ru');
 		$today = $date->toString(Zend_Date::WEEKDAY_DIGIT);
 		
 		$d = new Zend_Date(null, null, 'ru');
 		do{
+			if ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>1)
 			$d->subDay(1);
 		} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>1);
 		$weekStart = $d;
@@ -39,7 +41,11 @@ class Zend_View_Helper_Premieres extends Zend_View_Helper_Abstract
 		if (!empty($programs_list)) {
 			ob_start();
 			?>
+			
+		<?php if ((bool)$config->get('display_title')===true): ?>
 		<h3><?php echo $heading; ?></h3>
+		<?php endif; ?>
+		
 		<ul id="premieres_carousel" class="jcarousel-skin-tango">
 			<?php 
 			foreach ($programs_list as $p) {

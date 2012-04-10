@@ -4,9 +4,10 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.4 2012-04-09 12:36:03 dev Exp $
+ * @version $Id: layout.phtml,v 1.5 2012-04-10 13:32:00 dev Exp $
  *
  */
+$this->headTitle()->setSeparator(' :: ');
 $this->headScript()->setAllowArbitraryAttributes(true);
 $this->jQuery()->enable() //enable jquery ;
 	//->setCdnSsl(true) if need to load from ssl location
@@ -23,7 +24,8 @@ $fpMenu    = $this->fpMenu();
 $footer    = $this->footer();
 $sidebarLeft = $this->sidebarLeft();
 $sidebarRight = $this->sidebarRight();
-$featuredChannels = $this->featuredChannels();
+$featuredChannels = $this->featuredChannelsList();
+$catList = $this->channelsCategoriesList();
 /*
  * XHTML
  */
@@ -31,13 +33,15 @@ echo $this->doctype(); ?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
 <head>
 <?php 
+$this->headTitle(Xmltv_Config::getSiteTitle());
+echo $this->headTitle();
 /*
  * metadata
  */
 $this->headMeta()
 	->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8')
-	->appendName('keywords', Xmltv_String::strtolower('телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв'))
-	->appendName('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.');
+	//->setName('keywords', Xmltv_String::strtolower('телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв'))
+	->setName('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.');
 echo $this->headMeta();
 echo $this->headTitle();
 echo $this->jQuery();
@@ -97,7 +101,20 @@ echo $this->headStyle();
 		<?php endif; ?>
 		
 		<div class="span2" id="col_l">
-			<?php echo $sidebarLeft; ?>
+			<div class="ad160x90" style="margin: 0 auto; width: 160px;">
+				<script type="text/javascript"><!--
+				google_ad_client = "ca-pub-1744616629400880";
+				/* rutvgid 160x90 */
+				google_ad_slot = "7070699068";
+				google_ad_width = 160;
+				google_ad_height = 90;
+				//-->
+				</script>
+				<script type="text/javascript"
+				src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+				</script>
+			</div>
+			<?php echo $catList; ?>
 		</div>
 		
 		<div class="span6" id="maincontent">
@@ -106,6 +123,19 @@ echo $this->headStyle();
 		
 		<div class="span4" id="col_r">
 			<?php echo $sidebarRight; ?>
+			<div class="ad336x280" style="margin: 0 auto; width: 336px;">
+				<script type="text/javascript"><!--
+				google_ad_client = "ca-pub-1744616629400880";
+				/* rutvgid 336x280 */
+				google_ad_slot = "3286652462";
+				google_ad_width = 336;
+				google_ad_height = 280;
+				//-->
+				</script>
+				<script type="text/javascript"
+				src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+				</script>
+			</div>
 		</div>
 		
 		<?php 

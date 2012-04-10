@@ -14,7 +14,8 @@ class Zend_View_Helper_MainNav extends Zend_View_Helper_Abstract
 				<a class="dropdown-toggle" href="#" data-toggle="dropdown">Программы<b class="caret"></b></a>
 				<ul class="dropdown-menu">
 					<li><a href="/admin/programs/list">Список</a></li>
-					<li><a href="/admin/programs/premieres">Поиск премьер</a></li>
+					<!-- <li><a href="/admin/programs/premieres">Поиск премьер</a></li> -->
+					<li><a href="/admin/programs/processing">Обработка</a></li>
 				</ul>
 			</li>
 			<li><a href="/admin/channels">Каналы</a></li>

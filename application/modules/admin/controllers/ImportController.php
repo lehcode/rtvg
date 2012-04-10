@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ImportController.php,v 1.6 2012-04-07 09:08:30 dev Exp $
+ * @version $Id: ImportController.php,v 1.7 2012-04-10 13:32:00 dev Exp $
  *
  */
 class Admin_ImportController extends Zend_Controller_Action
@@ -13,20 +13,18 @@ class Admin_ImportController extends Zend_Controller_Action
 	protected $config;
 	private $_debug = false;
 	private $_progressBar;
+	private $_lockFile='';
 	
     public function init()
     {
     	$this->_helper->layout->setLayout('admin');
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
-		$ajaxContext->addActionContext('xmlparsechannels', 'json')
+		$ajaxContext->addActionContext('xml-parse-channels', 'html')
 			->addActionContext('xml-parse-programs', 'html')
 			->addActionContext('parsing-progress', 'json')
 			->addActionContext('premieres-search', 'html')
 			->initContext();
-		/*
-			$this->view->setScriptPath(APPLICATION_PATH . 
-					'/modules/admin/views/scripts/');
-		*/
+		
 		$this->config = Xmltv_Config::getConfig('site');
 		$this->_debug = (int)$this->config->site->debug;
 		
@@ -65,23 +63,26 @@ class Admin_ImportController extends Zend_Controller_Action
     /**
    	 * Ajax action which handles channels parsing
    	 */
-    public function xmlparsechannelsAction(){
+    public function xmlParseChannelsAction(){
     	
     	ini_set('max_execution_time', 0);
     	ini_set('max_input_time', -1);
     	
     	//var_dump($this->_request->getParams());
-    	//var_dump($input->isValid());
+    	//var_dump($this->_parseRequestValid());
     	//die(__FILE__.": ".__LINE__);
     	
     	if ($this->_parseRequestValid()===true){
-    		$xml_file = Xmltv_Filesystem_File::getName($this->_request->get('xml_file_ch'));
-    		$path     = Xmltv_Filesystem_File::getPath($this->_request->get('xml_file_ch'));
+    		$xml_file = Xmltv_Filesystem_File::getName($this->_request->get('xml_file'));
+    		$path     = Xmltv_Filesystem_File::getPath($this->_request->get('xml_file'));
     		$nodeName = 'channel';
     		$file = new Xmltv_XmlChunk($xml_file, array(
     			'chunkSize'=>2048,
     			'path'=>$path,
     			'element'=>$nodeName));
+    		
+    		//var_dump($file);
+    		//die(__FILE__.': '.__LINE__);
     		
     		while ( $xml = $file->read () ) {
     			
@@ -89,19 +90,21 @@ class Admin_ImportController extends Zend_Controller_Action
 				
 				if (@isset ( $m [1] )) {
 					$xml = new SimpleXMLElement ( $m [1] );
-					//$dom = new DOMDocument ( '1.0', 'utf-8' );
-	    			//$dom->appendChild ( $dom->importNode ( dom_import_simplexml ( $xml ), true ) );
-					//$dom->normalizeDocument ();
-					//$xmltext = $dom->saveXML ();
 					$info = array ();
 					$attrs = $xml->attributes ();
-					$info ['ch_id'] = ( int ) $attrs ['id'];
+					$info['ch_id'] = ( int ) $attrs ['id'];
 					$node = 'display-name';
-					$info ['title'] = ( string ) $xml->$node;
-					$filter = new Xmltv_Filter_SeparatorToDash ();
-					$info ['alias'] = $filter->filter($info['title']);
+					$info['title'] = ( string ) $xml->$node;
+					$toDash = new Xmltv_Filter_SeparatorToDash();
+					$info['alias'] = $toDash->filter($info['title']);
+					$plusToPlus = new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
+					$info['alias'] = $plusToPlus->filter($info['alias']);
+					$info['alias'] = trim($info ['alias'], ' -');
+					$doubleDash = new Zend_Filter_Word_SeparatorToSeparator('--', '-');
+					$info['alias'] = $doubleDash->filter($info['alias']);
 					
-					//var_dump($ch_info);
+					//var_dump($info);
+					//die(__FILE__.': '.__LINE__);
 					
 					$channels = new Xmltv_Model_DbTable_Channels();
 					$programs = new Xmltv_Model_DbTable_Programs();
@@ -110,7 +113,7 @@ class Admin_ImportController extends Zend_Controller_Action
 					//die();
 					$new_channels = array();
 					$updated_channels = array();
-					if ($by_alias===null) {
+					if (!$by_alias) {
 						$where = "`ch_id`='".$info['ch_id']."'";
 						$by_ch_id = $channels->fetchRow($where);
 						if ($by_ch_id===null) {
@@ -131,7 +134,7 @@ class Admin_ImportController extends Zend_Controller_Action
     			$this->view->assign('response', $response);
 			}
     	}
-		$this->render('xmlparsechannels-ajax');
+		//$this->render('xmlparsechannels-ajax');
     }
 
     
@@ -140,34 +143,18 @@ class Admin_ImportController extends Zend_Controller_Action
 		
 		ini_set('max_execution_time', 0);
     	ini_set('max_input_time', -1);
-		
+    	$response = array('success'=>false);
 		if ($this->_parseRequestValid()===true){
     		
     		$xml_file = Xmltv_Filesystem_File::getName($this->_request->get('xml_file'));
-    		$path     = Xmltv_Filesystem_File::getPath($this->_request->get('xml_file'));
+    		$path = Xmltv_Filesystem_File::getPath($this->_request->get('xml_file'));
     		$nodeName = 'programme';
     		$file = new Xmltv_XmlChunk($xml_file, array(
-    			'chunkSize'=>24000,
+    			'chunkSize'=>32000,
     			'path'=>$path,
     			'element'=>$nodeName
     		));
-    		/*
-    		$total = 0;
-    		while ( $xml = $file->read () ) {
-    			preg_match ( '/(<'.$nodeName.' start="[0-9]{14} \+[0-9]{4}" stop="[0-9]{14} \+[0-9]{4}" channel="[0-9]+">.+<\/' . $nodeName . '>).*$/imsU', $xml, $m );
-				if (@isset( $m[1] ) )
-				$total++;
-    		}
-    		$a = new Zend_ProgressBar_Adapter_JsPull();
-			$a->setExitAfterSend(false);
-			$progressBar = new Zend_ProgressBar($a, 0, $total, 'parse');
-			// re-load file
-			$file = new Xmltv_XmlChunk($xml_file, array(
-    			'chunkSize'=>24000,
-    			'path'=>$path,
-    			'element'=>$nodeName
-    		));
-    		*/
+    		
     		$tolower  = new Zend_Filter_StringToLower();
     		$descriptions_table = new Admin_Model_DbTable_ProgramsDescriptions();
 			$programs = new Admin_Model_Programs();
@@ -176,55 +163,44 @@ class Admin_ImportController extends Zend_Controller_Action
     			
     			preg_match ( '/(<'.$nodeName.' start="[0-9]{14} \+[0-9]{4}" stop="[0-9]{14} \+[0-9]{4}" channel="[0-9]+">.+<\/' . $nodeName . '>).*$/imsU', $xml, $m );
 				if (@isset ( $m [1] )) {
-					/*
-					if ($cnt==100)
-					die(__FILE__.": ".__LINE__);
-					else 
-					$cnt++;
-					*/
-					//xdebug_start_trace();
-					$xml = new SimpleXMLElement ( $m [1] );
-					$info = $programs->parseProgramXml($xml);
-					/*
-					if (!empty($info)) {
-						//var_dump($info);
-						if ($info['hash']=='9a8298a407354469ac9a2e9a620da9b9') {
-							var_dump($info);
-							die(__FILE__.": ".__LINE__);
-						}
-					}
-					*/
-					$new_hash = $programs->saveProgram($info);
-					$found    = $programs->findProgram($new_hash)->toArray();
-					/*
-					if (!empty($found)) {
-						if ($found['hash']=='9a8298a407354469ac9a2e9a620da9b9') {
-							var_dump($found);
-							die(__FILE__.": ".__LINE__);
-						}
-					}
-					*/
-					$new = empty($found)? $info : $found ;
-					$desc = trim((string)$xml->desc);
-					if (!$descriptions_table->find($new['hash']) && !empty($desc)) {
-						$desc = $programs->parseDescription($desc, $new['hash']);
-						if (!empty($desc['intro'])) {
-							$programs->saveDescription($desc, $new['hash']);
-							$credits = $programs->getCredits((string)$xml->desc);
-							if ($credits) {
-								$programs->saveCredits($credits, $new);
-							}
-						}
+					
+					$xml    = new SimpleXMLElement ( $m [1] );
+					$ch_id  = $programs->getChannelIdFromXml($xml);
+					$start  = $programs->getProgramStartFromXml($xml);
+					$finish = $programs->getProgramEndFromXml($xml);
+					$hash   = md5($ch_id.$start.$finish);
+					
+					if (!$programs->findProgram($hash)) {
 						
+						//var_dump($xml);
+						//die(__FILE__.": ".__LINE__);
+						
+						$info = $programs->parseProgramXml($xml);
+						
+						if ($info['hash'] = $programs->saveProgram($info)) {
+							$desc = trim((string)$xml->desc);
+							if (!$descriptions_table->find($info['hash']) && !empty($desc)) {
+								$desc = $programs->parseDescription($desc, $info['hash']);
+								if (!empty($desc->intro)) {
+									$programs->saveDescription($desc, $info['hash']);
+									$credits = $programs->getCredits((string)$xml->desc);
+									if ($credits) {
+										$programs->saveCredits($credits, $info);
+									}
+								}
+								
+							}
+						} else {
+							var_dump($info);
+							die(__FILE__.': '.__LINE__);
+						}
+						$cnt++;
 					}
-					//xdebug_stop_trace();
-					//die(__FILE__.": ".__LINE__);
-					$cnt++;
-					//$progressBar->update($cnt);
 				}
 				
     		}
-    		//$progressBar->finish();
+    		$response['success'] = true;
+			$this->view->assign('response', $response);
     	}
 	}
 	
@@ -373,13 +349,15 @@ class Admin_ImportController extends Zend_Controller_Action
     	
     	$xml_file = Xmltv_Filesystem_File::getName($this->_request->get('xml'));
     	$path     = Xmltv_Filesystem_File::getPath($this->_request->get('xml'));
+    	//var_dump($xml_file);
     	$total_count=0;
     	$cache = new Xmltv_Cache(array('cache_lifetime'=>7200));
-    	$lock_path = ROOT_PATH.'/cache/'.$cache->getHash($xml_file).'.lock';
+    	$this->_lockFile = ROOT_PATH.'/cache/'.$cache->getHash($xml_file).'.lock';
+    	//var_dump($this->_lockFile);
     	$hash = $cache->getHash(__METHOD__.$xml_file);
-    	if (!$lock_file = @fopen($lock_path, 'r')){
+    	if (!($locked = @fopen($this->_lockFile, 'r'))){
     		
-    		$fh = fopen($lock_path, 'w');
+    		$fh = fopen($this->_lockFile, 'w');
     		fwrite($fh, time());
     		fclose($fh);
     		
@@ -400,11 +378,17 @@ class Admin_ImportController extends Zend_Controller_Action
 				
 			} else {
 				$total_count = $tc;
-			}
-	    	    		
+			} 		
     	} else {
-    		$total_count = $cache->load($hash);
+			if (is_file($this->_lockFile))
+			$total_count = $cache->load($hash);
+			else
+    		unlink($this->_lockFile);
+    		
     	}
+    	//var_dump($this->_lockFile);
+    	//var_dump($locked);
+    	//die(__FILE__.': '.__LINE__);
     	/*
     	 * dates
     	 */

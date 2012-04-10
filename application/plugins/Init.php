@@ -99,11 +99,17 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 			array('module'=>'default', 'controller'=>'listings', 
 			'action'=>'program-today') );
 			$this->_router->addRoute( 'program-today', $route );
-			
+			/*
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/:channel/:program', 
+			array('module'=>'default', 'controller'=>'listings', 
+			'action'=>'program-today') );
+			$this->_router->addRoute( 'program-today', $route );
+			*/
 			$route = new Zend_Controller_Router_Route( 
 			'телепрограмма/:channel/:program/:date', 
 			array('module'=>'default', 'controller'=>'listings', 
-			'action'=>'day') );
+			'action'=>'program-today') );
 			$this->_router->addRoute( 'program-date', $route );
 			
 			$route = new Zend_Controller_Router_Route( 

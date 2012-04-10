@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: IndexController.php,v 1.2 2012-04-01 04:55:49 dev Exp $
+ * @version $Id: IndexController.php,v 1.3 2012-04-10 13:32:00 dev Exp $
  *
  */
 class IndexController extends Zend_Controller_Action
@@ -44,7 +44,7 @@ class IndexController extends Zend_Controller_Action
 	}
 	
 	public function frontpageAction(){
-		
+		$this->view->assign('is_frontpage', true);
 	}
 
 

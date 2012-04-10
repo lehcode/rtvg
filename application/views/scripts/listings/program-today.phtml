@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-today.phtml,v 1.1 2012-04-01 04:57:44 dev Exp $
+ * @version $Id: program-today.phtml,v 1.2 2012-04-10 13:32:00 dev Exp $
  *
  */
 $today = new Zend_Date(null, null, 'ru');
@@ -32,7 +32,7 @@ $channel_alias = $tolower->filter($this->channel['alias']);
 	?>
 	Смотреть <a href="/телепрограмма/<?php echo $channel_alias . '/' . $program_alias?>/неделя"><?php echo '"' . $program_title . '"'?> на этой неделе</a>
 </p>
-<?php echo $this->channel['desc_intro'].PHP_EOL.$this->channel['desc_body']; ?>
+<?php //echo $this->channel['desc_intro'].PHP_EOL.$this->channel['desc_body']; ?>
 
 <table class="table table-condensed">
 	<tbody>
