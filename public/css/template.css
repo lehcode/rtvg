@@ -22,6 +22,10 @@
     padding: 2px 0;
 }
 
+li.lastcol:after { 
+	clear:both;
+}
+
 #xmltv{}
 
 #channels{}
@@ -29,7 +33,7 @@
 	#channels .channeltitle {}
 
 		#channels .channeltitle .channellink {
-			width:100%;
+			width:95%;
 			text-align: left;
 		}
 		#channels .channeltitle .channellink:after{
@@ -46,8 +50,7 @@
 }
 
 	#fast_search {
-		display: block;
-		padding: 24px 0;
+		
 	}
 	
 	#programslist {
@@ -199,7 +202,44 @@
 	#header h1 {
 		font-size: 12px;
 	}
+
+#premieres {
+	margin:0;
+}
+	
+	#premieres h3 {}
 	
 
+ul#fpnav {
+	margin:24px 0 0;
+}
+
+ul#fpnav:after{
+	clear:both;
+}
+	ul#fpnav li { 
+		height: 96px;
+	    list-style: none outside none;
+	    margin: 0 12px 16px 0;
+	    text-align: center;
+	}
+	ul#fpnav li a {
+		/* background: none repeat scroll 0 0 #D7D7D7; */
+	    border: 2px solid #CCCCCC;
+	    border-radius: 6px 6px 6px 6px;
+	    display: block;
+	    font-size: 24px;
+	    height: 96px;
+	    line-height: 96px;
+	}
+	ul#fpnav li a:hover {
+		text-decoration: none;
+	}
 	
-	
+.ad468x60 {
+	margin: 24px 8px;
+}
+
+#col_l {
+	margin-right: 15px;
+}
