@@ -15,10 +15,10 @@ $(document).ready(function(){
 			dataType: 'html',
 			type: 'post',
 			beforeSend:function(jqXHR, settings){
-				Progress.hide(100, function(){ $(this).html('<p>Начинаю парсинг каналов из XML</p>').fadeIn(); });
+				Progress.hide(100, function(){ $(this).html('<h3>Парсинг каналов из XML</h3>').fadeIn(); });
 			},
 			success: function(response, textStatus, jqXHR){
-				Progress.hide(100, function(){ $(this).html('<p>Парсинг каналов завершен</p><p>'+response+'</p>').fadeIn(); });
+				Progress.hide(100, function(){ $(this).html('<h3>Парсинг каналов завершен</p><p>'+response+'</h3>').fadeIn(); });
 				return true;
 			},
 			error: function(jqXHR, textStatus, errorThrown){
@@ -42,9 +42,9 @@ $(document).ready(function(){
 			dataType: 'html',
 			type: 'post',
 			beforeSend:function(jqXHR, settings){
-				Progress.hide(100, function(){ Progress.html('<p>Начинаю парсинг программ из XML</p>').fadeIn(); });
+				Progress.hide(100, function(){ Progress.html('<h3>Парсинг программ из XML</h3>').fadeIn(); });
 				var startParsing = new Date();
-				timer = startParsing.getTime();
+				startTime = startParsing.getTime();
 				pollParsing = setInterval( function(){
 					var xmlFile = $('#parse_programs input[name=xml_file]').val();
 					$.ajax({
@@ -58,21 +58,20 @@ $(document).ready(function(){
 								var totalNodes = parseInt( response.max );
 								var processedNodes = parseInt( response.current );
 								var procDate = new Date();
-								var newMs = procDate.getTime();
-								//var elapsedSecs = (newMs-timer)/1000;
-								var elapsedMs = newMs-timer;
+								var elapsedMs = procDate.getTime()-startTime;
+								var timeSpent = new Date (elapsedMs);
 								var rpms = processedNodes/elapsedMs;
-								//var etaTimer = timer+((response.max-response.current)/timer)*1000;
-								var etaTimer = (totalNodes-processedNodes)/rpms;
-								var etaDate = new Date(etaTimer);
-								var etaMinutes = String( etaDate.getMinutes() );
-								if (etaMinutes.length == 1) { etaMinutes = '0'+etaMinutes; } 
+								var etaDate = new Date( startTime+elapsedMs+(Math.floor(((totalNodes-processedNodes)/(rpms*1000))*1000)) );
 								var etaHours = String( etaDate.getHours() );
 								if (etaHours.length == 1) { etaHours = '0'+etaHours; } 
-								var pct = Math.round((response.current/(response.max/100))*100)/100;
+								var etaMinutes = String( etaDate.getMinutes() );
+								if (etaMinutes.length == 1) { etaMinutes = '0'+etaMinutes; }
+								var pct = Math.round((processedNodes/(totalNodes/100))*100)/100;
 								var responseHtml = '<p>'+response.current+' из '+response.max+' ('+pct+'%)</p>';
 								responseHtml += '<p><b>Скорость:</b> '+Math.floor(rpms*1000)+' записей/сек</p>';
-								responseHtml += '<p><b>Расчетное время парсинга:</b> '+etaHours+':'+etaMinutes+'</p>';
+								//responseHtml += '<p><b>Прошло времени:</b> '+timeSpent.getHours()+':'+timeSpent.getMinutes()+'</p>';
+								responseHtml += '<p><b>Осталось программ:</b> '+(totalNodes-processedNodes)+'</p>';
+								responseHtml += '<p><b>Расчетное время завершения:</b> '+etaHours+':'+etaMinutes+'</p>';
 								Count.hide(100, function(){ Count.html(responseHtml).fadeIn(); });
 								Errors.hide();
 							}
@@ -84,7 +83,7 @@ $(document).ready(function(){
 				}, "15000");
 			},
 			success: function(response, textStatus, jqXHR){
-				Progress.fadeOut(100, function(){ Progress.html('<p>Завершено</p>'+response).fadeIn(); })
+				Progress.fadeOut(100, function(){ Progress.html('<h3>Завершено!</h3>'+response).fadeIn(); })
 				window.clearInterval(pollParsing);
 				return true;
 			},
@@ -108,7 +107,7 @@ $(document).ready(function(){
 			dataType: 'html',
 			type: 'post',
 			beforeSend:function(jqXHR, settings){
-				Progress.hide().html('<p>Поиск премьер в программе</p>').fadeIn();
+				Progress.hide().html('<h3>Поиск премьер в программе</h3>').fadeIn();
 			},
 			success: function(response){
 				Progress.fadeOut().html(response).fadeIn();
