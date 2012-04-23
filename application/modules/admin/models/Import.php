@@ -9,8 +9,8 @@ class Admin_Model_Import
 	private $_program_info; 
 
 	public function __construct(){
-		$this->_programsTable = new Xmltv_Model_DbTable_Programs();
-    	$this->_propsTable    = new Xmltv_Model_DbTable_ProgramsProps();
+		$this->_programsTable = new Admin_Model_DbTable_Programs();
+    	$this->_propsTable    = new Admin_Model_DbTable_ProgramsProps();
 	}
 	
 	public function isPremiere($title=null){
@@ -150,6 +150,48 @@ class Admin_Model_Import
 		
 	}
 
+	public function parseSavedPrograms($parsers=array(), Zend_Date $start, Zend_Date $end, $save=false){
+		
+		if (empty($parsers))
+		throw new Exception("Пропущен параметр для ".__METHOD__, 500);
+		
+		$result = array();
+		
+    	foreach ($parsers as $parserName) {
+    		
+    		$parser = new $parserName();
+    		try  {
+    			
+    			if ((bool)$save===true)
+    			$parser->saveChanges=true;
+    			
+    			//$parser->loadPrograms($start, $end);
+    			$r = $parser->process($start, $end);
+    			var_dump(count($r));
+    			if (empty($r)) {
+    				$data = print_r($parser->getProgram(), true);
+    				echo("<b>Ошибка обработки программы. Парсер: $parserName</b>");
+    				if (Xmltv_Config::getDebug())
+    				Zend_Debug::dump($data);
+    				die(__FILE__.': '.__LINE__);
+    			}
+    			$result[] = $r;
+    		} catch (Exception $e) {
+
+    			echo $e->getMessage();
+    			
+    			if (Xmltv_Config::getDebug())
+    			Zend_Debug::dump($e->getTrace());
+    			
+    			die(__FILE__.': '.__LINE__);
+    		}
+    	}
+    	
+    	echo '<h3>Готово!</h3>';
+    	var_dump($result);
+    	//var_dump($result);
+    	
+	}
 	
 }
 

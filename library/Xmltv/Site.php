@@ -5,9 +5,7 @@
 class Xmltv_Site {
 
 	protected $_session;
-	protected $_proxy;
-	protected $_baseUrl;
-	protected $_grabUrl;
+	protected $_encoding='UTF-8';
 	
 	const PAGE_JSON = 1;
 	const PAGE_DOM  = 2;
@@ -58,8 +56,8 @@ class Xmltv_Site {
 					$data = json_decode($data);
 					break;
 				case self::PAGE_DOM:
-					$data = mb_convert_encoding( $data, 'UTF-8', $encoding);
-					$data = new Zend_Dom_Query($data, 'UTF-8');
+					//$data = mb_convert_encoding( $data, 'UTF-8', $encoding);
+					$data = new Zend_Dom_Query($data, $encoding);
 					break;
 				default:
 					// do nothing - return regular string
@@ -82,13 +80,18 @@ class Xmltv_Site {
 	}
 	
 	
-	public function fetchPage($uri=null, $encoding='windows-1251'){
+	public function fetchPage($url=null, $encoding=null){
 		
-		if (!$uri)
-		return;
+		if (!$url)
+		throw new Exception("Не указана страница для парсинга", 500);
+		if (!$encoding)
+		throw new Exception("Не указана кодировка загружаемой страницы", 500);
 		
-		$this->_grabUrl = $this->_baseUrl.$uri;
-		$this->setUrl($this->_grabUrl);
+		$this->setUrl($url);
+		
+		//var_dump($this);
+		//die(__FILE__.': '.__LINE__);
+		
 		/*
 		 * // Caching breaks encoding
 		$cache = Zend_Cache::factory('Output', 'File',
@@ -110,20 +113,21 @@ class Xmltv_Site {
 	}
 	
 	
-	public function getBaseUrl(){
-		return $this->_baseUrl;
+	/**
+	 * @return string
+	 */
+	public function getEncoding () {
+
+		return $this->_encoding;
 	}
-	
-	
-	public function setBaseUrl($url=null){
-		if (!$url)
-		throw new Exception("Parameter missing for ".__FUNCTION__);
-		$this->_baseUrl = $url;
+
+	/**
+	 * @param $encoding  Site encoding
+	 */
+	public function setEncoding ($encoding) {
+
+		$this->_encoding = $encoding;
 	}
-	
-	
-	public function getUrl(){
-		return $this->_grabUrl;
-	}
+
 	
 }

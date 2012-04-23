@@ -84,6 +84,7 @@ if ($this->show_continue) {
 		/*
 		 * Search for premieres button
 		 */
+		/*
 		$premieres_form = new Zend_Form ();
 		$premieres_form->setAction ( '' )
 			->setMethod ( 'post' )
@@ -97,14 +98,14 @@ if ($this->show_continue) {
 		$premieres_form->addElement ( $button );
 		$premieres_form->setDecorators ( array ('FormElements', 'Form' ) );
 		$premieres_form->addElement ( $xml_file );
-		
+		*/
 	} catch ( Exception $e ) {
 		echo $e->getMessage ();
 	}
 	
 	echo $channels_form;
 	echo $programs_form;
-	echo $premieres_form;
+	//echo $premieres_form;
 }
 ?>
 <div id="progress" style="padding: 6px; display: none; background-color: lightYellow;"></div>

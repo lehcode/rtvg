@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ImportController.php,v 1.7 2012-04-10 13:32:00 dev Exp $
+ * @version $Id: ImportController.php,v 1.8 2012-04-23 04:48:27 dev Exp $
  *
  */
 class Admin_ImportController extends Zend_Controller_Action
@@ -14,6 +14,7 @@ class Admin_ImportController extends Zend_Controller_Action
 	private $_debug = false;
 	private $_progressBar;
 	private $_lockFile='';
+	//private $_requestValidator;
 	
     public function init()
     {
@@ -23,10 +24,12 @@ class Admin_ImportController extends Zend_Controller_Action
 			->addActionContext('xml-parse-programs', 'html')
 			->addActionContext('parsing-progress', 'json')
 			->addActionContext('premieres-search', 'html')
+			->addActionContext('programs-delete', 'html')
 			->initContext();
 		
 		$this->config = Xmltv_Config::getConfig('site');
 		$this->_debug = (int)$this->config->site->debug;
+		//$this->_requestValidator = $this->_helper->requestValidator();
 		
     }
 
@@ -89,19 +92,18 @@ class Admin_ImportController extends Zend_Controller_Action
 				preg_match ( '/(<' . $nodeName . ' id="[0-9]+">.+<\/' . $nodeName . '>).*$/imsU', $xml, $m );
 				
 				if (@isset ( $m [1] )) {
-					$xml = new SimpleXMLElement ( $m [1] );
-					$info = array ();
-					$attrs = $xml->attributes ();
-					$info['ch_id'] = ( int ) $attrs ['id'];
+					$xml   = new SimpleXMLElement ( $m [1] );
+					$info  = array ();
+					$attrs = $xml->attributes();
+					$info['ch_id'] = (int)$attrs ['id'];
 					$node = 'display-name';
-					$info['title'] = ( string ) $xml->$node;
+					$info['title'] = (string)$xml->$node;
 					$toDash = new Xmltv_Filter_SeparatorToDash();
 					$info['alias'] = $toDash->filter($info['title']);
 					$plusToPlus = new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
 					$info['alias'] = $plusToPlus->filter($info['alias']);
 					$info['alias'] = trim($info ['alias'], ' -');
-					$doubleDash = new Zend_Filter_Word_SeparatorToSeparator('--', '-');
-					$info['alias'] = $doubleDash->filter($info['alias']);
+					$info['alias'] = str_replace('--', '-', $info['alias']);
 					
 					//var_dump($info);
 					//die(__FILE__.': '.__LINE__);
@@ -143,7 +145,9 @@ class Admin_ImportController extends Zend_Controller_Action
 		
 		ini_set('max_execution_time', 0);
     	ini_set('max_input_time', -1);
-    	$response = array('success'=>false);
+    	
+    	
+    	
 		if ($this->_parseRequestValid()===true){
     		
     		$xml_file = Xmltv_Filesystem_File::getName($this->_request->get('xml_file'));
@@ -154,6 +158,12 @@ class Admin_ImportController extends Zend_Controller_Action
     			'path'=>$path,
     			'element'=>$nodeName
     		));
+    		
+    		$cache = new Xmltv_Cache(array('cache_lifetime'=>7200));
+	    	$lockFile = ROOT_PATH.'/cache/'.$cache->getHash($xml_file).'.lock';
+	    	unlink($lockFile);
+	    	
+	    	$response = array('success'=>false);
     		
     		$tolower  = new Zend_Filter_StringToLower();
     		$descriptions_table = new Admin_Model_DbTable_ProgramsDescriptions();
@@ -170,32 +180,68 @@ class Admin_ImportController extends Zend_Controller_Action
 					$finish = $programs->getProgramEndFromXml($xml);
 					$hash   = md5($ch_id.$start.$finish);
 					
-					if (!$programs->findProgram($hash)) {
+					//var_dump($xml);
+					//die(__FILE__.": ".__LINE__);
+					
+					$p = $programs->parseProgramXml($xml);
+					$p['hash'] = $hash;
+					$programs->saveProgram( $p );
+					
+					//var_dump($info);
+					//die(__FILE__.": ".__LINE__);
 						
-						//var_dump($xml);
+					$d = trim((string)$xml->desc);
+					if (!empty($d)) {
+						
+						$found = @$descriptions_table->find($hash)->toArray();
+						
+						//var_dump($found);
 						//die(__FILE__.": ".__LINE__);
 						
-						$info = $programs->parseProgramXml($xml);
-						
-						if ($info['hash'] = $programs->saveProgram($info)) {
-							$desc = trim((string)$xml->desc);
-							if (!$descriptions_table->find($info['hash']) && !empty($desc)) {
-								$desc = $programs->parseDescription($desc, $info['hash']);
-								if (!empty($desc->intro)) {
-									$programs->saveDescription($desc, $info['hash']);
-									$credits = $programs->getCredits((string)$xml->desc);
-									if ($credits) {
-										$programs->saveCredits($credits, $info);
-									}
+						if (empty($found)) {
+							
+							//$desc = $programs->parseXmlDescription($d);
+							$desc['intro'] = $d;
+							$desc['body']  = '';
+							
+							//var_dump($p);
+							//die(__FILE__.": ".__LINE__);
+							
+							if (!empty($desc['intro'])) {
+								
+								$desc['hash']  = $p['hash'];
+								//var_dump($xml);
+								//die(__FILE__.": ".__LINE__);
+								$desc['alias'] = $programs->makeAlias( $programs->getProgramTitleFromXml($xml) );
+								
+								if (empty($desc['alias']))
+								throw new Exception("Alias не может быть NULL".__METHOD__, 500);
+								
+								//var_dump($desc);
+								//die(__FILE__.": ".__LINE__);
+								
+								try {
+									$programs->saveDescription($desc, $hash);
+								} catch (Exception $e) {
+									echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
 								}
 								
+								/*
+								if (!empty($desc['body'])) {
+									$credits = $programs->getCredits($desc['body']);
+									try {
+										$programs->saveCredits($credits, $p);
+									} catch (Exception $e) {
+										echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+									}
+								}
+								*/
 							}
-						} else {
-							var_dump($info);
-							die(__FILE__.': '.__LINE__);
-						}
-						$cnt++;
+							
+						} 
 					}
+					
+					$cnt++;
 				}
 				
     		}
@@ -203,6 +249,8 @@ class Admin_ImportController extends Zend_Controller_Action
 			$this->view->assign('response', $response);
     	}
 	}
+	
+	
 	
 	private function _parseRequestValid(){
 		$filters = array( '*'=>'StringTrim' );
@@ -269,12 +317,12 @@ class Admin_ImportController extends Zend_Controller_Action
         		throw new Exception("Cannot create directory");
         	}
         	
-        	$filter = new Zend_Filter_Decompress(array(
+        	$decompress = new Zend_Filter_Decompress(array(
         		'adapter'=>$type, 
         		'options'=>array(
         			'target'=>"$xml_dir/"
         	)));
-        	$xmlfile = $filter->filter("$uploads/$nn");
+        	$xmlfile = $decompress->filter("$uploads/$nn");
         	
 		} catch (Exception $e) {
 			echo $e->getMessage();
@@ -396,8 +444,8 @@ class Admin_ImportController extends Zend_Controller_Action
     	$parts = explode('-', $parts[0]);
     	$start = substr($parts[0], 4, 4) . '-' . substr($parts[0], 2, 2) . '-' . substr($parts[0], 0, 2);
     	$end   = substr($parts[1], 4, 4) . '-' . substr($parts[1], 2, 2) . '-' . substr($parts[1], 0, 2);
-    	$weekStart = new Zend_Date($start, null, 'ru');
-    	$weekEnd   = new Zend_Date($end, null, 'ru');
+    	$weekStart = new Zend_Date($start);
+    	$weekEnd   = new Zend_Date($end);
     	/*
     	 * Get programs count
     	 */
@@ -410,6 +458,48 @@ class Admin_ImportController extends Zend_Controller_Action
     	$this->_progressBar->update($current);
 		exit();
     }
+    
+    public function parseSavedProgramsAction(){
+    	
+    	$startDate = $this->_getParam('start_date');
+    	if (!isset($startDate) || empty($startDate)) {
+    		die('<h3 style="color:red;">Ошибка: не указана дата начала</h3>');
+    	}
+    	
+    	$endDate = $this->_getParam('end_date');
+    	if (!isset($endDate) || empty($endDate)) {
+    		die('<h3 style="color:red;">Ошибка: не указана дата окончания</h3>');
+    	}
+    	
+    	if ( $this->_helper->requestValidator( array('method'=>'isValidRequest', 'action'=>$this->_getParam('action'))) === true ){
+    		
+    		//var_dump($this->_getAllParams());
+    		//die(__FILE__.': '.__LINE__);
+    		
+    		$activeParsers = array();
+    		foreach ($this->_getAllParams() as $k=>$p) {
+    			if (preg_match('/^do_parse_(.+)$/', $k, $m)){
+    				if ((int)$p==1) 
+    				$activeParsers[]='Xmltv_Parser_Programs_'.ucfirst($m[1]);
+    			}
+    		}
+    		var_dump($activeParsers);
+    		$programs = new Admin_Model_Import();
+    		$programs->parseSavedPrograms( $activeParsers,
+    			new Zend_Date($this->_getParam('start_date'), 'dd.MM.yyyy'),
+    			new Zend_Date($this->_getParam('end_date'), 'dd.MM.yyyy'), (bool)$this->_getParam('save_updates', false));
+    		//echo "<h3>Готово!</h3>";
+    		exit();
+    		//die(__FILE__.': '.__LINE__);
+    		
+    	}
+    	
+    	throw new Exception("Неверные данные", 500);
+    	exit();
+    	
+    }
+    
+   
 	
 }
 

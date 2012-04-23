@@ -23,6 +23,9 @@ class Admin_Model_Programs
 	private $_regex_list='/[:;_,\.\[\]\(\)\\`\{\}"\!\+\?]+/';
 	private $_logger;
 
+	/**
+	 * Model onstructor
+	 */
 	public function __construct(){
 		$this->_table = new Admin_Model_DbTable_Programs();
 		$this->_programs_props_table   = new Admin_Model_DbTable_ProgramsProps();
@@ -57,12 +60,16 @@ class Admin_Model_Programs
 		throw new Exception("Не указан один или более параметров для ".__METHOD__, 500);
 		
 		$result = $input;
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я.*серия\.?/iu', 'replace'=>''));
+		$regexp = new Zend_Filter_PregReplace(array('match'=>'/\(([0-9]+)-я серия - "(.+)"\. ([0-9]+)-я серия - "(.+)"\)/iu', 'replace'=>'\1-\2-\3-\4'));
 		$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я.*-.*[0-9]+-я.*серии/iu', 'replace'=>''));
+		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я.*[и |-|- ][0-9]+-я сери[я|и]/iu', 'replace'=>''));
 		$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я и [0-9]+-я/iu', 'replace'=>''));
+		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я серия/iu', 'replace'=>''));
 		$result = $regexp->filter($result);
+		//$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я.*-.*[0-9]+-я.*серии/iu', 'replace'=>''));
+		//$result = $regexp->filter($result);
+		//$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я и [0-9]+-я/iu', 'replace'=>''));
+		//$result = $regexp->filter($result);
 		$regexp = new Zend_Filter_PregReplace(array('match'=>'/часть-[0-9]+-я\.?/iu', 'replace'=>''));
 		$result = $regexp->filter($result);
 		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я часть\.?/iu', 'replace'=>''));
@@ -97,17 +104,11 @@ class Admin_Model_Programs
 		return $result;
 		
 	}
-	/*
-	public function cleanAlias ($input=null) {
-		
-		if( !$input )
-		throw new Exception("Не указан один или более параметров для ".__METHOD__, 500);
-		
+	
+	public function makeAlias($input=null){
 		return $this->_makeAlias($input);
-		
 	}
-	*/
-
+	
 	public function makeTitles ($info=array()) {
 		
 		if( empty( $info ) )
@@ -391,7 +392,9 @@ class Admin_Model_Programs
 		
 		$result['actors']=array();
 		$result['directors']=array();
+		
 		$tolower=new Zend_Filter_StringToLower( $this->_tolower_options );
+		
 		if( strstr( $tolower->filter( $input ), 'в ролях' ) ) {
 			$d=explode( 'В ролях:', $input );
 			//var_dump($d);
@@ -419,26 +422,26 @@ class Admin_Model_Programs
 
 
 	/**
+	 * Parse XML description
+	 * 
 	 * @param string $desc
 	 * @param string $hash
 	 * @return void
 	 */
-	public function parseDescription ($desc=null, $hash=null) {
+	public function parseXmlDescription ($desc=null) {
 		
-		if( !$hash )
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
+		if ( !$desc || empty( $desc ) )
+		return array('intro'=>'', 'body'=>'');
 		
+		//$trim = new Zend_Filter_StringTrim();
 		$description  = array('intro'=>'', 'body'=>'');
 		
-		if ( empty( $desc ) )
-		return $description;
-		
 		$descriptions = new Admin_Model_DbTable_ProgramsDescriptions();
-		$parts=explode( '. ', $desc );
-		$description['hash']=$hash;
+		$parts = explode( '. ', $desc );
+		//$description['hash']=$hash;
 		
 		if( Xmltv_String::strlen( $desc ) > 256 ) {
-			
+			/*
 			foreach ($parts as $n => $sentence) {
 				if( Xmltv_String::stristr( $sentence, 'в ролях' ) ) {
 					unset( $parts[$n] );
@@ -450,7 +453,11 @@ class Admin_Model_Programs
 					unset( $parts[$n] );
 				}
 			}
+			*/
+			
 			//var_dump($parts);
+			//die(__FILE__.': '.__LINE__);
+			
 			foreach ($parts as $n => $sentence) {
 				if( trim( Xmltv_String::strlen( $description['intro'] ) ) < 164 ) {
 					$description['intro'].=$sentence . '. ';
@@ -461,7 +468,8 @@ class Admin_Model_Programs
 			$description['intro']=trim( $description['intro'] );
 			$body=implode( '. ', $parts ) . '.';
 			
-			if( trim( Xmltv_String::strlen( $body ) ) > 1 ) $description['body']=$body;
+			if( trim( Xmltv_String::strlen( $body ) ) > 1 )
+			$description['body']=$body;
 			
 		} else {
 			$description['intro']=implode( '. ', $parts ) . '.';
@@ -470,16 +478,17 @@ class Admin_Model_Programs
 		return $description;
 	}
 	
-	public function saveDescription($description=array(), $hash=null){
+	public function saveDescription($desc=array()){
 		
-		if( empty( $description ) | !$hash )
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
+		if( empty($desc) || !is_array($desc) )
+		throw new Exception("Пропущен или неверно указан один или все параметры для ".__METHOD__, 500);
 		
 		try {
-			$this->_programs_descs_table->insert( $description );
+			$this->_programs_descs_table->insert( $desc );
 		} catch (Exception $e) {
 			if ($e->getCode()==1062) {
-				$this->_programs_descs_table->update( $description, "`hash`='$hash'" );
+				return true;
+				//$this->_programs_descs_table->update( $description, "`hash`='$hash'" );
 			} else {
 				echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
 				die(__FILE__.': '.__LINE__);
@@ -553,131 +562,134 @@ class Admin_Model_Programs
 		$props   = new Admin_Model_DbTable_ProgramsProps();
 		$cache   = new Xmltv_Cache();
 		
-		//var_dump(func_get_args());
+		//var_dump($credits);
 		//die(__FILE__.': '.__LINE__);
 		
 		foreach ($credits['actors'] as $k => $p) {
+			
 			$exists=false;
 			$parts=explode( ' ', $p );
-			if( count( $parts ) == 3 ) {
-				
-				//$hash = md5($tolower->filter( $parts[0] ).$tolower->filter( $parts[1] ).$tolower->filter( $parts[2] ));
-				//if (!$snames = $cache->load($hash, 'Function')){
-				$snames = $table->fetchAll( 
-				"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' 
-				AND `m_name` LIKE '%" . $tolower->filter( $parts[1] ) . "%' 
-				AND `s_name` LIKE '%" . $tolower->filter( $parts[2] ) . "%'" );
-				//$cache->save($snames, $hash, 'Function');
-				//} 
-				/*
-				$snames=$table->fetchAll( 
-				"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' 
-					AND `m_name` LIKE '%" . $tolower->filter( $parts[1] ) . "%' 
-					AND `s_name` LIKE '%" . $tolower->filter( $parts[2] ) . "%'" );
-				*/
-				if( count( $snames ) > 0 ) {
-					foreach ($snames as $sn) {
-						$existing=$tolower->filter( sprintf( "%s %s %s", $sn->f_name, $sn->m_name, $sn->s_name ) );
-						$exists=false;
-						if( $existing == $tolower->filter( implode( ' ', $parts ) ) ) {
-							$exists=true;
-							$existing=$sn->toArray();
-							break;
-						}
-					}
-				}
-				
-				if(  !$exists ) {
-					$existing=$this->_addCreditsName( $parts, 'actor', $info );
-				}
-				$this->_updateProgramActors( $existing, $info );
 			
-			} elseif( count( $parts ) == 2 ) {
+			if( count( $parts ) == 2 ) {
 				
-				//$hash = md5($tolower->filter( $parts[0] ).$tolower->filter( $parts[1] ));
-				//if (!$snames = $cache->load($hash, 'Function')){
-					$snames=$table->fetchAll( 
-					"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' AND `s_name` LIKE '%" . $tolower->filter( 
-					$parts[1] ) . "%'" );
-					//$cache->save($snames, $hash, 'Function');
-				//}
-				/*
 				$snames=$table->fetchAll( 
-				"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' AND `s_name` LIKE '%" . $tolower->filter( 
-				$parts[1] ) . "%'" );
-				*/
-				if( count( $snames ) > 0 ) {
-					foreach ($snames as $sn) {
-						$existing=$tolower->filter( sprintf( "%s %s", $sn->f_name, $sn->s_name ) );
-						$exists=false;
-						if( $existing == $tolower->filter( implode( ' ', $parts ) ) ) {
-							$exists=true;
-							$existing=$sn->toArray();
-							break;
-						}
-					}
-				}
+				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "'
+				AND `s_name` LIKE '" . $tolower->filter( $parts[1] ) . "'" );
 				
-				if( $exists === false ) {
-					$this->_addCreditsName( $parts, 'actor', $info );
+				if(count($snames)) {
+					foreach ($snames as $sn) {
+						
+						$existingName = $tolower->filter( sprintf( "%s %s", $sn->f_name, $sn->s_name ) );
+						
+						//var_dump($sn);
+						//var_dump($existingName);
+						//die(__FILE__.': '.__LINE__);
+						
+						try {
+							if( $existingName == $tolower->filter( implode( ' ', $parts ) ) ) {
+								$this->_updateProgramActors( $sn->toArray(), $info );
+							}
+						} catch (Exception $e) {
+							echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+							die(__FILE__.': '.__LINE__);
+						}
+						
+					}
 				} else {
-					$this->_updateProgramActors( $existing, $info );
+					
+					//die(__FILE__.': '.__LINE__);
+					
+					$new = $this->_addCreditsName( $parts, 'actor', $info );
+					$this->_updateProgramActors( $new, $info );
 				}
+			} elseif( count( $parts ) == 3 ) {
+				
+				//die(__FILE__.': '.__LINE__);
+				
+				$snames = $table->fetchAll( 
+				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "' 
+				AND `m_name` LIKE '" . $tolower->filter( $parts[1] ) . "' 
+				AND `s_name` LIKE '" . $tolower->filter( $parts[2] ) . "'" );
 			
-			} elseif( count( $parts ) > 3 ) {
+				if( count( $snames ) ) {
+					foreach ($snames as $sn) {
+						$existingName=$tolower->filter( sprintf( "%s %s %s", $sn->f_name, $sn->m_name, $sn->s_name ) );
+						if( $existingName == $tolower->filter( implode( ' ', $parts ) ) ) {
+							try {
+								$this->_updateProgramActors( $sn->toArray(), $info );
+							} catch (Exception $e) {
+								echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+								die(__FILE__.': '.__LINE__);
+							}
+						}
+					}
+				} else {
+					
+					//die(__FILE__.': '.__LINE__);
+					
+					$new = $this->_addCreditsName( $parts, 'actor', $info );
+					$this->_updateProgramActors( $new, $info );
+				}
+				
+			}  elseif( count( $parts ) > 3 ) {
 				/* ошибка в данных */
 				unset( $credits['actors'][$k] );
-			} 
-		
+			}
+			
 		}
 		
 		$table=new Admin_Model_DbTable_Directors();
 		foreach ($credits['directors'] as $k => $p) {
-			$exists=false;
+			
 			$parts=explode( ' ', $p );
+			
 			if( count( $parts ) == 2 ) {
+				
 				$snames=$table->fetchAll( 
-				"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' AND `s_name` LIKE '%" . $tolower->filter( 
-				$parts[1] ) . "%'" );
-				if( count( $snames ) > 0 ) {
+				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "' AND `s_name` LIKE '" . $tolower->filter( $parts[1] ) . "'" );
+				
+				if( count( $snames ) ) {
 					foreach ($snames as $sn) {
-						$existing=$tolower->filter( sprintf( "%s %s", $sn->f_name, $sn->s_name ) );
-						$exists=false;
-						if( $existing == $tolower->filter( implode( ' ', $parts ) ) ) {
-							$exists=true;
-							$existing=$sn->toArray();
-							break;
+						$existingName=$tolower->filter( sprintf( "%s %s", $sn->f_name, $sn->s_name ) );
+						if( $existingName == $tolower->filter( implode( ' ', $parts ) ) ) {
+							try {
+								$this->_updateProgramDirectors( $existingName, $info );
+							} catch (Exception $e) {
+								echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+								die(__FILE__.': '.__LINE__);
+							}
 						}
 					}
+				} else {
+					$new = $this->_addCreditsName( $parts, 'director', $info );
+					$this->_updateProgramDirectors( $new, $info );
+					
 				}
 				
-				if( $exists === false ) {
-					$this->_addCreditsName( $parts, 'director', $info );
-				} else {
-					$this->_updateProgramDirectors( $existing, $info );
-				}
+				
 			} elseif( count( $parts ) == 3 ) {
 				$snames=$table->fetchAll( 
-				"`f_name` LIKE '%" . $tolower->filter( $parts[0] ) . "%' 
-					AND `m_name` LIKE '%" . $tolower->filter( $parts[1] ) . "%' 
-					AND `s_name` LIKE '%" . $tolower->filter( $parts[2] ) . "%'" );
+				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "' 
+					AND `m_name` LIKE '" . $tolower->filter( $parts[1] ) . "' 
+					AND `s_name` LIKE '" . $tolower->filter( $parts[2] ) . "'" );
 				
-				if( count( $snames ) > 0 ) {
+				if( count( $snames ) ) {
 					foreach ($snames as $sn) {
-						$existing=$tolower->filter( sprintf( "%s %s %s", $sn->f_name, $sn->m_name, $sn->s_name ) );
-						$exists=false;
-						if( $existing == $tolower->filter( implode( ' ', $parts ) ) ) {
-							$exists=true;
-							$existing=$sn->toArray();
-							break;
+						$existingName=$tolower->filter( sprintf( "%s %s %s", $sn->f_name, $sn->m_name, $sn->s_name ) );
+						if( $existingName == $tolower->filter( implode( ' ', $parts ) ) ) {
+							try {
+								$this->_updateProgramDirectors( $existingName, $info );
+							} catch (Exception $e) {
+								echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+								die(__FILE__.': '.__LINE__);
+							}
 						}
 					}
+				} else {
+					$new = $this->_addCreditsName( $parts, 'director', $info );
+					$this->_updateProgramDirectors( $new, $info );
 				}
 				
-				if(  !$exists ) {
-					$existing=$this->_addCreditsName( $parts, 'director', $info );
-				}
-				$this->_updateProgramDirectors( $existing, $info );
 			} elseif( count( $parts ) > 3 ) {
 				/* ошибка в данных */
 				unset( $credits['directors'][$k] );
@@ -685,7 +697,7 @@ class Admin_Model_Programs
 				continue;
 			}
 		}
-	
+		
 	}
 
 
@@ -694,8 +706,10 @@ class Admin_Model_Programs
 		$serializer=new Zend_Serializer_Adapter_Json();
 		$props=new Admin_Model_DbTable_ProgramsProps();
 		
-		if( $type == 'actor' ) $table=new Admin_Model_DbTable_Actors();
-		if( $type == 'director' ) $table=new Admin_Model_DbTable_Directors();
+		if( $type == 'actor' )
+		$table=new Admin_Model_DbTable_Actors();
+		if( $type == 'director' )
+		$table=new Admin_Model_DbTable_Directors();
 		
 		$found=false;
 		try {
@@ -735,11 +749,13 @@ class Admin_Model_Programs
 		if( empty( $existing ) || empty( $info ) ) 
 		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
 		
+		if (!is_array($existing))
+		throw new Exception("Неверный тип данных для ".__METHOD__, 500);
+		
 		$props = new Admin_Model_DbTable_ProgramsProps();
 		$serializer = new Zend_Serializer_Adapter_Json();
 		
-		$p_props = $props->find( $info['alias'] );
-		
+		$p_props = $props->fetchRow("`hash`='".$info['hash']."'" );
 		if( count( $p_props ) == 0 ) {
 			try {
 				$p_props = $props->createRow();
@@ -765,16 +781,22 @@ class Admin_Model_Programs
 			}
 		} else {
 			try {
-				$p_props = $p_props->current()->toArray();
+				$p_props = $p_props->toArray();
 				$p_props['hash'] = $info['hash'];
-				$persons = $serializer->unserialize( $p_props['actors'] );
+				$persons = !empty($p_props['actors']) ? $p_props['actors'] : '[]' ;
+				$persons = $serializer->unserialize( $persons );
 				if(  !( in_array( $existing['id'], $persons ) ) ) {
 					$persons[] = $existing['id'];
 				}
 				$p_props['actors'] = $serializer->serialize( $persons );
 				$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
 			} catch (Exception $e) {
+				echo "Не могу обновить актера: ";
+				echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+				die(__FILE__.': '.__LINE__);
+				/*
 				if( $e->getCode() == 0 ) {
+					
 					$p_props['actors'] = $serializer->serialize( array($existing['id']) );
 					try {
 						$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
@@ -783,11 +805,8 @@ class Admin_Model_Programs
 						die( __FILE__ . ': ' . __LINE__ );
 					}
 				}
+				*/
 			}
-			//$p_props['actors'] = $serializer->serialize( $actors );
-		//$props->update( $p_props, "`title_alias`='" . $info['alias'] . "'" );
-		
-
 		}
 	}
 
@@ -807,7 +826,7 @@ class Admin_Model_Programs
 		
 		$props = new Admin_Model_DbTable_ProgramsProps();
 		$serializer = new Zend_Serializer_Adapter_Json();
-		$p_props = $props->find( $info['alias'] );
+		$p_props = $props->fetchRow("`hash`='".$info['hash']."'" );
 		
 		if( count( $p_props ) == 0 ) {
 			$p_props = $props->createRow();
@@ -824,15 +843,20 @@ class Admin_Model_Programs
 			}
 		} else {
 			try {
-				$p_props = $p_props->current()->toArray();
+				$p_props = $p_props->toArray();
 				$p_props['hash'] = $info['hash'];
-				$persons = $serializer->unserialize( $p_props['directors'] );
+				$persons = !empty($p_props['directors']) ? $p_props['directors'] : '[]' ;
+				$persons = $serializer->unserialize( $persons );
 				if(  !( in_array( $existing['id'], $persons ) ) ) {
 					$persons[] = $existing['id'];
 				}
 				$p_props['directors'] = $serializer->serialize( $persons );
 				$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
 			} catch (Exception $e) {
+				echo "Не могу обновить режиссера: " . $e->getMessage();
+				echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+				die(__FILE__.': '.__LINE__);
+				/*
 				if( $e->getCode() == 0 ) {
 					$p_props['directors'] = $serializer->serialize( array($existing['id']) );
 					try {
@@ -842,6 +866,7 @@ class Admin_Model_Programs
 						die( __FILE__ . ': ' . __LINE__ );
 					}
 				}
+				*/
 			}
 		}
 	}
@@ -1339,22 +1364,18 @@ class Admin_Model_Programs
 		 */
 		$cat_title = @isset($xml->category) ? (string)$xml->category : 0 ;
 		$info = $this->setProgramCategory($info, $cat_title);
-		/*
-		 * program hash
-		 */
-		$info ['hash'] = $this->getHash ( (int)$attrs->channel, $info ['start'], $info ['end'] );
-		
-		//var_dump($info);
-		//die(__FILE__.': '.__LINE__);
 		
 		$info ['title'] = (string)$xml->title;
-		$info = $this->makeTitles ( $info );
-		
+		$info ['alias'] = $this->_makeAlias((string)$xml->title);
+		$info ['sub_title'] = '';
+		//$info ['hash'] = $hash;
+		//$info = $this->makeTitles ( $info );
+		/*
 		if (Xmltv_String::stristr($tolower->filter((string)$xml->title), 'премьера') ||
 		Xmltv_String::stristr($tolower->filter((string)$xml->title), 'premiere')) {
 			$info = $this->savePremiere($info);
 		}
-		
+		*/
 		
 		return $info;
 		
@@ -1593,17 +1614,18 @@ class Admin_Model_Programs
 		return $date->toString("yyyy-MM-dd HH:mm:ss");
 		
 	}
+
+	public function getProgramTitleFromXml(SimpleXMLElement $xml){
+		return $this->_makeAlias( (string)$xml->title );
+	}
 	
 	public function deletePrograms(Zend_Date $start, Zend_Date $end, $linked=false){
 		
 		if (!$linked) {
 			try {
-				
-				die(__FILE__.': '.__LINE__);
-				
 				$this->_table->delete(array(
 					"`start` >= '".$start->toString('yyyy-MM-dd')." 00:00:00'",
-					"`start` < '".$end->toString('yyyy-MM-dd')." 00:00:00'"
+					"`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'"
 				));
 				
 			} catch (Exception $e) {

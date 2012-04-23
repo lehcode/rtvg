@@ -8,15 +8,86 @@ $css = "#premiere_search button:before, #premiere_search button:after { clear: b
 
 <div class="tabbable">
 	<ul class="nav nav-tabs">
-		<li class="active"><a href="#pane-re-parse" data-toggle="tab">Нормализация</a></li>
-		<li><a href="#pane-premieres-search" data-toggle="tab">Поиск премьер</a></li>
+		<li class="active"><a href="#pane-re-parse" data-toggle="tab">Обработка названий</a></li>
+		<!-- <li><a href="#pane-premieres-search" data-toggle="tab">Поиск премьер</a></li> -->
 		<li><a href="#pane-delete-programs" data-toggle="tab">Удаление программ</a></li>
 	</ul>
 	<div class="tab-content">
 		<div class="tab-pane active" id="pane-re-parse">
-			<h3>Нормализация</h3>
-			<div>&nbsp;</div>
+			<h3>Обработка названий</h3>
+			<div>
+				<?php 
+					$button = new Zend_Form_Element_Button ( 'submit' );
+					$button->setLabel( 'Старт' )
+						->setAttribs(array(
+							'id'=>'titles_parsing',
+							'class'=>'btn btn-primary'
+						))
+						->removeDecorator('DtDdWrapper')
+						->removeDecorator('Tooltip');
+				
+					$parseTitlesForm = new ZendX_JQuery_Form();
+					$parseTitlesForm->addAttribs ( array (
+						'id' => 'parse_titles' ) );
+					
+					$parsePremieres = new Zend_Form_Element_Checkbox( 'do_parse_premieres' );
+					$parsePremieres->setLabel( 'Премьеры' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_premieres'));
+						
+					$parseDescriptions = new Zend_Form_Element_Checkbox( 'do_parse_descriptions' );
+					$parseDescriptions->setLabel( 'Описания' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_descriptions'));
+						
+					$parseSeries = new Zend_Form_Element_Checkbox( 'do_parse_series' );
+					$parseSeries->setLabel( 'Сериалы' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_series'));
+					
+					$parseMovies = new Zend_Form_Element_Checkbox( 'do_parse_movies' );
+					$parseMovies->setLabel( 'Фильмы' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_movies'));
+					
+					$parseSports = new Zend_Form_Element_Checkbox( 'do_parse_sports' );
+					$parseSports->setLabel( 'Спортивные программы' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_sports'));
+						
+					$parseBreaks = new Zend_Form_Element_Checkbox( 'do_parse_breaks' );
+					$parseBreaks->setLabel( 'Перерывы' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_breaks'));
+					
+					$parseDocumentary = new Zend_Form_Element_Checkbox( 'do_parse_documentary' );
+					$parseDocumentary->setLabel( 'Документалистика' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_documentary'));
+						
+					$saveUpdates = new Zend_Form_Element_Checkbox( 'save_updates' );
+					$saveUpdates->setLabel( 'Сохранять изменения' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'save_updates'));
+					
+					$dateStart = new ZendX_JQuery_Form_Element_DatePicker( 'start_date');
+					$dateStart->setLabel('Начальная дата');
+					$dateEnd = new ZendX_JQuery_Form_Element_DatePicker( 'end_date');
+					$dateEnd->setLabel('Финальная дата');
+					
+					$parseTitlesForm->addElements ( array(
+						$dateStart,
+						$dateEnd,
+						$parsePremieres,
+						$parseSeries,
+						$parseMovies,
+						$parseSports,
+						$parseBreaks,
+						$parseDocumentary,
+						$parseDescriptions,
+						$button,
+						$saveUpdates,
+					) );
+					$parseTitlesForm->setDecorators ( array ('FormElements', 'Form' ) );
+					echo $parseTitlesForm;
+					
+				?>
+			</div>
 		</div>
+		
+		<?php /*
 		<div class="tab-pane" id="pane-premieres-search">
 			<h3>Поиск премьер</h3>
 			<div>
@@ -33,13 +104,12 @@ $css = "#premiere_search button:before, #premiere_search button:after { clear: b
 					array('key'=>'full', 'value'=>'Полный поиск')) )
 					->setLabel( 'Тип поиска' );
 							
-				$button = new Zend_Form_Element_Button ( 'submit' );
 				$button->setLabel( 'Начать поиск' )
 					->setAttribs(array(
 						'id'=>'start-search',
 						'class'=>'btn btn-primary'
 					))
-					->removeDecorator('DtDdWrapper')
+					//->removeDecorator('DtDdWrapper')
 					->removeDecorator('Tooltip');
 				$form->addElements ( array($options, $button) );
 				$form->setDecorators ( array ('FormElements', 'Form' ) );
@@ -47,6 +117,7 @@ $css = "#premiere_search button:before, #premiere_search button:after { clear: b
 				?>
 			</div>
 		</div>
+		*/ ?>
 		
 		<div class="tab-pane" id="pane-delete-programs">
 			<h3>Удаление программ</h3>
@@ -67,25 +138,13 @@ $css = "#premiere_search button:before, #premiere_search button:after { clear: b
 				$cleanData->setLabel( 'Удалить свойства программ?' )
 					->setRequired()
 					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-info'));
-				/*
-				$cleanDescs = new Zend_Form_Element_Checkbox( 'delete-descs' );
-				$cleanDescs->setLabel( 'Удалить описания программ' )
-					->setRequired()
-					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-descs'));
-				*/
-				$button = new Zend_Form_Element_Button ( 'submit' );
-				$button->setLabel( 'Старт' )
-					->setAttribs(array(
-						'id'=>'delete_start_btn',
-						'class'=>'btn btn-primary'
-					))
-					//->removeDecorator('DtDdWrapper')
-					->removeDecorator('Tooltip');
+				
+				$button->setLabel( 'Старт' )->setAttribs(array( 'id'=>'delete_start_btn', 'class'=>'btn btn-primary' ));
 				
 				$dateStart = new ZendX_JQuery_Form_Element_DatePicker( 'delete_start');
-				$dateStart->setLabel('Дата начала');
+				$dateStart->setLabel('Начальная дата');
 				$dateEnd = new ZendX_JQuery_Form_Element_DatePicker( 'delete_end');
-				$dateEnd->setLabel('Дата конца');
+				$dateEnd->setLabel('Финальная дата');
 
 							
 					

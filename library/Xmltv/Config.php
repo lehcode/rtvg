@@ -51,6 +51,18 @@ class Xmltv_Config
 	public static function getProxyEnabled() {
 		return (bool)self::getConfig('site')->proxy->active;
 	}
+	public static function getProfiling() {
+		return (bool)self::getConfig('site')->site->profile;
+	}
+	public static function getKeywords() {
+		return (string)self::getConfig('site')->site->keywords;
+	}
+	public static function getSiteTitle() {
+		return (string)self::getConfig('site')->site->title;
+	}
+	public static function getSiteDescription() {
+		return (string)self::getConfig('site')->site->description;
+	}
 	
 	
 

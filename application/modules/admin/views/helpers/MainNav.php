@@ -36,7 +36,9 @@ class Zend_View_Helper_MainNav extends Zend_View_Helper_Abstract
 					<li><a href="/admin/directors/duplicates">Дубликаты</a></li>
 				</ul>
 			</li>
+			<?php /*
 			<li><a href="/admin/duplicates">Дубликаты</a></li>
+			*/ ?>
 			<li><a href="/admin/import">Импорт</a>
 			</li>
 			<?php if (strtolower($controller)=='grab'): ?>

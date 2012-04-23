@@ -10,6 +10,7 @@ class Admin_ProgramsController extends Zend_Controller_Action
 		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
 		$ajaxContext->addActionContext( 'premieres-search', 'html' )
 			->addActionContext( 'delete-programs', 'html' )
+			->addActionContext( 'programs-delete-progress', 'html' )
 			->initContext();
 			
     }
@@ -85,14 +86,10 @@ class Admin_ProgramsController extends Zend_Controller_Action
 		//var_dump(func_get_args());
 		$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
 		$validators = array(
-	    	'module'=>array(
-	    		new Zend_Validate_Regex('/^[a-z]+$/')),
-	    	'controller'=>array(
-	    		new Zend_Validate_Regex('/^[a-z]+$/')),
-	    	'action'=>array(
-	    		new Zend_Validate_Regex('/^[a-z-]+$/')),
-	    	'format'=>array(
-	    		new Zend_Validate_Regex('/^html|json$/')));
+	    	'module'=>array( new Zend_Validate_Regex('/^[a-z]+$/')),
+	    	'controller'=>array( new Zend_Validate_Regex('/^[a-z]+$/')),
+	    	'action'=>array( new Zend_Validate_Regex('/^[a-z-]+$/')),
+	    	'format'=>array( new Zend_Validate_Regex('/^html|json$/')));
 		switch ($action) {
 			case 'delete-programs':
 				$validators['cleanprograms'] = array( new Zend_Validate_Digits());
@@ -109,6 +106,18 @@ class Admin_ProgramsController extends Zend_Controller_Action
     	return false;
 	}
 
+ 	public function programsDeleteProgressAction(){
+ 		
+ 		
+ 		$model = new Admin_Model_Programs();
+ 		
+ 		var_dump($this->_getAllParams());
+ 		
+ 		
+ 		
+    	//echo "Completed";
+    	exit();
+    }
 
 }
 

@@ -6,6 +6,8 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
     protected $_name = 'rtvg_programs';
     protected $_profiling = false;
     
+    const FETCH_MODE = Zend_Db::FETCH_OBJ;
+    
     public function __construct($config=array()){
     	parent::__construct( $config );
     	$this->_profiling = Xmltv_Config::getProfiling();
@@ -15,23 +17,27 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
     public function getProgramsCountForWeek(Zend_Date $start=null, Zend_Date $end=null){
     	
     	//var_dump($this->_db);
-    	
+    	/*
    		if( $this->_profiling ) {
 			$this->_db->getProfiler()->setEnabled( true );
 			$profiler = $this->_db->getProfiler();
 		}
-    	
+    	*/
 		if (!$start && !$end) {
-			$d = new Zend_Date(null, null, 'ru');
+			$d = new Zend_Date();
 			do{
-				$d->subDay(1);
-			} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>1);
+				if ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
+					$d->subDay(1);
+				}
+			} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1);
 			$weekStart = $d;
 			
-			$d = new Zend_Date(null, null, 'ru');
+			$d = new Zend_Date();
 			do{
-				$d->addDay(1);
-			} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>0);
+				if ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+					$d->addDay(1);
+				}
+			} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0);
 			$weekEnd = $d;
 		} else {
 			$weekStart = $start;
@@ -40,7 +46,7 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		
     	$select = $this->_db->select();
 		$select->from($this->_name, array('count(*) as amount'))
-			->where("`start`>='".$weekStart->toString('yyyy-MM-dd')."' AND `end`<='".$weekEnd->toString('yyyy-MM-dd')."'");
+			->where("`start`>='".$weekStart->toString('yyyy-MM-dd')."' AND `start`<'".$weekEnd->toString('yyyy-MM-dd')." 23:59:59'");
 		try {
 			$result = $this->_db->fetchAll($select);
 		} catch (Exception $e) {
@@ -50,11 +56,12 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			die(__FILE__.': '.__LINE__);
 			
 		}
-		
+		/*
     	if( $this->_profiling ) {
 			$query = $profiler->getLastQueryProfile();
 			echo 'Method: '.__METHOD__.'<br />Query: '.$query->getQuery().'<br />';
 		}
+		*/
 		//var_dump($result);
 		return (int)$result[0]['amount'];
     }
@@ -70,7 +77,7 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
     	
     	$programs = $this->fetchAll(array(
     		"`start`>='".$start->toString('yyyy-MM-dd')." 00:00:00'",
-			"`start`<='".$end->toString('yyyy-MM-dd')." 00:00:00'"
+			"`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'"
     	));
     	foreach ($programs as $item) {
     		
@@ -91,6 +98,120 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
     	}
     	
     	//die(__FILE__.': '.__LINE__);
+    	
+    }
+    
+    public function fetchPremieres(Zend_Date $start, Zend_Date $end){
+    	
+    	if( $this->_profiling ) {
+			$this->_db->getProfiler()->setEnabled( true );
+			$profiler = $this->_db->getProfiler();
+		}
+		
+		$select = $this->_db->select()->from(array('prog'=>$this->_name), '*')
+			->where("prog.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00:00'")
+			->where("prog.`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'")
+			->joinLeft(array('d'=>'rtvg_programs_descriptions'), "prog.`hash` = d.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
+			->joinLeft(array('prop'=>'rtvg_programs_props'), "prog.`hash`=prop.`hash`", array())
+			->where("prog.`title` LIKE '%премьера%'")
+			->order("prog.ch_id ASC")->order("prog.start ASC");
+		
+			try {
+				$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
+			} catch (Exception $e) {
+				echo $e->getMessage();
+			}
+		
+		
+    	if( $this->_profiling ) {
+			$query = $profiler->getLastQueryProfile();
+			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
+		}
+		
+		return $result;
+    	
+    }
+    
+    public function fetchProgramsForPeriod(Zend_Date $start, Zend_Date $end, $category=null){
+    	
+    	if( $this->_profiling ) {
+			$this->_db->getProfiler()->setEnabled( true );
+			$profiler = $this->_db->getProfiler();
+		}
+    	
+		$select = $this->_db->select()
+			->from(array('prog'=>$this->_name), '*')
+			->where("prog.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00:00'")
+			->where("prog.`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'")
+			->joinLeft(array('d'=>'rtvg_programs_descriptions'), "prog.hash = d.hash", array('desc_intro'=>'intro', 'desc_body'=>'body'))
+			->joinLeft(array('prop'=>'rtvg_programs_props'), "prog.`hash`=prop.`hash`", array());
+		
+		if (!empty($category)) {
+			
+			if (is_array($category))
+			$where = "prog.`category` IN ( " . implode(',', $category) . " )";
+			else
+			$where = "prog.`category` = '$category'";
+			
+			$select->where($where);
+		}
+		
+		$select->order("prog.ch_id ASC")->order("prog.start ASC");
+		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
+    	
+    	if( $this->_profiling ) {
+			$query = $profiler->getLastQueryProfile();
+			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
+		}
+		
+    	//var_dump(count($result));
+    	//die(__FILE__.': '.__LINE__);
+    	
+    	return $result;
+    }
+    
+    public function fetchSeries(Zend_Date $start, Zend_Date $end, $category=null, $channels=null){
+    	
+		if( $this->_profiling ) {
+			$this->_db->getProfiler()->setEnabled( true );
+			$profiler = $this->_db->getProfiler();
+		}
+    	
+		$select = $this->_db->select()
+			->from(array('prog'=>$this->_name), '*')
+			->where("prog.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00:00'")
+			->where("prog.`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'")
+			->joinLeft(array('d'=>'rtvg_programs_descriptions'), "prog.hash = d.hash", array('desc_intro'=>'intro', 'desc_body'=>'body'))
+			->joinLeft(array('prop'=>'rtvg_programs_props'), "prog.`hash`=prop.`hash`", array());
+		
+		if (!empty($category)) {
+			
+			if (is_array($category)) {
+				$where = "prog.`category` IN ( " . implode(',', $category) . " ) OR prog.`title` LIKE '%сериал%'";
+			} else {
+				$where = "prog.`category` = '$category' OR prog.`title` LIKE '%сериал%'";
+			}
+		} else {
+			$where = "prog.`title` LIKE '%сериал%'";
+		}
+		
+    	if (!empty($channels)) {
+			$ids = count($channels)>1 ? implode(',', $channels) : $channels[0];
+			$where .= " OR prog.`ch_id` IN ( $ids ) ";
+		}
+		
+		$select->where($where);
+		$select->order("prog.ch_id ASC")->order("prog.start ASC");
+		
+		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
+    	
+    	if( $this->_profiling ) {
+			$query = $profiler->getLastQueryProfile();
+			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
+		}
+		//var_dump(count($result));
+    	//die(__FILE__.': '.__LINE__);
+		return $result;
     	
     }
 }
