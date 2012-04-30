@@ -17,6 +17,7 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
 		//die(__FILE__.': '.__LINE__);
 		
 		$matches = array();
+		$cc=0;
 		foreach ($this->chunks as $ck=>$part) {
     		foreach ( $part as $pk=>$current ) {
     			
@@ -31,19 +32,23 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
     			$current->end   = new Zend_Date($current->end, 'yyyy-MM-dd HH:mm:ss');
     			$this->_program = $current;
     			
-    			if ($this->matches()) {
+				try {
 					
-	    			$this->setTitle();
+					$this->setTitle();
 					$this->setAlias();
 					$this->setSubTitle();
-					$this->setProgramProps();
 					
-					$p = $this->_program;
-					$this->updateProgramInfo( $p, __CLASS__ );
-					$this->updateProgramProps( $p, __CLASS__ );
-					$matches[] = $this->_program;
-					
+				} catch (Exception $e) {
+					echo '<b>'.$e->getMessage().'</b>';
+					Zend_Debug::dump($this->_program);
+					Zend_Debug::dump($e->getTrace());
+					die(__FILE__.': '.__LINE__);
 				}
+    			
+					
+				$this->setProgramProps();
+				$matches[] = $this->_program;
+				$cc++;
     		}
 		}
 		//var_dump($matches);
@@ -85,22 +90,21 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
 			//var_dump($this->_program);
 			//die(__FILE__.': '.__LINE__);
 			$t = Xmltv_String::ucfirst( Xmltv_String::strtolower( $m[1] ) );
-		} elseif ( Xmltv_String::stristr( $this->_program->title, 'премьера' ) ) {
+		} elseif ( preg_match('/^премьера\.\s+(.*)$/iu', $this->_program->title, $m) ) {
 			
-			preg_match('/^(.*)премьера\.(.*)$/iu', $this->_program->title, $m);
-			
-			$title = $m[1].' '.$m[2];
-			if (empty($m[1]) && empty($m[2]))
-			throw new Exception("Неверные параметры в ".__METHOD__, 500);
-			
-			$regexp = new Zend_Filter_PregReplace(array('match'=>'/^(.*)-?премьера-?(.*)$/iu', 'replace'=>'\1\2'));
-			$title = $regexp->filter($title);
-			
-			$t = $title;
-			
+			$t = $m[1];
+			if (empty($m[1])) {
+				$info = print_r($m, true);
+				throw new Exception( __METHOD__ . " - Неверные параметры, строка ".__LINE__, 500);
+			}
+						
 		} else {
 			$t = $this->_program->title;
+			$this->_unsetPremiere();
 		}
+		
+		//var_dump($t);
+		//die(__FILE__.': '.__LINE__);
 		
 		/*
 		if ($this->_program->hash == 'cb00ca1a94eafb4447b18dff89a52f1b') {
@@ -112,6 +116,7 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
 		*/
 		
 		$this->_title = parent::cleanTitle( $t );
+		
 	}
 	
 	/**
@@ -222,6 +227,57 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
 		$this->chunks = array_chunk($result, 500);
 		//return $result;
 		
+	}
+	
+	/**
+	 * @param stdClass $data
+	 * @param string $log_class
+	 */
+	protected function updateProgramProps (Zend_Db_Table_Row $data, $log_class=null) {
+
+		if (!$log_class)
+		$log_class = __CLASS__;
+		
+		/*if ( $this->_program->hash == '72ccbe6e07086474b4ed0aad7c107fa5' ) {
+			var_dump($this->_program);
+			die(__FILE__.': '.__LINE__);
+		}*/
+		
+		$table = new Admin_Model_DbTable_ProgramsProps();
+		$table_info = $table->info();
+		$newData=array( 'premiere_date'=>$data->start->toString(DATE_MYSQL) );
+		foreach ($data->toArray() as $k=>$v) {
+			if (in_array($k, $table_info['cols']))
+			$newData[$k]=$v;
+		}
+		
+		if ($this->saveChanges) {
+			if ( !$found = $table->find( $data->hash ) ) {
+				try {
+					$table->insert($newData);
+					$info = print_r( $newData, true );
+					Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, $log_class.'.log' );
+				} catch (Exception $e) {
+					echo "Не могу создать новую запись свойств программы. ".$e->getMessage();
+					if (Xmltv_Config::getDebug())
+					echo $e->getTrace();
+				}
+			} else {
+				try {
+					$table->update($newData, "`hash`='".$data->hash."'");
+					$info = print_r( $newData, true );
+					Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, $log_class.'.log' );
+				} catch (Exception $e) {
+					echo "Не могу обновить данные. ".$e->getMessage();
+					if (Xmltv_Config::getDebug())
+					echo $e->getTrace();
+				}
+				
+			}
+		} 
+		$info = print_r( $newData, true );
+		Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, $log_class.'.log' );
+		return true;	
 	}
 	
 	

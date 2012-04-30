@@ -97,12 +97,12 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 	 * @param string $input
 	 * @return string
 	 */
-	protected function cleanAlias($input=null){
+	protected function cleanAlias(){
 		
-		if(  !$input )
-		throw new Exception("Не указан параметр для ".__METHOD__, 500);
+		//if(  !$input )
+		//throw new Exception("Не указан параметр для ".__METHOD__, 500);
 		
-		$result = $input;
+		$result = $this->_title;
 		
 		$result = Xmltv_String::str_ireplace( 'ё', 'е', $result );
 		$result = Xmltv_String::str_ireplace( 'Ё', 'Е', $result );
@@ -208,7 +208,7 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 		$result = $trim->filter( $result );
 		
 		$result = str_replace(array('/.  -/', ', ,'), ',', $result);
-		$result = str_replace(array('. ,'), '.', $result);
+		$result = str_replace(array('. ,', '.,'), '.', $result);
 		
 		$result = str_replace('"', '', $result);
 		$result = preg_replace('/\s+/ius', ' ', $result);
@@ -255,8 +255,7 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 		}
 		
 		if ($this->saveChanges) {
-			
-			try {	
+			try {
 				$table->update($newData, "`hash`='".$data->hash."'");
 				$info = print_r( $newData, true );
 				Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, $log_class.'.log' );
@@ -265,10 +264,10 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 				if (Xmltv_Config::getDebug())
 				echo $e->getTrace();
 			}
-		} else {
-			$info = print_r( $newData, true );
-			Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, $log_class.'.log' );
 		}
+		
+		$info = print_r( $newData, true );
+		Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, $log_class.'.log' );
 		
 	}
 
@@ -282,16 +281,20 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 		if (!$log_class)
 		$log_class = __CLASS__;
 		
+		/*if ( $this->_program->hash == '72ccbe6e07086474b4ed0aad7c107fa5' ) {
+			var_dump($this->_program);
+			die(__FILE__.': '.__LINE__);
+		}*/
+		
 		$table = new Admin_Model_DbTable_ProgramsProps();
 		$table_info = $table->info();
-		$newData=array( 'premiere_date'=>$data->start->toString(DATE_MYSQL) );
+		$newData=array();
 		foreach ($data as $k=>$v) {
 			if (in_array($k, $table_info['cols']))
 			$newData[$k]=$v;
 		}
 		
 		if ($this->saveChanges) {
-		
 			if ( !$found = $table->find( $data->hash ) ) {
 				try {
 					$table->insert($newData);
@@ -314,11 +317,10 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 				}
 				
 			}
-		} else {
-			$info = print_r( $newData, true );
-			Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, $log_class.'.log' );
-		}
-		
+		} 
+		$info = print_r( $newData, true );
+		Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, $log_class.'.log' );
+			
 	}
 
 
@@ -404,14 +406,15 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 			//var_dump($parts);
 			//die(__FILE__.': '.__LINE__);
 			
-			if (strstr($parts[1], '.')){
-				var_dump($parts);
-				die(__FILE__.': '.__LINE__);
+			if (strstr($parts[0], '.')){
+				$info = print_r($parts, true);
+				Xmltv_Logger::write( $info, Zend_Log::INFO, 'actors-short-names.log' );
+				return;
 			}
 			
 			if( count($parts) == 2 ) {
 				
-				$snames=$table->fetchAll( 
+				$snames = $table->fetchAll( 
 					"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "'
 					AND `s_name` LIKE '" . $tolower->filter( $parts[1] ) . "'" );
 				
@@ -425,14 +428,8 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 						//die(__FILE__.': '.__LINE__);
 						
 						try {
-							if( $existingName == $tolower->filter( implode( ' ', $parts ) ) ) {
-								if ($this->saveChanges) {
-									$this->updateProgramActors( $sn, $this->_program );
-								} else {
-									$error_info = print_r( $sn->toArray(), true );
-									Xmltv_Logger::write( __METHOD__.":\n". $error_info, Zend_Log::INFO, __CLASS__.'.log' );
-								}
-							}
+							if( $existingName == $tolower->filter( implode( ' ', $parts ) ) )
+							$this->_updateProgramActors( $sn );
 						} catch (Exception $e) {
 							echo __FUNCTION__.' Ошибка# '.$e->getCode().': '. $e->getMessage();
 							die(__FILE__.': '.__LINE__);
@@ -442,8 +439,8 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 					
 					//die(__FILE__.': '.__LINE__);
 					
-					$new = $this->addCreditsName( $parts, 'actor', $this->_program );
-					$this->updateProgramActors( $new, $this->_program );
+					$new = $this->_addCreditsName( $parts, 'actor', $this->_program );
+					$this->_updateProgramActors( $new );
 				}
 			} elseif( count( $parts ) == 3 ) {
 				
@@ -459,12 +456,7 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 						$existingName=$tolower->filter( sprintf( "%s %s %s", $sn->f_name, $sn->m_name, $sn->s_name ) );
 						if( $existingName == $tolower->filter( implode( ' ', $parts ) ) ) {
 							try {
-								if ($this->saveChanges) {
-									$this->updateProgramActors( $sn, $this->_program );
-								} else {
-									$error_info = print_r( $sn->toArray(), true );
-									Xmltv_Logger::write( __METHOD__.":\n". $error_info, Zend_Log::INFO, __CLASS__.'.log' );
-								}
+								$this->_updateProgramActors( $sn, $this->_program );
 							} catch (Exception $e) {
 								echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
 								die(__FILE__.': '.__LINE__);
@@ -475,52 +467,176 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 					
 					//die(__FILE__.': '.__LINE__);
 					
-					$new = $this->addCreditsName( $parts, 'actor', $this->_program );
-					$this->updateProgramActors( $new, $this->_program );
+					$new = $this->_addCreditsName( $parts, 'actor', $this->_program );
+					$this->_updateProgramActors( $new );
 				}
 			
 			}  elseif( count( $parts ) > 3 ) {
 				/* ошибка в данных */
+				$error_info = print_r($list[$k], true);
+				Xmltv_Logger::write( __METHOD__.":\n". $error_info, Zend_Log::INFO, 'actors-short-names.log' );
 				unset( $list[$k] );
 			}
 			
-			}
-		
+		}
+		//return true;
 	}
 	
-	protected function updateProgramActors ( stdClass $existing, stdClass $program_info) {
+	
+	protected function updateDirectors($list=array()) {
 		
-		if( !$existing || !$program_info )
+		if ( empty($list) || !is_array($list))
+		throw new Exception(__METHOD__." - Не указан параметр", 500);
+		
+		$table = new Admin_Model_DbTable_Directors();
+		$tolower = new Zend_Filter_StringToLower();
+		
+		foreach ($list as $k=>$p) {
+				
+			$exists=false;
+			$parts = explode( ' ', trim($p) );
+			
+			//var_dump($parts);
+			//die(__FILE__.': '.__LINE__);
+			
+			if (strstr($parts[0], '.')){
+				$info = print_r($parts, true);
+				Xmltv_Logger::write( $info, Zend_Log::INFO, 'directors-short-names.log' );
+				return;
+			}
+			
+			if( count($parts) == 2 ) {
+				
+				$snames = $table->fetchAll( 
+					"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "'
+					AND `s_name` LIKE '" . $tolower->filter( $parts[1] ) . "'" );
+				
+				if(count($snames)) {
+					foreach ($snames as $sn) {
+						
+						$existingName = $tolower->filter( sprintf( "%s %s", $sn->f_name, $sn->s_name ) );
+						
+						//var_dump($sn);
+						//var_dump($existingName);
+						//die(__FILE__.': '.__LINE__);
+						
+						try {
+							if( $existingName == $tolower->filter( implode( ' ', $parts ) ) )
+							$this->_updateProgramDirectors( $sn );
+						} catch (Exception $e) {
+							echo __FUNCTION__.' Ошибка# '.$e->getCode().': '. $e->getMessage();
+							die(__FILE__.': '.__LINE__);
+						}
+					}
+				} else {
+					
+					//die(__FILE__.': '.__LINE__);
+					
+					$new = $this->_addCreditsName( $parts, 'director', $this->_program );
+					$this->_updateProgramDirectors( $new );
+				}
+			} elseif( count( $parts ) == 3 ) {
+				
+				//die(__FILE__.': '.__LINE__);
+				
+				$snames = $table->fetchAll( 
+				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "' 
+				AND `m_name` LIKE '" . $tolower->filter( $parts[1] ) . "' 
+				AND `s_name` LIKE '" . $tolower->filter( $parts[2] ) . "'" );
+			
+				if( count( $snames ) ) {
+					foreach ($snames as $sn) {
+						$existingName=$tolower->filter( sprintf( "%s %s %s", $sn->f_name, $sn->m_name, $sn->s_name ) );
+						if( $existingName == $tolower->filter( implode( ' ', $parts ) ) ) {
+							try {
+								$this->_updateProgramDirectors( $sn, $this->_program );
+							} catch (Exception $e) {
+								echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+								die(__FILE__.': '.__LINE__);
+							}
+						}
+					}
+				} else {
+					
+					//die(__FILE__.': '.__LINE__);
+					
+					$new = $this->_addCreditsName( $parts, 'actor', $this->_program );
+					$this->_updateProgramDirectors( $new );
+				}
+			
+			}  elseif( count( $parts ) > 3 ) {
+				/* ошибка в данных */
+				$error_info = print_r($list[$k], true);
+				Xmltv_Logger::write( __METHOD__.":\n". $error_info, Zend_Log::INFO, 'directors-short-names.log' );
+				unset( $list[$k] );
+			}
+			
+		}
+		//return true;
+	}
+	
+	private function _updateProgramActors ( Zend_Db_Table_Row $existing, $program_info=null) {
+		
+		if( !$existing )
 		throw new Exception(__METHOD__."Пропущен один или все параметры для ".__LINE__, 500);
+		
+		if (!$program_info)
+		$program_info = $this->_program;
+		
+		//var_dump($existing);
+		//var_dump($program_info);
+		//die( __FILE__ . ': ' . __LINE__ );
 		
 		$props = new Admin_Model_DbTable_ProgramsProps();
 		$serializer = new Zend_Serializer_Adapter_Json();
 		
 		$p_props = $props->fetchRow("`hash`='".$program_info->hash."'" );
+		
+		/*if ($program_info->hash=='4358f53c83f0bdc909fe333076f23b4e') {
+			var_dump(count( $p_props ));
+			die( __FILE__ . ': ' . __LINE__ );
+		}*/
+		
 		if( count( $p_props ) == 0 ) {
-			try {
-				$p_props = $props->createRow();
-				$p_props->hash = $program_info->hash;
-				$p_props->actors = $serializer->serialize( array($existing->id) );
+			
+			$p_props = $props->createRow();
+			$p_props->hash = $program_info->hash;
+			
+			if (!$existing->id)
+			return;
+			
+			$p_props->actors = $serializer->serialize( array($existing->id) );
+			
+			/*if ($program_info->hash=='4358f53c83f0bdc909fe333076f23b4e') {
+				var_dump($p_props );
+				die( __FILE__ . ': ' . __LINE__ );
+			}*/
+			
+			if ($this->saveChanges) {
 				try {
 					$p_props->save();
 				} catch (Exception $e) {
 					if ($e->getCode()!=1062){
-						var_dump($e->getCode());
-						echo "Не могу добавить актера: " . $e->getMessage();
+						echo "Ошибка MySQL #".$e->getCode().". Не могу добавить актера: " . $e->getMessage();
 						var_dump($e->getTrace());
 						die( __FILE__ . ': ' . __LINE__ );
 					}
 				}
-			} catch (Exception $e) {
-				if ($e->getCode()!=1062){
-					var_dump($e->getCode());
-					echo "Не могу добавить актера: " . $e->getMessage();
-					var_dump($e->getTrace());
-					die( __FILE__ . ': ' . __LINE__ );
-				}
+			} else {
+				$a = $p_props->toArray();
+				Xmltv_Logger::write( sprintf("%s: Создана запись актера для программы %s\n%s", __METHOD__, $program_info->hash, $a['actors']), Zend_Log::INFO, __CLASS__.'.log' );
 			}
+			
+			/*if ($program_info->hash=='4358f53c83f0bdc909fe333076f23b4e') {
+				var_dump($p_props );
+				die( __FILE__ . ': ' . __LINE__ );
+			}*/
+			
 		} else {
+			
+			//var_dump( $p_props->toArray() );
+			die( __FILE__ . ': ' . __LINE__ );
+				
 			try {
 				$p_props->hash = $program_info->hash;
 				$persons = !empty($p_props->actors) ? $p_props->actors : '[]' ;
@@ -529,29 +645,22 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 					$persons[] = $existing->id;
 				}
 				$p_props->actors = $serializer->serialize( $persons );
-				$props->update( $p_props->toArray(), "`hash`='" . $program_info->hash . "'" );
+				
+				if ($this->saveChanges) {
+					$props->update( $p_props->toArray(), "`hash`='" . $program_info->hash . "'" );
+				} else {
+					Xmltv_Logger::write( __METHOD__." - Обновлено имя актера ".$existing->id, Zend_Log::INFO, __CLASS__.'.log' );
+				}
 			} catch (Exception $e) {
 				echo "Не могу обновить актера: ";
-				echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
+				echo "<b>".__FUNCTION__.' Ошибка# '.$e->getCode().': '. $e->getMessage().'</b>';
 				die(__FILE__.': '.__LINE__);
-				/*
-				if( $e->getCode() == 0 ) {
-					
-					$p_props['actors'] = $serializer->serialize( array($existing['id']) );
-					try {
-						$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
-					} catch (Exception $e) {
-						echo "Не могу обновить актера: " . $e->getMessage();
-						die( __FILE__ . ': ' . __LINE__ );
-					}
-				}
-				*/
 			}
 		}
 	}
 	
 	
-	protected function addCreditsName ($parts=array(), $type='actor') {
+	private function _addCreditsName ($parts=array(), $type='actor') {
 		
 		if( empty( $parts ) )
 		throw new Exception(__METHOD__."Пропущен один или все параметры для ".__LINE__, 500);
@@ -580,14 +689,99 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 				$new=$table->createRow( array('f_name'=>$parts[0], 'm_name'=>$parts[1], 's_name'=>$parts[2]) );
 			}
 			
-			$id=$new->save();
-			$new->id=(int)$id;
-			return $new->toArray();
-		
+			if ($this->saveChanges) {
+				$id=$new->save();
+				$new->id=(int)$id;
+			} else {
+				$info = print_r( $new->toArray(), true );
+				Xmltv_Logger::write( __METHOD__."\n". $info, Zend_Log::INFO, __CLASS__.'.log' );
+			}
+			
 		} catch (Exception $e) {
 			die( __METHOD__.": Не могу сохранить запись. ".__LINE__ );
 		}
+		
+		return $new;
+	}
+	
+	protected function removeActorsFromDesc($description=null){
+		
+		if (!$description)
+		throw new Exception("Не указан параметр для ".__METHOD__, 500);
+		
+		return $description;
+		
+	}
+	
+	protected function removeDirectorsFromDesc($description=null){
+		
+		if (!$description)
+		throw new Exception("Не указан параметр для ".__METHOD__, 500);
+		
+		return $description;
+		
+	}
+	
+	private function _updateProgramDirectors ( Zend_Db_Table_Row $existing, $program_info = null ) {
+		
+		if( empty($existing) ) 
+		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
+		
+		if (!$program_info)
+		$program_info = $this->_program;
+		
+		//var_dump(func_get_args());
 		//die(__FILE__.': '.__LINE__);
+		
+		$props = new Admin_Model_DbTable_ProgramsProps();
+		$serializer = new Zend_Serializer_Adapter_Json();
+		$p_props = $props->fetchRow("`hash`='".$program_info->hash."'" );
+		
+		if( count( $p_props ) == 0 ) {
+			$p_props = $props->createRow();
+			$p_props->hash = $program_info->hash;
+			try {
+				
+				$p_props->directors = $serializer->serialize( array($existing->id) );
+				
+				if ($this->saveChanges) {
+					$p_props->save();
+				} else {
+					$a = $p_props->toArray();
+					Xmltv_Logger::write( sprintf("%s: Создана запись режиссера для программы %s\n%s", __METHOD__, $program_info->hash, $a['directots']), Zend_Log::INFO, __CLASS__.'.log' );
+				}
+				
+			} catch (Exception $e) {
+				if ($e->getCode()!=1062) {
+					echo '<b>' . __FUNCTION__ . ' Ошибка. #' . $e->getCode() . ': Не могу добавить запись режиссера. ' . $e->getMessage() . '</b>';
+					die(__FILE__.': '.__LINE__);
+				}
+			}
+		} else {
+			try {
+				
+				$p_props->hash = $program_info->hash;
+				$persons = !empty($p_props->directors) ? $p_props->directors : '[]' ;
+				$persons = $serializer->unserialize( $persons );
+				
+				if( !(in_array( $existing->id, $persons )) ) {
+					$persons[] = $existing->id;
+				}
+				
+				$p_props->directors = $serializer->serialize( $persons );
+				
+				if ($this->saveChanges) {
+					$props->update( $p_props->toArray(), "`hash`='" . $program_info->hash . "'" );
+				} else {
+					$info = print_r($persons, true);
+					Xmltv_Logger::write( __METHOD__." - Добавлена запись режиссера для ".$program_info->hash."\n".$info, Zend_Log::INFO, __CLASS__.'.log' );
+				}
+				
+			} catch (Exception $e) {
+				echo '<b>' . __FUNCTION__ . ' Ошибка. #' . $e->getCode() . ': Не могу обновить запись режиссера. ' . $e->getMessage() . '</b>';
+				die( __FILE__ . ': ' . __LINE__ );
+			}
+		}
 	}
 	
 }

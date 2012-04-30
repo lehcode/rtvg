@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.3 2012-04-05 19:58:07 dev Exp $
+ * @version $Id: Bootstrap.php,v 1.4 2012-04-30 08:46:59 dev Exp $
  *
  */
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
@@ -13,36 +13,28 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	public $debug = false;
 
-	function run () {
+	function run() {
 
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		
-		defined( 'DATE_MYSQL' ) || define( DATE_MYSQL, 
-		Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY . ' ' . Zend_Date::HOUR .
-		 ':' . Zend_Date::MINUTE . ':' . Zend_Date::SECOND );
-		defined( 'DATE_MYSQL_SHORT' ) || define( DATE_MYSQL_SHORT, 
-		Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY );
-		defined( 'ROOT_PATH' ) || define( ROOT_PATH, 
-		str_replace( '/application', '', APPLICATION_PATH ) );
-		defined( 'APP_STARTED' ) || define( APP_STARTED, 
-		str_replace( '/application', '', APPLICATION_PATH ) );
+		defined( 'DATE_MYSQL' ) || define( DATE_MYSQL, Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY . ' ' . Zend_Date::HOUR . ':' . Zend_Date::MINUTE . ':' . Zend_Date::SECOND );
+		defined( 'DATE_MYSQL_SHORT' ) || define( DATE_MYSQL_SHORT, Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY );
+		defined( 'ROOT_PATH' ) || define( ROOT_PATH, str_replace( '/application', '', APPLICATION_PATH ) );
+		defined( 'APP_STARTED' ) || define( APP_STARTED, str_replace( '/application', '', APPLICATION_PATH ) );
 		
-		$config = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', 
-		APPLICATION_ENV );
-		//var_dump($config);
-		//die(__FILE__ . ': ' . __LINE__);
-		$this->debug = (bool)$config->site->get( 'debug', false );
-		//die(__FILE__ . ': ' . __LINE__);
-		//var_dump(APPLICATION_ENV);
-		//var_dump($this->debug);
-		//die(__FILE__ . ': ' . __LINE__);
+		$config = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', APPLICATION_ENV );
+		$debug = (bool)$config->site->get( 'debug', false );
+		
+		date_default_timezone_set($config->site->get('timezone', 'Europe/Moscow'));
+		
+		//$this->bootstrap('db')->getResource('db')->setFetchMode(Zend_DB::FETCH_OBJ);
 		
 		$init = new Xmltv_Plugin_Init( APPLICATION_ENV );
 		$fc = Zend_Controller_Front::getInstance()
 			->setParam( 'useDefaultControllerAlways', false )
 			->registerPlugin( $init );
 		
-		if( $this->debug ) {
+		if( $debug ) {
 			$fc->throwExceptions( true ); // disable ErrorController and logging
 			$fc->returnResponse (true);
 		} else {
@@ -56,26 +48,25 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		try {
 			$response = $fc->dispatch();
 		} catch (Exception $e) {
-			$log = new Zend_Log( 
-			new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-			$log->debug( 
-			$e->getMessage() . PHP_EOL . $e->getTraceAsString() );
 			
-			if( $this->debug ) {
+			if( $debug ) {
 				echo $e->getMessage();
 				Zend_Debug::dump($e->getTrace());
 			}
+			
+			$log = new Zend_Log( 
+			new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+			$log->debug( $e->getMessage() . PHP_EOL . $e->getTraceAsString() );
 			
 		}
 		
 		if ($response) {
 			if( $response->isException() ) {
+				//die(__FILE__.': '.__LINE__);
 				$exception = $response->getException();
-				$log = new Zend_Log( 
-				new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-				$log->debug( 
-				$exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
 				Zend_Debug::dump($exception->getTrace());
+				$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+				$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
 			} else {
 				$response->sendHeaders();
 				$response->outputBody();
