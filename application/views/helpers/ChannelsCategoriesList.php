@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsCategoriesList.php,v 1.1 2012-04-10 13:31:43 dev Exp $
+ * @version $Id: ChannelsCategoriesList.php,v 1.2 2012-05-20 09:01:36 dev Exp $
  *
  */
 class Zend_View_Helper_ChannelsCategoriesList extends Zend_View_Helper_Abstract 
@@ -27,10 +27,10 @@ class Zend_View_Helper_ChannelsCategoriesList extends Zend_View_Helper_Abstract
 		
 		$requestParams = Zend_Controller_Front::getInstance()->getRequest()->getParams();
 				
-		$html = '<ul id="channels_categories">';
+		$html = '<ul id="channels_categories" class="catlist">';
 		foreach ($cats as $cat) {
 			$alias = Xmltv_String::strtolower( $cat->alias );
-			$html.='<li><a style="background: url(\'/images/categories/channels/'.$cat->image.'\') no-repeat scroll 4px 4px transparent;" href="/каналы/'.$alias.'" class="btn">'.$cat->title.'</a></li>';
+			$html.='<li><a class="btn" style="background: url(\'/images/categories/channels/'.$cat->image.'\') no-repeat scroll 4px 4px transparent;" href="/каналы/'.$alias.'">'.$cat->title.'</a></li>';
 		}
 		$html .= '</ul>';
 		return $html;

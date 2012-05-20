@@ -36,7 +36,7 @@ $(document).ready(function(){
 				$(this).show(300, function(){  
 					scrollScreen('#programs-carousel .active');
 				});
-				
+				$('#programslist #videos').remove();
 			} else {
 				$(this).addClass('carousel');
 				$('#programs-carousel').addClass('carousel-inner');

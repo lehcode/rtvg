@@ -15,7 +15,7 @@
     height: 30px;
     left: 15px;
     line-height: 24px;
-    top: 85%;
+    top: 2%;
     text-shadow: none;
     opacity: 1;
     margin-top: 0;
@@ -43,6 +43,9 @@ li.lastcol:after {
 			width:40px;
 			height:40px;
 		}
+		#channels .channeldesc {
+			clear:both;
+		}
 
 #maincontent{
 	overflow:hidden;
@@ -62,7 +65,8 @@ li.lastcol:after {
 		
 		#programslist .programcontainer {
 			background: none repeat scroll 0 0 #EEF2F5;
-		    height: 360px;
+		    height: auto;
+			min-height:460px;
 		    overflow: hidden;
 		    padding: 16px 24px;
 		}
@@ -71,7 +75,7 @@ li.lastcol:after {
 			
 		}
 			#programslist .programcontainer .programtitle {
-				float: left;
+				margin-top: 46px;
 			}
 			#programslist .programcontainer .programtitle:after {
 				clear:both;
@@ -111,6 +115,23 @@ li.lastcol:after {
 					
 				}
 				#programslist .programcontainer .programtitle p span.end_time {
+					
+				}
+				
+				#programslist .programcontainer ul.tags_list {
+					margin:0;
+					display: inline-block;
+				}
+				#programslist .programcontainer ul.tags_list li {
+					float:left;
+					list-style:none;
+					margin: 8px 12px 0 0;
+				}
+				#programslist .programcontainer ul.tags_list a {}
+				#programslist #videos:after{
+					clear:both;
+				}
+				#programslist .programcontainer .desc.intro  {
 					
 				}
 				
@@ -202,6 +223,27 @@ li.lastcol:after {
 	#header h1 {
 		font-size: 12px;
 	}
+	
+	#header .navbar-inner {
+		border-top:none;
+		border-right:none;
+		border-bottom: 4px solid #0066CC;
+		border-left: noone;
+		background: none;
+		border-radius: 0;
+		box-shadow:none;
+	}
+	
+	#header .navbar-inner .nav > li > a {
+		text-shadow: none;
+	} 
+	#header .navbar-inner .nav > li > a:hover {
+		color: #333;
+	} 
+	#header .navbar-inner .divider-vertical {
+	    background: none;
+	    border:none;
+	}
 
 #premieres {
 	margin:0;
@@ -243,3 +285,41 @@ ul#fpnav:after{
 #col_l {
 	margin-right: 15px;
 }
+
+#footer {}
+
+	#footer h4 { font-size:10px };
+	#footer p { font-size:10px };
+
+#col_l {}
+
+	#col_l ul.catlist {}
+
+		#col_l ul.catlist li {}
+
+			#col_l ul.catlist a {
+				border:none;
+			}
+			#col_l ul.catlist a:hover {
+				background-color: #dedede;
+			}
+			
+#col_r {}
+	
+	#col_r .ad336x280 {
+		margin: 36px auto;
+	    width: 336px;
+	}
+	#videos_sidebar .accordion-toggle {
+		height:90px;
+		margin: 4px 0;
+	}
+	#videos_sidebar .accordion-toggle img  {
+		margin: 0 6px 0;
+	}
+	#videos_sidebar .info:after {
+		clear:both;
+	}
+	#videos_sidebar .accordion-toggle:after {
+		clear:both
+	}

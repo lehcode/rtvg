@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.3 2012-04-10 13:32:00 dev Exp $
+ * @version $Id: Programs.php,v 1.4 2012-05-20 08:58:56 dev Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
@@ -20,12 +20,9 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 
 		parent::__construct( $config );
 		
-		$siteConfig = Zend_Registry::get( 'site_config' )->site;
 		$this->_debug = Xmltv_Config::getDebug();
 		$this->_profiling = Xmltv_Config::getProfiling();
 		
-		
-	
 	}
 
 

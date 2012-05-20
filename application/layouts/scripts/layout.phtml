@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.5 2012-04-10 13:32:00 dev Exp $
+ * @version $Id: layout.phtml,v 1.6 2012-05-20 08:58:19 dev Exp $
  *
  */
 $this->headTitle()->setSeparator(' :: ');
@@ -22,10 +22,11 @@ $header    = $this->header();
 $premieres = $this->premieres();
 $fpMenu    = $this->fpMenu();
 $footer    = $this->footer();
-$sidebarLeft = $this->sidebarLeft();
+//$sidebarLeft = $this->sidebarLeft();
 $sidebarRight = $this->sidebarRight();
 $featuredChannels = $this->featuredChannelsList();
 $catList = $this->channelsCategoriesList();
+
 /*
  * XHTML
  */
@@ -123,19 +124,18 @@ echo $this->headStyle();
 		
 		<div class="span4" id="col_r">
 			<?php echo $sidebarRight; ?>
-			<div class="ad336x280" style="margin: 0 auto; width: 336px;">
-				<script type="text/javascript"><!--
-				google_ad_client = "ca-pub-1744616629400880";
-				/* rutvgid 336x280 */
-				google_ad_slot = "3286652462";
-				google_ad_width = 336;
-				google_ad_height = 280;
-				//-->
-				</script>
-				<script type="text/javascript"
-				src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
-				</script>
-			</div>
+			<?php 
+			if ($this->relevant_videos === true) {
+				echo "<h3>Видео онлайн на RuTvGid</h3>";
+				echo $this->youtubeVideos( array($this->channel->title), array(
+					'start_index'=>2,
+					'max_results'=>4,
+					'show_duration'=>true,
+					'thumb_width'=>120,
+					'collapse'=>true,
+					'truncate_description'=>30), 'sidebar' );
+			}
+			?>
 		</div>
 		
 		<?php 

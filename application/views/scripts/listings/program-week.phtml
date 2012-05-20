@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.1 2012-04-09 16:36:06 dev Exp $
+ * @version $Id: program-week.phtml,v 1.2 2012-05-20 09:02:10 dev Exp $
  *
  */
 
@@ -27,9 +27,18 @@ foreach ($this->list as $single) {
 	$start = new Zend_Date($single['start']);
 	$startDates[]= '<li><a href="/телепрограмма/'.$channelAlias.'/'.$single['alias'].'/'.$start->toString('yyyy-MM-dd').'">'.Xmltv_String::ucfirst( $start->toString( 'd MMMM(EEEE)', null, 'ru' ) ).'</a></li>';
 }
+
+if (!empty($startDates)) {
 ?>
 <p><?php printf('Программу <strong>%s</strong> можно позже посмотрть на этой неделе на канале <a href="%s">%s</a> в следующие дни:<br/>%s', $programTitle, '/телепрограмма/'.$channelAlias, $this->channel->title, '<ul>'.implode(PHP_EOL, $startDates)).'</ul>' ?></p>
-<?php /*
+<?php
+} else {
+?>
+<p><?php printf("На этой неделе программу <strong>%s</strong> показывать позже не будут.", $programTitle) ?></p>
+<?php 
+}
+
+/*
 <table class="table table-condensed">
 	<tbody>
 		<?php

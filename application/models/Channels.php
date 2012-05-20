@@ -31,6 +31,7 @@ class Xmltv_Model_Channels
 		return;
 		
 		$channel['icon'] = $baseUrl.'/images/channel_logo/'.$channel['icon'];
+		//var_dump($channel);
 		return $channel;
 	}
 	
@@ -82,6 +83,35 @@ class Xmltv_Model_Channels
 		$desc['intro'] = $props->desc_intro;
 		$desc['body']  = $props->desc_body;
 		return $desc;
+		
+	}
+	
+	public function getCategory($cat_alias=null){
+	
+		if (!$cat_alias)
+		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		$channels = $this->_table->fetchCategory($cat_alias);
+		
+		//var_dump($channels);
+		//die(__FILE__.': '.__LINE__);
+		
+		return $channels;
+		
+		
+	}
+	
+	public function getWeekSchedule(){
+	
+		//if (!$channel)
+		//throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		$schedule = $this->_table->fetchWeekItems(Zend_Registry::get('ch_id'), Zend_Registry::get('week_start'), Zend_Registry::get('week_end'));
+		
+		//var_dump($schedule);
+		//die(__FILE__.': '.__LINE__);
+		
+		return $schedule;
 		
 	}
 	

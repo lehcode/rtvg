@@ -189,11 +189,12 @@ class Xmltv_Model_Programs
 		
 		do{
 			$d->addDay(1);
-		} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>0);
+		} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1);
 		$result['end'] = $d;
 		
 		return $result;
 		
 	}
+	
 }
 

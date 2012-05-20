@@ -6,7 +6,7 @@ $(document).ready(function(){
 			data: $('#premiere_search').serialize()+'&format=html',
 			dataType: 'html',
 			beforeSend: function(){
-				$('#result').html("<p>Происходит удаление программ</p>");
+				$('#result').css({ 'background':'lightYellow' }).html("<h3>Происходит удаление программ</h3>");
 			},
 			success: function(response){
 				$('#result').css({ "background-color":"lightGreen" }).html(response);
@@ -29,7 +29,7 @@ $(document).ready(function(){
 			data: $('#parse_titles').serialize()+'&format=html',
 			dataType: 'html',
 			beforeSend: function(){
-				$('#result').css({ 'background':'none' }).html("<p>Происходит обработка программ</p>");
+				$('#result').html('').css({ 'background':'lightYellow' }).html("<h3>Происходит обработка программ</h3>");
 			},
 			success: function(response){
 				$('#result').css({ "background-color":"lightGreen" }).html(response);
@@ -46,13 +46,35 @@ $(document).ready(function(){
 			data: $('#delete_programs').serialize()+'&format=html',
 			dataType: 'html',
 			beforeSend: function(){
-				$('#result').html("<p>Происходит удаление программ</p>");
+				$('#result').css({ 'background':'lightYellow' }).html("<h3>Происходит удаление программ</h3>");
+				$('#result').after('<div id="progress"></div>');
+				polling = setInterval( function(){
+					var start = $('input#delete_start').val();
+					var end = $('input#delete_end').val();
+					$.ajax({
+						url: '/admin/programs/programs-delete-progress',
+						data: 'start_date='+start+'&end_date='+end+'&format=html',
+						method: 'get',
+						success: function(response){
+							console.log(response);
+							$('#progress').html(response);
+							window.clearInterval(polling);
+						},
+						error: function(XHR, textStatus, errorThrown){
+							$('#result').css({ "background-color":"lightRed" }).html(errorThrown);
+							window.clearInterval(polling);
+						}
+					});
+				}, 10000);
 			},
 			success: function(response){
 				$('#result').css({ "background-color":"lightGreen" }).html(response);
+				window.clearInterval(polling);
+				$('#progress').hide();
 			},
 			error: function(XHR, textStatus, errorThrown){
 				$('#result').css({ "background-color":"lightRed" }).html(errorThrown);
+				window.clearInterval(polling);
 			}
 		});
 	});

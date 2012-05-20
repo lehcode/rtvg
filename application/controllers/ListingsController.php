@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.3 2012-04-10 13:32:00 dev Exp $
+ * @version $Id: ListingsController.php,v 1.4 2012-05-20 08:59:53 dev Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -78,6 +78,10 @@ class ListingsController extends Zend_Controller_Action
 		$this->view->assign( 'channel', $channel );
 		$this->view->assign( 'programs', $list );
 		$this->view->assign( 'today', $today );
+		$this->view->assign( 'relevant_videos', true );
+
+		//$video_data = array($channel['title']);
+		$this->view->assign('video_data', array());
 		
 		$channels->addHit($channel['ch_id']);
 		
@@ -166,7 +170,7 @@ class ListingsController extends Zend_Controller_Action
 		}
 		return false;
 	}
-
+	
 	
 }
 

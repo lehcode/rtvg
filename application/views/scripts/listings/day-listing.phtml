@@ -4,12 +4,14 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.2 2012-04-10 13:32:00 dev Exp $
+ * @version $Id: day-listing.phtml,v 1.3 2012-05-20 09:02:10 dev Exp $
  *
  */
 $this->headScript()
 	->appendFile($this->baseUrl()."/js/bootstrap-carousel.js")
-	->appendFile($this->baseUrl()."/js/listing-day.js");
+	//->appendFile($this->baseUrl()."/js/bootstrap-collapse.js")
+	->appendFile($this->baseUrl()."/js/listing-day.js")
+	->appendScript("$(function() { $( '#videos_sidebar' ).accordion({ autoHeight:true, navigation:true, clearStyle:true }); });");
 
 $this_day_is_today=false;
 $date = new Zend_Date(null, null, 'ru');
@@ -44,7 +46,8 @@ $this->headStyle()->appendStyle($css);
 <p><?php echo Xmltv_String::ucfirst( $this->today->toString("EEEE, d MMMM YYYY") ); ?></p>
 <p><?php //echo $this->channel->desc_intro ?></p>
 <p><?php //echo $this->channel->desc_body ?></p>
-<p><a class="btn" href="<?php printf ('/телепрограмма/%s/неделя', $channel_alias) ?>" title=""><?php printf ('Программа канала %s на всю неделю', $this->channel->title) ?></a></p>
+<?php /* <p><a class="btn week" href="<?php printf ('/телепрограмма/%s/неделя', $channel_alias) ?>" title=""><?php printf ('Программа канала %s на всю неделю', $this->channel->title) ?></a></p> */ ?>
+<p><a class="btn week" href="javascript:void(0);" title=""><?php printf ('Программа канала %s на всю неделю', $this->channel->title) ?></a></p>
 
 <?php 
 if (!empty($this->programs)) {
@@ -66,6 +69,7 @@ if (!empty($this->programs)) {
 		$active = $prog->now_showing===true ? ' active' : '' ;
 		else
 		$active = $k==0 ? ' active' : '' ;
+		
 		?>
 	<div class="item<?php echo $active; ?> programcontainer">
 		<div class="programtitle">
@@ -87,9 +91,9 @@ if (!empty($this->programs)) {
 				}
 				?>
 				<?php if ($this_day_is_today) : ?>
-				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channel_alias, $prog->alias  ); ?>"><?php echo $prog_title ?></a>
+				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channel_alias, $prog->alias  ); ?>"><?php echo trim($prog_title, ':') ?></a>
 				<?php else : ?>
-				<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channel_alias, $prog->alias, $this->today->toString("yyyy-MM-dd")  ); ?>"><?php echo $prog->title ?></a>
+				<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channel_alias, $prog->alias, $this->today->toString("yyyy-MM-dd")  ); ?>"><?php echo trim($prog->title, ':') ?></a>
 				<?php endif; ?>
 			</h3>
 			
@@ -102,12 +106,32 @@ if (!empty($this->programs)) {
 		</div>
 		
 		<?php if (!empty($prog->desc_intro)) : ?>
-		<p class="desc intro"><?php echo $this->truncateString( $prog->desc_intro, 32, 'words' ) ?></p>
+		<p class="desc intro"><?php echo $this->truncateString( $prog->desc_intro, 100, 'words' ) ?></p>
 		<?php endif; ?>
 		
 		<?php if (!empty($prog->desc_body)) : ?>
-		<p class="desc body"><?php echo $this->truncateString( $prog->desc_body, 32, 'words' ) ?></p>
+		<p class="desc body"><?php echo $this->truncateString( $prog->desc_body, 100, 'words' ) ?></p>
 		<?php endif; ?>
+		
+		<?php 
+		$title = array($prog->title);
+		if (stristr($prog->title, '.')) {
+			$parts = explode('.', $prog->title);
+			$trim = new Zend_Filter_StringTrim(' ()-.,;"\'');
+			foreach ($parts as $k=>$item) {
+				$parts[$k] = $trim->filter($item);
+			}
+			$title = $parts;
+		}
+		echo $this->youtubeVideos($title, array(
+			'max_results'=>1,
+			'show_duration'=>false,
+			'show_tags'=>'all',
+			'thumb_width'=>200,
+			//'debug'=>true,
+			//'order'=>'relevance_lang_ru',
+			'truncate_description'=>false), 'content');
+		?>
 		
 	</div>
 	<?php 
