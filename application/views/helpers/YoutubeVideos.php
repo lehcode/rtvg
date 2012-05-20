@@ -11,6 +11,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			
 			$thumb_width = isset($config['thumb_width']) && !empty($config['thumb_width']) ? (int)$config['thumb_width'] : 120 ;
 			$show_tags   = isset($config['show_tags']) && !empty($config['show_tags']) ? (int)$config['show_tags'] : false ;
+			$show_date   = isset($config['show_date']) && !empty($config['show_date']) ? (bool)$config['show_date'] : false ;
 			$collapse    = isset($config['collapse']) && !empty($config['collapse']) ? (bool)$config['collapse'] : false ;
 			$debug       = isset($config['debug']) && !empty($config['debug']) ? (bool)$config['debug'] : false ;
 			$order       = isset($config['order']) && !empty($config['order']) ? (string)$config['order'] : 'relevance_lang_ru' ;
@@ -64,23 +65,28 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 							
 							$html .= '
 									<div class="accordion-toggle">
-										<a style="float:left" href="#"><img src="'.$videoThumbnail['url'].'" alt="'.$videoEntry->getVideoTitle().'" /></a>
 										<h4><a href="/видео/онлайн/'.$vid.'">'.$videoEntry->getVideoTitle().'</a></h4>
+										<a style="float:right" href="#"><img src="'.$videoThumbnail['url'].'" alt="'.$videoEntry->getVideoTitle().'" /></a>
 									</div>';
 									
 									$html .= '
 									<div class="info">';
 									
-									if ($config['show_duration']===true) {
-										
-										$d = new Zend_Date($videoEntry->getVideoDuration(), Zend_Date::TIMESTAMP);
-										$html .= '<div class="duration">'.$d->toString("mm мин ss сек").'</div>';
+									if ($config['show_date']===true) {
+										$d = new Zend_Date($videoEntry->getUpdated(), Zend_Date::ISO_8601);
+										$d->addHour(3);
+										$html .= '<div class="date">'.Xmltv_String::ucfirst( $d->toString("EEEE, d MMMM YYYY, H:mm", 'ru')).'</div>';
 									}
 									
 									if (isset($config['truncate_description']) && $config['truncate_description']>0) {
-										$html .= '<div class="desc">'.$this->_truncateString($videoEntry->getVideoDescription(), 50, 'words').'</div>';
+										$html .= '<p class="desc">'.$this->_truncateString($videoEntry->getVideoDescription(), 50, 'words').'</p>';
 									} else {
-										$html .= '<div class="desc">'.$videoEntry->getVideoDescription().'</div>';
+										$html .= '<p class="desc">'.$videoEntry->getVideoDescription().'</p>';
+									}
+									
+									if ($config['show_duration']===true) {
+										$d = new Zend_Date($videoEntry->getVideoDuration(), Zend_Date::TIMESTAMP);
+										$html .= '<div class="duration">Длина видео: '.$d->toString("mm мин ss сек").'</div>';
 									}
 									
 									if ((int)$config['show_tags']>0) {
