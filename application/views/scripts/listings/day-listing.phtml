@@ -4,14 +4,14 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.3 2012-05-20 09:02:10 dev Exp $
+ * @version $Id: day-listing.phtml,v 1.4 2012-05-20 17:27:57 dev Exp $
  *
  */
 $this->headScript()
 	->appendFile($this->baseUrl()."/js/bootstrap-carousel.js")
 	//->appendFile($this->baseUrl()."/js/bootstrap-collapse.js")
 	->appendFile($this->baseUrl()."/js/listing-day.js")
-	->appendScript("$(function() { $( '#videos_sidebar' ).accordion({ autoHeight:true, navigation:true, clearStyle:true }); });");
+	->appendScript("$(function() { $( '#col_r .videos_sidebar' ).accordion({ autoHeight:true, navigation:false, clearStyle:true }); });");
 
 $this_day_is_today=false;
 $date = new Zend_Date(null, null, 'ru');
@@ -91,7 +91,7 @@ if (!empty($this->programs)) {
 				}
 				?>
 				<?php if ($this_day_is_today) : ?>
-				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channel_alias, $prog->alias  ); ?>"><?php echo trim($prog_title, ':') ?></a>
+				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channel_alias, $prog->alias  ); ?>"><?php echo trim($prog_title, ':".') ?></a>
 				<?php else : ?>
 				<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channel_alias, $prog->alias, $this->today->toString("yyyy-MM-dd")  ); ?>"><?php echo trim($prog->title, ':') ?></a>
 				<?php endif; ?>
@@ -126,10 +126,8 @@ if (!empty($this->programs)) {
 		echo $this->youtubeVideos($title, array(
 			'max_results'=>1,
 			'show_duration'=>false,
-			'show_tags'=>'all',
+			'show_tags'=>10,
 			'thumb_width'=>200,
-			//'debug'=>true,
-			//'order'=>'relevance_lang_ru',
 			'truncate_description'=>false), 'content');
 		?>
 		

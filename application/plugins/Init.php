@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.5 2012-05-20 09:01:13 dev Exp $
+ * @version $Id: Init.php,v 1.6 2012-05-20 17:27:34 dev Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -127,7 +127,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 			$this->_router->addRoute( 'channels-category', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
-			'видео/онлайн/:video_id', 
+			'видео/онлайн/:id', 
 			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-video') );
 			$this->_router->addRoute( 'show-video', $route );
 			

@@ -34,7 +34,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			}
 			
 			$cache = new Xmltv_Cache();
-			$hash = $cache->getHash( __METHOD__.'_'.md5( implode( '', $config).implode( '', $data).$output));
+			$hash = $cache->getHash( __FUNCTION__.'_'.md5( implode( '', $config).implode( '', $data).$output));
 			// Note that we need to pass the version number to the query URL function
 			// to ensure backward compatibility with version 1 of the API.
 			if (Xmltv_Config::getCaching()){
@@ -47,7 +47,11 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			}
 			
 			$data_parent = "videos_$output";
-			$html= '<div id="'.$data_parent.'">';
+			$html= '<div class="'.$data_parent.'">';
+			
+			$trim        = new Zend_Filter_StringTrim(' ,."\'`');
+			$regex       = new Zend_Filter_PregReplace(array("match"=>'/["\'\(\)\.`\{\}\[\]]/ui', "replace"=>' '));
+			$toSeparator = new Zend_Filter_Word_SeparatorToSeparator(' ', '-');
 			
 			foreach ($videos as $videoEntry) {
 				
@@ -61,16 +65,19 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 					if ($videoThumbnail['width'] >= $thumb_width) {
 						
 						$vid = $this->_videoId($videoEntry->getVideoId());
+						
+						$title = $videoEntry->getVideoTitle();
+						$title = $trim->filter($title);
+						
 						if ($collapse === true){
 							
-							$html .= '
-									<div class="accordion-toggle">
-										<h4><a href="/видео/онлайн/'.$vid.'">'.$videoEntry->getVideoTitle().'</a></h4>
-										<a style="float:right" href="#"><img src="'.$videoThumbnail['url'].'" alt="'.$videoEntry->getVideoTitle().'" /></a>
-									</div>';
+							$html .= '<h4><a href="#">'.$title.'</a></h4>';
 									
-									$html .= '
-									<div class="info">';
+									$html .= '<div class="info">';
+									
+									$html .= '<a href="/видео/онлайн/'.$vid.'">
+										<img align="right" src="'.$videoThumbnail['url'].'" alt="'.$videoEntry->getVideoTitle().'" />
+									</a>';
 									
 									if ($config['show_date']===true) {
 										$d = new Zend_Date($videoEntry->getUpdated(), Zend_Date::ISO_8601);
@@ -90,6 +97,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 									}
 									
 									if ((int)$config['show_tags']>0) {
+										
 										try {
 											$tags = $videoEntry->getVideoTags();
 										} catch (Exception $e) {
@@ -98,25 +106,27 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 										$html .= '<ul class="tags_list">';
 										for ($i=0; $i<count($tags); $i++){
 											if ($i<(int)$config['show_tags']) {
-												$html .= '<li><a href="/видео/тема/'.$tags[$i].'" title="">'.$tags[$i].'</a></li>';
+												$safe_tag = $toSeparator->filter( $trim->filter( $regex->filter($tags[$i] )));
+												$html .= '<li><a href="/видео/тема/'.$safe_tag.'" title="">'.$tags[$i].'</a></li>';
 											}
 										}
 										$html .= "</ul>";
+										
 									}
 								$html.='
 									</div>';
 							
 						} else {
 							
-							$html .= '<h4>'.$videoEntry->getVideoTitle().'</h4>
+							$html .= '<h4>'.$title.'</h4>
 							<div class="thumb">';
 							$html .= '<a href="/видео/онлайн/'.$vid.'"><img src="'.$videoThumbnail['url'].'" /></a>';
 							$html .= '</div>';
 							
 							if (isset($config['truncate_description']) && $config['truncate_description']>0) {
-								$html .= '<div class="desc">'.$this->_truncateString($videoEntry->getVideoDescription(), 50, 'words').'</div>';
+								$html .= '<p class="desc">'.$this->_truncateString($videoEntry->getVideoDescription(), 50, 'words').'</p>';
 							} else {
-								$html .= '<div class="desc">'.$videoEntry->getVideoDescription().'</div>';
+								$html .= '<p class="desc">'.$videoEntry->getVideoDescription().'</p>';
 							}
 							
 							if ($config['show_duration']===true) {
@@ -129,10 +139,12 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 								} catch (Exception $e) {
 									echo $e->getMessage();
 								}
+								$html .= '<h4>Темы этого видео</h4>';
 								$html .= '<ul class="tags_list">';
 								for ($i=0; $i<count($tags); $i++){
 									if ($i<(int)$config['show_tags'] || $config['show_tags']=='all') {
-										$html .= '<li class="btn btn-mini"><a href="/видео/тема/'.$tags[$i].'" title="">'.$tags[$i].'</a></li>';
+										$safe_tag = $toSeparator->filter( $trim->filter( $regex->filter($tags[$i] )));
+										$html .= '<li class="btn btn-mini"><a href="/видео/тема/'.$safe_tag.'" title="">'.$tags[$i].'</a></li>';
 									}
 								}
 								$html .= "</ul>";

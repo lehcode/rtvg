@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.6 2012-05-20 08:58:19 dev Exp $
+ * @version $Id: layout.phtml,v 1.7 2012-05-20 17:26:40 dev Exp $
  *
  */
 $this->headTitle()->setSeparator(' :: ');
@@ -40,9 +40,9 @@ echo $this->headTitle();
  * metadata
  */
 $this->headMeta()
-	->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8')
+	->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8');
 	//->setName('keywords', Xmltv_String::strtolower('телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв'))
-	->setName('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.');
+	//->appendName('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.');
 echo $this->headMeta();
 echo $this->headTitle();
 echo $this->jQuery();
@@ -125,14 +125,17 @@ echo $this->headStyle();
 		<div class="span4" id="col_r">
 			<?php echo $sidebarRight; ?>
 			<?php 
-			if ($this->relevant_videos === true) {
-				echo "<h3>Видео онлайн на RuTvGid</h3>";
-				echo $this->youtubeVideos( array($this->channel->title), array(
+			if ($this->sidebar_videos === true) {
+				echo '<h3>Новые видео "'.$this->channel->title.'" онлайн</h3>';
+				echo $this->youtubeVideos( array("ТВ ".$this->channel->title), array(
 					'start_index'=>2,
-					'max_results'=>4,
+					'max_results'=>6,
 					'show_duration'=>true,
+					'show_date'=>true,
 					'thumb_width'=>120,
 					'collapse'=>true,
+					//'debug'=>true,
+					'order'=>'published',
 					'truncate_description'=>30), 'sidebar' );
 			}
 			?>

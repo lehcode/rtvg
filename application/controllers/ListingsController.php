@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.4 2012-05-20 08:59:53 dev Exp $
+ * @version $Id: ListingsController.php,v 1.5 2012-05-20 17:26:26 dev Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -14,20 +14,16 @@ class ListingsController extends Zend_Controller_Action
 	private   $_requestParams;
 	
 	public function __call ($method, $arguments) {
-
 		header( 'HTTP/1.0 404 Not Found' );
 		$this->_helper->layout->setLayout( 'error' );
 		$this->view->render();
-		//return;
 	}
 
 
 	public function init () {
-
 		$this->view->setScriptPath( APPLICATION_PATH . '/views/scripts/' );
 		$this->siteConfig = Zend_Registry::get( 'site_config' )->site;
 		$this->_requestParams = $this->_getAllParams();
-		
 	}
 
 
@@ -78,7 +74,7 @@ class ListingsController extends Zend_Controller_Action
 		$this->view->assign( 'channel', $channel );
 		$this->view->assign( 'programs', $list );
 		$this->view->assign( 'today', $today );
-		$this->view->assign( 'relevant_videos', true );
+		$this->view->assign( 'sidebar_videos', true );
 
 		//$video_data = array($channel['title']);
 		$this->view->assign('video_data', array());
