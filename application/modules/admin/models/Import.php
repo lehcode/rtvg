@@ -107,11 +107,11 @@ class Admin_Model_Import
 				try {
 					$this->_programsTable->update($data, "`hash`='$hash'");
 				} catch (Exception $e) {
-					echo __METHOD__.' error#'.$e->getCode().': '.$e->getMessage();
+					echo __METHOD__.' Ошибка#'.$e->getCode().': '.$e->getMessage();
 					die(__FILE__.': '.__LINE__);
 				}
 			} else {
-				echo __METHOD__.' error#'.$e->getCode().': '.$e->getMessage();
+				echo '<b>'.__METHOD__.' Ошибка#</b>'.$e->getCode().': '.$e->getMessage();
 				die(__FILE__.': '.__LINE__);
 			}
 		}
@@ -156,40 +156,39 @@ class Admin_Model_Import
 		throw new Exception("Пропущен параметр для ".__METHOD__, 500);
 		
 		$result = array();
-		
-    	foreach ($parsers as $parserName) {
-    		
-    		$parser = new $parserName();
+    	foreach ($parsers as $parserClass) {
+			
+    		$parser = new $parserClass();
     		try  {
     			
     			if ((bool)$save===true)
     			$parser->saveChanges=true;
     			
-    			//$parser->loadPrograms($start, $end);
     			$r = $parser->process($start, $end);
-    			var_dump(count($r));
     			if (empty($r)) {
-    				$data = print_r($parser->getProgram(), true);
-    				echo("<b>Ошибка обработки программы. Парсер: $parserName</b>");
+    				$data = print_r( $parser->getProgram(), true );
+    				echo("<b>Ошибка обработки программы. Парсер: $parserClass</b>");
     				if (Xmltv_Config::getDebug())
     				Zend_Debug::dump($data);
-    				die(__FILE__.': '.__LINE__);
+    				die( __FILE__.': '.__LINE__ );
     			}
-    			$result[] = $r;
-    		} catch (Exception $e) {
-
-    			echo $e->getMessage();
     			
+    			foreach ($r as $item)
+    			array_push($result, $item);
+    	
+    		} catch (Exception $e) {
+    			echo $e->getMessage();
     			if (Xmltv_Config::getDebug())
     			Zend_Debug::dump($e->getTrace());
-    			
-    			die(__FILE__.': '.__LINE__);
     		}
+    		
     	}
     	
-    	echo '<h3>Готово!</h3>';
-    	var_dump($result);
-    	//var_dump($result);
+    	//var_dump(count($result));
+    	//var_dump($result[0]);
+    	//die(__FILE__.': '.__LINE__);
+    	
+    	return $result;
     	
 	}
 	

@@ -41,28 +41,28 @@ INPUT:
 	public static function split_string($string, $delineator, $desired, $type)
 	{
 		# Case insensitive parse, convert string and delineator to lower case
-		$lc_str = strtolower($string);
-		$marker = strtolower($delineator);
+		$lc_str = Xmltv_String::strtolower($string);
+		$marker = Xmltv_String::strtolower($delineator);
 		
 		# Return text BEFORE the delineator
 		if($desired == BEFORE)
 	    {
 		    if($type == EXCL)  // Return text ESCL of the delineator
-		        $split_here = strpos($lc_str, $marker);
+		        $split_here = Xmltv_String::strpos( $lc_str, $marker );
 		    else               // Return text INCL of the delineator
-		        $split_here = strpos($lc_str, $marker)+strlen($marker);
+		        $split_here = Xmltv_String::strpos($lc_str, $marker)+strlen($marker);
 		    
-		    $parsed_string = substr($string, 0, $split_here);
+		    $parsed_string = Xmltv_String::substr( $string, 0, $split_here );
 	    }
 		# Return text AFTER the delineator
 		else
 	    {
 		    if($type==EXCL)    // Return text ESCL of the delineator
-		        $split_here = strpos($lc_str, $marker) + strlen($marker);
+		        $split_here = Xmltv_String::strpos($lc_str, $marker) + strlen($marker);
 		    else               // Return text INCL of the delineator
-		        $split_here = strpos($lc_str, $marker) ;
+		        $split_here = Xmltv_String::strpos($lc_str, $marker) ;
 		    
-		    $parsed_string =  substr($string, $split_here, strlen($string));
+		    $parsed_string =  Xmltv_String::substr($string, $split_here, strlen($string));
 	    }
 		return $parsed_string;
 	}
@@ -123,11 +123,11 @@ INPUT:
 		$cleaned_html = self::tidy_html($tag);
 		
 		# Remove all line feeds from the string
-		$cleaned_html = str_replace("\r", "", $cleaned_html);   
-		$cleaned_html = str_replace("\n", "", $cleaned_html);
+		$cleaned_html = Xmltv_String::str_ireplace("\r", "", $cleaned_html);   
+		$cleaned_html = Xmltv_String::str_ireplace("\n", "", $cleaned_html);
 		
 		# Use return_between() to find the properly quoted value for the attribute
-		return return_between($cleaned_html, strtoupper($attribute)."=\"", "\"", EXCL);
+		return $this->return_between($cleaned_html, strtoupper($attribute)."=\"", "\"", EXCL);
 	}
 
 /***********************************************************************
@@ -148,7 +148,7 @@ INPUT:
 		
 		# Remove each occurrence of each array element from string;
 		for($xx=0; $xx<count($remove_array); $xx++)
-		    $string = str_replace($remove_array, "", $string);
+		    $string = Xmltv_String::str_ireplace($remove_array, "", $string);
 		
 		return $string;
 	}

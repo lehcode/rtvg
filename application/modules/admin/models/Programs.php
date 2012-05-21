@@ -57,7 +57,8 @@ class Admin_Model_Programs
 	private function _makeAlias($input=null){
 		
 		if( !$input )
-		throw new Exception("Не указан один или более параметров для ".__METHOD__, 500);
+		return 'неизвестная-программа';
+		//throw new Exception("Не указан один или более параметров для ".__METHOD__, 500);
 		
 		$result = $input;
 		$regexp = new Zend_Filter_PregReplace(array('match'=>'/\(([0-9]+)-я серия - "(.+)"\. ([0-9]+)-я серия - "(.+)"\)/iu', 'replace'=>'\1-\2-\3-\4'));
@@ -106,6 +107,7 @@ class Admin_Model_Programs
 	}
 	
 	public function makeAlias($input=null){
+		
 		return $this->_makeAlias($input);
 	}
 	

@@ -784,4 +784,8 @@ class Xmltv_Parser_ProgramInfoParser extends Xmltv_Parser_StringParser
 		}
 	}
 	
+	private function _loadPrograms(Zend_Date $start, Zend_Date $end){
+		return array();
+	}
+	
 }

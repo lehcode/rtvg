@@ -23,7 +23,7 @@ class Xmltv_Filesystem_Folder
 		while (($file = readdir($handle)) !== false)
 		{
 			if (($file != '.') && ($file != '..') && (!in_array($file, $exclude))) {
-				$dir = $path . DS . $file;
+				$dir = $path . '/' . $file;
 				$isDir = is_dir($dir);
 				if ($isDir) {
 					if ($recurse) {
@@ -38,7 +38,7 @@ class Xmltv_Filesystem_Folder
 				} else {
 					if (preg_match("/$filter/", $file)) {
 						if ($fullpath) {
-							$arr[] = $path . DS . $file;
+							$arr[] = $path . '/' . $file;
 						} else {
 							$arr[] = $file;
 						}

@@ -5,81 +5,70 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 	
 	private $_cat_id=3; // Художественный фильм
 	private $_channels=array();
-	private $_classCategories=array(0, 3, 14, 15, 17);
+	private $_classCategories=array(3, 14, 15, 17);
 	
-	/**
-	 * Overloaded Xmltv_Parser_ProgramInfoParser#process()
-	 * 
-	 * @param mixed $return
-	 */
-	public function process(){
+	
+	public function process(Zend_Date $start, Zend_Date $end){
 		
-		$this->_loadChannels();
+		$this->_loadPrograms( $start, $end );
 		
-		$i=0;
+		$logfile = ROOT_PATH.'/log/'.__CLASS__.'.log';
+		if (is_file($logfile))
+		unlink($logfile);
+		
+		var_dump(count($this->chunks, COUNT_RECURSIVE));
+		//die(__FILE__.': '.__LINE__);
+		
+		$site_config = Xmltv_Config::getConfig('site')->site;
+		$matches = array();
+		$cc=0;
 		foreach ($this->chunks as $ck=>$part) {
     		foreach ( $part as $pk=>$current ) {
     			
-    			/*
-    			if ($i==500)
-    			die(__FILE__.': '.__LINE__);
-    			else
-    			var_dump($current);
-    			*/
-    			$i++;
-    			
-    			
-    			//var_dump(count($this->chunks));
-    			//die(__FILE__.': '.__LINE__);
+    			$this->_program = new stdClass();
     			
     			if (!$current->hash) {
 					var_dump($current);
-    				die("Идентификатор программы не может быть NULL ".__METHOD__.': '.__LINE__);
+    				die( "Идентификатор программы не может быть NULL " . __METHOD__ . ': ' . __LINE__ );
     			}
     			
     			$current->start = new Zend_Date($current->start, 'yyyy-MM-dd HH:mm:ss');
-    			$current->end   = new Zend_Date($current->start, 'yyyy-MM-dd HH:mm:ss');
-    			$this->setProgram( $current );
-    			
-    			//var_dump($this->_program);
-    			//die(__FILE__.': '.__LINE__);
-    			
-	    		if ($this->matches()) {
+    			$current->end   = new Zend_Date($current->end, 'yyyy-MM-dd HH:mm:ss');
+    			$this->_program = $current;
+				
+    			try {
+    				
+    				$this->setTitle();
+					$this->setAlias();
+					$this->setSubTitle();
 					
-	    			$this->setTitle( $this->_program->title );
-					
-					//var_dump($this);
-					//die(__FILE__.': '.__LINE__);
-					
-					if (!$this->_alias)
-					$this->setAlias( $this->_title );
-					
-					if (!$this->_sub_title)
-					$this->setSubTitle( $this->_program->title );
-					
-					//var_dump($this);
-					//die(__FILE__.': '.__LINE__);
-					
-					if (!isset($this->_desc->intro))
+					if ( !$this->_desc->intro )
 					$this->setDescription($this->_program->desc_intro, $this->_program->desc_body);
 					
-					//if ((int)$this->_program->category == 0)
+					if ((int)$this->_program->category == 0)
 					$this->setCategory(18);
 					
-					//var_dump($this);
-					//die(__FILE__.': '.__LINE__);
-					
-					//if ($return===true)
-					//return $this->getProgram();
-					//else {
-					if ( $this->_title != $this->_program->title )
-					$this->updateProgramInfo( $this->getProgram() );
-					//}
-				}
+    			} catch (Exception $e) {
+    				echo '<b>'.$e->getMessage().'</b>';
+					Zend_Debug::dump($e->getTrace());
+					die(__FILE__.': '.__LINE__);
+    			}
     			
+				$this->setProgramProps();
+				$matches[] = $this->_program;
+				$cc++;
+				
     		}
+    		
+    		//var_dump($matches);
+    		//var_dump(count($matches));
+    		//var_dump($i);
 		}
 		
+		//var_dump(count($matches));
+		//die(__FILE__.': '.__LINE__);
+		
+		return $matches;
 		
 	}
 	
@@ -105,17 +94,11 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 			 || preg_match('/\s+Фильм\s+(\p{Cyrillic}+\s*\p{Cyrillic}+)\s+".+"/ius', $this->_program->title) ) {
 				return true;
 			}
-		} else {
-			if( Xmltv_String::stristr($this->_program->title, 'многосерийный фильм')
+		} 
+		if( Xmltv_String::stristr($this->_program->title, 'многосерийный фильм')
 			 || Xmltv_String::stristr($this->_program->title, 'остросюжетный детектив') ){
-				return true;
-			} 
-			
-			//var_dump($this->_program);
-			//die(__FILE__.': '.__LINE__);
-			
-			return;
-		}
+			return true;
+		} 
 		
 		//var_dump($this->_program);
 		//die(__FILE__.': '.__LINE__);
@@ -136,7 +119,7 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 	 */
 	protected function setTitle(){
 		
-		$result = $this->_program->title;
+		$r = $this->_program->title;
 		/*
 		if (!in_array((string)$this->_program->ch_id, $this->_channels)) {
 			var_dump($this->_program);
@@ -146,8 +129,8 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 		//var_dump($this->_program);
 		//die(__FILE__.': '.__LINE__);
 		
-		if (Xmltv_String::stristr($result, 'Многосерийный фильм')) {
-			$result = Xmltv_String::str_ireplace('Многосерийный фильм', '', $result);
+		if (Xmltv_String::stristr($r, 'многосерийный фильм')) {
+			$r = Xmltv_String::str_ireplace('многосерийный фильм', '', $r);
 			$this->_cat_id = 15;
 		} 
 		
@@ -160,7 +143,7 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 			die(__FILE__.': '.__LINE__);
 		}
 		*/
-		parent::cleanTitle($result);
+		$this->_title = parent::cleanTitle($r);
 		
 	}
 	
@@ -169,10 +152,10 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 	 */
 	protected function setSubTitle($input=null){
 		
-		if(  !$input ) throw new Exception( 
-		"Не указан параметр для " . __METHOD__, 500 );
+		//if(  !$input ) throw new Exception( 
+		//"Не указан параметр для " . __METHOD__, 500 );
 		
-		$sub_title=$input;
+		$sub_title=$this->_program->title;
 		
 		//var_dump($sub_title);
 		//var_dump($this->_program);
@@ -184,7 +167,7 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 			 */
 			$sub_title = 'Многосерийный фильм';
 		} 
-		$this->cleanTitle($sub_title, true);
+		$this->_sub_title = parent::cleanTitle($sub_title, true);
 	}
 	
 	/**
@@ -208,15 +191,14 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 		}
 		
 		$result = $intro." ".$body;
-		//$result = preg_replace('/[0-9]+-я серия\.? ?/', '', $result);
-		$result = Xmltv_String::str_replace('...', '…', $result);
+		$result = Xmltv_String::str_ireplace('...', '…', $result);
 		$result = $this->removeDirectorsFromDesc( $result );
 		$result = $this->removeActorsFromDesc( $result );
 		
-		$this->_desc['intro'] = $result;
+		$this->_desc->intro = $result;
 		
 	}
-	
+	/*
 	private function removeActorsFromDesc($text=null){
 		
 		if (!$text)
@@ -225,24 +207,32 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 		if (Xmltv_String::stristr($text, 'в ролях')) {
 			$pos = Xmltv_String::strpos($text, 'В ролях');
 			//$parts = explode('в ролях', $text);
-			$desc = Xmltv_String::substr( $text, $pos, Xmltv_String::strlen($text)-1 );
-			$desc = Xmltv_String::substr( $text, $pos, Xmltv_String::strlen($text)-1 );
-			var_dump($this->_program);
-			var_dump($pos);
-			var_dump($desc);
-			die(__FILE__.': '.__LINE__);
+			$names = Xmltv_String::substr( $text, $pos, Xmltv_String::strlen($text)-1 );
+			$desc = trim( Xmltv_String::str_ireplace( $names, '', $text) );
+			//var_dump($this->_program);
+			//var_dump($pos);
+			//$names = trim( Xmltv_String::str_ireplace('в ролях:', '', $names), '. ' );
+			//$names = explode( ',', $names );
+			//var_dump($names);
+			//var_dump($desc);
+			//die(__FILE__.': '.__LINE__);
+			return $desc;
 		} else {
 			return $text;
 		}
 		
 	}
+	*/
 	
-	private function removeDirectorsFromDesc($text=null){
+	
+	protected function removeDirectorsFromDesc($text=null){
 		
 		if (!$text)
 		throw new Exception("Не указан параметр для ".__METHOD__, 500);
 		
-		if (Xmltv_String::stristr($text, 'режиссер')) {
+		if (Xmltv_String::stristr($text, 'Художественный фильм')) {
+			return $text;
+		} elseif (Xmltv_String::stristr($text, 'режиссер')) {
 			$parts = explode('режиссер', $text);
 			var_dump($text);
 			var_dump($parts);
@@ -253,21 +243,30 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 		
 	}
 	
-	private function _loadChannels(){
+	
+	private function _loadPrograms(Zend_Date $start, Zend_Date $end){
 		
 		$site_config = Xmltv_Config::getConfig('site');
 		
 		if (empty($site_config->channels->movies))
-		throw new Exception( __METHOD__ . ': Не указанна настройка "channels.movies" в configs/site.ini. ' . __LINE__, 500 );
+		throw new Exception( __METHOD__ . ': Не указана настройка "channels.movies" в configs/site.ini. ' . __LINE__, 500 );
 		
 		if (stristr($site_config->channels->movies, ','))
 		$this->_channels = explode(',', $site_config->channels->movies);
 		else 
 		$this->_channels = array($site_config->channels->movies);
 		
+		$programsTable = new Admin_Model_DbTable_Programs();
+		$result = $programsTable->fetchMovies( $start, $end, $this->_classCategories, $this->_channels );
+		
+		//var_dump(count($result));
+		//die(__FILE__.': '.__LINE__);
+		
+		$this->chunks = array_chunk($result, 500);
+		
 	}
 	
-	public function getProgram () {
+	protected function setProgramProps () {
 
 		$this->_program->title      = $this->_title;
 		$this->_program->alias      = $this->_alias;
@@ -276,12 +275,8 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 		$this->_program->desc_body  = $this->_desc->body;
 		$this->_program->category   = $this->_cat_id;
 		
-		//var_dump($this->_program);
-		//die(__FILE__.': '.__LINE__);
-		
-		return $this->_program;
 	}
-	
+	/*
 	public function loadPrograms(Zend_Date $start, Zend_Date $end){
 		
 		if (!$this->_cat_id)
@@ -292,11 +287,17 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 		$this->chunks = array_chunk($programs, 500);
 		
 	}
+	*/
 	
 	protected function setCategory($id=null){
 		
 		$this->_cat_id = (int)$id;
 		
+	}
+	
+	protected function setAlias(){
+		$a = $this->_title;
+		$this->_alias = Xmltv_String::strtolower( parent::cleanAlias( $a ) );
 	}
 	
 }

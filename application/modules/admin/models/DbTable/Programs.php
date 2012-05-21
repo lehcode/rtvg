@@ -214,5 +214,50 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		return $result;
     	
     }
+    
+    public function fetchMovies(Zend_Date $start, Zend_Date $end, $category=null, $channels=null){
+    	
+		if( $this->_profiling ) {
+			$this->_db->getProfiler()->setEnabled( true );
+			$profiler = $this->_db->getProfiler();
+		}
+    	
+		$select = $this->_db->select()
+			->from(array('prog'=>$this->_name), '*')
+			->where("prog.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00:00'")
+			->where("prog.`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'")
+			->joinLeft(array('d'=>'rtvg_programs_descriptions'), "prog.hash = d.hash", array('desc_intro'=>'intro', 'desc_body'=>'body'))
+			->joinLeft(array('prop'=>'rtvg_programs_props'), "prog.`hash`=prop.`hash`", array());
+		
+		if (!empty($category)) {
+			
+			if (is_array($category)) {
+				$where = "prog.`category` IN ( " . implode(',', $category) . " ) OR prog.`title` LIKE '%фильм%'";
+			} else {
+				$where = "prog.`category` = '$category' OR prog.`title` LIKE '%фильм%'";
+			}
+		} else {
+			$where = "prog.`title` LIKE '%фильм%'";
+		}
+		
+    	if (!empty($channels)) {
+			$ids = count($channels)>1 ? implode(',', $channels) : $channels[0];
+			$where .= " OR prog.`ch_id` IN ( $ids ) ";
+		}
+		
+		$select->where($where);
+		$select->order("prog.ch_id ASC")->order("prog.start ASC");
+		
+		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
+    	
+    	if( $this->_profiling ) {
+			$query = $profiler->getLastQueryProfile();
+			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
+		}
+		//var_dump(count($result));
+    	//die(__FILE__.': '.__LINE__);
+		return $result;
+    	
+    }
 }
 

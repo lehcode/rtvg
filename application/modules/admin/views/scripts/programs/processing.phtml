@@ -57,6 +57,10 @@ $css = "#premiere_search button:before, #premiere_search button:after { clear: b
 					$parseDocumentary = new Zend_Form_Element_Checkbox( 'do_parse_documentary' );
 					$parseDocumentary->setLabel( 'Документалистика' )
 						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_documentary'));
+
+					$parseCartoons = new Zend_Form_Element_Checkbox( 'do_parse_cartoons' );
+					$parseCartoons->setLabel( 'Мультфильмы' )
+						->setAttribs(array('class'=>'checkbox', 'id'=>'do_parse_cartoons'));
 						
 					$saveUpdates = new Zend_Form_Element_Checkbox( 'save_updates' );
 					$saveUpdates->setLabel( 'Сохранять изменения' )
@@ -77,6 +81,7 @@ $css = "#premiere_search button:before, #premiere_search button:after { clear: b
 						$parseBreaks,
 						$parseDocumentary,
 						$parseDescriptions,
+						$parseCartoons,
 						$button,
 						$saveUpdates,
 					) );
