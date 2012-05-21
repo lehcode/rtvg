@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ImportController.php,v 1.8 2012-04-23 04:48:27 dev Exp $
+ * @version $Id: ImportController.php,v 1.9 2012-05-21 05:12:29 dev Exp $
  *
  */
 class Admin_ImportController extends Zend_Controller_Action
@@ -215,7 +215,8 @@ class Admin_ImportController extends Zend_Controller_Action
 								$desc['alias'] = $programs->makeAlias( $programs->getProgramTitleFromXml($xml) );
 								
 								if (empty($desc['alias']))
-								throw new Exception("Alias не может быть NULL".__METHOD__, 500);
+								$desc['alias'] = 'неизвестная-программа';
+								//throw new Exception("Alias не может быть NULL".__METHOD__, 500);
 								
 								//var_dump($desc);
 								//die(__FILE__.": ".__LINE__);
@@ -279,6 +280,10 @@ class Admin_ImportController extends Zend_Controller_Action
 		
 		/* Uploading Document File on Server */
         $upload = new Zend_File_Transfer_Adapter_Http();
+        
+        //var_dump(ROOT_PATH);
+        //die(__FILE__.': '.__LINE__);
+        
         $path = ROOT_PATH."/uploads/xmltv/";
         $upload->setDestination($path);
         try {
@@ -485,17 +490,31 @@ class Admin_ImportController extends Zend_Controller_Action
     		}
     		var_dump($activeParsers);
     		$programs = new Admin_Model_Import();
-    		$programs->parseSavedPrograms( $activeParsers,
-    			new Zend_Date($this->_getParam('start_date'), 'dd.MM.yyyy'),
-    			new Zend_Date($this->_getParam('end_date'), 'dd.MM.yyyy'), (bool)$this->_getParam('save_updates', false));
-    		//echo "<h3>Готово!</h3>";
-    		exit();
-    		//die(__FILE__.': '.__LINE__);
+    		try {
+    			$programsList = $programs->parseSavedPrograms( $activeParsers,
+    				new Zend_Date($this->_getParam('start_date'), 'dd.MM.yyyy'),
+    				new Zend_Date($this->_getParam('end_date'), 'dd.MM.yyyy'), (bool)$this->_getParam('save_updates', false));
+    		} catch (Exception $e) {
+    			echo $e->getMessage();
+    			//die(__FILE__.': '.__LINE__);
+    		}
     		
+    		var_dump(count($programsList));
+    		var_dump($programsList);
+    		
+    		if (!$programsList)
+    		echo "<b>Ошибка обработки программы.</b>";
+    		else
+    		echo "<h3>Готово!</h3>";
+    		
+    		exit();
+    		
+    	} else {
+    		throw new Exception("Неверные данные", 500);
+    		exit();
     	}
     	
-    	throw new Exception("Неверные данные", 500);
-    	exit();
+    	
     	
     }
     
