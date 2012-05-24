@@ -15,6 +15,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			$collapse    = isset($config['collapse']) && !empty($config['collapse']) ? (bool)$config['collapse'] : false ;
 			$debug       = isset($config['debug']) && !empty($config['debug']) ? (bool)$config['debug'] : false ;
 			$order       = isset($config['order']) && !empty($config['order']) ? (string)$config['order'] : 'relevance_lang_ru' ;
+			$safesearch  = isset($config['safe_search']) && !empty($config['safe_search']) ? (string)$config['safe_search'] : 'moderate' ;
 			
 			$max_results = isset($config['max_results']) && !empty($config['max_results']) ? (int)$config['max_results'] : 5 ;
 			$query->setMaxResults($max_results);
@@ -22,25 +23,35 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			$query->setStartIndex ($start_index);
 			
 			$query->setParam('lang', 'ru');
-			$query->setVideoQuery(implode('|', $data));
-			//$query->orderBy = 'relevance_lang_ru';
-			//$query->orderBy = 'published';
-			//$query->orderBy = 'relevance';
-			$query->orderBy = $order;
-			$query->setSafeSearch('strict');
 			
-			if ($debug===true) {
+			/*
+			 * Cleanup query items
+			 */
+			$colon  = new Zend_Filter_PregReplace(array( 'match'=>'/[:]/', 'replace'=>'|' ));
+			$trim   = new Zend_Filter_StringTrim(' ,."\'`|');
+			$quotes = new Zend_Filter_Word_SeparatorToSeparator( '"', '' );
+			$qs = '';
+			foreach ($data as $k=>$d) {
+				$data[$k] = $trim->filter($quotes->filter( $colon->filter( $d )));
+				$qs.=$trim->filter($data[$k]).'|';
+			}
+			$qs = $trim->filter($qs);
+			
+			$query->setVideoQuery($qs);
+			$query->orderBy = $order;
+			$query->setSafeSearch($safesearch);
+			
+			if (Xmltv_Config::getDebug()===true) {
 				var_dump($query);
 			}
 			
-			$cache = new Xmltv_Cache();
-			$hash = $cache->getHash( __FUNCTION__.'_'.md5( implode( '', $config).implode( '', $data).$output));
-			// Note that we need to pass the version number to the query URL function
-			// to ensure backward compatibility with version 1 of the API.
+			$cache_sub = 'youtube';
+			$cache = new Xmltv_Cache(array('location'=>"/cache/$cache_sub"));
+			$hash = $cache->getHash( __FUNCTION__.'_'.md5($qs.$output));
 			if (Xmltv_Config::getCaching()){
-				if (!$videos = $cache->load($hash, 'Function')) {
+				if (!$videos = $cache->load($hash, 'Function', $cache_sub)) {
 					$videos = $yt->getVideoFeed($query->getQueryUrl(2));
-					$cache->save($videos, $hash, 'Function');
+					$cache->save($videos, $hash, 'Function', $cache_sub);
 				}
 			} else {
 				$videos = $yt->getVideoFeed($query->getQueryUrl(2));
@@ -49,11 +60,14 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			$data_parent = "videos_$output";
 			$html= '<div class="'.$data_parent.'">';
 			
-			$trim        = new Zend_Filter_StringTrim(' ,."\'`');
-			$regex       = new Zend_Filter_PregReplace(array("match"=>'/["\'\(\)\.`\{\}\[\]]/ui', "replace"=>' '));
-			$toSeparator = new Zend_Filter_Word_SeparatorToSeparator(' ', '-');
+			
+			//$regex       = new Zend_Filter_PregReplace(array("match"=>'/["\'\(\)\.`\{\}\[\]]/ui', "replace"=>' '));
+			//$toSeparator = new Zend_Filter_Word_SeparatorToSeparator(' ', '-');
 			
 			foreach ($videos as $videoEntry) {
+				
+				if (!preg_match('/\p{Cyrillic}+/ui', $videoEntry->getVideoDescription()))
+				break;
 				
 				try {
 					$videoThumbnails = $videoEntry->getVideoThumbnails();
@@ -68,6 +82,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 						
 						$title = $videoEntry->getVideoTitle();
 						$title = $trim->filter($title);
+						$alias = $this->view->videoAlias($title);
 						
 						if ($collapse === true){
 							
@@ -75,7 +90,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 									
 									$html .= '<div class="info">';
 									
-									$html .= '<a href="/видео/онлайн/'.$vid.'">
+									$html .= '<a href="/видео/онлайн/'.$alias.'/'.$vid.'">
 										<img align="right" src="'.$videoThumbnail['url'].'" alt="'.$videoEntry->getVideoTitle().'" />
 									</a>';
 									
@@ -106,7 +121,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 										$html .= '<ul class="tags_list">';
 										for ($i=0; $i<count($tags); $i++){
 											if ($i<(int)$config['show_tags']) {
-												$safe_tag = $toSeparator->filter( $trim->filter( $regex->filter($tags[$i] )));
+												$safe_tag = $this->view->safeTag($tags[$i]);
 												$html .= '<li><a href="/видео/тема/'.$safe_tag.'" title="">'.$tags[$i].'</a></li>';
 											}
 										}
@@ -120,7 +135,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 							
 							$html .= '<h4>'.$title.'</h4>
 							<div class="thumb">';
-							$html .= '<a href="/видео/онлайн/'.$vid.'"><img src="'.$videoThumbnail['url'].'" /></a>';
+							$html .= '<a href="/видео/онлайн/'.$alias.'/'.$vid.'"><img src="'.$videoThumbnail['url'].'" /></a>';
 							$html .= '</div>';
 							
 							if (isset($config['truncate_description']) && $config['truncate_description']>0) {
@@ -143,7 +158,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 								$html .= '<ul class="tags_list">';
 								for ($i=0; $i<count($tags); $i++){
 									if ($i<(int)$config['show_tags'] || $config['show_tags']=='all') {
-										$safe_tag = $toSeparator->filter( $trim->filter( $regex->filter($tags[$i] )));
+										$safe_tag = $this->view->safeTag($tags[$i]);
 										$html .= '<li class="btn btn-mini"><a href="/видео/тема/'.$safe_tag.'" title="">'.$tags[$i].'</a></li>';
 									}
 								}
@@ -195,4 +210,22 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 				return Xmltv_String::substr($this->_input, 0, $length).'…';
 		}
 	}
+	/*
+	private function _makeAlias($title=null){
+		
+		if (!$title)
+		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		$trim       = new Zend_Filter_StringTrim(' "\'.,:-?!(){}[]`');
+		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
+		$regex      = new Zend_Filter_PregReplace(array("match"=>'/["\'.,:-\?\{\}\[\]\!`\(\)]+/', 'replace'=>' '));
+		$tolower    = new Zend_Filter_StringToLower();
+		$doubledash = new Zend_Filter_PregReplace(array("match"=>'/[-]+/', 'replace'=>'-'));
+		
+		$result = $tolower->filter( $doubledash->filter( $trim->filter( $separator->filter( $regex->filter($title)))));
+		
+		return $result;
+		
+	}
+	*/
 }

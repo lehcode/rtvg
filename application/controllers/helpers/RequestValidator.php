@@ -37,8 +37,12 @@ class Xmltv_Controller_Helper_RequestValidator extends Zend_Controller_Action_He
 	    		new Zend_Validate_Regex('/^html|json$/')));
 		switch ($action) {
 			case 'channel-week':
-				$validators['channel']    = array( new Zend_Validate_Regex('/^[\p{L}0-9-\+]+/ui') );
-				$validators['week_start'] = array( new Zend_Validate_Date(array('format'=>'dd.MM.yyyy', 'locale'=>'ru')) );
+				$validators['channel']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/ui' ));
+				$validators['week_start'] = array( new Zend_Validate_Date( array('format'=>'dd.MM.yyyy', 'locale'=>'ru' )));
+				break;
+			case 'show-video':
+				$validators['id']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
+				$validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
 				break;
 			default:
 		}

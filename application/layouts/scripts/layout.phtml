@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.7 2012-05-20 17:26:40 dev Exp $
+ * @version $Id: layout.phtml,v 1.8 2012-05-24 20:49:35 dev Exp $
  *
  */
 $this->headTitle()->setSeparator(' :: ');
@@ -22,10 +22,10 @@ $header    = $this->header();
 $premieres = $this->premieres();
 $fpMenu    = $this->fpMenu();
 $footer    = $this->footer();
-//$sidebarLeft = $this->sidebarLeft();
+$sidebarLeft = $this->sidebarLeft();
 $sidebarRight = $this->sidebarRight();
 $featuredChannels = $this->featuredChannelsList();
-$catList = $this->channelsCategoriesList();
+//$catList = $this->channelsCategoriesList();
 
 /*
  * XHTML
@@ -34,8 +34,8 @@ echo $this->doctype(); ?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
 <head>
 <?php 
-$this->headTitle(Xmltv_Config::getSiteTitle());
-echo $this->headTitle();
+//$this->headTitle(Xmltv_Config::getSiteTitle());
+//echo $this->headTitle();
 /*
  * metadata
  */
@@ -43,8 +43,8 @@ $this->headMeta()
 	->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8');
 	//->setName('keywords', Xmltv_String::strtolower('телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв'))
 	//->appendName('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.');
-echo $this->headMeta();
 echo $this->headTitle();
+echo $this->headMeta();
 echo $this->jQuery();
 /*
  * javascripts
@@ -102,20 +102,7 @@ echo $this->headStyle();
 		<?php endif; ?>
 		
 		<div class="span2" id="col_l">
-			<div class="ad160x90" style="margin: 0 auto; width: 160px;">
-				<script type="text/javascript"><!--
-				google_ad_client = "ca-pub-1744616629400880";
-				/* rutvgid 160x90 */
-				google_ad_slot = "7070699068";
-				google_ad_width = 160;
-				google_ad_height = 90;
-				//-->
-				</script>
-				<script type="text/javascript"
-				src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
-				</script>
-			</div>
-			<?php echo $catList; ?>
+			<?php echo $sidebarLeft; ?>
 		</div>
 		
 		<div class="span6" id="maincontent">
@@ -124,21 +111,6 @@ echo $this->headStyle();
 		
 		<div class="span4" id="col_r">
 			<?php echo $sidebarRight; ?>
-			<?php 
-			if ($this->sidebar_videos === true) {
-				echo '<h3>Новые видео "'.$this->channel->title.'" онлайн</h3>';
-				echo $this->youtubeVideos( array("ТВ ".$this->channel->title), array(
-					'start_index'=>2,
-					'max_results'=>6,
-					'show_duration'=>true,
-					'show_date'=>true,
-					'thumb_width'=>120,
-					'collapse'=>true,
-					//'debug'=>true,
-					'order'=>'published',
-					'truncate_description'=>30), 'sidebar' );
-			}
-			?>
 		</div>
 		
 		<?php 

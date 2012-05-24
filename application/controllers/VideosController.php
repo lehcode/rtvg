@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.1 2012-05-20 17:26:19 dev Exp $
+ * @version $Id: VideosController.php,v 1.2 2012-05-24 20:49:35 dev Exp $
  *
  */
 class VideosController extends Zend_Controller_Action
@@ -32,6 +32,8 @@ class VideosController extends Zend_Controller_Action
 	public function showVideoAction(){
 		
 		//var_dump($this->_requestParams);
+		//var_dump($this->_helper->requestValidator( array('method'=>'isValidRequest', 'action'=>$this->_getParam('action'))));
+		//die(__FILE__.': '.__LINE__);
 		
 		if ( $this->_helper->requestValidator( array('method'=>'isValidRequest', 'action'=>$this->_getParam('action'))) === true ){ 
 			
@@ -45,7 +47,7 @@ class VideosController extends Zend_Controller_Action
 			
 		} else {
 			throw new Zend_Exception("Неверные данные", 500);
-			$this->_redirect('/error', array('exit'=>true));
+			//$this->_redirect('/error', array('exit'=>true));
 		}
 		
 		

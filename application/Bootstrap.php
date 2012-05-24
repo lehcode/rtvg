@@ -5,9 +5,12 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.4 2012-04-30 08:46:59 dev Exp $
+ * @version $Id: Bootstrap.php,v 1.5 2012-05-24 20:49:35 dev Exp $
  *
  */
+
+mb_internal_encoding('UTF-8');
+
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
 
@@ -17,10 +20,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		
-		defined( 'DATE_MYSQL' ) || define( DATE_MYSQL, Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY . ' ' . Zend_Date::HOUR . ':' . Zend_Date::MINUTE . ':' . Zend_Date::SECOND );
-		defined( 'DATE_MYSQL_SHORT' ) || define( DATE_MYSQL_SHORT, Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY );
-		defined( 'ROOT_PATH' ) || define( ROOT_PATH, str_replace( '/application', '', APPLICATION_PATH ) );
-		defined( 'APP_STARTED' ) || define( APP_STARTED, str_replace( '/application', '', APPLICATION_PATH ) );
+		defined( 'DATE_MYSQL' ) || define( 'DATE_MYSQL', Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY . ' ' . Zend_Date::HOUR . ':' . Zend_Date::MINUTE . ':' . Zend_Date::SECOND );
+		defined( 'DATE_MYSQL_SHORT' ) || define( 'DATE_MYSQL_SHORT', Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY );
+		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
+		defined( 'APP_STARTED' ) || define( 'APP_STARTED', str_replace( '/application', '', APPLICATION_PATH ) );
 		
 		$config = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', APPLICATION_ENV );
 		$debug = (bool)$config->site->get( 'debug', false );
@@ -60,7 +63,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			
 		}
 		
-		if ($response) {
+		if (isset($response)) {
 			if( $response->isException() ) {
 				//die(__FILE__.': '.__LINE__);
 				$exception = $response->getException();
@@ -76,8 +79,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	}
 	
 	protected function _initLog(){
-		defined( 'ROOT_PATH' ) || define( ROOT_PATH, 
-		str_replace( '/application', '', APPLICATION_PATH ) );
+		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
 		$front = $this->bootstrap( "frontController" )->frontController;
 		try {
 			$log = new Zend_Log( new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
@@ -94,9 +96,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$default = $front->getDefaultModule();
 		foreach (array_keys( $modules ) as $module) {
 			if( $module === $default ) continue;
-			$moduleloader = new Zend_Application_Module_Autoloader( 
-			array('namespace'=>ucfirst( $module ), 
-			'basePath'=>$front->getModuleDirectory( $module )) );
+			$moduleloader = new Zend_Application_Module_Autoloader( array('namespace'=>ucfirst( $module ), 'basePath'=>$front->getModuleDirectory( $module )) );
 		}
 	}
 

@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Header.php,v 1.3 2012-05-20 09:01:36 dev Exp $
+ * @version $Id: Header.php,v 1.4 2012-05-24 20:49:35 dev Exp $
  *
  */
 class Zend_View_Helper_Header extends Zend_View_Helper_Abstract
@@ -34,6 +34,11 @@ class Zend_View_Helper_Header extends Zend_View_Helper_Abstract
 						</li>
 					</ul>
 					<a class="brand" href="/" title="Телепрограмма на все телеканалы">Rutvgid.ru <span>Телепрограмма для 300+ телеканалов России, Украины и СНГ</span></a>
+					<form class="form-horizontal pull-left" action="/user/login">
+						<input type="text" name="email" value="" size="12" />
+						<input type="password" name="pass" value="" size="12" />
+						<button class="btn btn-primary">Вход</button>
+					</form>
 				</div>
 			</div>
 		</div>

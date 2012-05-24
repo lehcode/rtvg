@@ -1,7 +1,7 @@
 <?php
 $this->headTitle( sprintf("Онлайн-видео: %s", str_replace("\n", ' ', $this->main_video->getVideoTitle())));
-$this->headMeta()->setName( 'keywords', implode(',', $this->main_video->getVideoTags()) );
 $this->headMeta()->setName( 'description', $this->truncateString( str_replace( "\n", ' ', $this->main_video->getVideoDescription()), 25, 'words'));
+$this->headMeta()->setName( 'keywords', implode(',', $this->main_video->getVideoTags()) );
 $this->headScript()->appendFile("/js/swfobject/swfobject.js");
 //$this->headScript()->appendFile("/js/bootstrap-modal.js");
 $this->headScript()->appendScript("$(document).ready(function() {
@@ -20,13 +20,7 @@ $this->headScript()->appendScript("$(document).ready(function() {
 <ul class="video thumbnails">
 	<li class="span4">
 		<h1><?php echo $this->main_video->getVideoTitle() ?></h1>
-		<p class="desc">
-			<?php
-			//$desc_len  = Xmltv_String::strlen( $this->main_video->getVideoDescription() );
-			//$trunc_len = Xmltv_String::strlen( $this->truncateString( $this->main_video->getVideoDescription(), 1024));
-			echo $this->main_video->getVideoDescription() ?>
-		</p>
-		
+		<p class="desc"><?php echo $this->main_video->getVideoDescription() ?></p>
 		<div id="main_ytplayer">Для просмотра этого видео нужна поддержка Flash player 8+ и JavaScript в вашем браузере.</div>
 		<?php 
 		$this->inlineScript()->appendScript('var params = { allowScriptAccess: "always", allowfullscreen:"true" };
@@ -45,43 +39,49 @@ $this->headScript()->appendScript("$(document).ready(function() {
 		<ul class="span4">
 		<?php 
 		$tags = $this->main_video->getVideoTags();
-		for ($i=0; $i<5; $i++) {
-			?>
-			<li>
-				<a href="/видео/тема/<?php echo urlencode( $tags[$i] ) ?>" title=""><?php echo $tags[$i] ?></a>
-			</li>
-			<?php 
-		} ?>
+		if (!empty($tags)) {
+			for ($i=0; $i<5; $i++) {
+				$t = trim($tags[$i]);
+				if (!empty($t)) {
+					?>
+					<li>
+						<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>" title=""><?php echo $tags[$i] ?></a>
+					</li>
+					<?php 
+				}
+			}
+		 } ?>
 		</ul>
 	</li>
 <?php 
 $grid_columns = 2;
 $col_width_pct = floor(100/$grid_columns)-1;
 $amount=5;
-for ($i=0; $i<$amount; $i++) { 
-?>
+for ($i=0; $i<$amount; $i++) {
+	$current = $this->related_videos[$i];
+	?>
 	
 	<li class="span2">
 		
 		<?php 
 		try {
-			$videoThumbnails = $this->related_videos[$i]->getVideoThumbnails();
+			$videoThumbnails = $current->getVideoThumbnails();
 		} catch (Exception $e) {
 			echo $e->getMessage();
 		} 
 		foreach($videoThumbnails as $videoThumbnail) {
 			if ($videoThumbnail['width'] >= 200) {
-				echo '<a href="/видео/онлайн/'. $this->videoId( $this->related_videos[$i]->getVideoId() ).'">
-					<img src="'.$videoThumbnail['url'].'" width="240" alt="'.$this->related_videos[$i]->getVideoTitle().'" />
+				echo '<h5>'.$current->getVideoTitle().'</h5>
+				<a href="/видео/онлайн/'. $this->videoAlias( $current->getVideoTitle() ) .'/'. $this->videoId( $current->getVideoId() ).'">
+					<img src="'.$videoThumbnail['url'].'" width="240" alt="'.$current->getVideoTitle().'" />
 				</a>';
 				break;
 			}
 		}
 		?>
-		<p class="desc"><?php echo $this->truncateString( $this->related_videos[$i]->getVideoDescription(), 25, 'words') ?></p>
+		<p class="desc"><?php echo $this->truncateString( $current->getVideoDescription(), 25, 'words') ?></p>
 	</li>	
-		
-		
+	
 	<?php 
 	} ?>
 	

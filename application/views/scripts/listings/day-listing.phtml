@@ -4,12 +4,11 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.4 2012-05-20 17:27:57 dev Exp $
+ * @version $Id: day-listing.phtml,v 1.5 2012-05-24 20:49:36 dev Exp $
  *
  */
 $this->headScript()
 	->appendFile($this->baseUrl()."/js/bootstrap-carousel.js")
-	//->appendFile($this->baseUrl()."/js/bootstrap-collapse.js")
 	->appendFile($this->baseUrl()."/js/listing-day.js")
 	->appendScript("$(function() { $( '#col_r .videos_sidebar' ).accordion({ autoHeight:true, navigation:false, clearStyle:true }); });");
 
@@ -44,9 +43,6 @@ $this->headStyle()->appendStyle($css);
 </div>
 <h1><?php printf('Канал %s сегодня', $this->channel->title) ?></h1>
 <p><?php echo Xmltv_String::ucfirst( $this->today->toString("EEEE, d MMMM YYYY") ); ?></p>
-<p><?php //echo $this->channel->desc_intro ?></p>
-<p><?php //echo $this->channel->desc_body ?></p>
-<?php /* <p><a class="btn week" href="<?php printf ('/телепрограмма/%s/неделя', $channel_alias) ?>" title=""><?php printf ('Программа канала %s на всю неделю', $this->channel->title) ?></a></p> */ ?>
 <p><a class="btn week" href="javascript:void(0);" title=""><?php printf ('Программа канала %s на всю неделю', $this->channel->title) ?></a></p>
 
 <?php 
@@ -91,7 +87,7 @@ if (!empty($this->programs)) {
 				}
 				?>
 				<?php if ($this_day_is_today) : ?>
-				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channel_alias, $prog->alias  ); ?>"><?php echo trim($prog_title, ':".') ?></a>
+				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channel_alias, $prog->alias  ); ?>"><?php echo ltrim( trim($prog_title, ':.'), '"'); ?></a>
 				<?php else : ?>
 				<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channel_alias, $prog->alias, $this->today->toString("yyyy-MM-dd")  ); ?>"><?php echo trim($prog->title, ':') ?></a>
 				<?php endif; ?>
@@ -114,21 +110,42 @@ if (!empty($this->programs)) {
 		<?php endif; ?>
 		
 		<?php 
-		$title = array($prog->title);
-		if (stristr($prog->title, '.')) {
-			$parts = explode('.', $prog->title);
-			$trim = new Zend_Filter_StringTrim(' ()-.,;"\'');
-			foreach ($parts as $k=>$item) {
-				$parts[$k] = $trim->filter($item);
+		if (!Xmltv_String::stristr($prog->title, 'новости')) {
+			$query = array();
+			if (stristr($prog->title, '.')) {
+				$parts = explode('.', $prog->title);
+				$parts = array_reverse($parts);
+				foreach ($parts as $k=>$item) {
+					if (!empty($item))
+					$query[] = trim( $item );
+				}
+			}elseif (stristr($prog->title, ':')) {
+				$parts = explode(':', $prog->title);
+				$parts = array_reverse($parts);
+				foreach ($parts as $k=>$item) {
+					if (!empty($item))
+					$query[] = trim( $item );
+				}
+			}elseif (stristr($prog->title, '-')) {
+				$parts = explode('-', $prog->title);
+				$parts = array_reverse($parts);
+				foreach ($parts as $k=>$item) {
+					if (!empty($item))
+					$query[] = trim( $item );
+				}
+			}  else {
+				$query[]=trim( $prog->title );
 			}
-			$title = $parts;
+			//$query[]=$this->channel->title;
+			echo $this->youtubeVideos($query, array(
+				'max_results'=>1,
+				'show_duration'=>false,
+				'show_tags'=>10,
+				'thumb_width'=>200,
+				'safe_search'=>'strict',
+				'order'=>'published',
+				'truncate_description'=>false), 'content');
 		}
-		echo $this->youtubeVideos($title, array(
-			'max_results'=>1,
-			'show_duration'=>false,
-			'show_tags'=>10,
-			'thumb_width'=>200,
-			'truncate_description'=>false), 'content');
 		?>
 		
 	</div>
@@ -169,3 +186,49 @@ if (!empty($this->programs)) {
 <div class="pager" style="text-align:center;">
 	<a class="btn btn-info" id="allchannnels" href="/телепрограмма" title="Все телеканалы">Все каналы</a>
 </div>
+
+<?php 
+if (!empty($this->comments)) { ?>
+<div class="comments">
+	<h3><?php printf('Комментарии пользователей про телеканал "%s"', $this->channel->title) ?></h3>
+	<br />
+	<a href="/комменты/новый">Добавить комментарий</a>
+	<?php
+	foreach ($this->comments as $comment) {
+		//var_dump($comment);
+		?>
+	<div class="comment">
+	
+		<div class="title"><?php echo $comment['title'] ?></div>
+		
+		<div class="author">
+			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank"><?php echo $comment['author'] ?></a>
+		</div>
+		
+		<div class="date">
+		<?php  
+		if (!is_a($comment['date_created'], 'Zend_Date'))
+		$date = new Zend_Date($comment['date_created']);
+		else
+		$date = $comment['date_created'];
+		
+		echo $date->toString('EEEE, dd MMM yyyy hh:mm');
+		?>
+		</div>
+		
+		<div class="intro"><?php echo $comment['intro'] ?></div>
+		
+		<?php if (!empty($comment['fulltext'])): ?>
+		<div class="fulltext"></div>
+		<?php endif; ?>
+		
+	</div>
+		<?php 
+	}
+	?>
+</div>
+<div class="copy3rdparty">
+	<a href="http://blogs.yandex.ru/" title="Yandex поиск по блогам" rel="nofollow"><img src="http://img.yandex.net/i/logo100x43.png" width="37" height="16" /></a>
+</div>
+<?php 
+} ?>

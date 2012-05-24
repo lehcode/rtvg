@@ -81,6 +81,8 @@ class Admin_Model_Programs
 		$result = $regexp->filter($result);
 		$regexp = new Zend_Filter_PregReplace(array('match'=>'/^(.*)-?премьера-?(.*)$/iu', 'replace'=>'\1\2'));
 		$result = $regexp->filter($result);
+		$slash  = new Zend_Filter_Word_SeparatorToSeparator( '/', '-' );
+		$result = $slash->filter($result);
 		
 		$result = Xmltv_String::str_ireplace('криминальный сериал', '', $result);
 		$result = Xmltv_String::str_ireplace('остросюжетный сериал', '', $result);

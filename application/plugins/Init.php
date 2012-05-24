@@ -4,17 +4,14 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.6 2012-05-20 17:27:34 dev Exp $
+ * @version $Id: Init.php,v 1.7 2012-05-24 20:49:35 dev Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
 
 	protected $_env = 'production';
-
 	protected $_request;
-
 	protected $_router;
-
 
 	/**
 	 * Constructor
@@ -48,7 +45,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		}
 		$this->_initConfig();
 		$this->_initActionHelpers();
-		//$this->_initViewHelpers();
+		$this->_initAutoloader();
 	
 	}
 
@@ -127,7 +124,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 			$this->_router->addRoute( 'channels-category', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
-			'видео/онлайн/:id', 
+			'видео/онлайн/:alias/:id', 
 			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-video') );
 			$this->_router->addRoute( 'show-video', $route );
 			
@@ -231,7 +228,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		$this->_router = $router;
 	}
 	
-	public function _initViewHelpers(){
+	protected function _initViewHelpers(){
 		//Initialize and/or retrieve a ViewRenderer object on demand via the helper broker
 		$viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
 		$viewRenderer->initView();
@@ -239,5 +236,13 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		//add the global helper directory path
 		$viewRenderer->view->addHelperPath(ROOT_PATH.'/library/Xmltv/View/Helper/');
 	}
+	
+	protected function _initAutoloader(){
+		
+		$autoloader = Zend_Loader_Autoloader::getInstance();
+		$autoloader->pushAutoloader(array('ezcBase', 'autoload'), 'ezc');
+		
+	}
+	
 
 }
