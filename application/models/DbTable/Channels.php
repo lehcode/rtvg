@@ -1,4 +1,10 @@
 <?php
+/**
+ * Database table for channels model
+ *
+ * @uses Zend_Db_Table_Abstract
+ * @version $Id: Channels.php,v 1.6 2012-05-26 23:41:14 dev Exp $
+ */
 class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 {
 
@@ -82,33 +88,49 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 			$profiler = $this->_db->getProfiler();
 		}
 		
-		$select = $this->_db->select()
-			->from('rtvg_programs', '*')
-			->joinLeft("rtvg_programs_props", "rtvg_programs_props.`hash` = rtvg_programs.`hash`", array('actors', 'directors', 'premiere', 'live'))
-			->joinLeft("rtvg_programs_descriptions", "rtvg_programs_descriptions.`hash` = rtvg_programs.`hash`", array('intro', 'body'))
-			->where("rtvg_programs.`start` >= '".$start->toString('yyyy-MM-dd 00:00:00')."'")
-			->where("rtvg_programs.`start` < '".$end->toString('yyyy-MM-dd 00:00:00')."'")
-			->where("rtvg_programs.`ch_id` = '$ch_id'")
-			->order("start", "ASC");
+		$days = array();
 		
-		try {
-			$result = $this->_db->fetchAll($select);
-		} catch (Exception $e) {
-			if ($this->debug) {
-				echo $e->getMessage();
-				var_dump($e->getTrace());
-				exit();
+		do{
+
+			$select = $this->_db->select()
+				->from('rtvg_programs', '*')
+				->joinLeft("rtvg_programs_props", "rtvg_programs_props.`hash` = rtvg_programs.`hash`", array('actors', 'directors', 'premiere', 'live'))
+				->joinLeft("rtvg_programs_descriptions", "rtvg_programs_descriptions.`hash` = rtvg_programs.`hash`", array('intro', 'body'))
+				->where("rtvg_programs.`start` LIKE '%".$start->toString('yyyy-MM-dd')."%'")
+				->where("rtvg_programs.`ch_id` = '$ch_id'")
+				->order("start", "ASC");
+			
+			try {
+				$days[$start->toString('U')] = $this->_db->fetchAll($select, null, self::FETCH_MODE);
+			} catch (Exception $e) {
+				if ($this->debug) {
+					echo $e->getMessage();
+					var_dump($e->getTrace());
+					exit();
+				}
+			}
+			
+			if(Xmltv_Config::getProfiling()) {
+				$query = $profiler->getLastQueryProfile();
+				echo $query->getElapsedSecs().': '.$query->getQuery();
+			}
+			
+			$start->addDay(1);
+			
+		} while ($start->toString('yyyy-MM-dd')!=$end->toString('yyyy-MM-dd'));
+		
+		foreach ($days as $day) {
+			foreach ($day as $program) {
+				$program->start = new Zend_Date($program->start);
+				$program->end   = new Zend_Date($program->end);
+				//var_dump($program);
+				//die(__FILE__.': '.__LINE__);
 			}
 		}
 		
-		if(Xmltv_Config::getProfiling()) {
-			$query = $profiler->getLastQueryProfile();
-			echo $query->getElapsedSecs().': '.$query->getQuery();
-		}
+		//die(__FILE__.': '.__LINE__);
 		
-		return $result;
-    	
-    	//die(__FILE__.': '.__LINE__);
+		return $days;
     	
     }
 	

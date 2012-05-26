@@ -45,13 +45,13 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 				var_dump($query);
 			}
 			
-			$cache_sub = 'youtube';
-			$cache = new Xmltv_Cache(array('location'=>"/cache/$cache_sub"));
+			$cacheSub = 'Youtube';
+			$cache = new Xmltv_Cache(array('location'=>"/cache/$cacheSub"));
 			$hash = $cache->getHash( __FUNCTION__.'_'.md5($qs.$output));
 			if (Xmltv_Config::getCaching()){
-				if (!$videos = $cache->load($hash, 'Function', $cache_sub)) {
+				if (!$videos = $cache->load($hash, 'Core', $cacheSub)) {
 					$videos = $yt->getVideoFeed($query->getQueryUrl(2));
-					$cache->save($videos, $hash, 'Function', $cache_sub);
+					$cache->save($videos, $hash, 'Core', $cacheSub);
 				}
 			} else {
 				$videos = $yt->getVideoFeed($query->getQueryUrl(2));
@@ -66,7 +66,10 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			
 			foreach ($videos as $videoEntry) {
 				
-				if (!preg_match('/\p{Cyrillic}+/ui', $videoEntry->getVideoDescription()))
+				$videoDescription = $videoEntry->getVideoDescription();
+				if (!preg_match('/\p{Cyrillic}+/ui', $videoDescription))
+				break;
+				if (preg_match('/порн|эрот|проститут/ui', $videoDescription))
 				break;
 				
 				try {
@@ -101,9 +104,9 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 									}
 									
 									if (isset($config['truncate_description']) && $config['truncate_description']>0) {
-										$html .= '<p class="desc">'.$this->_truncateString($videoEntry->getVideoDescription(), 50, 'words').'</p>';
+										$html .= '<p class="desc">'.$this->_truncateString($videoDescription, 50, 'words').'</p>';
 									} else {
-										$html .= '<p class="desc">'.$videoEntry->getVideoDescription().'</p>';
+										$html .= '<p class="desc">'.$videoDescription.'</p>';
 									}
 									
 									if ($config['show_duration']===true) {
@@ -139,9 +142,9 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 							$html .= '</div>';
 							
 							if (isset($config['truncate_description']) && $config['truncate_description']>0) {
-								$html .= '<p class="desc">'.$this->_truncateString($videoEntry->getVideoDescription(), 50, 'words').'</p>';
+								$html .= '<p class="desc">'.$this->_truncateString($videoDescription, 50, 'words').'</p>';
 							} else {
-								$html .= '<p class="desc">'.$videoEntry->getVideoDescription().'</p>';
+								$html .= '<p class="desc">'.$videoDescription.'</p>';
 							}
 							
 							if ($config['show_duration']===true) {

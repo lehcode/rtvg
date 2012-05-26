@@ -1,0 +1,86 @@
+<?php
+/**
+ * Week listing script for channel
+ *
+ * @uses Zend_Db_Table_Abstract
+ * @version $Id: channel-week.phtml,v 1.1 2012-05-26 23:41:43 dev Exp $
+ */
+$this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на неделю', $this->channel->title));
+$this->headScript()
+	->appendFile($this->baseUrl()."/js/bootstrap-tab.js");
+$css = '.nav-tabs > li > a { font-size: 0.8em; padding: 9px 6px; font-weight: bold; }
+#programslist { border: none; }';
+$this->headStyle()->appendStyle($css);
+$channel_alias = Xmltv_String::strtolower($this->channel->alias);
+$today = new Zend_Date(null, null, 'ru');
+//var_dump($this->days);
+//die();
+?>
+<h1><?php printf( 'Программа канала «%s» на неделю', $this->channel->title ); ?></h1>
+<p><?php printf( '%s - %s', $this->week_start->toString('EEEE, d MMMM'), $this->week_end->toString('EEEE, d MMMM') ); ?></p>
+
+<div class="week_list tabbable" id="programslist">
+	<ul class="nav nav-tabs" id="days_tabs">
+	<?php 
+	$i=0;
+	$tabsJs = "$(document).ready(function(){ \n";
+	foreach ($this->days as $timestamp=>$programs) {
+		$date = new Zend_Date($timestamp, Zend_Date::TIMESTAMP, 'ru');
+		$dayId = $date->toString(Zend_Date::WEEKDAY_DIGIT);
+		$class = $today->toString('yyMMdd')==$date->toString('yyMMdd') ? "date active" : "date";
+		$tabsJs .= '$("ul#days_tabs li a[href=\'#day'.$dayId.'\']").click(function (e) { e.preventDefault(); $(this).tab("show"); });'."\n";
+		?>
+		<li class="<?php echo $class; ?>">
+			<a href="<?php echo "#day$dayId" ?>" data-toggle="tab"><?php echo (Xmltv_String::ucfirst($date->toString("EEEE, d MMMM"))) ?></a>
+		</li>
+		<?php 
+		$i++;
+		//var_dump($list);
+	}
+	$tabsJs .='});';
+	$this->headScript()->appendScript($tabsJs);
+	?>
+	</ul>
+	
+	<div class="tab-content">
+	<?php
+	$i=0;
+	foreach ($this->days as $timestamp=>$programs) {
+		$date = new Zend_Date($timestamp, Zend_Date::TIMESTAMP, 'ru');
+		$day_id = $date->toString(Zend_Date::WEEKDAY_DIGIT);
+		$class = $today->toString('yyMMdd')==$date->toString('yyMMdd') ? 'tab-pane active fade in' : 'tab-pane fade';
+		?>
+		<div id="<?php echo "day$day_id" ?>" class="<?php echo $class; ?>">
+		<?php 
+		foreach ($programs as $k=>$prog) { 
+		?>
+		<div class="item<?php echo $prog->start->toString('U'); ?> programdiv">
+			<div class="programtitle">
+				<p class="start">
+					<span class="start_time"><?php echo $prog->start->toString(Zend_Date::HOUR.':'.Zend_Date::MINUTE) ?></span>
+				</p>
+				<h3>
+					<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channel_alias, $prog->alias, $prog->start->toString("yyyy-MM-dd")  ); ?>">
+						<?php echo $this->truncateProgramTitle($prog->title) ?>
+					</a>
+				</h3>
+				
+				<?php if (!empty($prog->sub_title)) : ?>
+				<p class="subtitle"><?php echo $prog->sub_title ?></p>
+				<?php endif; ?>
+				
+				<p class="end">
+					<span class="end_time"><?php echo $prog->end->toString('HH:mm') ?></span>
+				</p>
+			</div>
+		</div>
+		<?php 
+		}
+		$i++;
+		?>
+		</div>
+		<?php 
+	}
+	?>
+	</div>
+</div>

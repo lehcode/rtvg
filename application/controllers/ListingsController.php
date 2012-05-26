@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.6 2012-05-24 20:49:35 dev Exp $
+ * @version $Id: ListingsController.php,v 1.7 2012-05-26 23:40:35 dev Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -54,13 +54,13 @@ class ListingsController extends Zend_Controller_Action
 		
 		$paramDate = $this->_getParam('date');
 		$today = @isset( $paramDate ) ? new Zend_Date( $paramDate, 'yyyy-MM-dd', 'ru' ) : new Zend_Date( null, null, 'ru' );
-		$cache = new Xmltv_Cache(array('location'=>'/cache/listings'));
+		$cache = new Xmltv_Cache(array('location'=>'/cache/Listings'));
 		$hash = $cache->getHash(__FUNCTION__.'_'.$channel['ch_id'].'_'.$today->toString('yyyyMMdd'));
 		try {
 			if (Xmltv_Config::getCaching()){
-				if (!$list = $cache->load($hash, 'Function', 'listings')) {
+				if (!$list = $cache->load($hash, 'Core', 'Listings')) {
 					$list = $listings->getProgramsForDay( $today, $channel['ch_id'] );
-					$cache->save($list, $hash, 'Function', 'listings');
+					$cache->save($list, $hash, 'Core', 'Listings');
 				}
 			} else {
 				$list = $listings->getProgramsForDay( $today, $channel['ch_id'] );
@@ -100,7 +100,7 @@ class ListingsController extends Zend_Controller_Action
 		 * Process fake comments
 		 * Caching is initialized in Xmltv_Model_Comments::getYandexRss
 		 */
-		$feedData    = $comments->getYandexRss( array( $channel->alias, $currentProgram->title) );
+		$feedData    = $comments->getYandexRss( array( '"'.$channel->alias.'"', '"'.$currentProgram->title.'"') );
 		$commentsNew = $comments->parseYandexFeed( $feedData, 128 );
 		//var_dump($commentsNew);
 		if ( !empty($commentsNew) ) {
@@ -150,9 +150,9 @@ class ListingsController extends Zend_Controller_Action
 
 	public function programTodayAction () {
 		
-		//var_dump($this->_getAllParams());
+		var_dump($this->_getAllParams());
 		//var_dump($this->_validateRequest());
-		//die(__FILE__.': '.__LINE__);
+		die(__FILE__.': '.__LINE__);
 		
 		if( $this->_validateRequest() ) {
 			

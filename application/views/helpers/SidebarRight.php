@@ -2,6 +2,7 @@
 class Zend_View_Helper_SidebarRight extends Zend_View_Helper_Abstract
 {
 	public function sidebarRight(){
+		$this->view->headScript()->appendScript("$(function() { $( '#col_r .videos_sidebar' ).accordion({ autoHeight:true, navigation:false, clearStyle:true }); });");
 		ob_start();
 		?>
 		<div id="vk_groups"></div>
@@ -30,8 +31,13 @@ class Zend_View_Helper_SidebarRight extends Zend_View_Helper_Abstract
 		<?php endif; ?>
 		
 		<?php 
+		//var_dump($this->view->sidebar_videos);
 		if ($this->view->sidebar_videos === true) {
-			$videos = $this->view->youtubeVideos( array('телеканал', $this->view->channel->title, $this->view->current_program->title), array(
+			$query = array('"'.$this->view->channel->title.'"');
+			if (isset($this->view->current_program->title))
+			$query[]='"'.$this->view->current_program->title.'"';
+			var_dump($query);
+			$videos = $this->view->youtubeVideos( $query, array(
 				'start_index'=>2,
 				'max_results'=>6,
 				'show_duration'=>true,

@@ -1,25 +1,24 @@
 <?php 
 /**
- * Расписание на день
+ * Day listing script for channel
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.5 2012-05-24 20:49:36 dev Exp $
+ * @version $Id: day-listing.phtml,v 1.6 2012-05-26 23:41:43 dev Exp $
  *
  */
 $this->headScript()
 	->appendFile($this->baseUrl()."/js/bootstrap-carousel.js")
-	->appendFile($this->baseUrl()."/js/listing-day.js")
-	->appendScript("$(function() { $( '#col_r .videos_sidebar' ).accordion({ autoHeight:true, navigation:false, clearStyle:true }); });");
+	->appendFile($this->baseUrl()."/js/listing-day.js");
 
-$this_day_is_today=false;
+$this->is_today=false;
 $date = new Zend_Date(null, null, 'ru');
 if ($this->today->toString('yyyy-MM-dd')==$date->toString('yyyy-MM-dd')) 
-$this_day_is_today=true;
+$this->is_today=true;
 
 $tolower = new Zend_Filter_StringToLower();
 
-if ($this_day_is_today) {
+if ($this->is_today) {
 	$this->headMeta()->setName('title', sprintf ('Программа телеканала %s на сегодня', $this->channel->title));
 } else {
 	$this->headMeta()->setName('title', sprintf ('Программа канала %s на %s', $this->channel->title, $this->today->toString('EEEE, d MMMM YYYY')));
@@ -27,7 +26,7 @@ if ($this_day_is_today) {
 $kw = array($tolower->filter( $this->channel->title ), $this->today->toString('d MMMM YYYY'));
 $this->headMeta()->setName('keywords', implode(',', $kw).','.Xmltv_Config::getKeywords() );
 
-if ($this_day_is_today) {
+if ($this->is_today) {
 	$this->headTitle( sprintf ('%s сегодня', $this->channel->title ) );
 } else {
 	$this->headTitle( sprintf ('%s %s', $this->channel->title, $this->today->toString( 'EEEE, d MMMM YYYY' ) ) );
@@ -43,7 +42,7 @@ $this->headStyle()->appendStyle($css);
 </div>
 <h1><?php printf('Канал %s сегодня', $this->channel->title) ?></h1>
 <p><?php echo Xmltv_String::ucfirst( $this->today->toString("EEEE, d MMMM YYYY") ); ?></p>
-<p><a class="btn week" href="javascript:void(0);" title=""><?php printf ('Программа канала %s на всю неделю', $this->channel->title) ?></a></p>
+<p><a class="btn week" title="<?php printf('Перейти к расписанию программ канала "%s" на неделю', $this->channel->title); ?>" href="/телепрограмма/<?php echo Xmltv_String::strtolower( $this->channel->alias ) ?>/неделя" title=""><?php printf ('Программа передач "%s" на всю неделю', $this->channel->title) ?></a></p>
 
 <?php 
 if (!empty($this->programs)) {
@@ -61,7 +60,7 @@ if (!empty($this->programs)) {
 		//var_dump($prog);
 		//die(__FILE__.': '.__LINE__);
 		
-		if ($this_day_is_today)
+		if ($this->is_today)
 		$active = $prog->now_showing===true ? ' active' : '' ;
 		else
 		$active = $k==0 ? ' active' : '' ;
@@ -70,23 +69,13 @@ if (!empty($this->programs)) {
 	<div class="item<?php echo $active; ?> programcontainer">
 		<div class="programtitle">
 		
-			<p class="start"><span class="start_time"><?php echo $prog->start->toString(Zend_Date::HOUR.':'.Zend_Date::MINUTE) ?></span></p>
+			<p class="start">
+				<span class="start_time"><?php echo $prog->start->toString(Zend_Date::HOUR.':'.Zend_Date::MINUTE) ?></span>
+			</p>
 		
 			<h3>
-				<?php 
-				$prog_title = $prog->title;
-				$maxLen = 40;
-				if (Xmltv_String::strlen($prog->title)>$maxLen) {
-					$parts = explode(' ', $prog->title);
-					$prog_title = '';
-					foreach ($parts as $word){
-						if ((Xmltv_String::strlen(trim($prog_title))+Xmltv_String::strlen(trim($word))) <= $maxLen)
-						$prog_title.=' '.$word;
-					}
-					$prog_title.='&hellip;';
-				}
-				?>
-				<?php if ($this_day_is_today) : ?>
+				<?php $prog_title = $this->truncateProgramTitle($prog->title) ?> 
+				<?php if ($this->is_today) : ?>
 				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channel_alias, $prog->alias  ); ?>"><?php echo ltrim( trim($prog_title, ':.'), '"'); ?></a>
 				<?php else : ?>
 				<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channel_alias, $prog->alias, $this->today->toString("yyyy-MM-dd")  ); ?>"><?php echo trim($prog->title, ':') ?></a>
@@ -94,7 +83,7 @@ if (!empty($this->programs)) {
 			</h3>
 			
 			<?php if (!empty($prog->sub_title)) : ?>
-			<p><?php echo $prog->sub_title ?></p>
+			<p class="subtitle"><?php echo $prog->sub_title ?></p>
 			<?php endif; ?>
 			
 			<p class="end"><span class="end_time"><?php echo $prog->end->toString('HH:mm') ?></span></p>

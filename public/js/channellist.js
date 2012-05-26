@@ -17,6 +17,7 @@ $(function() {
 								var r = new RegExp($('ul.typeahead li.active').attr('data-value'), 'i');
 								if (currentTitle = $(this).html().match(r)) {
 									$("html:not(:animated),body:not(:animated)").animate({ scrollTop: $(this).offset().top }, 1000);
+									return false;
 								}
 							});
 						});

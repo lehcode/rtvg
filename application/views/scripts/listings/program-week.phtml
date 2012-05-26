@@ -4,13 +4,12 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.2 2012-05-20 09:02:10 dev Exp $
+ * @version $Id: program-week.phtml,v 1.3 2012-05-26 23:41:43 dev Exp $
  *
  */
 
 $channelAlias = Xmltv_String::strtolower($this->channel->alias);
 $programTitle = $this->list[0]['title'];
-//var_dump(Zend_Date::DATE_FULL);
 $weekStart = $this->dates['start']->toString('EEEE, d MMMM');
 $weekEnd = $this->dates['end']->toString('EEEE, d MMMM');
 //var_dump($this->list);
@@ -30,7 +29,7 @@ foreach ($this->list as $single) {
 
 if (!empty($startDates)) {
 ?>
-<p><?php printf('Программу <strong>%s</strong> можно позже посмотрть на этой неделе на канале <a href="%s">%s</a> в следующие дни:<br/>%s', $programTitle, '/телепрограмма/'.$channelAlias, $this->channel->title, '<ul>'.implode(PHP_EOL, $startDates)).'</ul>' ?></p>
+<p><?php printf('Программу <strong>%s</strong> можно позже посмотреть на этой неделе на канале <a href="%s">%s</a> в следующие дни:<br/>%s', $programTitle, '/телепрограмма/'.$channelAlias, $this->channel->title, '<ul>'.implode(PHP_EOL, $startDates)).'</ul>' ?></p>
 <?php
 } else {
 ?>

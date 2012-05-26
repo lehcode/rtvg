@@ -36,7 +36,7 @@ $this->headScript()->appendScript("$(document).ready(function() {
 		    	attrs);');
 		echo $this->inlineScript();
 		?>
-		<ul class="span4">
+		<ul class="span4 tags_list">
 		<?php 
 		$tags = $this->main_video->getVideoTags();
 		if (!empty($tags)) {
@@ -44,7 +44,7 @@ $this->headScript()->appendScript("$(document).ready(function() {
 				$t = trim($tags[$i]);
 				if (!empty($t)) {
 					?>
-					<li>
+					<li class="btn btn-mini">
 						<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>" title=""><?php echo $tags[$i] ?></a>
 					</li>
 					<?php 

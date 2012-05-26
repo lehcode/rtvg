@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.4 2012-05-20 08:59:46 dev Exp $
+ * @version $Id: ChannelsController.php,v 1.5 2012-05-26 23:40:35 dev Exp $
  *
  */
 class ChannelsController extends Zend_Controller_Action
@@ -88,30 +88,31 @@ class ChannelsController extends Zend_Controller_Action
 
 			//var_dump($channel);
 			
-			$d = $this->_getParam('start', null)!==null ? new Zend_Date($this->_getParam('start')) : new Zend_Date() ; 
+			$d = $this->_getParam('start', null)!==null ? new Zend_Date($this->_getParam('start'), null, 'ru') : new Zend_Date( null, null, 'ru' ) ; 
 			$start = $this->_helper->weekDays(array('method'=>'getStart', "data"=>array('date'=>$d) ));
-			$d = $this->_getParam('end', null)!==null ? new Zend_Date($this->_getParam('end')) : new Zend_Date() ; 
+			$d = $this->_getParam('end', null)!==null ? new Zend_Date($this->_getParam('end'), null, 'ru') : new Zend_Date( null, null, 'ru' ) ; 
 			$end = $this->_helper->weekDays(array('method'=>'getEnd', "data"=>array('date'=>$d) ));
-			
-			Zend_Registry::set('ch_id', $channel->ch_id);
+						
+			Zend_Registry::set('channel', $channel);
 			Zend_Registry::set('week_start', $start);
 			Zend_Registry::set('week_end', $end->subMinute(1));
-			Zend_Registry::set('show_relevant_videos', true);
+			Zend_Registry::set('show_videos', true);
 			
 			$schedule = $channels->getWeekSchedule();
-			//var_dump($schedule);
+			
+			$this->view->assign('channel', $channel);
+	    	$this->view->assign('days', $schedule);
+	    	$this->view->assign('week_start', $start);
+	    	$this->view->assign('week_end', $end);
+	    	$this->view->assign('hide_sidebar', 'left');
+	    	$this->view->assign( 'sidebar_videos', true );
 			
 		} else {
     		throw new Exception("Неверные данные", 500);
     		exit();
     	}
 		
-    	$this->view->assign('channel_title', $channel->title);
-    	
-		//die(__FILE__.': '.__LINE__);
-		
 	}
 	
-
 }
 
