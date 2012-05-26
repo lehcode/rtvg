@@ -19,13 +19,12 @@ class Xmltv_Controller_Helper_WeekDays extends Zend_Controller_Action_Helper_Abs
     public function getStart($date=null){
     
     	if (!$date)
-		$date = new Zend_Date();
+		$date = new Zend_Date(null, null, 'ru');
 		
 		do{
-			if ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>1)
-			$date->subDay(1);
-			//var_dump($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru'));
-		} while ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>1);
+			if ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1)
+			$date->subDay(1);			
+		} while ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1);
 		
 		return $date;
     	
