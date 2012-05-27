@@ -23,12 +23,11 @@ class Xmltv_Model_Videos
 		
 		$yt = new Zend_Gdata_YouTube();
 		$yt->setMajorProtocolVersion(2);
+		
 		try {
-			
-			$cache = new Xmltv_Cache();
-			$hash = $cache->getHash( __FUNCTION__.'_'.$id);
-			
 			if (Xmltv_Config::getCaching()){
+				$cache = new Xmltv_Cache();
+				$hash = $cache->getHash( __FUNCTION__.'_'.$id);
 				if (!$result = $cache->load($hash, 'Function')) {
 					$result = $yt->getVideoEntry($id);
 					$cache->save($result, $hash, 'Function');
@@ -74,12 +73,22 @@ class Xmltv_Model_Videos
 		
 	}
 	
+	
 	private function _decodeId($input=null){
 		
 		if (!$input)
 		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
 		
 		return base64_decode( strrev($input).'=');
+		
+	}
+	
+	public function convertTag($input=null){
+		
+		if (!$input)
+		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		return Xmltv_String::str_ireplace('-', ' ', $input);
 		
 	}
 	

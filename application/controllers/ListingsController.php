@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.7 2012-05-26 23:40:35 dev Exp $
+ * @version $Id: ListingsController.php,v 1.8 2012-05-27 20:05:50 dev Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -44,7 +44,7 @@ class ListingsController extends Zend_Controller_Action
 			$this->_redirect('/error', array('exit'=>true));
 		}
 		
-		$listings = new Xmltv_Model_Programs();
+		$programs = new Xmltv_Model_Programs();
 		$channels = new Xmltv_Model_Channels();
 		$channel  = $channels->getByAlias($this->_requestParams['channel']);
 		$comments = new Xmltv_Model_Comments();
@@ -59,11 +59,11 @@ class ListingsController extends Zend_Controller_Action
 		try {
 			if (Xmltv_Config::getCaching()){
 				if (!$list = $cache->load($hash, 'Core', 'Listings')) {
-					$list = $listings->getProgramsForDay( $today, $channel['ch_id'] );
+					$list = $programs->getProgramsForDay( $today, $channel['ch_id'] );
 					$cache->save($list, $hash, 'Core', 'Listings');
 				}
 			} else {
-				$list = $listings->getProgramsForDay( $today, $channel['ch_id'] );
+				$list = $programs->getProgramsForDay( $today, $channel['ch_id'] );
 			}
 		} catch (Exception $e) {
 			echo $e->getMessage();
@@ -78,9 +78,11 @@ class ListingsController extends Zend_Controller_Action
 		}
 		
 		
-		/*
+		/**
+		 * @todo Add vkontakte API calls
 		 * Load and comments for channel and active program
 		 */
+		/*
 		$hash = $cache->getHash(__FUNCTION__.'_vktoken');
 		try {
 			if (Xmltv_Config::getCaching()){
@@ -95,6 +97,7 @@ class ListingsController extends Zend_Controller_Action
 			echo $e->getMessage();
 		}
 		$this->view->assign('vk_token', $token);
+		*/
 		
 		/*
 		 * Process fake comments
@@ -126,33 +129,26 @@ class ListingsController extends Zend_Controller_Action
 			}
 				
 		}
-		//var_dump($commentsLoaded);
-		//$commentsList = array_merge( $commentsLoaded, $commentsNew );
-		$this->view->assign('comments', $commentsLoaded);
-		
-		
-		//var_dump( $commentsList );
-		//die(__FILE__.': '.__LINE__);
-		
+
+		$this->view->assign( 'comments', $commentsLoaded );
 		$this->view->assign( 'channel', $channel );
 		$this->view->assign( 'programs', $list );
 		$this->view->assign( 'current_program', $currentProgram );
 		$this->view->assign( 'today', $today );
 		$this->view->assign( 'sidebar_videos', true );
-
-		//$video_data = array($channel['title']);
-		$this->view->assign('video_data', array());
+		$this->view->assign( 'video_data', array() );
 		
-		$channels->addHit($channel['ch_id']);
+		$channels->addHit($channel->ch_id);
+		$programs->addHit($currentProgram->alias);
 		
 	}
 
 
-	public function programTodayAction () {
+	public function programDayAction () {
 		
-		var_dump($this->_getAllParams());
+		//var_dump($this->_getAllParams());
 		//var_dump($this->_validateRequest());
-		die(__FILE__.': '.__LINE__);
+		//die(__FILE__.': '.__LINE__);
 		
 		if( $this->_validateRequest() ) {
 			
@@ -160,16 +156,22 @@ class ListingsController extends Zend_Controller_Action
 			$channels = new Xmltv_Model_Channels();
 			$channel  = $channels->getByAlias( $this->_getParam('channel') );
 			
-			if ($this->_getParam('date')=='сегодня')
-			$list = $programs->getProgramThisDay( $this->_getParam('program'), $this->_getParam('channel'), new Zend_Date() );
-			else
-			$list = $programs->getProgramThisDay( $this->_getParam('program'), $this->_getParam('channel'), new Zend_Date( $this->_getParam('date') ) );
+			$date     = new Zend_Date(null, null, 'ru');
+			$pdate = $this->_getParam('date');
+			if (!empty($pdate) && $pdate!='сегодня')
+			$date = new Zend_Date($this->_getParam('date'), 'yyyy-MM-dd', 'ru');
+			
+			//var_dump($date->toString());
+			
+			$list = $programs->getProgramForDay( $this->_getParam('program'), $this->_getParam('channel'), $date );
 
 			$this->view->assign( 'programs', $list );
 			$this->view->assign( 'program_alias', $this->_getParam('program') );
 			$this->view->assign( 'channel', $channel  );
+			$this->view->assign( 'date', $date );
 			
 			$programs->addHit($this->_getParam('program'));
+			$channels->addHit( Xmltv_String::strtolower( $channel->alias ));
 		
 		} else {
 			throw new Zend_Exception("Неверные данные", 500);
@@ -198,9 +200,10 @@ class ListingsController extends Zend_Controller_Action
 			$this->view->assign( 'dates', $dates );
 			$this->view->assign( 'list', $list );
 			$this->view->assign( 'program_alias', $this->_getParam('program') );
-			$this->view->assign( 'channel', $channel  );
+			$this->view->assign( 'channel', Xmltv_String::strtolower($channel->alias)  );
 			
 			$programs->addHit($this->_getParam('program'));
+			$channels->addHit($this->_getParam('program'));
 			
 		} else {
 			throw new Zend_Exception("Неверные данные", 500);

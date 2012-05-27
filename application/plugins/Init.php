@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.7 2012-05-24 20:49:35 dev Exp $
+ * @version $Id: Init.php,v 1.8 2012-05-27 20:05:50 dev Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -87,36 +87,31 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 			
 			$route = new Zend_Controller_Router_Route( 'телепрограмма/:channel', 
 			array('module'=>'default', 'controller'=>'listings', 'action'=>'day-listing') );
-			$this->_router->addRoute( 'day-listing', $route );
+			$this->_router->addRoute( 'channel-day-listing', $route );
 			
 			$route = new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', 
 			array('module'=>'default', 'controller'=>'listings', 'action'=>'day-date') );
-			$this->_router->addRoute( 'day-date', $route );
-			
-			$route = new Zend_Controller_Router_Route( 
-			'телепрограмма/:channel/:program/сегодня', 
-			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-today') );
-			$this->_router->addRoute( 'program-today', $route );
+			$this->_router->addRoute( 'channel-date-listing', $route );
 			/*
 			$route = new Zend_Controller_Router_Route( 
-			'телепрограмма/:channel/:program', 
-			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-today') );
-			$this->_router->addRoute( 'program-today', $route );
+			'телепрограмма/:channel/:program/сегодня', 
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-day') );
+			$this->_router->addRoute( 'program-day', $route );
 			*/
 			$route = new Zend_Controller_Router_Route( 
 			'телепрограмма/:channel/:program/:date', 
-			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-today') );
-			$this->_router->addRoute( 'program-date', $route );
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-day') );
+			$this->_router->addRoute( 'program-day-listing', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
 			'телепрограмма/:channel/неделя', 
 			array('module'=>'default', 'controller'=>'channels', 'action'=>'channel-week') );
-			$this->_router->addRoute( 'channel-week', $route );
+			$this->_router->addRoute( 'channel-week-listing', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
 			'телепрограмма/:channel/:program/неделя', 
 			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-week') );
-			$this->_router->addRoute( 'program-week', $route );
+			$this->_router->addRoute( 'program-week-listing', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
 			'каналы/:category', 
@@ -128,10 +123,28 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-video') );
 			$this->_router->addRoute( 'show-video', $route );
 			
+			/*
+			 * Compat from card-sharing.org
+			 */
+			$route = new Zend_Controller_Router_Route( 
+			'видео/онлайн',
+			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-video-compat') );
+			$this->_router->addRoute( 'show-video', $route );
+			
 			$route = new Zend_Controller_Router_Route( 
 			'видео/тема/:tag', 
 			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-tag') );
 			$this->_router->addRoute( 'show-tag', $route );
+			
+			$route = new Zend_Controller_Router_Route( 
+			'сериалы', 
+			array('module'=>'default', 'controller'=>'series',  'action'=>'series-week') );
+			$this->_router->addRoute( 'series-week', $route );
+			
+			$route = new Zend_Controller_Router_Route( 
+			'фильмы', 
+			array('module'=>'default', 'controller'=>'movies',  'action'=>'movies-week') );
+			$this->_router->addRoute( 'movies-week', $route );
 			
 			/*
 			 * admin routes

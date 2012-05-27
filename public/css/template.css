@@ -4,7 +4,9 @@
 [class*="span"] {
 	margin-left: 15px;
 }
-
+.clr{
+	clear: both;
+}
 .carousel-control {
     background: none repeat scroll 0 0 #FAA732;
     border: 3px solid #FFFFFF;
@@ -20,6 +22,10 @@
     opacity: 1;
     margin-top: 0;
     padding: 2px 0;
+}
+
+.navbar {
+	overflow: hidden;
 }
 
 li.lastcol:after { 
@@ -51,6 +57,11 @@ li.lastcol:after {
 	overflow:hidden;
 	min-height: 640px;
 }
+	#maincontent ul.thumbnails {}
+	#maincontent ul.thumbnails li {}
+	#maincontent ul.thumbnails p.desc {
+		overflow: hidden;
+	}
 
 	#fast_search {
 		
@@ -118,21 +129,23 @@ li.lastcol:after {
 					
 				}
 				
-				#programslist .programcontainer ul.tags_list {
+				ul.tags_list {
 					margin:0;
 					display: inline-block;
 				}
-				#programslist .programcontainer ul.tags_list li {
+				ul.tags_list li {
 					float:left;
 					list-style:none;
 					margin: 8px 12px 0 0;
 				}
-				#programslist .programcontainer ul.tags_list a {}
+				ul.tags_list a {}
 				#programslist #videos:after{
 					clear:both;
 				}
-				#programslist .programcontainer .desc.intro  {
-					
+				#programslist .programcontainer .videos_content .desc  {
+					font-size: 13px;
+					line-height: 1.6em;
+					padding: 16px 0;
 				}
 				
 			#programslist .programdiv {
@@ -236,6 +249,7 @@ li.lastcol:after {
 	
 	#header .navbar-inner .nav > li > a {
 		text-shadow: none;
+		color: #0066CC;
 	} 
 	#header .navbar-inner .nav > li > a:hover {
 		color: #333;
@@ -310,16 +324,31 @@ ul#fpnav:after{
 		margin: 36px auto;
 	    width: 336px;
 	}
-	#videos_sidebar .accordion-toggle {
-		height:90px;
-		margin: 4px 0;
+	#col_r .videos_sidebar {
+		overflow:hidden;
 	}
-	#videos_sidebar .accordion-toggle img  {
-		margin: 0 6px 0;
+	#col_r .videos_sidebar h4 {
+		float: left;
+	    font-size: 12px;
+	    line-height: 24px;
+	    padding: 16px 0 8px;
+		width: 100%;
 	}
-	#videos_sidebar .info:after {
-		clear:both;
+	#col_r .videos_sidebar h4 a {
+		display: inline-block;
+		padding: 0 0 0 26px;
+		background: url(/images/icons/video_24x24.png) no-repeat scroll 0 3px transparent;
 	}
-	#videos_sidebar .accordion-toggle:after {
+	#col_r .videos_sidebar h4:after {
 		clear:both
 	}
+	#col_r .videos_sidebar img  {
+		margin: 0 6px 0;
+	}
+	#col_r .videos_sidebar .info{
+		
+	}
+	#col_r .videos_sidebar .info:after {
+		clear:both;
+	}
+	

@@ -1,0 +1,13 @@
+<h1><?php printf("Видео по теме «%s»", implode(' ', $this->video_data)) ?></h1>
+<?php
+echo $this->youtubeVideos($this->video_data, array(
+	'max_results'=>10,
+	'show_duration'=>true,
+	'show_tags'=>10,
+	'thumb_width'=>200,
+	'safe_search'=>'strict',
+	'order'=>'published',
+	'link_title'=>true,
+	'collapse'=>false,
+	'description_links'=>'add',
+	'truncate_description'=>true), 'content');

@@ -4,40 +4,40 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.3 2012-05-26 23:41:43 dev Exp $
+ * @version $Id: program-week.phtml,v 1.4 2012-05-27 20:05:50 dev Exp $
  *
  */
 
-$channelAlias = Xmltv_String::strtolower($this->channel->alias);
-$programTitle = $this->list[0]['title'];
-$weekStart = $this->dates['start']->toString('EEEE, d MMMM');
-$weekEnd = $this->dates['end']->toString('EEEE, d MMMM');
-//var_dump($this->list);
+$programTitle = $this->escape( $this->list[0]['title'] );
+$weekStart    = $this->escape( $this->dates['start']->toString('EEEE, d MMMM'));
+$weekEnd      = $this->escape( $this->dates['end']->toString('EEEE, d MMMM'));
+$channelTitle = $this->escape( $this->channel->title );
+$channelAlias = $this->escape( Xmltv_String::strtolower( $this->channel->alias ));
+
 ?>
 
 <div id="fast_search">
 	<?php $form = new Xmltv_Form_FastChannelSearchForm(); echo $form; ?>
 </div>
 <h4><?php echo $weekStart; ?> - <?php echo $weekEnd; ?></h4>
-<h1><?php printf('Программа <em>%s</em> на канале <em>%s</em>', $programTitle, $this->channel->title) ?></h1>
+<h1><?php printf('<i>«%s»</i><br />на канале <i>«%s»</i>', $programTitle, $channelTitle) ?></h1>
+
 <?php 
 $startDates = array();
 foreach ($this->list as $single) {
-	$start = new Zend_Date($single['start']);
-	$startDates[]= '<li><a href="/телепрограмма/'.$channelAlias.'/'.$single['alias'].'/'.$start->toString('yyyy-MM-dd').'">'.Xmltv_String::ucfirst( $start->toString( 'd MMMM(EEEE)', null, 'ru' ) ).'</a></li>';
+	$singleAlias = $this->escape($single['alias']);
+	$start = new Zend_Date( $single['start']);
+	$startDates[]= '<li><a href="/телепрограмма/'.$channelAlias.'/'.$singleAlias.'/'.$this->escape( $start->toString('yyyy-MM-dd') ).'#'.$start->toString('U').'">'.$this->escape( Xmltv_String::ucfirst( $start->toString( 'd MMMM (EEEE) в HH:mm'))).'</a></li>';
 }
-
-if (!empty($startDates)) {
 ?>
-<p><?php printf('Программу <strong>%s</strong> можно позже посмотреть на этой неделе на канале <a href="%s">%s</a> в следующие дни:<br/>%s', $programTitle, '/телепрограмма/'.$channelAlias, $this->channel->title, '<ul>'.implode(PHP_EOL, $startDates)).'</ul>' ?></p>
-<?php
-} else {
-?>
-<p><?php printf("На этой неделе программу <strong>%s</strong> показывать позже не будут.", $programTitle) ?></p>
-<?php 
-}
 
-/*
+<?php  if (!empty($startDates)) : ?>
+<p><?php printf('На этой неделе вы можете посмотреть программу <b>«%s»</b> на канале <a href="%s">«%s»</a> в следующие дни:<br/>%s', $programTitle, '/телепрограмма/'.$channelAlias, $channelTitle, '<ul class="nav nav-tabs nav-stacked">'.implode(PHP_EOL, $startDates)).'</ul>' ?></p>
+<?php else : ?>
+<p><?php printf("На этой неделе программу <b>«%s»</b> показывать позже не будут.", $programTitle) ?></p>
+<?php endif; ?>
+
+<?php /*
 <table class="table table-condensed">
 	<tbody>
 		<?php

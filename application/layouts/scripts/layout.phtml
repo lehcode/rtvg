@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.9 2012-05-26 23:40:47 dev Exp $
+ * @version $Id: layout.phtml,v 1.10 2012-05-27 20:05:50 dev Exp $
  *
  */
 $this->headTitle()->setSeparator(' :: ');
@@ -79,11 +79,11 @@ if ($this->hide_sidebar=='right'){
 <body>
 <div class="container">
 	
-	<?php if (!$this->is_frontpage): ?>
+	<?php //if (!$this->is_frontpage): ?>
 	<div class="span12" id="header">
 		<?php echo $header; ?>
 	</div>
-	<?php endif; ?>
+	<?php //endif; ?>
 	
 	<div class="span12">
 		

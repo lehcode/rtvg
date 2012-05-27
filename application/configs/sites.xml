@@ -1,48 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configdata>
 	<listings>
-		<vsetvcom>
+		<site>
 			<title>vsetv.com</title>
 			<active>1</active>
 			<baseUrl>http://www.vsetv.com</baseUrl>
 			<startUri>/channels.html</startUri>
 			<encoding>windows-1251</encoding>
-		</vsetvcom>
-		<teleguideinfo>
+		</site>
+		<site>
 			<title>teleguide.info</title>
 			<active>0</active>
 			<baseUrl>http://www.teleguide.info</baseUrl>
 			<startUri>/</startUri>
-		</teleguideinfo>
+		</site>
 	</listings>
 	<movies>
-		<teleguideinfo>
+		<site>
 			<title>teleguide.info</title>
 			<active>1</active>
 			<baseUrl>http://www.teleguide.info</baseUrl>
 			<startUri>/sort</startUri>
-		</teleguideinfo>
+		</site>
+		<site>
+			<title>multyfresh.ru</title>
+			<active>1</active>
+			<baseUrl>http://www.multyfresh.ru</baseUrl>
+			<startUri>/view_search.php</startUri>
+		</site>
 	</movies>
 	<series />
 	<actors>
-		<source>
+		<site>
 			<title>kinofilms.ua</title>
 			<alias>kinofilmsua</alias>
 			<active>1</active>
 			<baseUrl>http://www.kinofilms.ua</baseUrl>
 			<searchUri>/</searchUri>
 			<searchArg>q</searchArg>
-		</source>
+		</site>
 	</actors>
 	<directors />
 	<news>
-		<plitkar>
+		<site>
 			<title>plitkar.com.ua</title>
-			<alias>plitkarcomua</alias>
 			<active>1</active>
 			<baseUrl>http://plitkar.com.ua</baseUrl>
 			<searchUri>/</searchUri>
 			<searchArg>q</searchArg>
-		</plitkar>
+		</site>
 	</news>
 </configdata>

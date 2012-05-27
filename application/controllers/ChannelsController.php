@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.5 2012-05-26 23:40:35 dev Exp $
+ * @version $Id: ChannelsController.php,v 1.6 2012-05-27 20:05:50 dev Exp $
  *
  */
 class ChannelsController extends Zend_Controller_Action
@@ -106,6 +106,8 @@ class ChannelsController extends Zend_Controller_Action
 	    	$this->view->assign('week_end', $end);
 	    	$this->view->assign('hide_sidebar', 'left');
 	    	$this->view->assign( 'sidebar_videos', true );
+	    	
+	    	$channels->addHit( $channel->ch_id );
 			
 		} else {
     		throw new Exception("Неверные данные", 500);

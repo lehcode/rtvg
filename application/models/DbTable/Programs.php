@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.4 2012-05-20 08:58:56 dev Exp $
+ * @version $Id: Programs.php,v 1.5 2012-05-27 20:05:50 dev Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
@@ -119,6 +119,8 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			$profiler = $this->_db->getProfiler();
 		}
 		
+		//var_dump($date->toString());
+		
 		$channels = new Xmltv_Model_DbTable_Channels();
 		$ch_id = (int)$channels->find($channel_alias)->current()->ch_id;
 		
@@ -131,7 +133,7 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			->where("rtvg_programs.`ch_id` = '$ch_id'");
 		
 		try {
-			$result = $this->_db->fetchAll($select);
+			$result = $this->_db->fetchAll($select, null, self::FETCH_MODE);
 		} catch (Exception $e) {
 			if ($this->debug) {
 				echo $e->getMessage();
@@ -139,6 +141,8 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 				exit();
 			}
 		}
+		
+		//var_dump($result);
 		
 		if(Xmltv_Config::getProfiling()) {
 			$query = $profiler->getLastQueryProfile();

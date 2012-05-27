@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.2 2012-05-24 20:49:35 dev Exp $
+ * @version $Id: VideosController.php,v 1.3 2012-05-27 20:05:50 dev Exp $
  *
  */
 class VideosController extends Zend_Controller_Action
@@ -31,11 +31,11 @@ class VideosController extends Zend_Controller_Action
 	
 	public function showVideoAction(){
 		
-		//var_dump($this->_requestParams);
-		//var_dump($this->_helper->requestValidator( array('method'=>'isValidRequest', 'action'=>$this->_getParam('action'))));
+		var_dump($this->_requestParams);
+		var_dump($this->_isValidRequest ($this->_getAllParams()));
 		//die(__FILE__.': '.__LINE__);
 		
-		if ( $this->_helper->requestValidator( array('method'=>'isValidRequest', 'action'=>$this->_getParam('action'))) === true ){ 
+		if ( $this->_isValidRequest($this->_getParam('action')) ) {  
 			
 			$videos_model = new Xmltv_Model_Videos();
 			
@@ -46,13 +46,103 @@ class VideosController extends Zend_Controller_Action
 			$this->view->assign( 'related_videos', $related );
 			
 		} else {
-			throw new Zend_Exception("Неверные данные", 500);
-			//$this->_redirect('/error', array('exit'=>true));
+			exit("Неверные данные");
 		}
 		
+	}
+	
+	
+	public function showVideoCompatAction(){
 		
-		
+		//var_dump($this->_requestParams);
+		//var_dump($this->_isValidRequest($this->_getAllParams()));
 		//die(__FILE__.': '.__LINE__);
 		
+		if ( $this->_isValidRequest($this->_getParam('action')) ) {  
+			
+			$videos_model = new Xmltv_Model_Videos();
+			
+			$id = base64_decode($this->_getParam('id'));
+			
+			//var_dump($id);
+			//die(__FILE__.': '.__LINE__);
+			
+			$video = $videos_model->getVideo( $id, false );
+			$this->view->assign( 'main_video', $video );
+			
+			$related = $videos_model->getRelatedVideos( $video );
+			$this->view->assign( 'related_videos', $related );
+			
+			$this->render('show-video');
+			
+		} else {
+			exit("Неверные данные");
+		}
+		
 	}
+	
+	public function showTagAction(){
+		
+		//var_dump($this->_getAllParams());
+		
+		if ( $this->_isValidRequest( $this->_getParam( 'action' ) )) { 
+			$safeTag = new Zend_Filter_HtmlEntities();
+			$videos = new Xmltv_Model_Videos();
+			$tag = $safeTag->filter( $videos->convertTag(  $this->_getParam( 'tag' )));
+			$this->view->assign('video_data', array($tag));
+		} else {
+			exit("Неверные данные");
+		}
+				
+	}
+	
+	private function _isValidRequest($action=null) {
+		
+    	if (!$action)
+		return false;
+		
+		//var_dump( $action );
+		//var_dump( $this->_getAllParams() );
+		//preg_match('/^[\p{L}\p{N}]+\=/i', $this->_getParam('id'), $m ) ;
+		//var_dump($m);
+		//die(__FILE__.': '.__LINE__);
+
+		$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
+		$validators = array(
+	    	'module'=>array(
+	    		new Zend_Validate_Regex('/^[a-z]+$/')),
+	    	'controller'=>array(
+	    		new Zend_Validate_Regex('/^[a-z]+$/')),
+	    	'action'=>array(
+	    		new Zend_Validate_Regex('/^[a-z-]+$/')),
+	    	'format'=>array(
+	    		new Zend_Validate_Regex('/^html|json$/')));
+		switch ($action) {
+			case 'show-video':
+				$validators['id']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
+				$validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
+				break;
+			case 'show-tag':
+				$validators['id']  = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
+				$validators['tag'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
+				break;
+			case 'show-video-compat':
+				$validators['id'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+\=$/i' ));
+				break;
+			default:
+				return false;
+		}
+		
+		$input = new Zend_Filter_Input($filters, $validators, $this->_getAllParams());
+    	
+		//var_dump($input->isValid());
+		//die(__FILE__.': '.__LINE__);
+		
+		if ($input->isValid())
+    	return true;
+    	else
+    	throw new Zend_Exception("Неверные данные", 500);
+    }
+    
+	
 }

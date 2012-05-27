@@ -9,18 +9,20 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			$yt->setMajorProtocolVersion(2);
 			$query = $yt->newVideoQuery();
 			
-			$thumb_width = isset($config['thumb_width']) && !empty($config['thumb_width']) ? (int)$config['thumb_width'] : 120 ;
-			$show_tags   = isset($config['show_tags']) && !empty($config['show_tags']) ? (int)$config['show_tags'] : false ;
-			$show_date   = isset($config['show_date']) && !empty($config['show_date']) ? (bool)$config['show_date'] : false ;
+			$thumbWidth  = isset($config['thumb_width']) && !empty($config['thumb_width']) ? (int)$config['thumb_width'] : 120 ;
+			$showTags    = isset($config['show_tags']) && !empty($config['show_tags']) ? (int)$config['show_tags'] : 5 ;
+			$showDate    = isset($config['show_date']) && !empty($config['show_date']) ? (bool)$config['show_date'] : false ;
 			$collapse    = isset($config['collapse']) && !empty($config['collapse']) ? (bool)$config['collapse'] : false ;
 			$debug       = isset($config['debug']) && !empty($config['debug']) ? (bool)$config['debug'] : false ;
 			$order       = isset($config['order']) && !empty($config['order']) ? (string)$config['order'] : 'relevance_lang_ru' ;
 			$safesearch  = isset($config['safe_search']) && !empty($config['safe_search']) ? (string)$config['safe_search'] : 'moderate' ;
+			$linkTitle   = isset($config['link_title']) && !empty($config['link_title']) ? (bool)$config['link_title'] : false ;
+			$descLinks   = isset($config['description_links']) && !empty($config['description_links']) ? (string)$config['description_links'] : 'convert' ;
 			
-			$max_results = isset($config['max_results']) && !empty($config['max_results']) ? (int)$config['max_results'] : 5 ;
-			$query->setMaxResults($max_results);
-			$start_index = isset($config['start_index']) && !empty($config['start_index']) ? (int)$config['start_index'] : 1 ;
-			$query->setStartIndex ($start_index);
+			$maxResults = isset($config['max_results']) && !empty($config['max_results']) ? (int)$config['max_results'] : 5 ;
+			$query->setMaxResults($maxResults);
+			$startIndex = isset($config['start_index']) && !empty($config['start_index']) ? (int)$config['start_index'] : 1 ;
+			$query->setStartIndex ($startIndex);
 			
 			$query->setParam('lang', 'ru');
 			
@@ -64,6 +66,8 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			//$regex       = new Zend_Filter_PregReplace(array("match"=>'/["\'\(\)\.`\{\}\[\]]/ui', "replace"=>' '));
 			//$toSeparator = new Zend_Filter_Word_SeparatorToSeparator(' ', '-');
 			
+			$entities = new Zend_Filter_HtmlEntities();
+			
 			foreach ($videos as $videoEntry) {
 				
 				$videoDescription = $videoEntry->getVideoDescription();
@@ -79,34 +83,34 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 				}
 				
 				foreach($videoThumbnails as $videoThumbnail) {
-					if ($videoThumbnail['width'] >= $thumb_width) {
+					if ($videoThumbnail['width'] >= $thumbWidth) {
 						
 						$vid = $this->_videoId($videoEntry->getVideoId());
 						
-						$title = $videoEntry->getVideoTitle();
-						$title = $trim->filter($title);
-						$alias = $this->view->videoAlias($title);
+						$videoTitle = $videoEntry->getVideoTitle();
+						$videoTitle = $trim->filter($videoTitle);
+						$alias = $this->view->videoAlias($videoTitle);
 						
 						if ($collapse === true){
 							
-							$html .= '<h4><a href="#">'.$title.'</a></h4>';
+							$html .= '<h4><a href="#">'.$videoTitle.'</a></h4>';
 									
 									$html .= '<div class="info">';
 									
 									$html .= '<a href="/видео/онлайн/'.$alias.'/'.$vid.'">
-										<img align="right" src="'.$videoThumbnail['url'].'" alt="'.$videoEntry->getVideoTitle().'" />
+										<img align="right" src="'.$videoThumbnail['url'].'" alt="'.$videoTitle.'" />
 									</a>';
 									
-									if ($config['show_date']===true) {
+									if ($showDate===true) {
 										$d = new Zend_Date($videoEntry->getUpdated(), Zend_Date::ISO_8601);
 										$d->addHour(3);
 										$html .= '<div class="date">'.Xmltv_String::ucfirst( $d->toString("EEEE, d MMMM YYYY, H:mm", 'ru')).'</div>';
 									}
 									
 									if (isset($config['truncate_description']) && $config['truncate_description']>0) {
-										$html .= '<p class="desc">'.$this->_truncateString($videoDescription, 50, 'words').'</p>';
+										$html .= '<p class="desc">'. $this->_addLinks( $this->_truncateString($videoDescription, 50, 'words'), $videoTitle, $descLinks ).'</p>';
 									} else {
-										$html .= '<p class="desc">'.$videoDescription.'</p>';
+										$html .= '<p class="desc">'. $this->_addLinks( $videoDescription, $videoTitle, $descLinks  ).'</p>';
 									}
 									
 									if ($config['show_duration']===true) {
@@ -114,7 +118,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 										$html .= '<div class="duration">Длина видео: '.$d->toString("mm мин ss сек").'</div>';
 									}
 									
-									if ((int)$config['show_tags']>0) {
+									if ($showTags>0) {
 										
 										try {
 											$tags = $videoEntry->getVideoTags();
@@ -135,20 +139,31 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 									</div>';
 							
 						} else {
+							/*
+							 * Title
+							 */
+							//var_dump($linkTitle);
+							if ($linkTitle===true)
+							$html .= '<h4><a href="/видео/онлайн/'.$alias.'/'.$vid.'" class="video-link" title="Перейти на страницу видео '.$entities->filter( $videoTitle ).'">'.$videoTitle.'</a></h4>';
+							else
+							$html .= '<h4>'.$videoTitle.'</h4>';
 							
-							$html .= '<h4>'.$title.'</h4>
-							<div class="thumb">';
-							$html .= '<a href="/видео/онлайн/'.$alias.'/'.$vid.'"><img src="'.$videoThumbnail['url'].'" /></a>';
+							/*
+							 * Thumbnail
+							 */
+							$html .= '<div class="thumb">';
+							$html .= '<a href="/видео/онлайн/'.$alias.'/'.$vid.'" title="Предпросмотр '.$entities->filter( $videoTitle ).'""><img src="'.$videoThumbnail['url'].'" alt="'.$entities->filter( $videoTitle ).'" /></a>';
 							$html .= '</div>';
 							
 							if (isset($config['truncate_description']) && $config['truncate_description']>0) {
-								$html .= '<p class="desc">'.$this->_truncateString($videoDescription, 50, 'words').'</p>';
+								$html .= '<p class="desc">'. $this->_addLinks( $this->_truncateString($videoDescription, 50, 'words'), $videoTitle, $descLinks  ).'</p>';
 							} else {
-								$html .= '<p class="desc">'.$videoDescription.'</p>';
+								$html .= '<p class="desc">'. $this->_addLinks( $videoDescription, $videoTitle, $descLinks ).'</p>';
 							}
 							
 							if ($config['show_duration']===true) {
-								$html .= '<div class="duration">'.$videoEntry->getVideoDuration().'</div>';
+								$d = new Zend_Date($videoEntry->getVideoDuration(), Zend_Date::TIMESTAMP);
+								$html .= '<div class="duration">Длина видео: '.$d->toString("mm мин ss сек").'</div>';
 							}
 							
 							if ((int)$config['show_tags']>0 || $config['show_tags']=='all') {
@@ -213,6 +228,45 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 				return Xmltv_String::substr($this->_input, 0, $length).'…';
 		}
 	}
+	
+	private function _addLinks($text=null, $title='', $do='convert'){
+		
+		if (!$text)
+		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		$entities = new Zend_Filter_HtmlEntities();
+		//var_dump(func_get_args());
+		preg_match_all('/[w]{3}?\.[\p{L}\p{N}-]{2,128}\.[a-z]{2,3}/', $text, $m);
+		//var_dump($m);
+		
+		foreach ($m as $i) {
+			foreach ($i as $link) {
+				
+				$linkTitle = sprintf('Смотреть видео %s на сайте %s', $entities->filter('"'.$title.'"'), $entities->filter($link));
+				$link = $entities->filter( trim( str_replace('http://', '', $link), ' /') );
+				//var_dump($do);
+				switch ($do) {
+					case 'convert':
+						$text = str_replace($link, '<a href="http://'.$link.'/" rel="nofollow" title="'.$linkTitle.'" target="_blank">'.$link.'</a>', $text);
+						break;
+					
+					default:
+					case 'add':
+						$text = str_replace($link, '', $text);
+						$text .= '<p><a class="btn" href="http://'.$link.'/" rel="nofollow" title="'.$link.'" target="_blank">'.$linkTitle.'</a></p>';
+						//var_dump($text);
+						//die(__FILE__.': '.__LINE__);
+						break;
+				}
+			}
+		}
+		//var_dump($text);
+		//die(__FILE__.': '.__LINE__);
+		return $text;
+		
+		
+	}
+	
 	/*
 	private function _makeAlias($title=null){
 		

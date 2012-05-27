@@ -154,8 +154,9 @@ class Xmltv_Model_Comments
 	    //$url = "http://api.vk.com/oauth/authorize?client_id={$this->_appKey}&redirect_uri=".urlencode("http://oauth.vk.com/blank.html")."&scope=16&display=wap&response_type=token";
 	    //$url = "http://vkontakte.ru/login.php?app={$this->_appKey}&layout=popup&type=browser&settings=16";
 	    
-	    $url = "https://api.vk.com/oauth/token?grant_type=client_credentials&client_id={$this->_appKey}&client_secret={$this->_appSecret}&username={$this->_vkEmail}&password={$this->_vkPass}&offline=1";
+	    //$url = "https://api.vk.com/oauth/token?grant_type=client_credentials&client_id={$this->_appKey}&client_secret={$this->_appSecret}&username={$this->_vkEmail}&password={$this->_vkPass}&offline=1";
 	    //$url = "https://oauth.vk.com/access_token?client_id={$this->_appKey}&client_secret={$this->_appSecret}&grant_type=client_credentials&offline=1'";
+	    $url = "http://oauth.vk.com/authorize?client_id=2965316&scope=offline&redirect_uri=http://oauth.vk.com/blank.html&display=wap&response_type=token";
 	    //var_dump($url);
 	    $client = new Zend_Http_Client($url, $adapterConfig);
 		$cache  = new Xmltv_Cache( array('location'=>'/cache/Comments') );
@@ -173,12 +174,13 @@ class Xmltv_Model_Comments
 	    }
 	    	
 		if ($response->isError()) {
-			//echo "Error transmitting data.\n";
-			//echo "Server reply was: " . $response->getStatus() . " " . $response->getMessage() . "\n";
+			throw new Exception("Ошибка апередачи данных.\n"."Ответсервера vk: " . $response->getStatus() . " " . $response->getMessage() . "\n");
+		} else {
+			
 		}
 		
-		//var_dump($response);
-		//die(__FILE__.': '.__LINE__);
+		var_dump($response->getBody());
+		die(__FILE__.': '.__LINE__);
 		
 		$response = json_decode( $response->getBody() );
 		

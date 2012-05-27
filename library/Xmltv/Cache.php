@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Cache.php,v 1.2 2012-04-23 04:50:28 dev Exp $
+ * @version $Id: Cache.php,v 1.3 2012-05-27 20:05:50 dev Exp $
  *
  */
 class Xmltv_Cache {
@@ -16,11 +16,12 @@ class Xmltv_Cache {
 	private $_lifetime;
 	
 	public function __construct($config=array()){
-		$this->_lifetime = isset($config['cache_lifetime']) && !empty($config['cache_lifetime']) ? (int)$config['cache_lifetime'] : Xmltv_Config::getCacheLifetime();
-		$this->_location = isset($config['location']) && !empty($config['location']) ? (int)$config['location'] : Xmltv_Config::getCacheLocation();
-		$this->_caching = Xmltv_Config::getCaching()===true ? true : false ;
 		
-		$this->_cache  = Zend_Cache::factory( 'Core', 'File', array( 
+		$this->_lifetime = isset($config['cache_lifetime']) && !empty($config['cache_lifetime']) ? (int)$config['cache_lifetime'] : Xmltv_Config::getCacheLifetime();
+		$this->_location = isset($config['location']) && !empty($config['location']) ? (string)$config['location'] : Xmltv_Config::getCacheLocation();
+		$this->_caching = Xmltv_Config::getCaching()===true ? true : false ;
+				
+		$this->_cache  = Zend_Cache::factory( 'Core', 'File', array(  
 			'lifetime' => $this->_lifetime,
 			'automatic_serialization' => true ), array( 'cache_dir' => ROOT_PATH . $this->_location ) );
 		

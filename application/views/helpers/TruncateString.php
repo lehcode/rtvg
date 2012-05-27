@@ -20,7 +20,10 @@ class Zend_View_Helper_TruncateString extends Zend_View_Helper_Abstract
 				}
 				break;
 			default:
-				return Xmltv_String::substr($this->_input, 0, $length).'…';
+				if (Xmltv_String::strlen($string)<=$length)
+				return $string;
+				else
+				return Xmltv_String::substr($string, 0, $length-1).'…';
 		}
 	}
 }

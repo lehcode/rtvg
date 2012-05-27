@@ -61,15 +61,26 @@ class Xmltv_Model_Programs
 	}
 
 
-	public function getProgramThisDay ($prog_alias=null, $channel_alias=null, Zend_Date $date) {
+	public function getProgramForDay ($prog_alias=null, $channel_alias=null, Zend_Date $date) {
 		
 		if(  !$prog_alias ||  !$channel_alias )
 		throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
 		
-		if (!$date)
-		$date = new Zend_Date(null, null, 'ru');
-		
-		$result = $this->_table->fetchProgramThisDay($prog_alias, $channel_alias, $date);
+		try {
+			if (Xmltv_Config::getCaching()) {
+				$subDir = 'Listings';
+				$cache = new Xmltv_Cache(array('location'=>"/cache/$subDir"));
+				$hash = $cache->getHash(__METHOD__.'_'.md5($prog_alias.$channel_alias).'_'.$date->toString('yyyyMMdd'));
+				if (!$result = $cache->load($hash, 'Core', $subDir)){
+					$result = $this->_table->fetchProgramThisDay($prog_alias, $channel_alias, $date);
+					$cache->save($result, $hash, 'Core', $subDir);
+				} 
+			} else {
+				$result = $this->_table->fetchProgramThisDay($prog_alias, $channel_alias, $date);
+			}
+		} catch (Exception $e) {
+			echo $e->getMessage();
+		}
 		
 		$actors         = array();
 		$directors      = array();
@@ -79,14 +90,14 @@ class Xmltv_Model_Programs
 		
 		foreach ($result as $k=>$r) {
 			
-			if (!empty($r['actors'])) {
-				$ids = $serializer->unserialize($r['actors']);
-				$result[$k]['actors'] = $actorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
+			if (!empty($r->actors)) {
+				$ids = $serializer->unserialize($r->actors);
+				$result[$k]->actors = $actorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
 			}
 			
-			if (!empty($r['directors'])) {
-				$ids = $serializer->unserialize($r['directors']);
-				$result[$k]['directors'] = $directorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
+			if (!empty($r->directors)) {
+				$ids = $serializer->unserialize($r->directors);
+				$result[$k]->directors = $directorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
 			}
 			
 		}
@@ -162,9 +173,16 @@ class Xmltv_Model_Programs
 		return $this->_table->getCount();
 	}
 
-	public function addHit($title_alias=null){
+	public function addHit($target=null){
 		$table = new Xmltv_Model_DbTable_ProgramsRatings();
-		$table->addHit($title_alias);
+		try {
+			$table->addHit($target);
+		} catch (Exception $e) {
+			echo $e->getMessage();
+			if (Xmltv_Config::getDebug())
+			Zend_Debug::dump(func_get_args());
+		}
+		
 	}
 	
 	

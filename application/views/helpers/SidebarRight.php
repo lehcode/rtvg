@@ -49,7 +49,7 @@ class Zend_View_Helper_SidebarRight extends Zend_View_Helper_Abstract
 				'order'=>'published',
 				'truncate_description'=>30), 'sidebar' );
 			if (!empty($videos) && ($videos!='<div class="videos_sidebar"></div>')) {
-				echo '<h3>Новые видео "'.$this->view->channel->title.'" онлайн</h3>';
+				echo '<h3>Новые видео «'.$this->view->channel->title.'» онлайн</h3>';
 				echo $videos;
 			}
 		}	

@@ -13,9 +13,9 @@ class Xmltv_Site_Teleguide extends Xmltv_Site
 	protected $_HTML;
 	private $_parser;
 	private $_config;
-	private $_encoding='windows-1251';
 	private $_retry=array();
 	
+	protected $_encoding='windows-1251';
 	protected $_siteKey='teleguide';
 	protected $_baseUrl;
 	

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.6 2012-05-26 23:41:43 dev Exp $
+ * @version $Id: day-listing.phtml,v 1.7 2012-05-27 20:05:50 dev Exp $
  *
  */
 $this->headScript()
@@ -131,8 +131,9 @@ if (!empty($this->programs)) {
 				'show_duration'=>false,
 				'show_tags'=>10,
 				'thumb_width'=>200,
-				'safe_search'=>'strict',
+				'safe_search'=>'none',
 				'order'=>'published',
+				'debug'=>true,
 				'truncate_description'=>false), 'content');
 		}
 		?>
@@ -191,7 +192,9 @@ if (!empty($this->comments)) { ?>
 		<div class="title"><?php echo $comment['title'] ?></div>
 		
 		<div class="author">
-			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank"><?php echo $comment['author'] ?></a>
+			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
+				<small><?php echo $comment['author'] ?></small>
+			</a>
 		</div>
 		
 		<div class="date">

@@ -3,7 +3,7 @@
  * Database table for channels model
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.6 2012-05-26 23:41:14 dev Exp $
+ * @version $Id: Channels.php,v 1.7 2012-05-27 20:05:50 dev Exp $
  */
 class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 {
@@ -11,6 +11,7 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     protected $_name = 'rtvg_channels';
     private $_debug;
 	private $_profiling;
+	private $_profiler;
 	
 	const FETCH_MODE = Zend_Db::FETCH_OBJ;
 	
@@ -18,16 +19,20 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     	
     	parent::__construct(array('name'=>$this->_name));
     	
-    	$this->_debug = Xmltv_Config::getDebug();
+    	$this->_debug     = Xmltv_Config::getDebug();
 		$this->_profiling = Xmltv_Config::getProfiling();
 		
     }
     
     public function getTypeheadItems(){
     	
-    	$select = $this->_db->select()
-    		->from($this->_name, array( 'title' ));
-    	return $this->_db->query($select)->fetchAll();
+    	try {
+    		$select = $this->_db->select()->from($this->_name, array( 'title' ));
+    		$result = $this->_db->query($select)->fetchAll(self::FETCH_MODE);
+    	} catch (Exception $e) {
+    		echo $e->getMessage();
+    	}
+    	return $result;
     	
     }
     
@@ -36,32 +41,39 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     	if (!$order)
     	$order='ch_id';
     	
-    	$select = $this->_db->select()
+    	$this->_initProfiler();
+    	
+    	try {
+    		$select = $this->_db->select()
     		->from( $this->_name, '*' )
     		->joinLeft('rtvg_channels_ratings', "$this->_name.`ch_id`=rtvg_channels_ratings.`ch_id`");
-    		
-    	$select->where( "`featured`='1'" )->limit($total);
-    	
-    	if (!$by_hits)
-    	$select->order("$order ASC");
-    	else {
-    		$select->order("rtvg_channels_ratings.hits DESC");
-    		$select->order("$this->_name.title ASC");
+	    	$select->where( "`featured`='1'" )->limit($total);
+	    	
+	    	if (!$by_hits)
+	    	$select->order("$order ASC");
+	    	else {
+	    		$select->order("rtvg_channels_ratings.hits DESC");
+	    		$select->order("$this->_name.title ASC");
+	    	}
+	    	
+	    	$result = $this->_db->query($select)->fetchAll(self::FETCH_MODE);
+    	} catch (Exception $e) {
+    		$e->getMessage();
     	}
     	
-    	return $this->_db->query($select)->fetchAll();
+    	$this->_profileQuery();
+		
+		return $result;
+    	
     }
     
     public function fetchCategory($alias=null){
     	
     	if (!$alias)
 		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
-		/*
-    	if( $this->_profiling ) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$profiler = $this->_db->getProfiler();
-		}
-		*/
+		
+    	$this->_initProfiler();
+		
     	$select = $this->_db->select()
     		->from( $this->_name, '*' )
     		->joinLeft('rtvg_channels_categories', "$this->_name.`category`=rtvg_channels_categories.`id`", array());
@@ -69,29 +81,18 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     	$select->order("$this->_name.title ASC");
     	
     	$result = $this->_db->query($select)->fetchAll( );
-    	/*
-    	if( $this->_profiling ) {
-			$query = $profiler->getLastQueryProfile();
-			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
-		}
-		*/
+    	
+    	$this->_profileQuery();
+		
     	return $result;
     	
     }
     
     public function fetchWeekItems($ch_id, Zend_Date $start, Zend_Date $end){
     	
-    	//var_dump(func_get_args());
-    	
-    	if(Xmltv_Config::getProfiling()) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$profiler = $this->_db->getProfiler();
-		}
-		
+    	$this->_initProfiler();
 		$days = array();
-		
 		do{
-
 			$select = $this->_db->select()
 				->from('rtvg_programs', '*')
 				->joinLeft("rtvg_programs_props", "rtvg_programs_props.`hash` = rtvg_programs.`hash`", array('actors', 'directors', 'premiere', 'live'))
@@ -110,11 +111,7 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 				}
 			}
 			
-			if(Xmltv_Config::getProfiling()) {
-				$query = $profiler->getLastQueryProfile();
-				echo $query->getElapsedSecs().': '.$query->getQuery();
-			}
-			
+			$this->_profileQuery();
 			$start->addDay(1);
 			
 		} while ($start->toString('yyyy-MM-dd')!=$end->toString('yyyy-MM-dd'));
@@ -123,14 +120,28 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 			foreach ($day as $program) {
 				$program->start = new Zend_Date($program->start);
 				$program->end   = new Zend_Date($program->end);
-				//var_dump($program);
-				//die(__FILE__.': '.__LINE__);
 			}
 		}
-		
-		//die(__FILE__.': '.__LINE__);
-		
+				
 		return $days;
+    	
+    }
+    
+    private function _initProfiler(){
+    	
+    	if( $this->_profiling ) {
+			$this->_db->getProfiler()->setEnabled( true );
+			$this->_profiler = $this->_db->getProfiler();
+		}
+    	
+    }
+    
+    private function _profileQuery(){
+    	
+    	if( $this->_profiling ) {
+			$query = $this->_profiler->getLastQueryProfile();
+			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
+		}
     	
     }
 	

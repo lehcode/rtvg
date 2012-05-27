@@ -26,13 +26,14 @@ class Zend_View_Helper_SidebarLeft extends Zend_View_Helper_Abstract
 		
 		<?php echo $this->view->channelsCategoriesList(); ?>
 		
+		<?php /*
 		<div>
 			<h3>Популярные программы</h3>
 			<ul>
 				<li></li>
 			</ul>
 		</div>
-		
+		*/ ?>
 		
 		
 		<?php 

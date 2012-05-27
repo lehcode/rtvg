@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.5 2012-05-26 23:41:14 dev Exp $
+ * @version $Id: Channels.php,v 1.6 2012-05-27 20:05:50 dev Exp $
  */
 class Xmltv_Model_Channels
 {
@@ -10,7 +10,7 @@ class Xmltv_Model_Channels
 	public $debug=false;
 	private $_table;
 	private $_hits_table;
-	
+		
 	public function __construct(){
 		$siteConfig = Zend_Registry::get('site_config')->site;
 		$this->debug = (bool)$siteConfig->get('debug', false);
