@@ -1,0 +1,516 @@
+
+var hs=new Object();
+var rg=new Object();
+var arrBlend = new Array("#000000","#000000","#000000","#000000","#000000","#000000");
+
+var iCurrent=1;
+var editmode=1;
+
+// create sliders - start
+
+var r = new Slider(document.getElementById("slider-r"), document.getElementById("slider-input-r"));
+r.setMaximum(255);
+var g = new Slider(document.getElementById("slider-g"), document.getElementById("slider-input-g"));
+g.setMaximum(255);
+var b = new Slider(document.getElementById("slider-b"), document.getElementById("slider-input-b"));
+b.setMaximum(255);
+
+var ri = document.getElementById("input-r");
+ri.onchange = function () { r.setValue(parseInt(this.value)) }
+var gi = document.getElementById("input-g");
+gi.onchange = function () { g.setValue(parseInt(this.value)) }
+var bi = document.getElementById("input-b");
+bi.onchange = function () { b.setValue(parseInt(this.value)) }
+
+var h = new Slider(document.getElementById("slider-h"), document.getElementById("slider-input-h"));
+h.setMaximum(359);
+var s = new Slider(document.getElementById("slider-s"), document.getElementById("slider-input-s"));
+s.setMaximum(100);
+var v = new Slider(document.getElementById("slider-v"), document.getElementById("slider-input-v"));
+v.setMaximum(100);
+
+var hi = document.getElementById("input-h");
+hi.onchange = function () { h.setValue(parseInt(this.value)) }
+var si = document.getElementById("input-s");
+si.onchange = function () { s.setValue(parseInt(this.value)) }
+var vi = document.getElementById("input-v");
+vi.onchange = function () { v.setValue(parseInt(this.value)) }
+
+// create sliders - end
+
+
+r.onchange = g.onchange = b.onchange = function () {
+	if(document.getElementById("colormodergb").checked){
+		ri.value = rg.r = r.getValue();
+		gi.value = rg.g = g.getValue();
+		bi.value = rg.b = b.getValue();
+		hs=rgb2hsv(rg);
+	
+		h.setValue(hs.h);
+		s.setValue(hs.s);
+		v.setValue(hs.v);
+
+		hi.value = h.getValue();
+		si.value = s.getValue();
+		vi.value = v.getValue();
+
+		sNewCol="#"+dec2html(r.getValue())+dec2html(g.getValue())+dec2html(b.getValue());
+		arrBlend[iCurrent-1]=sNewCol;
+		updateSwatch(iCurrent);
+		if(editmode==1)domatch(hs);
+
+		updateRGBvariations();
+	}
+}
+
+h.onchange = s.onchange = v.onchange = function () {
+	if(document.getElementById("colormodehsv").checked){
+
+		hi.value = hs.h = h.getValue();
+		si.value = hs.s = s.getValue();
+		vi.value = hs.v = v.getValue();
+
+		rg=hsv2rgb(hs);
+		hs=rgb2hsv(rg);
+
+		r.setValue(rg.r);
+		g.setValue(rg.g);
+		b.setValue(rg.b);
+		
+		ri.value = rg.r;
+		gi.value = rg.g;
+		bi.value = rg.b;
+
+		sNewCol="#"+dec2html(r.getValue())+dec2html(g.getValue())+dec2html(b.getValue());
+		arrBlend[iCurrent-1]=sNewCol;
+		updateSwatch(iCurrent);
+		if(editmode==1)domatch(hs);
+
+		updateHSVvariations();
+	}
+}
+
+function updateRGBvariations() {
+		var vv=20;
+		var vw=10;
+		document.getElementById("swrgbvar1").style.backgroundColor="#"+dec2html(addlimit(r.getValue(),-vw,0,255))+dec2html(addlimit(g.getValue(),vv,0,255))+dec2html(addlimit(b.getValue(),-vw,0,255));
+		document.getElementById("swrgbvar2").style.backgroundColor="#"+dec2html(addlimit(r.getValue(),vw,0,255))+dec2html(addlimit(g.getValue(),vw,0,255))+dec2html(addlimit(b.getValue(),-vv,0,255));
+		document.getElementById("swrgbvar3").style.backgroundColor="#"+dec2html(addlimit(r.getValue(),-vv,0,255))+dec2html(addlimit(g.getValue(),vw,0,255))+dec2html(addlimit(b.getValue(),vw,0,255));
+		document.getElementById("swrgbvar4").style.backgroundColor="#"+dec2html(r.getValue())+dec2html(g.getValue())+dec2html(b.getValue());
+		document.getElementById("swrgbvar5").style.backgroundColor="#"+dec2html(addlimit(r.getValue(),vv,0,255))+dec2html(addlimit(g.getValue(),-vw,0,255))+dec2html(addlimit(b.getValue(),-vw,0,255));
+		document.getElementById("swrgbvar6").style.backgroundColor="#"+dec2html(addlimit(r.getValue(),-vw,0,255))+dec2html(addlimit(g.getValue(),-vw,0,255))+dec2html(addlimit(b.getValue(),vv,0,255));
+		document.getElementById("swrgbvar7").style.backgroundColor="#"+dec2html(addlimit(r.getValue(),vw,0,255))+dec2html(addlimit(g.getValue(),-vv,0,255))+dec2html(addlimit(b.getValue(),vw,0,255));
+}
+
+function updateHSVvariations() {
+		var vv=10;
+		document.getElementById("swhsvvar1").style.backgroundColor=hsvvariation(hs,-vv,vv);
+		document.getElementById("swhsvvar2").style.backgroundColor=hsvvariation(hs,0,vv);
+		document.getElementById("swhsvvar3").style.backgroundColor=hsvvariation(hs,vv,vv);
+		document.getElementById("swhsvvar4").style.backgroundColor=hsvvariation(hs,-vv,0);
+		document.getElementById("swhsvvar5").style.backgroundColor=sNewCol;
+		document.getElementById("swhsvvar6").style.backgroundColor=hsvvariation(hs,vv,0);
+		document.getElementById("swhsvvar7").style.backgroundColor=hsvvariation(hs,-vv,-vv);
+		document.getElementById("swhsvvar8").style.backgroundColor=hsvvariation(hs,0,-vv);
+		document.getElementById("swhsvvar9").style.backgroundColor=hsvvariation(hs,vv,-vv);
+}
+
+function saveBlend() {
+	var sName=document.getElementById('blendname').value;
+	if(sName==""){
+		alert("Please specify a name to save the blend.");
+		document.getElementById('blendname').focus();
+		return false;
+	}
+	else
+	{
+		var sData="";
+		var bSave=true;
+		for(var i=0;i<6;i++){
+			sData=sData+arrBlend[i].substr(1,6);
+		}
+
+		// in list of saved?    yes ask to overwrite - if yes, save
+		//			no save
+		
+		if(bSave){
+			window.location="saveblend.asp?name="+sName+"&data="+sData;
+		}
+	}
+}
+
+function deleteBlend() {
+	if(document.getElementById("blendname").value!=""){
+		if(confirm("Delete this blend from your saved list?")){
+			window.location="deleteblend.asp?name="+document.getElementById("blendname").value;
+		}
+	}
+}
+
+function loadBlend(sData) {
+	if(sData!=""){
+		changeeditmode(2);
+		for(var i=0;i<6;i++){
+			arrBlend[i]="#"+sData.substr(i*6,6);
+		}
+		updateBlend();
+		editcolor(iCurrent);
+	}
+}
+
+function updateBlend() {
+	for(var i=1;i<=6;i++) { updateSwatch(i); }
+}
+
+function changeeditmode(m) {
+	m=parseInt(m);
+	if(parseInt(editmode)!=m){
+		if(m==1){
+			var bChangeOk;
+			if(document.getElementById("confirmmodechange").checked){;
+				bChangeOk=confirm("Changing to AutoMatch mode will destroy your current palette and\ncompute a matching palette from the current active color.\n\nProceed?");
+			} else {
+				bChangeOk=true;
+			}
+			if(bChangeOk){
+				arrBlend[0]=arrBlend[iCurrent-1];
+				editcolor(1);
+				updateSwatch(1);
+				editmode=m;
+				domatch(hs);
+			}
+			else
+			{
+				document.getElementById("editmodeauto").checked=false;
+				document.getElementById("editmodedirect").checked=true;
+			}
+		}
+		else
+		{
+			document.getElementById("editmodeauto").checked=false;
+			document.getElementById("editmodedirect").checked=true;
+			editmode=m;
+		}
+	}
+}
+
+function automatch(m) {
+	if(confirm('This will destroy your current palette and compute\na matching palette from the current active color.\n\nProceed?')){
+		arrBlend[0]=arrBlend[iCurrent-1];
+		editcolor(1);
+		updateSwatch(1);
+		domatch(hs);
+	}
+}
+
+function changecolormode(m) {
+	if(m==1){
+		document.getElementById("selectorrgb").style.display = "block";
+		document.getElementById("selectorhsv").style.display = "none";
+		document.getElementById("varrgb").style.display = "block";
+		document.getElementById("varhsv").style.display = "none";
+		r.recalculate();
+		g.recalculate();
+		b.recalculate();
+		updateRGBvariations();
+	}		
+	if(m==2){
+		document.getElementById("selectorrgb").style.display = "none";
+		document.getElementById("selectorhsv").style.display = "block";
+		document.getElementById("varrgb").style.display = "none";
+		document.getElementById("varhsv").style.display = "block";
+		h.recalculate();
+		s.recalculate();
+		v.recalculate();
+		updateHSVvariations();
+	}		
+		
+}
+
+function updateSwatch(sNo) {
+	document.getElementById("col"+sNo).style.backgroundColor=arrBlend[sNo-1];
+	var sInfo="HTML "+arrBlend[sNo-1]+"<br>RGB "+html2dec(arrBlend[sNo-1].substr(1,2))+"/"+html2dec(arrBlend[sNo-1].substr(3,2))+"/"+html2dec(arrBlend[sNo-1].substr(5,2));
+	document.getElementById("RGB"+sNo).innerHTML=sInfo;
+}
+
+function findPantone(rv,gv,bv) {
+	sUrl='panmatch.asp?r='+rv+'&g='+gv+'&b='+bv;
+	var wPop = window.open(sUrl, 'panmatch', 'height=460,width=330', false);
+}
+
+function dec2html(d){
+	// Converts from decimal color value (0-255) to HTML-style (00-FF)
+	var hch="0123456789ABCDEF";
+	var a=d%16;
+	var b=(d-a)/16;
+	return hch.charAt(b)+hch.charAt(a);
+}
+
+function html2dec(h){
+	// Converts from HEX/HTML-style (00-FF) to decimal color value (0-255)
+	return parseInt(h,16);
+}
+
+function rgb2hsv(rg){
+	// Converts an RGB color object to a HSV color object
+	var hs=new Object();
+	var m=rg.r;
+	if(rg.g<m){m=rg.g};
+	if(rg.b<m){m=rg.b};
+	var v=rg.r;
+	if(rg.g>v){v=rg.g};
+	if(rg.b>v){v=rg.b};
+	var value=100*v/255;
+	var delta=v-m;
+	if(v==0.0){hs.s=0}else{hs.s=100*delta/v};
+	if(hs.s==0){hs.h=0}else{
+		if(rg.r==v){hs.h=60.0*(rg.g-rg.b)/delta}
+			else if(rg.g==v){hs.h=120.0+60.0*(rg.b-rg.r)/delta}
+				else if(rg.b=v){hs.h=240.0+60.0*(rg.r-rg.g)/delta}
+	if(hs.h<0.0){hs.h=hs.h+360.0}
+	}
+	hs.h=Math.round(hs.h);
+	hs.s=Math.round(hs.s);
+	hs.v=Math.round(value);
+	return(hs);
+}
+
+function hsv2rgb(hsx){
+	// Converts an HSV color object to a RGB color object
+	var rg=new Object();
+	if(hsx.s==0){
+		rg.r=rg.g=rg.b=Math.round(hsx.v*2.55); return(rg);
+	}
+	hsx.s=hsx.s/100;
+	hsx.v=hsx.v/100;
+	hsx.h/=60;
+	var i=Math.floor(hsx.h);
+	var f=hsx.h-i;
+	var p=hsx.v*(1-hsx.s);
+	var q=hsx.v*(1-hsx.s*f);
+	var t=hsx.v*(1-hsx.s*(1-f));
+	switch(i){
+		case 0:rg.r=hsx.v; rg.g=t; rg.b=p; break;
+		case 1:rg.r=q; rg.g=hsx.v; rg.b=p; break;
+		case 2:rg.r=p; rg.g=hsx.v; rg.b=t; break;
+		case 3:rg.r=p; rg.g=q; rg.b=hsx.v; break;
+		case 4:rg.r=t; rg.g=p; rg.b=hsx.v; break;
+		default: rg.r=hsx.v; rg.g=p; rg.b=q;
+	}
+	rg.r=Math.round(rg.r*255);
+	rg.g=Math.round(rg.g*255);
+	rg.b=Math.round(rg.b*255);
+	return(rg);
+}
+
+function domatch(hs){
+
+	// Color matching algorithm. All work is done in HSV color space, because all
+	// calculations are based on hue, saturation and value of the working color.
+	// The hue spectrum is divided into sections, are the matching colors are
+	// calculated differently depending on the hue of the color.
+	
+	var z=new Object();
+	var y=new Object();
+	var yx=new Object();
+	y.s=hs.s;
+	y.h=hs.h;
+	if(hs.v>70){y.v=hs.v-30}else{y.v=hs.v+30};
+	z=hsv2rgb(y);
+	outp("1",z);
+	if((hs.h>=0)&&(hs.h<30)){
+		yx.h=y.h=hs.h+30;yx.s=y.s=hs.s;y.v=hs.v;
+		if(hs.v>70){yx.v=hs.v-30}else{yx.v=hs.v+30}
+	}
+	if((hs.h>=30)&&(hs.h<60)){yx.h=y.h=hs.h+150;
+		y.s=rc(hs.s-30,100);
+		y.v=rc(hs.v-20,100);
+		yx.s=rc(hs.s-50,100);
+		yx.v=rc(hs.v+20,100);
+	}
+	if((hs.h>=60)&&(hs.h<180)){
+		yx.h=y.h=hs.h-40;
+		y.s=yx.s=hs.s;
+		y.v=hs.v;if(hs.v>70){yx.v=hs.v-30}else{yx.v=hs.v+30}
+	}
+	if((hs.h>=180)&&(hs.h<220)){
+		yx.h=hs.h-170;
+		y.h=hs.h-160;
+		yx.s=y.s=hs.s;
+		y.v=hs.v;
+		if(hs.v>70){yx.v=hs.v-30}else{yx.v=hs.v+30}
+	}if((hs.h>=220)&&(hs.h<300)){
+		yx.h=y.h=hs.h;
+		yx.s=y.s=rc(hs.s-40,100);
+		y.v=hs.v;
+		if(hs.v>70){yx.v=hs.v-30}else{yx.v=hs.v+30}
+	}
+	if(hs.h>=300){
+		if(hs.s>50){y.s=yx.s=hs.s-40}else{y.s=yx.s=hs.s+40}yx.h=y.h=(hs.h+20)%360;
+		y.v=hs.v;
+		if(hs.v>70){yx.v=hs.v-30}else{yx.v=hs.v+30}
+	}
+	z=hsv2rgb(y);
+	outp("2",z);
+	z=hsv2rgb(yx);
+	outp("3",z);
+	y.h=0;
+	y.s=0;
+	y.v=100-hs.v;
+	z=hsv2rgb(y);
+	outp("4",z);
+	y.h=0;
+	y.s=0;
+	y.v=hs.v;
+	z=hsv2rgb(y);
+	outp("5",z);
+}
+
+function hsvvariation(hsv,addsat,addval){
+	var rgbobj=new Object();
+	var hsvobj=new Object();
+	hsvobj.h=hsv.h;
+	hsvobj.s=hsv.s;
+	hsvobj.v=hsv.v;
+	hsvobj.s=addlimit(hsvobj.s,addsat,0,99);
+	hsvobj.v=addlimit(hsvobj.v,addval,0,99);
+	rgbobj=hsv2rgb(hsvobj);
+	var v="#"+dec2html(rgbobj.r)+dec2html(rgbobj.g)+dec2html(rgbobj.b);
+	return v;
+}
+
+function setVariation(tg) {
+	var rgbc = tg.style.backgroundColor;
+
+	// fix mozilla behaviour
+	if(rgbc.substr(0,3)=="rgb"){
+		var rgba=rgbc.substr(4,rgbc.length-5).split(",");
+		rgbc="#"+dec2html(rgba[0])+dec2html(rgba[1])+dec2html(rgba[2]);
+	}
+	setRgb(html2dec(rgbc.substr(1,2)),html2dec(rgbc.substr(3,2)),html2dec(rgbc.substr(5,2)));
+}
+
+function setHsvVariation(tg) {
+	var rgbc = tg.style.backgroundColor;
+
+	// fix mozilla behaviour
+	if(rgbc.substr(0,3)=="rgb"){
+		var rgba=rgbc.substr(4,rgbc.length-5).split(",");
+		rgbc="#"+dec2html(rgba[0])+dec2html(rgba[1])+dec2html(rgba[2]);
+	}
+	var hsvobj=new Object();
+	var rgbobj=new Object();
+	rgbobj.r=html2dec(rgbc.substr(1,2));
+	rgbobj.g=html2dec(rgbc.substr(3,2));
+	rgbobj.b=html2dec(rgbc.substr(5,2));
+	hsvobj=rgb2hsv(rgbobj);
+	setHSV(hsvobj.h,hsvobj.s,hsvobj.v);
+}
+
+function addlimit(x,d,min,max) {
+	x=x+d;
+	if(x<min)return min;
+	if(x>max)return max;
+	if((x>=min)&&(x<=max))return x;
+}
+
+function rc(x,m){
+	if(x>m){return m}
+	if(x<0){return 0}else{return x}
+}
+
+function outp(x,c){
+	arrBlend[x]="#"+dec2html(c.r)+dec2html(c.g)+dec2html(c.b);
+	updateSwatch(parseInt(x)+1);
+}
+
+function editcolor(colid) {
+	if(editmode==2){
+		var nrg=new Object();
+		var nhs=new Object();
+		iCurrent=colid;
+	
+		sColor=arrBlend[iCurrent-1].substr(1);
+		nrg.r=html2dec(sColor.substr(0,2));
+		nrg.g=html2dec(sColor.substr(2,2));
+		nrg.b=html2dec(sColor.substr(4,2));
+		nhs=rgb2hsv(nrg);
+		setRgb(nrg.r,nrg.g,nrg.b);
+		setHSV(nhs.h,nhs.s,nhs.v);
+	
+		// move border to indicate current active color
+		for(i=1;i<=6;i++){
+			document.getElementById("swcell"+i).style.border="solid 2px #F0F0F0";
+		}
+		document.getElementById("swcell"+iCurrent).style.border="solid 2px #A0A0A0";
+	}
+	else
+	{
+		if(colid!=1){
+			if(!document.getElementById("confirmmodechange").checked){
+				changeeditmode(2);
+				editcolor(colid);
+			}else{	
+				alert("You must be in Direct Edit mode to manually change this color.");
+			}
+		}
+	}
+}
+
+function suggestPantone() {
+	var sColor=arrBlend[iCurrent-1].substr(1);
+	findPantone(html2dec(sColor.substr(0,2)),html2dec(sColor.substr(2,2)),html2dec(sColor.substr(4,2)));
+}
+
+function setRgb(rv, gv, bv) {
+	r.setValue(rv);
+	g.setValue(gv);
+	b.setValue(bv);
+}
+
+function setHSV(hv, sv, vv) {
+	h.setValue(hv);
+	s.setValue(sv);
+	v.setValue(vv);
+}
+
+function getRgb() {
+	return {
+		r:	r.getValue(),
+		g:	g.getValue(),
+		b:	b.getValue()
+	};
+}
+
+function fixSize() {
+	r.recalculate();
+	g.recalculate();
+	b.recalculate();
+}
+
+function exportact(){
+	var t="";
+	for(i=0;i<6;i++){
+		t=t+arrBlend[i].substr(1,6);
+	}
+	var sUrl="exportact.asp?data="+t
+	window.location=sUrl;
+}
+
+function exporteps(){
+	var t="";
+	for(i=0;i<6;i++){
+		t=t+arrBlend[i].substr(1,6);
+	}
+	var sUrl="exporteps.asp?data="+t
+	window.location=sUrl;
+}
+
+function sendblend(){
+	var t="";
+	for(i=0;i<6;i++){
+		t=t+arrBlend[i].substr(1,6);
+	}
+	var sUrl="sendblend.asp?data="+t
+	window.location=sUrl;
+}
