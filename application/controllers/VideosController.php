@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.3 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: VideosController.php,v 1.4 2012-05-30 21:46:59 dev Exp $
  *
  */
 class VideosController extends Zend_Controller_Action
@@ -31,8 +31,8 @@ class VideosController extends Zend_Controller_Action
 	
 	public function showVideoAction(){
 		
-		var_dump($this->_requestParams);
-		var_dump($this->_isValidRequest ($this->_getAllParams()));
+		//var_dump($this->_requestParams);
+		//var_dump($this->_isValidRequest ($this->_getAllParams()));
 		//die(__FILE__.': '.__LINE__);
 		
 		if ( $this->_isValidRequest($this->_getParam('action')) ) {  

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.10 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: layout.phtml,v 1.11 2012-05-30 21:46:59 dev Exp $
  *
  */
 $this->headTitle()->setSeparator(' :: ');
@@ -49,9 +49,26 @@ echo $this->jQuery();
 /*
  * javascripts
  */
+$googleCounter = "var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-778789-8']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+";
+$liCounter = 'new Image().src = "//counter.yadro.ru/hit?r"+
+escape(document.referrer)+((typeof(screen)=="undefined")?"":
+";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
+screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
+";h"+escape(document.title.substring(0,80))+
+";"+Math.random();';
 $this->headScript()->prependFile($this->baseUrl().'/js/jcarousel-7bb2e0a/lib/jquery.jcarousel.min.js')
 	->prependFile($this->baseUrl().'/js/bootstrap.min.js')
-	->prependFile('http://userapi.com/js/api/openapi.js?49');
+	->prependFile('http://userapi.com/js/api/openapi.js?49')
+	->appendScript($googleCounter)
+	->appendScript($liCounter);
 echo $this->headScript();
 /*
  * css files

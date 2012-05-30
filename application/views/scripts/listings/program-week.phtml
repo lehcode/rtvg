@@ -4,15 +4,15 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.4 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: program-week.phtml,v 1.5 2012-05-30 21:46:59 dev Exp $
  *
  */
 
-$programTitle = $this->escape( $this->list[0]['title'] );
+$programTitle = @isset($this->list[0]) ? $this->escape( $this->list[0]['title'] ) : '';
 $weekStart    = $this->escape( $this->dates['start']->toString('EEEE, d MMMM'));
 $weekEnd      = $this->escape( $this->dates['end']->toString('EEEE, d MMMM'));
-$channelTitle = $this->escape( $this->channel->title );
-$channelAlias = $this->escape( Xmltv_String::strtolower( $this->channel->alias ));
+$channelTitle = @isset($this->channel->title) ? $this->escape( $this->channel->title ) : '' ;
+$channelAlias = @isset($this->channel->alias) ? $this->escape( Xmltv_String::strtolower( $this->channel->alias )): '' ;
 
 ?>
 

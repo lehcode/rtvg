@@ -14,7 +14,7 @@ class Zend_View_Helper_SidebarRight extends Zend_View_Helper_Abstract
 		/*
 		 * Prevent output for adult channels
 		 */
-		if ($this->view->channel->category!=15) : ?>
+		if (isset($this->view->channel->category) && ($this->view->channel->category != 15)) : ?>
 		<div class="ad336x280">
 			<script type="text/javascript"><!--
 			google_ad_client = "ca-pub-1744616629400880";
@@ -36,7 +36,7 @@ class Zend_View_Helper_SidebarRight extends Zend_View_Helper_Abstract
 			$query = array('"'.$this->view->channel->title.'"');
 			if (isset($this->view->current_program->title))
 			$query[]='"'.$this->view->current_program->title.'"';
-			var_dump($query);
+			//var_dump($query);
 			$videos = $this->view->youtubeVideos( $query, array(
 				'start_index'=>2,
 				'max_results'=>6,

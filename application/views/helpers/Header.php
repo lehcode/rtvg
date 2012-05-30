@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Header.php,v 1.5 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: Header.php,v 1.6 2012-05-30 21:46:59 dev Exp $
  *
  */
 class Zend_View_Helper_Header extends Zend_View_Helper_Abstract
@@ -54,7 +54,9 @@ class Zend_View_Helper_Header extends Zend_View_Helper_Abstract
 				->appendStyle($vkcss); 
 			$this->view->headScript()->appendFile('/js/forms/vklogin.js');
 			?>
+			<?php /*
 			<a href="javascript:void(0);" id="vklogin" class="vklogin" title="Нажмите чтобы войти через vkontakte"><img src="/images/forms/vklogin.png" alt="Войти vkontakte" /></a>
+			*/ ?>
 		</div>
 		
 		<?php

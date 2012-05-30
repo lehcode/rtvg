@@ -302,8 +302,13 @@ ul#fpnav:after{
 
 #footer {}
 
-	#footer h4 { font-size:10px };
-	#footer p { font-size:10px };
+	#footer h4 { font-size:10px }
+	#footer p { font-size:10px }
+	#footer .counter_logo,
+	#footer .copy { 
+		float: left;
+		height: 33px;
+	}
 
 #col_l {}
 
@@ -351,4 +356,7 @@ ul#fpnav:after{
 	#col_r .videos_sidebar .info:after {
 		clear:both;
 	}
-	
+
+.container .span12 .span12 {
+	margin-left: 0;
+}

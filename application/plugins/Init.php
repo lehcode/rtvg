@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.8 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: Init.php,v 1.9 2012-05-30 21:46:59 dev Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -126,11 +126,12 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 			/*
 			 * Compat from card-sharing.org
 			 */
+			/*
 			$route = new Zend_Controller_Router_Route( 
-			'видео/онлайн',
+			'видео/онлайн/?:id',
 			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-video-compat') );
 			$this->_router->addRoute( 'show-video', $route );
-			
+			*/
 			$route = new Zend_Controller_Router_Route( 
 			'видео/тема/:tag', 
 			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-tag') );

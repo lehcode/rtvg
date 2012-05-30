@@ -42,11 +42,11 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			$query->setVideoQuery($qs);
 			$query->orderBy = $order;
 			$query->setSafeSearch($safesearch);
-			
+			/*
 			if (Xmltv_Config::getDebug()===true) {
 				var_dump($query);
 			}
-			
+			*/
 			$cacheSub = 'Youtube';
 			$cache = new Xmltv_Cache(array('location'=>"/cache/$cacheSub"));
 			$hash = $cache->getHash( __FUNCTION__.'_'.md5($qs.$output));
@@ -127,7 +127,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 										}
 										$html .= '<ul class="tags_list">';
 										for ($i=0; $i<count($tags); $i++){
-											if ($i<(int)$config['show_tags']) {
+											if ($i<(int)$showTags) {
 												$safe_tag = $this->view->safeTag($tags[$i]);
 												$html .= '<li><a href="/видео/тема/'.$safe_tag.'" title="">'.$tags[$i].'</a></li>';
 											}
@@ -166,7 +166,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 								$html .= '<div class="duration">Длина видео: '.$d->toString("mm мин ss сек").'</div>';
 							}
 							
-							if ((int)$config['show_tags']>0 || $config['show_tags']=='all') {
+							if ((int)$showTags>0 || $showTags=='all') {
 								try {
 									$tags = $videoEntry->getVideoTags();
 								} catch (Exception $e) {
@@ -175,7 +175,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 								$html .= '<h4>Темы этого видео</h4>';
 								$html .= '<ul class="tags_list">';
 								for ($i=0; $i<count($tags); $i++){
-									if ($i<(int)$config['show_tags'] || $config['show_tags']=='all') {
+									if ($i<(int)$showTags || $showTags=='all') {
 										$safe_tag = $this->view->safeTag($tags[$i]);
 										$html .= '<li class="btn btn-mini"><a href="/видео/тема/'.$safe_tag.'" title="">'.$tags[$i].'</a></li>';
 									}
