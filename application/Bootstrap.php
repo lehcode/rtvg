@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.5 2012-05-24 20:49:35 dev Exp $
+ * @version $Id: Bootstrap.php,v 1.6 2012-07-31 21:21:00 developer Exp $
  *
  */
 
@@ -37,11 +37,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->setParam( 'useDefaultControllerAlways', false )
 			->registerPlugin( $init );
 		
-		if( $debug ) {
-			$fc->throwExceptions( true ); // disable ErrorController and logging
+		if( APPLICATION_ENV == 'production' ) {
+			$fc->throwExceptions( false ); // disable ErrorController and logging
 			$fc->returnResponse (true);
 		} else {
-			$fc->throwExceptions( false ); // enable ErrorController and logging
+			$fc->throwExceptions( true ); // enable ErrorController and logging
 			$fc->returnResponse (false);
 		}
 		
