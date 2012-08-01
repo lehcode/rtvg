@@ -54,13 +54,38 @@ li.lastcol:after {
 		}
 
 #maincontent{
-	overflow:hidden;
+	/* overflow:hidden; */
 	min-height: 640px;
 }
-	#maincontent ul.thumbnails {}
-	#maincontent ul.thumbnails li {}
-	#maincontent ul.thumbnails p.desc {
+	#maincontent .video.thumbnails {
+		background-color: #EEEEEE;
+		border-radius: 10px;
+		
+	}
+	#maincontent .video.thumbnails .row {
+		padding: 8px 0 16px;
+		border-bottom: 1px dashed #333;
+	}
+	
+	#maincontent .video.thumbnails p.desc {
 		overflow: hidden;
+	}
+	
+	#maincontent .video.thumbnails h3 {
+		font-size: 18px;
+		line-height: 20px;
+	}
+	#maincontent .video.thumbnails .videothumb-image {
+		float:left;
+	}
+
+	#maincontent .video.thumbnails .videothumb-info-wrap {
+		float: left;
+	    padding-left: 16px;
+	    width: 310px;
+	}
+	#maincontent .video.thumbnails .video-date {
+		font-size: 11px;
 	}
 
 	#fast_search {
@@ -129,16 +154,18 @@ li.lastcol:after {
 					
 				}
 				
-				ul.tags_list {
-					margin:0;
-					display: inline-block;
+				p.tags_list {
+					margin:14px 0 8px;
+					
 				}
 				ul.tags_list li {
-					float:left;
-					list-style:none;
-					margin: 8px 12px 0 0;
+					
 				}
-				ul.tags_list a {}
+				ul.tags_list a {
+					color: #333;
+					font-weight: bold;
+				}
+				
 				#programslist #videos:after{
 					clear:both;
 				}
@@ -249,7 +276,7 @@ li.lastcol:after {
 	
 	#header .navbar-inner .nav > li > a {
 		text-shadow: none;
-		color: #0066CC;
+		/* color: #0066CC; */
 	} 
 	#header .navbar-inner .nav > li > a:hover {
 		color: #333;
@@ -258,6 +285,8 @@ li.lastcol:after {
 	    background: none;
 	    border:none;
 	}
+	#header .navbar .brand { color: #0066cc; }
+	#header a.brand, a.brand span { font-size: 11px; }
 
 #premieres {
 	margin:0;
@@ -315,12 +344,40 @@ ul#fpnav:after{
 	#col_l ul.catlist {}
 
 		#col_l ul.catlist li {}
-
+			
+			#col_l ul.catlist li span.icon {
+				display: inline-block;
+				width: 26px;
+				height: 26px;
+				float: left;
+				margin-right: 4px;
+			}
 			#col_l ul.catlist a {
-				border:none;
+				
 			}
 			#col_l ul.catlist a:hover {
-				background-color: #dedede;
+				
+			}
+			
+			ul#channels_categories {
+					padding:0;
+					margin: 0;
+			}
+			ul#channels_categories li {
+				list-style: none;
+				line-height: 26px;
+				margin-bottom: 12px;
+			}
+			ul#channels_categories li a {
+				font-size: 11px;
+				width: 125px;
+				display: block;
+				text-align: left;
+				line-height: 26px;
+			}
+			ul#channels_categories li .btn {
+				background-color: #EDCE00;
+    			background-image: -moz-linear-gradient(center top , #FFDD00, #EDCE00);
 			}
 			
 #col_r {}
@@ -339,7 +396,7 @@ ul#fpnav:after{
 	    padding: 16px 0 8px;
 		width: 100%;
 	}
-	#col_r .videos_sidebar h4 a {
+	#col_r .videos_sidebar .ui-accordion-header {
 		display: inline-block;
 		padding: 0 0 0 26px;
 		background: url(/images/icons/video_24x24.png) no-repeat scroll 0 3px transparent;
@@ -353,10 +410,54 @@ ul#fpnav:after{
 	#col_r .videos_sidebar .info{
 		
 	}
+	$col_r .module {
+		margin-bottom: 36px;
+	}
 	#col_r .videos_sidebar .info:after {
 		clear:both;
+	}
+	#col_r .module h4.heading {
+		font-size: 24px;
+    	line-height: 36px;
+		color: #0066cc;
+	    font-weight: bold;
+	    margin: 0 16px 0 0;
+	    text-rendering: optimizelegibility;
+	}
+	#rumor-ads a {
+		text-decoration: none;
+	}
+	#rumor-ads p {
+		border-bottom: 2px solid #E1E1E1;
+	    margin: 0;
+	    padding: 6px 6px 6px 0;
+	}
+	#rumor-ads div.image {
+		width: 200px;
+		margin: 25px auto;
+	}
+	
+	#rumor-ads {
+		display:none;
+		background-color: #E1E1E1;
+    	padding: 12px;
 	}
 
 .container .span12 .span12 {
 	margin-left: 0;
+}
+#vk_like{
+	margin-top: 8px;
+}
+
+#vklogin{
+	
+}
+#vklogin img { 
+	border-radius: 3px;
+}
+
+.vhodwrap { margin: 9px 0 0; }
+button#fulldesc {
+	margin-bottom: 18px;
 }
