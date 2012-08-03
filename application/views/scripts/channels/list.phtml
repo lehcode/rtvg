@@ -7,9 +7,10 @@ $tolower = new Zend_Filter_StringToLower(array('encoding'=>'UTF-8'));
 //var_dump($this->channels);
 
 ?>
-<div id="fast_search">
+<div id="fastsearch-wrap">
 	<label for="channel_filter">Быстрый переход</label>
 	<input type="text" name="fast_search" data-provide="typeahead" />
+	<div style="font-size: x-small;">Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.</div>
 </div>
 <div id="xmltv">
 	
@@ -25,12 +26,13 @@ $tolower = new Zend_Filter_StringToLower(array('encoding'=>'UTF-8'));
 			<?php echo $channel['title'] ?>
 			<?php /* <a class="btn btn-mini btn-inverse moreaboutchannel" href="#channeldesc<?php echo $channel['ch_id'] ?>" title="<?php printf('Информация про телеканал %s', $channel['title'])?>">Больше об этом телеканале</a> */ ?>
 		</h3>
+		<?php /* <span class="channellanchor" id="#channeltitle<?php echo $channel['ch_id'] ?>"><?php echo $channel['title'] ?></span> */ ?>
 		<div class="channeldesc">
 			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel['alias']); ?>" title="<?php printf('Телепрограмма канала %s на сегодня', $channel['title']) ?>">
-				<?php printf('%s сегодня', $channel['title']) ?>
+				Программа на сегодня<?php //printf('%s сегодня', $channel['title']) ?>
 			</a>
 			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel['alias']); ?>/неделя" title="<?php printf('Телепрограмма канала %s на неделю', $channel['title']) ?>">
-				<?php printf('%s на неделю', $channel['title']) ?>
+				Программа на неделю<?php //printf('%s на неделю', $channel['title']) ?>
 			</a>
 			<?php 
 			/*

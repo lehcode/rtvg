@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.12 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: layout.phtml,v 1.13 2012-08-03 17:37:55 developer Exp $
  *
  */
 //var_dump(ini_get('error_reporting'));
@@ -150,6 +150,7 @@ if ($this->hide_sidebar=='right'){
 		<?php endif; ?>
 		
 		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
+			<div id="DIV_DA_85979"></div><?php //directadvert rollin left ?>
 			<?php echo $this->layout()->content; ?>
 		</div>
 		
@@ -173,9 +174,7 @@ if ($this->hide_sidebar=='right'){
 	</div>
 
 
-<?php if (!$this->is_frontpage) : ?>
-<div id="DIV_DA_85979"></div><?php //directadvert rollin left ?>
-<?php endif; ?>
+
 
 <?php if (!$this->is_frontpage) : ?>
 <script charset="windows-1251" type="text/javascript" src="http://www.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script><?php //directadvert right column  ?>

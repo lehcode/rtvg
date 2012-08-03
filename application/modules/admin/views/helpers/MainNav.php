@@ -40,6 +40,7 @@ class Zend_View_Helper_MainNav extends Zend_View_Helper_Abstract
 			<li><a href="/admin/duplicates">Дубликаты</a></li>
 			*/ ?>
 			<li><a href="/admin/import">Импорт</a>
+			<li><a href="/admin/archive">Архив</a></li>
 			</li>
 			<?php if (strtolower($controller)=='grab'): ?>
 			<li class="dropdown active">
