@@ -1,4 +1,5 @@
 <?php
+//die(__FILE__.': '.__LINE__);
 mb_internal_encoding('UTF-8');
 // Define path to application directory
 defined('APPLICATION_PATH')

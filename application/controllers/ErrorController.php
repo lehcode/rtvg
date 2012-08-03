@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ErrorController.php,v 1.2 2012-04-01 04:55:49 dev Exp $
+ * @version $Id: ErrorController.php,v 1.3 2012-08-03 00:16:56 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -74,6 +74,10 @@ class ErrorController extends Zend_Controller_Action
     
     public function ajaxErrorAction(){
     	die("AJAX error!");
+    }
+    
+    public function missingPageAction(){
+    	
     }
 
 

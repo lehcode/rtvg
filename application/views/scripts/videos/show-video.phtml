@@ -1,7 +1,7 @@
 <?php
 $this->headTitle( sprintf("Онлайн-видео: %s", str_replace("\n", ' ', $this->main_video->getVideoTitle())));
-$this->headMeta()->setName( 'description', $this->truncateString( str_replace( "\n", ' ', $this->main_video->getVideoDescription()), 25, 'words'));
-$this->headMeta()->setName( 'keywords', implode(',', $this->main_video->getVideoTags()) );
+$this->headMeta()->setName( 'description', $this->truncateString( str_replace( "\n", ' ', $this->main_video->getVideoDescription()), 12, 'words'));
+$this->headMeta()->setName( 'keywords', Xmltv_String::strtolower( implode(',', $this->main_video->getVideoTags()) ));
 $this->headScript()->appendFile("/js/swfobject/swfobject.js");
 //$this->headScript()->appendFile("/js/bootstrap-modal.js");
 $this->headScript()->appendScript("$(document).ready(function() {
@@ -17,72 +17,153 @@ $this->headScript()->appendScript("$(document).ready(function() {
 	
 });");
 ?>
-<ul class="video thumbnails">
-	<li class="span4">
-		<h1><?php echo $this->main_video->getVideoTitle() ?></h1>
-		<p class="desc"><?php echo $this->main_video->getVideoDescription() ?></p>
-		<div id="main_ytplayer">Для просмотра этого видео нужна поддержка Flash player 8+ и JavaScript в вашем браузере.</div>
-		<?php 
-		$this->inlineScript()->appendScript('var params = { allowScriptAccess: "always", allowfullscreen:"true" };
-		    var attrs = { id: "mytplayer" };
-		    swfobject.embedSWF("http://www.youtube.com/v/'.$this->main_video->getVideoId().'?enablejsapi=1&playerapiid=ytplayer&version=3&allowfullscreen=true",
-		    	"main_ytplayer",
-		    	"370",
-		    	"278",
-		    	"8",
-		    	null,
-		    	null,
-		    	params,
-		    	attrs);');
-		echo $this->inlineScript();
-		?>
-		<ul class="span4 tags_list">
-		<?php 
-		$tags = $this->main_video->getVideoTags();
-		if (!empty($tags)) {
-			for ($i=0; $i<5; $i++) {
-				$t = trim($tags[$i]);
-				if (!empty($t)) {
-					?>
-					<li class="btn btn-mini">
-						<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>" title=""><?php echo $tags[$i] ?></a>
-					</li>
-					<?php 
-				}
-			}
-		 } ?>
-		</ul>
-	</li>
-<?php 
-$grid_columns = 2;
-$col_width_pct = floor(100/$grid_columns)-1;
-$amount=5;
-for ($i=0; $i<$amount; $i++) {
-	$current = $this->related_videos[$i];
-	?>
+<div class="page videos">
+
+	<div class="video main">
 	
-	<li class="span2">
-		
-		<?php 
-		try {
-			$videoThumbnails = $current->getVideoThumbnails();
-		} catch (Exception $e) {
-			echo $e->getMessage();
-		} 
-		foreach($videoThumbnails as $videoThumbnail) {
-			if ($videoThumbnail['width'] >= 200) {
-				echo '<h5>'.$current->getVideoTitle().'</h5>
-				<a href="/видео/онлайн/'. $this->videoAlias( $current->getVideoTitle() ) .'/'. $this->videoId( $current->getVideoId() ).'">
-					<img src="'.$videoThumbnail['url'].'" width="240" alt="'.$current->getVideoTitle().'" />
-				</a>';
-				break;
-			}
-		}
-		?>
-		<p class="desc"><?php echo $this->truncateString( $current->getVideoDescription(), 25, 'words') ?></p>
-	</li>	
+			<h1><?php echo $this->main_video->getVideoTitle() ?></h1>
+			<p class="desc"><?php echo strip_tags( $this->main_video->getVideoDescription() ) ?></p>
+			<div class="player-wrap">
+				<div id="player">Для просмотра этого видео нужна поддержка Flash player 8+ и JavaScript в вашем браузере.</div>
+			</div>
+			<?php 
+			$this->inlineScript()->appendScript('var params = { allowScriptAccess: "always", allowfullscreen:"true" };
+			    var attrs = { id: "mytplayer" };
+			    swfobject.embedSWF("http://www.youtube.com/v/'.$this->main_video->getVideoId().'?enablejsapi=1&playerapiid=ytplayer&version=3&allowfullscreen=true",
+			    	"player",
+			    	"488",
+			    	"274",
+			    	"8",
+			    	null,
+			    	null,
+			    	params,
+			    	attrs);');
+			echo $this->inlineScript();
+			?>
+			
+			<div class="taglist title">Темы этого видео</div>
+			<ul class="taglist btn-group">
+			<?php 
+			$tags = $this->main_video->getVideoTags();
+			
+			if (!empty($tags)) {
+				$i=0;
+				do {
+					$t = trim($tags[$i]);
+					if (!empty($t)) {
+						$t = $this->safeTag($t);
+						//var_dump($t);
+						//jexit(__FILE__.': '.__LINE__);
+						?>
+						<li class="btn btn-primary">
+							<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>" title="Видео про <?php echo $this->safeTag($tags[$i]); ?>" target="_blank"><?php echo $tags[$i] ?></a>
+						</li>
+						<?php 
+					}
+					unset($tags[$i]);
+					//var_dump(count($tags));
+					//die(__FILE__.": ".__LINE__);
+					$i++;
+				} while (count($tags)>0);
+			 } ?>
+			</ul>
 	
+	
+	</div>
+	
+	<div class="related">
 	<?php 
-	} ?>
+	//$grid_columns = 1;
+	//$col_width_pct = floor(100/$grid_columns)-1;
+	$amount=5;
+	for ($i=0; $i<$amount; $i++) {
+		
+		$current = $this->related_videos[$i];
+		
+		if (!preg_match('/\p{Cyrillic}+/ui', $current->getVideoTitle()))
+		continue;
+		
+		?>
+		<div class="infowrap">
+			<div class="videothumb">
+				
+				<?php 
+				try {
+					$videoThumbnails = $current->getVideoThumbnails();
+				} catch (Exception $e) {
+					echo $e->getMessage();
+				}
+				$k=0;
+				foreach($videoThumbnails as $videoThumbnail) {
+					if ($videoThumbnail['width'] >= 200) {
+						
+						?>
+						<a style="float:left" href="/видео/онлайн/<?php echo $this->videoAlias( $current->getVideoTitle() ) .'/'. $this->videoId( $current->getVideoId() ) ?>">
+							<img src="<?php echo $videoThumbnail['url'] ?>" width="240" alt="<?php echo $current->getVideoTitle()?>" />
+						</a>
+						
+						<?php 
+						break;
+					}
+					$k++;
+				}
+				
+				?>
+				
+				<p class="video-category">
+					<?php 
+					$catEn = $current->getVideoCategory();
+					$catRu = Xmltv_Youtube::getCatRu($catEn); 
+					if ($catRu==$catEn) {
+					?>
+					Категория: <?php echo $catEn; ?>
+					<?php 
+					} else {
+						?>
+					Категория: <a href="/каналы/<?php echo Xmltv_String::strtolower( $catRu ) ?>" target="_blank" title="<?php $catRu ?> каналы телепрограмма"><?php echo $catRu; ?></a>
+						<?php 
+					}?>
+					 
+				</p>
+				
+				<p class="video-date">
+					<?php $date = new Zend_Date ( $current->getUpdated() ); ?>
+					Добавлено <?php echo $date->toString('d MMM YYYY');  ?>
+				</p>
+				
+			</div>
+				
+			<div class="video-info">
+					
+				<?php 
+				$title = $current->getVideoTitle();
+				$tag = $this->safeTag($title);
+				$vid = $current->getVideoId();
+				$vid = Xmltv_Youtube::videoId($vid);
+				?>
+				
+				<h3 class="video-title">
+					<a href="/видео/онлайн/<?php echo $tag.'/'.$vid ?>" title="Смотреть онлайн <?php echo $title ?>" target="_blank"><?php echo $title ?></a></h2>
+				</h3>
+				
+				
+				
+			</div>
+			
+			<?php
+			$desc = $current->getVideoDescription();
+			if (!empty($desc)) {
+				?>
+			<p class="desc">
+				<?php echo $desc ?>
+			</p>
+				<?php 
+			} ?>
+			
+		</div>
+		<?php 
+		} ?>
+		
+	</div>
 	
-</ul>
+</div>

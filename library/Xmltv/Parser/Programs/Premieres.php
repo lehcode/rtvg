@@ -34,25 +34,29 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
     			
 				try {
 					
-					$this->setTitle();
-					$this->setAlias();
-					$this->setSubTitle();
+					if (!$this->setTitle())
+					throw new Exception(sprintf("Не могу обработать название для %s", $this->_program->title), 500);
+					if (!$this->setAlias())
+					throw new Exception(sprintf("Не могу обработать псевдоним для %s", $this->_program->title), 500);
+					if (!$this->setSubTitle())
+					throw new Exception(sprintf("Не могу обработать подзаголовок для %s", $this->_program->title), 500);
 					
 				} catch (Exception $e) {
 					echo '<b>'.$e->getMessage().'</b>';
-					Zend_Debug::dump($this->_program);
-					Zend_Debug::dump($e->getTrace());
+					//var_dump($this->_program);
+					//var_ump($e->getTrace());
 					die(__FILE__.': '.__LINE__);
 				}
-    			
 					
 				$this->setProgramProps();
 				$matches[] = $this->_program;
 				$cc++;
     		}
 		}
+		
 		//var_dump($matches);
 		//die(__FILE__.': '.__LINE__);
+		
 		return $matches;
 		
 	}
@@ -116,6 +120,8 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
 		*/
 		
 		$this->_title = parent::cleanTitle( $t );
+		if ($this->_title && !empty($this->_title))
+		return true;
 		
 	}
 	
@@ -170,7 +176,11 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
 	 * Normalize program title alias
 	 */
 	protected function setAlias(){
+		
 		$this->_alias = parent::cleanAlias( $this->_title );
+		
+		if ($this->_alias && !empty($this->_alias))
+		return true;
 	}
 	
 	/**
@@ -189,6 +199,8 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
 		}
 		$this->_sub_title = $this->cleanTitle( $sub_title, true );
 		
+		if ($this->_sub_title && !empty($this->_sub_title))
+		return true;
 	}
 	
 	/**

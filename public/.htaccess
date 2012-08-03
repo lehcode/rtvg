@@ -1,9 +1,37 @@
 SetEnv APPLICATION_ENV development
 #SetEnv APPLICATION_ENV production
+
+AuthName "Admin"
+#AuthType Digest
+#AuthUserFile /home/www/auth/.digest
+#require valid-user
+
 RewriteEngine On
+Options +FollowSymLinks
+RewriteBase /
+
+RewriteCond %{REQUEST_URI} ^.+3D$ [OR,NC]
+RewriteCond %{QUERY_STRING} id=.+3D$ [OR,NC]
+RewriteCond %{QUERY_STRING} date [OR,NC]
+RewriteCond %{QUERY_STRING} tag [OR,NC]
+RewriteCond %{QUERY_STRING} start [OR,NC]
+RewriteCond %{QUERY_STRING} layout
+RewriteRule .* /телепрограмма? [R=301,l]
+
+RewriteRule hustler-blue /телепрограмма? [R=301,L,NC]
+
+RewriteCond %{REQUEST_URI} ^/телепрограмма/(.+)//(.+) [NC]
+RewriteRule .* /телепрограмма/%1/%2? [R=301,L]
+
 RewriteCond %{REQUEST_FILENAME} -s [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^.*$ - [NC,L]
 RewriteRule ^.*$ index.php [NC,L]
 php_value memory_limit 512M
+
+
+RewriteCond ${HTTP_HOST} !^rutvgid\.ru [NC]
+RewriteCond %{SERVER_PORT} 80
+RewriteRule ^(.*)$ http://rutvgid.ru/$1 [R,QSA,L]
+

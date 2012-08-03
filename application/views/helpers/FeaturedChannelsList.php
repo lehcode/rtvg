@@ -4,11 +4,12 @@ class Zend_View_Helper_FeaturedChannelsList extends Zend_View_Helper_Abstract
 	function featuredChannelsList(){
 		
 		$config = new Zend_Config_Xml(APPLICATION_PATH . '/configs/view-helpers.xml', 'featuredChannels');
-		$table  = new Xmltv_Model_DbTable_Channels();
 		$order  = $config->get('order')=='ch_id' ? 'ch_id' : 'title' ;
 		$cols   = (int)$config->get('cols', 4);
 		$total  = (int)$config->get('amount', 20);
 		$colW   = 100/$cols;
+		
+		$table  = new Xmltv_Model_DbTable_Channels();
 		$list   = $table->getFeatured($order, $total);
 		
 		//var_dump($list);

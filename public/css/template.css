@@ -7,6 +7,12 @@
 .clr{
 	clear: both;
 }
+
+.row-fluid {
+	width: auto;
+	margin: 0 8%;
+}
+
 .carousel-control {
     background: none repeat scroll 0 0 #FAA732;
     border: 3px solid #FFFFFF;
@@ -36,8 +42,11 @@ li.lastcol:after {
 
 #channels{}
 
-	#channels .channeltitle {}
-
+	#channels h3.channeltitle {
+		cursor: pointer;
+    	line-height: 54px;
+	}
+		/*
 		#channels .channeltitle .channellink {
 			width:95%;
 			text-align: left;
@@ -49,47 +58,130 @@ li.lastcol:after {
 			width:40px;
 			height:40px;
 		}
-		#channels .channeldesc {
+		*/
+		#channels .channeldesc:after {
+			content: "";
 			clear:both;
+			display: table;
 		}
 
 #maincontent{
 	/* overflow:hidden; */
 	min-height: 640px;
 }
-	#maincontent .video.thumbnails {
+	#maincontent .page.videos {
 		background-color: #EEEEEE;
 		border-radius: 10px;
+		padding: 10px;
 		
 	}
-	#maincontent .video.thumbnails .row {
-		padding: 8px 0 16px;
-		border-bottom: 1px dashed #333;
+	
+	#maincontent .page.videos .main:after {
+		content:"";
+		clear: both;
+		display: table;
 	}
 	
-	#maincontent .video.thumbnails p.desc {
-		overflow: hidden;
+	#maincontent .page.videos .main .tags_list {
+		margin-left: 0;
 	}
 	
-	#maincontent .video.thumbnails h3 {
-		font-size: 18px;
-		line-height: 20px;
-	}
-	#maincontent .video.thumbnails .videothumb-image {
-		float:left;
-	}
-
-	#maincontent .video.thumbnails .videothumb-info-wrap {
+		#maincontent .page.videos .main p.desc {
+			font-size: 1.2em;
+    		margin: 24px 0 16px;
+		}
+		
+		#maincontent .page.videos .main .player-wrap {
+			width: 488px;
+			height: 274px;
+			background: url("../images/icons/128x128-loading.gif") no-repeat scroll 180px 73px #fff;
+		}
+	
+		#maincontent .page.videos .main .taglist.title {
+			font-size: 1.2em;
+   			margin: 24px 0 16px;
+		}
+		#maincontent .page.videos .main ul.taglist {
+			margin-left: 0;
+			margin-bottom: 3em;
+		}
+		#maincontent .page.videos .main ul.taglist a {
+			font-weight: bold;
+			color: #FCFCFC;
+		}
+	
+	#maincontent .page.videos .videothumb {
 		float: left;
-	    padding-left: 16px;
-	    width: 310px;
+	    overflow: hidden;
+	    width: 256px;
 	}
-	#maincontent .video.thumbnails .video-date {
-		font-size: 11px;
+	
+		#maincontent .page.videos .infowrap {
+			padding: 8px 0 16px;
+			border-bottom: 1px dashed #333;
+		}
+		
+		#maincontent .page.videos .infowrap:after {
+			content:"";
+			clear: both;
+			display: table;
+		}
+		
+			#maincontent .page.videos .infowrap .videothumb {
+				float: left;
+			    margin-right: 18px;
+			    overflow: hidden;
+			    width: 256px;
+			}
+		
+			#maincontent .page.videos .infowrap .video-info {
+				float: left;
+				width: 230px;
+			}
+			
+				#maincontent .page.videos .infowrap h3.video-title a {
+					color: #9B9B9B;
+				    font-size: 1.1em;
+				    line-height: 1.3em;
+				    text-decoration: underline;
+				}
+		
+				#maincontent .page.videos .infowrap p.video-desc {
+					margin: 0;
+				}
+	
+				#maincontent .page.videos .infowrap p.video-category {
+					margin: 0;
+				}
+
+				#maincontent .page.videos .video-tags:before {
+					content:"";
+					clear: both;
+					display: table;
+				}
+				#maincontent .page.videos .video-tags:after {
+					content:"";
+					clear: both;
+					display: table;
+				}
+					#maincontent .page.videos .video-tags ul {
+						margin-left: 0;
+					}
+			
+			
+			
+			
+			
+			
+	
+	
+
+	#maincontent .page.videos .related .infowrap .video-date {
+		font-size: 0.7em;
 	}
 
-	#fast_search {
-		
+	#fastsearch-wrap {
+		display: none;
 	}
 	
 	#programslist {
@@ -101,8 +193,8 @@ li.lastcol:after {
 		
 		#programslist .programcontainer {
 			background: none repeat scroll 0 0 #EEF2F5;
+		    font-family: Tahoma,Arial,sans-serif;
 		    height: auto;
-			min-height:460px;
 		    overflow: hidden;
 		    padding: 16px 24px;
 		}
@@ -111,16 +203,22 @@ li.lastcol:after {
 			
 		}
 			#programslist .programcontainer .programtitle {
-				margin-top: 46px;
+				line-height: 3em;
+   				margin-top: 5em;
 			}
 			#programslist .programcontainer .programtitle:after {
 				clear:both;
 			}
 			#programslist .programcontainer .programtitle * {
-				line-height: 38px; 
+				/* line-height: 38px; */ 
+			}
+			#programslist .programcontainer .programtitle h3 a {
+				font-size: 1.4em;
+			    line-height: 1.6em;
+			    text-decoration: underline;
 			}
 			#programslist .programcontainer .programtitle h3 {
-				font-size: 22px;
+				
 			}
 			
 			#programslist .programcontainer .programtitle p {
@@ -154,7 +252,7 @@ li.lastcol:after {
 					
 				}
 				
-				p.tags_list {
+				#programslist .programcontainer ul.tags_list {
 					margin:14px 0 8px;
 					
 				}
@@ -166,14 +264,30 @@ li.lastcol:after {
 					font-weight: bold;
 				}
 				
+				#programslist .programcontainer .video {
+					font-size: 1.5em;
+    				margin: 1em 0 0;
+				}
+				
+				#programslist .programcontainer .video h4 {
+					margin: 1em 0;
+				}
+				
+				#programslist .programcontainer .video a.video-link {
+					text-decoration: underline;
+				}
+				
 				#programslist #videos:after{
 					clear:both;
 				}
 				#programslist .programcontainer .videos_content .desc  {
-					font-size: 13px;
-					line-height: 1.6em;
-					padding: 16px 0;
+					font-family: Tahoma,Arial,sans-serif;
+				    font-size: 0.7em;
+				    line-height: 1.6em;
+				    padding: 1em 0;
 				}
+				
+				
 				
 			#programslist .programdiv {
 				height: 32px;
@@ -222,11 +336,11 @@ li.lastcol:after {
 				}
 				
 		#neighbor_days {
-			padding:16px;
-			border: 2px solid #BEC8D3;
-			border-radius:6px;
-			margin: 22px 0;
-			border-radius: 12px 12px 12px 12px;
+			background-color: #5BC0DE;
+		    border: 2px solid #2F96B4;
+		    border-radius: 12px 12px 12px 12px;
+		    margin: 22px 0;
+		    padding: 16px;
 		}
 		
 			#neighbor_days a {
@@ -236,9 +350,10 @@ li.lastcol:after {
 			
 		}	
 		a#allchannnels {
-			text-align:center;
-			font-size:18px;
-			padding: 9px 25px;
+			font-size: 18px;
+		    padding: 9px 0;
+		    text-align: center;
+		    width: 100%;
 		}
 		a#allchannnels:hover {
 			color: #333333;
@@ -261,7 +376,7 @@ li.lastcol:after {
 #header {}
 
 	#header h1 {
-		font-size: 12px;
+		/* font-size: 12px; */
 	}
 	
 	#header .navbar-inner {
@@ -326,7 +441,7 @@ ul#fpnav:after{
 }
 
 #col_l {
-	margin-right: 15px;
+	
 }
 
 #footer {}
@@ -341,44 +456,30 @@ ul#fpnav:after{
 
 #col_l {}
 
-	#col_l ul.catlist {}
+ul#channels_categories {}
 
-		#col_l ul.catlist li {}
+	ul#channels_categories li {
+		line-height: 22px;
+	}
+	
+	ul#channels_categories > li > a {
+		padding: 3px;
+		color: #999;
+	}
+	ul#channels_categories > li > a:hover {
+		background-color: #f1f1f1;
+		color: #333;
+	}
+		
+		ul#channels_categories img.icon {
+			background-color: #FFFFFF;
+		    border: 1px solid #E1E1E1;
+		    height: 18px;
+		    margin-right: 4px;
+		    padding: 2px;
+		    width: 18px;
+		}
 			
-			#col_l ul.catlist li span.icon {
-				display: inline-block;
-				width: 26px;
-				height: 26px;
-				float: left;
-				margin-right: 4px;
-			}
-			#col_l ul.catlist a {
-				
-			}
-			#col_l ul.catlist a:hover {
-				
-			}
-			
-			ul#channels_categories {
-					padding:0;
-					margin: 0;
-			}
-			ul#channels_categories li {
-				list-style: none;
-				line-height: 26px;
-				margin-bottom: 12px;
-			}
-			ul#channels_categories li a {
-				font-size: 11px;
-				width: 125px;
-				display: block;
-				text-align: left;
-				line-height: 26px;
-			}
-			ul#channels_categories li .btn {
-				background-color: #EDCE00;
-    			background-image: -moz-linear-gradient(center top , #FFDD00, #EDCE00);
-			}
 			
 #col_r {}
 	
@@ -410,37 +511,50 @@ ul#fpnav:after{
 	#col_r .videos_sidebar .info{
 		
 	}
-	$col_r .module {
+	
+	#col_r .videos_sidebar .info:after {
+		content:"";	
+		clear:both;
+		display:table;
+	}
+	
+	#col_r .module {
 		margin-bottom: 36px;
 	}
-	#col_r .videos_sidebar .info:after {
-		clear:both;
-	}
+	
 	#col_r .module h4.heading {
-		font-size: 24px;
-    	line-height: 36px;
-		color: #0066cc;
+		color: #333333;
+	    font-family: Tahoma,Arial,sans-serif;
+	    font-size: 14px;
 	    font-weight: bold;
+	    line-height: 36px;
 	    margin: 0 16px 0 0;
 	    text-rendering: optimizelegibility;
-	}
-	#rumor-ads a {
-		text-decoration: none;
-	}
-	#rumor-ads p {
-		border-bottom: 2px solid #E1E1E1;
-	    margin: 0;
-	    padding: 6px 6px 6px 0;
-	}
-	#rumor-ads div.image {
-		width: 200px;
-		margin: 25px auto;
 	}
 	
 	#rumor-ads {
 		display:none;
-		background-color: #E1E1E1;
-    	padding: 12px;
+	}
+	
+	#rumor-ads .wrap {
+		border-bottom: 1px dashed #B1B1B1;
+	    height: 5em;
+	    padding: 1em;
+	}
+	
+	#rumor-ads p a {
+		color: #0088CC;
+	    font-size: 14px;
+	    font-weight: bold;			
+	}
+	#rumor-ads p img {
+		margin-right: 16px;
+		float: left;		
+	}
+	
+	#col_r .module .content {
+		background-color: #FFFFFF;
+    	border: 2px solid #E1E1E1;
 	}
 
 .container .span12 .span12 {

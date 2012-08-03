@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.4 2012-05-30 21:46:59 dev Exp $
+ * @version $Id: VideosController.php,v 1.5 2012-08-03 00:16:56 developer Exp $
  *
  */
 class VideosController extends Zend_Controller_Action
@@ -86,10 +86,13 @@ class VideosController extends Zend_Controller_Action
 		//var_dump($this->_getAllParams());
 		
 		if ( $this->_isValidRequest( $this->_getParam( 'action' ) )) { 
-			$safeTag = new Zend_Filter_HtmlEntities();
-			$videos = new Xmltv_Model_Videos();
-			$tag = $safeTag->filter( $videos->convertTag(  $this->_getParam( 'tag' )));
-			$this->view->assign('video_data', array($tag));
+			$safeTag = Xmltv_SafeTag::convertTitle($this->_getParam( 'tag' ));
+			//var_dump($safeTag);
+			//$videos  = new Xmltv_Model_Videos();
+			//$tag = Controller_Helper_SafeTag::convertTitle(   $this->_getParam( 'tag' ));
+			//var_dump($tag);
+			//die(__FILE__.': '.__LINE__);
+			$this->view->assign('video_data', array($safeTag));
 		} else {
 			exit("Неверные данные");
 		}
@@ -141,7 +144,8 @@ class VideosController extends Zend_Controller_Action
 		if ($input->isValid())
     	return true;
     	else
-    	throw new Zend_Exception("Неверные данные", 500);
+    	$this->_redirect('/горячие-новости' );
+    	
     }
     
 	

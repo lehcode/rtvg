@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.7 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: day-listing.phtml,v 1.8 2012-08-03 00:16:56 developer Exp $
  *
  */
 $this->headScript()
@@ -23,8 +23,17 @@ if ($this->is_today) {
 } else {
 	$this->headMeta()->setName('title', sprintf ('Программа канала %s на %s', $this->channel->title, $this->today->toString('EEEE, d MMMM YYYY')));
 }
+
 $kw = array($tolower->filter( $this->channel->title ), $this->today->toString('d MMMM YYYY'));
-$this->headMeta()->setName('keywords', implode(',', $kw).','.Xmltv_Config::getKeywords() );
+if (!empty($this->programs)) {
+	foreach ($this->programs as $p) {
+		if (count($kw)<5) {
+			if (!in_array($p->title, $kw))
+			$kw[]= Xmltv_String::strtolower( htmlspecialchars( $p->title, ENT_NOQUOTES, 'utf-8' ) );
+		}
+	}
+}
+$this->headMeta()->setName('keywords', implode(',', $kw) );
 
 if ($this->is_today) {
 	$this->headTitle( sprintf ('%s сегодня', $this->channel->title ) );
@@ -33,11 +42,11 @@ if ($this->is_today) {
 }
 
 $channel_alias = Xmltv_String::strtolower($this->channel->alias);
-$css = ".carousel-inner { }";
-$this->headStyle()->appendStyle($css);
+//$css = ".carousel-inner { }";
+//$this->headStyle()->appendStyle($css);
 
 ?>
-<div id="fast_search">
+<div id="fastsearch-wrap">
 	<?php $form = new Xmltv_Form_FastChannelSearchForm(); echo $form; ?>
 </div>
 <h1><?php printf('Канал %s сегодня', $this->channel->title) ?></h1>
@@ -47,7 +56,7 @@ $this->headStyle()->appendStyle($css);
 <?php 
 if (!empty($this->programs)) {
 ?>
-<a id="slideshow_onoff" href="#">Показать расписание списком</a>
+<a class="btn btn-mini btn-primary" id="slideshow_onoff" href="#">Показать расписание списком</a>
 <div id="programslist" class="carousel">
 	<div class="carousel-inner" id="programs-carousel">
 	<?php 
@@ -99,43 +108,57 @@ if (!empty($this->programs)) {
 		<?php endif; ?>
 		
 		<?php 
-		if (!Xmltv_String::stristr($prog->title, 'новости')) {
-			$query = array();
-			if (stristr($prog->title, '.')) {
-				$parts = explode('.', $prog->title);
-				$parts = array_reverse($parts);
-				foreach ($parts as $k=>$item) {
-					if (!empty($item))
-					$query[] = trim( $item );
+		
+		if ($this->adult_channel !== true ) {
+			if (!Xmltv_String::stristr($prog->title, 'новости')) {
+				$query = array();
+				if (stristr($prog->title, '.')) {
+					$parts = explode('.', $prog->title);
+					$parts = array_reverse($parts);
+					foreach ($parts as $k=>$item) {
+						if (!empty($item))
+						$query[] = trim( $item );
+					}
+				}elseif (stristr($prog->title, ':')) {
+					$parts = explode(':', $prog->title);
+					$parts = array_reverse($parts);
+					foreach ($parts as $k=>$item) {
+						if (!empty($item))
+						$query[] = trim( $item );
+					}
+				}elseif (stristr($prog->title, '-')) {
+					$parts = explode('-', $prog->title);
+					$parts = array_reverse($parts);
+					foreach ($parts as $k=>$item) {
+						if (!empty($item))
+						$query[] = trim( $item );
+					}
+				}  else {
+					$query[]=trim( $prog->title );
 				}
-			}elseif (stristr($prog->title, ':')) {
-				$parts = explode(':', $prog->title);
-				$parts = array_reverse($parts);
-				foreach ($parts as $k=>$item) {
-					if (!empty($item))
-					$query[] = trim( $item );
-				}
-			}elseif (stristr($prog->title, '-')) {
-				$parts = explode('-', $prog->title);
-				$parts = array_reverse($parts);
-				foreach ($parts as $k=>$item) {
-					if (!empty($item))
-					$query[] = trim( $item );
-				}
-			}  else {
-				$query[]=trim( $prog->title );
+				//$query[]=$this->channel->title;
+				?>
+				
+				
+				<?php 
+				echo $this->youtubeVideos($query, array(
+					'max_results'=>1,
+					'show_duration'=>false,
+					'show_tags'=>10,
+					'thumb_width'=>200,
+					'safe_search'=>'none',
+					'order'=>'published',
+					'debug'=>false,
+					'link_title'=>true,
+					'truncate_description'=>false), 'content');
+				?>
+				
+				<?php 
 			}
-			//$query[]=$this->channel->title;
-			echo $this->youtubeVideos($query, array(
-				'max_results'=>1,
-				'show_duration'=>false,
-				'show_tags'=>10,
-				'thumb_width'=>200,
-				'safe_search'=>'none',
-				'order'=>'published',
-				'debug'=>true,
-				'truncate_description'=>false), 'content');
+		} else {
+			//echo $this->teasernet(372424, 'popin');
 		}
+		
 		?>
 		
 	</div>
@@ -151,9 +174,9 @@ if (!empty($this->programs)) {
 } else {
 ?>
 <p>К сожалению в выбранный вами период программ не найдено. Попробуйте посетить эту страницу позже.</p>
+<div id="DIV_DA_78319"></div>
 <?php 
 }?>
-
 
 <div class="pager" id="neighbor_days">
 	<div class="previous">
@@ -189,7 +212,7 @@ if (!empty($this->comments)) { ?>
 		?>
 	<div class="comment">
 	
-		<div class="title"><?php echo $comment['title'] ?></div>
+		<div class="title"><?php echo @$comment['title'] ?></div>
 		
 		<div class="author">
 			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">

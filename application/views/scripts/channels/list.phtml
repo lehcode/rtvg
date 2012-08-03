@@ -1,6 +1,5 @@
 <?php 
 $this->headMeta()->setName('title', 'Телепрограмма всех каналов');
-$this->headScript()->appendFile('/js/bootstrap-typeahead.js');
 $this->headScript()->appendFile('/js/channellist.js');
 $this->headStyle()->appendStyle('p.channeltitle { margin: 0 0 12px; }');
 $tolower = new Zend_Filter_StringToLower(array('encoding'=>'UTF-8'));
@@ -15,22 +14,23 @@ $tolower = new Zend_Filter_StringToLower(array('encoding'=>'UTF-8'));
 <div id="xmltv">
 	
 	<?php if (isset($this->cat_title)): ?>
-	<h1><?php echo $this->cat_title; ?></h1>
+	<h2><?php echo $this->cat_title; ?></h2>
 	<?php endif; ?>
 
 	<div id="channels">
 		<?php
 		foreach ($this->channels as $channel) {  ?>
-		<p class="channeltitle">
-			<span class="channellink btn btn-primary" id="#channeltitle<?php echo $channel['ch_id'] ?>">
-				<img class="channelicon" width="40" src="<?php echo $channel['icon'] ?>" alt="<?php printf('%s лого', $tolower->filter($channel['title'])) ?>" />
-				<?php printf('%s сегодня', $channel['title']) ?>
-			</span>
-			<a class="btn btn-mini btn-inverse moreaboutchannel" href="#channeldesc<?php echo $channel['ch_id'] ?>" title="<?php printf('Информация про телеканал %s', $channel['title'])?>">Больше об этом телеканале</a>
-		</p>
+		<h3 class="channeltitle" id="#channeltitle<?php echo $channel['ch_id'] ?>">
+			<img class="channelicon" width="40" src="<?php echo $channel['icon'] ?>" alt="<?php printf('%s лого', $tolower->filter($channel['title'])) ?>" />
+			<?php echo $channel['title'] ?>
+			<?php /* <a class="btn btn-mini btn-inverse moreaboutchannel" href="#channeldesc<?php echo $channel['ch_id'] ?>" title="<?php printf('Информация про телеканал %s', $channel['title'])?>">Больше об этом телеканале</a> */ ?>
+		</h3>
 		<div class="channeldesc">
-			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel['alias']); ?>" title="<?php printf('Телепрограмма канала %s', $channel['title']) ?>">
+			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel['alias']); ?>" title="<?php printf('Телепрограмма канала %s на сегодня', $channel['title']) ?>">
 				<?php printf('%s сегодня', $channel['title']) ?>
+			</a>
+			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel['alias']); ?>/неделя" title="<?php printf('Телепрограмма канала %s на неделю', $channel['title']) ?>">
+				<?php printf('%s на неделю', $channel['title']) ?>
 			</a>
 			<?php 
 			/*

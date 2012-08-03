@@ -63,6 +63,10 @@ class Xmltv_Model_Programs
 
 	public function getProgramForDay ($prog_alias=null, $channel_alias=null, Zend_Date $date) {
 		
+		//var_dump(func_get_args());
+		//var_dump($date->toString());
+		//die(__FILE__.": ".__LINE__);
+		
 		if(  !$prog_alias ||  !$channel_alias )
 		throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
 		
@@ -150,6 +154,9 @@ class Xmltv_Model_Programs
 		if( !is_a( $start, 'Zend_Date' ) )
 		$start = new Zend_Date();
 		
+		//var_dump(Xmltv_Config::getCaching());
+		//die(__FILE__.": ".__LINE__);
+		
 		if (Xmltv_Config::getCaching()) {
 			$cache = new Xmltv_Cache();
 			$hash = $cache->getHash(__METHOD__);
@@ -160,6 +167,9 @@ class Xmltv_Model_Programs
 		} else {
 			$r = $this->_table->getPremieres($start, $end);
 		}
+		
+		//var_dump($r);
+		//die(__FILE__.": ".__LINE__);
 		
 		return $r;
 	

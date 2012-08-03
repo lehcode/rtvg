@@ -28,40 +28,43 @@ class Xmltv_Config
 	}
 	
 	public static function getDebug() {
-		return (bool)self::getConfig('site')->site->debug;
+		return (bool)self::getConfig('site', APPLICATION_ENV )->site->debug;
 	}
 	public static function getCacheLifetime() {
-		return (int)self::getConfig('site')->cache->lifetime;
+		return (int)self::getConfig('site', APPLICATION_ENV)->cache->lifetime;
 	}
 	public static function getCaching() {
-		return (bool)self::getConfig('site')->cache->caching;
+		return (bool)self::getConfig('site', APPLICATION_ENV)->cache->caching;
+	}
+	public static function getYoutubeCaching() {
+		return (bool)self::getConfig('site', APPLICATION_ENV)->cache->youtubecaching;
 	}
 	public static function getCacheLocation() {
-		return (string)self::getConfig('site')->cache->location;
+		return (string)self::getConfig('site', APPLICATION_ENV)->cache->location;
 	}
 	public static function getProxyHost() {
-		return (string)self::getConfig('site')->proxy->host;
+		return (string)self::getConfig('site', APPLICATION_ENV)->proxy->host;
 	}
 	public static function getProxyPort() {
-		return (int)self::getConfig('site')->proxy->port;
+		return (int)self::getConfig('site', APPLICATION_ENV)->proxy->port;
 	}
 	public static function getProxyType() {
-		return (string)self::getConfig('site')->proxy->type;
+		return (string)self::getConfig('site', APPLICATION_ENV)->proxy->type;
 	}
 	public static function getProxyEnabled() {
-		return (bool)self::getConfig('site')->proxy->active;
+		return (bool)self::getConfig('site', APPLICATION_ENV)->proxy->active;
 	}
 	public static function getProfiling() {
-		return (bool)self::getConfig('site')->site->profile;
+		return (bool)self::getConfig('site', APPLICATION_ENV)->site->profile;
 	}
 	public static function getKeywords() {
-		return (string)self::getConfig('site')->site->keywords;
+		return (string)self::getConfig('site', APPLICATION_ENV)->site->keywords;
 	}
 	public static function getSiteTitle() {
-		return (string)self::getConfig('site')->site->title;
+		return (string)self::getConfig('site', APPLICATION_ENV)->site->title;
 	}
 	public static function getSiteDescription() {
-		return (string)self::getConfig('site')->site->description;
+		return (string)self::getConfig('site', APPLICATION_ENV)->site->description;
 	}
 	
 	

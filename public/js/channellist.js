@@ -26,6 +26,6 @@ $(function() {
 			});
 		});
 	});
-	$( '#channels' ).accordion({ autoHeight:false, navigation:true, clearStyle:true });
+	$( '#channels' ).accordion({ autoHeight:false, navigation:true, clearStyle:true, icons: false });
 	
 });

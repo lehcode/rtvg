@@ -235,8 +235,9 @@ class Xmltv_Model_Comments
 		$regex = new Zend_Filter_PregReplace( array( 'match'=>'/[\.:\(\)]+/', 'replace'=>'' ) );
 		$query = $regex->filter($query);
 		
-		//if (Xmltv_Config::getDebug()===true)
-		//var_dump($query);
+		if (Xmltv_Config::getDebug()===true) {
+			//var_dump($query);
+		}
 			    
 		$frontendOptions = array( 'lifetime'=>7200, 'automatic_serialization'=>true );
 	    $backendOptions  = array('cache_dir'=>ROOT_PATH.'/cache/Comments' );
@@ -451,7 +452,7 @@ class Xmltv_Model_Comments
 		
 		$id = Xmltv_String::strtolower($parent_id);
 		$type = $parent_type=='channel' ? 'c' : 'p';
-		return $this->_table->fetchAll(array("`parent_id` LIKE '%$id%'", "`parent_type`='$type'"), "date_created DESC")->toArray();
+		return $this->_table->fetchAll(array("`parent_id` LIKE '%$id%'", "`parent_type`='$type'"), "date_created DESC", 30)->toArray();
 		
 	}
 	

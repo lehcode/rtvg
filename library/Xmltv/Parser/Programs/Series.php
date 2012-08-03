@@ -22,16 +22,14 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 		//die(__FILE__.': '.__LINE__);
 		
 		$matches = array();
-		$cc=0;
+		//$cc=0;
 		foreach ($this->chunks as $ck=>$part) {
     		foreach ( $part as $pk=>$current ) {
     			
     			$this->_program = new stdClass();
     			
-    			if (!$current->hash) {
-					var_dump($current);
-    				die( "Идентификатор программы не может быть NULL " . __METHOD__ . ': ' . __LINE__ );
-    			}
+    			if (!$current->hash)
+    			throw new Exception( "Идентификатор программы не может быть NULL " . __METHOD__ . ': ' . __LINE__, 500 );
     			
     			$current->start = new Zend_Date($current->start, 'yyyy-MM-dd HH:mm:ss');
     			$current->end   = new Zend_Date($current->end, 'yyyy-MM-dd HH:mm:ss');
@@ -52,37 +50,54 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
     			try {
     				
     				$this->setTitle();
-					/*
-    				if ($current->hash == '6e41e89ccdfe985e111bb4ffb6332920'){
-						var_dump($current);
-						die(__FILE__.': '.__LINE__);
-					}
-    				*/
-    				$this->setAlias();
+					$this->setAlias();
 					$this->setSubTitle();
 					
-					if (!empty($this->_program->desc_intro))
-					$this->setDescription();
-					else {
+					/*
+					 * описания парсятся отдельно
+					if (!empty($this->_program->desc_intro)) {
+						$this->setDescription();
+					} else {
 						$this->_desc->intro='';
 						$this->_desc->body='';
 					}
+					*/
+					/*
+					 * debug
+					 */
 					/*
 					if ($current->hash == '6e41e89ccdfe985e111bb4ffb6332920'){
 						var_dump($this);
 						die(__FILE__.': '.__LINE__);
 					}
 					*/
+					/*
+					 * debug
+					 */
+					/*
+					if ($cc==1519){
+						var_dump($this);
+						die(__FILE__.': '.__LINE__);
+					}
+					*/
+    				$this->setProgramProps();
+					if (!$matches[] = $this->_program) {
+						throw new Exception("Ошибка обработки ".$this->_program->hash, 500);
+					}
+					
 				} catch (Exception $e) {
-					printf( '<b>%s: %s</b>', __METHOD__, $e->getMessage() );
-					die(__FILE__.': '.__LINE__);
+					echo( '<b>'.__METHOD__.': '.$e->getMessage().'</b>' );
 				}
 				
-				$this->setProgramProps();
-				$matches[] = $this->_program;
-				$cc++;
-				var_dump($cc);
+				if (!$matches[] = $this->_program) {
+					var_dump($this);
+					die(__FILE__.': '.__LINE__);
+				}
+				//$cc++;
+				//var_dump($cc);
+				var_dump(count($matches));
 				var_dump($this->_program->hash);
+				var_dump($this->_program->title);
     			
     		}
     		//var_dump($matches);
@@ -115,14 +130,20 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 	protected function setTitle(){
 		
 		$r = $this->_program->title;
+		/*
+		if (preg_match('/\s*[0-9]+-я\s*серия/ius', $r, $m)) {
+			var_dump($m);
+			die(__FILE__.': '.__LINE__);
+		}
+		*/
 		
 		$r = preg_replace(array(
-			'/\s+[0-9]+-я\s+сери[яали]+\.?/ius',
-			'/\s+сери[яали]+\s*[0-9]+\.?/ius',
-			'/\s+сезон-[0-9]+-й\.?/ius',
-			'/\s+[0-9]+-?й?\s+сезон\.?/ius',
-			'/\s+часть\s+[0-9]+/ius',
-			'/\s+[0-9]-я\s+часть/ius',
+			'/\s*[0-9]+-я\s*сери(я|ал|и)+\.?/ius',
+			'/\s*сери[яали]+\s*[0-9]+\.?/ius',
+			'/\s*сезон-[0-9]+-й\.?/ius',
+			'/\s*[0-9]+-?й?\s+сезон\.?/ius',
+			'/\s*часть\s+[0-9]+/ius',
+			'/\s*[0-9]-я\s+часть/ius',
 			'/\(\s+и\s*\)$/ius'
 		), '', $r);
 		$r = preg_replace(array('/"(.+)"\.\\s*.*"(.+)"/iu', '/(.+)\.? "(.+)"/iu'), '\1, «\2»', $r);
@@ -139,7 +160,7 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 		), '', $r);
 		
 		/*
-		if ($this->_program->hash== '6e41e89ccdfe985e111bb4ffb6332920') {
+		if ($this->_program->hash == 'bdca9c1e2c99b6f520e558d60abf5567') {
 			var_dump($this->_program->title);
 			var_dump($r);
 			die(__FILE__.': '.__LINE__);
@@ -152,6 +173,14 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 			$this->_title = "Неизвестная программа";
 		} else
 		$this->_title = parent::cleanTitle($r);
+		/*
+		if ($this->_program->hash == 'bdca9c1e2c99b6f520e558d60abf5567') {
+			var_dump($this->_title);
+			die(__FILE__.': '.__LINE__);
+		}
+		*/
+		if (empty($this->_title))
+		throw new Exception(sprintf("Не могу обработать название для %s", $this->_program->hash), 500);
 		
 	}
 	
@@ -222,6 +251,10 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 		}
 		*/
 		$this->_sub_title = parent::cleanTitle($sub_title, true);
+		
+		if (empty($this->_sub_title))
+		throw new Exception(sprintf("Не могу обработать подзаголовок для %s", $this->_program->hash), 500);
+		
 	}
 	
 	protected function setDescription(){
@@ -409,6 +442,10 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 		$result = Xmltv_String::str_ireplace('...', '…', $result);
 		$this->_desc->intro = $result;
 		
+		if (empty($this->_desc->intro))
+		throw new Exception(sprintf("Не могу обработать описание для %s", $this->_program->hash), 500);
+		
+		
 	}
 	
 	
@@ -481,11 +518,14 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 		), '', $a);
 		$this->_alias = Xmltv_String::strtolower( parent::cleanAlias( $a ) );
 		
-		if ($this->_program->hash== '6e41e89ccdfe985e111bb4ffb6332920') {
+		//if ($this->_program->hash== '6e41e89ccdfe985e111bb4ffb6332920') {
 			//var_dump($this->_program->title);
-			var_dump($this);
-			die(__FILE__.': '.__LINE__);
-		}
+		//	var_dump($this);
+		//	die(__FILE__.': '.__LINE__);
+		//}
+		
+		if (empty($this->_alias))
+		throw new Exception(sprintf("Не могу обработать псевдоним для %s", $this->_program->hash), 500);
 		
 	}
 	

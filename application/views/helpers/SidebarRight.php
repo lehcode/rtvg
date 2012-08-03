@@ -45,27 +45,12 @@ class Zend_View_Helper_SidebarRight extends Zend_View_Helper_Abstract
 		<?php 
 		if (@!in_array($channel_props->category, $this->_kindsChannels)) {
 			$this->view->headScript()->appendScript("$(document).ready(function(){
-				//$('#advm_accordion').accordion({ autoHeight:true, navigation:false, active: false, clearStyle:true, header: 'p' });
-				/*
-				$('#advm_accordion .image').each(function(){
-					var link = $(this).find('a');
-					var image = $(this).find('img')
-					link.append('<img class=\"playoverlay\" src=\"/images/icons/play_200x200_overlay.png\" />');
-					var p = $(this).parentsUntil('p.heading').find('.ui-icon');
-					var image = $(this).find('img').first().clone().attr({ width:24, height:24 });
-					image.appendTo(p);
-					
-				});
-				*/
-				$('.da_adp_links').hide();
 				$('#rumor-ads').fadeIn(1000);
 			});");
 		?>
 		<div class="module" id="rumor-ads">
 			<h4 class="heading">Свежие слухи</h4>
-			<div id ="advm_accordion">
-				<div id="DIV_DA_85753"></div>
-			</div>
+			<div class="content" id="DIV_DA_85753"></div>
 		</div>
 		<?php 
 		} ?>

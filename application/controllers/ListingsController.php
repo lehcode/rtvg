@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.8 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: ListingsController.php,v 1.9 2012-08-03 00:16:56 developer Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -103,43 +103,68 @@ class ListingsController extends Zend_Controller_Action
 		 * Process fake comments
 		 * Caching is initialized in Xmltv_Model_Comments::getYandexRss
 		 */
-		$feedData    = $comments->getYandexRss( array( '"'.$channel->alias.'"', '"'.$currentProgram->title.'"') );
-		$commentsNew = $comments->parseYandexFeed( $feedData, 128 );
-		//var_dump($commentsNew);
-		if ( !empty($commentsNew) ) {
-			foreach ( $commentsNew as $list_item ) {
-				if ( stristr( $list_item->link, 'liveinternet.ru') ) {
-					$links = Zend_Feed_Reader::findFeedLinks($list_item->link);
-					$list_item->rss_link = $links->rss;
-				}
-			}
-			$comments->saveComments( $commentsNew, $channel->alias, 'channel' );
-			$hash = $cache->getHash(__FUNCTION__.md5('channel'.$channel->alias));
-			try {
-				if (Xmltv_Config::getCaching()){
-					if (!$commentsLoaded = $cache->load($hash, 'Core', '/Feeds/Yandex')) {
-						$commentsLoaded = $comments->dbGetComments( $channel->alias );
-						$cache->save($commentsLoaded, $hash, 'Core', '/Feeds/Yandex');
+		if (isset($currentProgram->title)) {
+			
+			$query = array( '"'.$channel->title.'"', '"'.$currentProgram->title.'"');
+			var_dump($query);
+			
+			$feedData    = $comments->getYandexRss( $query );
+			$commentsNew = $comments->parseYandexFeed( $feedData, 128 );
+			
+			if ( count($commentsNew) ) {
+				foreach ( $commentsNew as $list_item ) {
+					if (isset($list_item->link)) {
+						if ( stristr( $list_item->link, 'liveinternet.ru') ) {
+							$links = Zend_Feed_Reader::findFeedLinks($list_item->link);
+							$list_item->rss_link = $links->rss;
+						}
 					}
-				} else {
-					$commentsLoaded = $comments->dbGetComments( $channel->alias );
 				}
-			} catch (Exception $e) {
-				echo $e->getMessage();
-			}
 				
+				//var_dump($commentsNew);
+				//die(__FILE__.': '.__LINE__);
+				
+				$comments->saveComments( $commentsNew, $channel->alias, 'channel' );
+				$hash = $cache->getHash(__FUNCTION__.md5('channel'.$channel->alias));
+				try {
+					if (Xmltv_Config::getCaching()){
+						if (!$commentsLoaded = $cache->load($hash, 'Core', '/Feeds/Yandex')) {
+							$commentsLoaded = $comments->dbGetComments( $channel->alias );
+							$cache->save($commentsLoaded, $hash, 'Core', '/Feeds/Yandex');
+						}
+					} else {
+						$commentsLoaded = $comments->dbGetComments( $channel->alias );
+					}
+				} catch (Exception $e) {
+					echo $e->getMessage();
+				}
+				
+				$this->view->assign( 'comments', $commentsLoaded );
+					
+			}
+			
+			$this->view->assign( 'current_program', $currentProgram );
+			$programs->addHit($currentProgram->alias);
+			
 		}
+		
+		$adult_channel = false;
+		if ((bool)$channel->adult === true) {
+			$adult_channel = true;
+			$this->view->assign( 'sidebar_videos', false );
+		} else {
+			$this->view->assign( 'sidebar_videos', true );
+		}
+		//var_dump($adult_channel);
 
-		$this->view->assign( 'comments', $commentsLoaded );
 		$this->view->assign( 'channel', $channel );
 		$this->view->assign( 'programs', $list );
-		$this->view->assign( 'current_program', $currentProgram );
 		$this->view->assign( 'today', $today );
-		$this->view->assign( 'sidebar_videos', true );
 		$this->view->assign( 'video_data', array() );
+		$this->view->assign( 'adult_channel', $adult_channel );
 		
 		$channels->addHit($channel->ch_id);
-		$programs->addHit($currentProgram->alias);
+		
 		
 	}
 
@@ -164,6 +189,9 @@ class ListingsController extends Zend_Controller_Action
 			//var_dump($date->toString());
 			
 			$list = $programs->getProgramForDay( $this->_getParam('program'), $this->_getParam('channel'), $date );
+			
+			//var_dump($list);
+			//die(__FILE__.': '.__LINE__);
 
 			$this->view->assign( 'programs', $list );
 			$this->view->assign( 'program_alias', $this->_getParam('program') );
@@ -174,8 +202,8 @@ class ListingsController extends Zend_Controller_Action
 			$channels->addHit( Xmltv_String::strtolower( $channel->alias ));
 		
 		} else {
-			throw new Zend_Exception("Неверные данные", 500);
-			$this->_redirect('/error', array('exit'=>true));
+			//throw new Zend_Exception("Неверные данные", 500);
+			$this->_redirect('/горячие-новости', array('exit'=>true));
 		}
 	}
 	
@@ -190,6 +218,10 @@ class ListingsController extends Zend_Controller_Action
 			$programs = new Xmltv_Model_Programs();
 			$channels = new Xmltv_Model_Channels();
 			$channel  = $channels->getByAlias( $this->_getParam('channel') );
+			
+			//var_dump($channel);
+			//die(__FILE__.': '.__LINE__);
+			
 			$dates = $programs->getWeekDates();
 			
 			if (!$this->_getParam('date'))
@@ -200,7 +232,7 @@ class ListingsController extends Zend_Controller_Action
 			$this->view->assign( 'dates', $dates );
 			$this->view->assign( 'list', $list );
 			$this->view->assign( 'program_alias', $this->_getParam('program') );
-			$this->view->assign( 'channel', Xmltv_String::strtolower($channel->alias)  );
+			$this->view->assign( 'channel', $channel );
 			
 			$programs->addHit($this->_getParam('program'));
 			$channels->addHit($this->_getParam('program'));

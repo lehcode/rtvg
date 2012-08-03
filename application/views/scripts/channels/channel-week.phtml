@@ -3,9 +3,10 @@
  * Week listing script for channel
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: channel-week.phtml,v 1.1 2012-05-26 23:41:43 dev Exp $
+ * @version $Id: channel-week.phtml,v 1.2 2012-08-03 00:16:56 developer Exp $
  */
 $this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на неделю', $this->channel->title));
+$this->headMeta()->setName('keywords', sprintf ('телепрограмма,%s,неделя', strtolower( $this->channel->title )));
 $this->headScript()
 	->appendFile($this->baseUrl()."/js/bootstrap-tab.js");
 $css = '.nav-tabs > li > a { font-size: 0.8em; padding: 9px 6px; font-weight: bold; }

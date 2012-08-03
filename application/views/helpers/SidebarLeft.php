@@ -2,6 +2,8 @@
 class Zend_View_Helper_SidebarLeft extends Zend_View_Helper_Abstract
 {
 	public function sidebarLeft(){
+		
+		
 		ob_start();
 		?>
 		
@@ -9,7 +11,8 @@ class Zend_View_Helper_SidebarLeft extends Zend_View_Helper_Abstract
 		/*
 		 * Prevent output for adult channels
 		 */
-		if (isset($this->view->channel->category) && ($this->view->channel->category != 15)) : ?>
+		if (!$this->view->isDev()) {
+			if (isset($this->view->channel->category) && ($this->view->channel->category != 15)) : ?>
 		<div class="ad160x90" style="margin: 0 auto; width: 160px;">
 			<script type="text/javascript"><!--
 			google_ad_client = "ca-pub-1744616629400880";
@@ -22,7 +25,9 @@ class Zend_View_Helper_SidebarLeft extends Zend_View_Helper_Abstract
 			<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 			</script>
 		</div>
-		<?php endif; ?>
+		<?php 
+			endif;
+		} ?>
 		
 		<?php echo $this->view->channelsCategoriesList(); ?>
 		

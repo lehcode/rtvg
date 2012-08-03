@@ -4,10 +4,14 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.11 2012-05-30 21:46:59 dev Exp $
+ * @version $Id: layout.phtml,v 1.12 2012-08-03 00:16:56 developer Exp $
  *
  */
+//var_dump(ini_get('error_reporting'));
+//var_dump(ini_get('display_errors'));
+//die(__FILE__.': '.__LINE__);
 $this->headTitle()->setSeparator(' :: ');
+//die(__FILE__.': '.__LINE__);
 $this->headScript()->setAllowArbitraryAttributes(true);
 $this->jQuery()->enable() //enable jquery ;
 	//->setCdnSsl(true) if need to load from ssl location
@@ -15,18 +19,30 @@ $this->jQuery()->enable() //enable jquery ;
 	->setUiVersion('1.8.18') //jQuery UI version, automatically 1.8 = 1.8.latest
 	//->addStylesheet('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css') //add the css
 	->uiEnable();
+
 /*
  * Initialize content blocks
  */
-$header    = $this->header();
+$header = $this->header();
+
 $premieres = $this->premieres();
+//die(__FILE__.': '.__LINE__);
+//die(__FILE__.': '.__LINE__);
+
 $fpMenu    = $this->fpMenu();
 $footer    = $this->footer();
-$sidebarLeft = $this->sidebarLeft();
-$sidebarRight = $this->sidebarRight();
-$featuredChannels = $this->featuredChannelsList();
-//$catList = $this->channelsCategoriesList();
+$featuredChannelsBlock = $this->featuredChannelsList();
 
+//var_dump($featuredChannels);
+//die(__FILE__.': '.__LINE__);
+
+if (!$this->is_frontpage) {
+	$sidebarLeft = $this->sidebarLeft();
+	$sidebarRight = $this->sidebarRight($this->channel);
+}
+
+//$catList = $this->channelsCategoriesList();
+//die(__FILE__.': '.__LINE__);
 /*
  * XHTML
  */
@@ -66,9 +82,14 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 ";"+Math.random();';
 $this->headScript()->prependFile($this->baseUrl().'/js/jcarousel-7bb2e0a/lib/jquery.jcarousel.min.js')
 	->prependFile($this->baseUrl().'/js/bootstrap.min.js')
-	->prependFile('http://userapi.com/js/api/openapi.js?49')
-	->appendScript($googleCounter)
-	->appendScript($liCounter);
+	->prependFile('http://userapi.com/js/api/openapi.js?50')
+	->appendFile('/js/forms/vklogin.js')
+	->appendScript($googleCounter."\n".$liCounter)
+	->appendScript("jQuery(document).ready(function(){
+		$('#footer .counter_logo').hide();
+		if  ($('.da_adp_links')) $('.da_adp_links').hide();
+	});")
+	->appendScript('VK.init({ apiId: 2963750, onlyWidgets: true}); ');
 echo $this->headScript();
 /*
  * css files
@@ -94,15 +115,14 @@ if ($this->hide_sidebar=='right'){
 ?>
 </head>
 <body>
-<div class="container">
-	
-	<?php //if (!$this->is_frontpage): ?>
-	<div class="span12" id="header">
+
+	<?php if (!$this->is_frontpage): ?>
+	<div class="row-fluid" id="header">
 		<?php echo $header; ?>
 	</div>
-	<?php //endif; ?>
+	<?php endif; ?>
 	
-	<div class="span12">
+	<div class="row-fluid content">
 		
 		<?php 
 		if ($this->is_frontpage) { ?>
@@ -112,10 +132,6 @@ if ($this->hide_sidebar=='right'){
 			<div class="span12" id="premieres">
 				<?php echo $premieres; ?>
 			</div>
-		</div>
-		
-		<div class="span12">
-			<?php echo $featuredChannels; ?>
 		</div>
 		
 		<?php 
@@ -147,7 +163,52 @@ if ($this->hide_sidebar=='right'){
 		} ?>
 		
 	</div>
-	<?php echo $footer; ?>
-</div>
+	
+	<div id="featuredchannels" class="row-fluid">
+		<?php echo $featuredChannelsBlock ?>
+	</div>
+	
+	<div class="row-fluid" id="footer">
+		<?php echo $footer; ?>
+	</div>
+
+
+<?php if (!$this->is_frontpage) : ?>
+<div id="DIV_DA_85979"></div><?php //directadvert rollin left ?>
+<?php endif; ?>
+
+<?php if (!$this->is_frontpage) : ?>
+<script charset="windows-1251" type="text/javascript" src="http://www.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script><?php //directadvert right column  ?>
+<script charset="windows-1251" type="text/javascript" src="http://www.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979"></script><?php //directadvert rollin left ?>
+<?php endif; ?>
+
+
+
+<?php if ($this->is_frontpage): ?>
+<script charset="windows-1251" type="text/javascript" src="http://www.directadvert.ru/show.cgi?adp=85452&div=DIV_DA_85452"></script><?php //directadvert frontpage ?>
+<?php endif; ?>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+(function (d, w, c) {
+    (w[c] = w[c] || []).push(function() {
+        try {
+            w.yaCounter16053280 = new Ya.Metrika({id:16053280, enableAll: true, webvisor:true});
+        } catch(e) {}
+    });
+    
+    var n = d.getElementsByTagName("script")[0],
+        s = d.createElement("script"),
+        f = function () { n.parentNode.insertBefore(s, n); };
+    s.type = "text/javascript";
+    s.async = true;
+    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+    if (w.opera == "[object Opera]") {
+        d.addEventListener("DOMContentLoaded", f);
+    } else { f(); }
+})(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
 </body>
 </html>

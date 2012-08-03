@@ -3,8 +3,9 @@
  * Database table for channels model
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.7 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: Channels.php,v 1.8 2012-08-03 00:16:56 developer Exp $
  */
+
 class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 {
 
@@ -39,29 +40,34 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     public function getFeatured($order=null, $total=20, $by_hits=true){
     	
     	if (!$order)
-    	$order='ch_id';
+    		$order='ch_id';
     	
-    	$this->_initProfiler();
+    	//$this->_initProfiler();
     	
     	try {
     		$select = $this->_db->select()
-    		->from( $this->_name, '*' )
-    		->joinLeft('rtvg_channels_ratings', "$this->_name.`ch_id`=rtvg_channels_ratings.`ch_id`");
-	    	$select->where( "`featured`='1'" )->limit($total);
+    		->from( array( 'channel'=>$this->_name ), '*' )
+    		->joinLeft( array( 'rating'=>'rtvg_channels_ratings'), "channel.`ch_id`=rating.`ch_id`");
+	    	$select->where( "channel.`featured`='1'" )->limit($total);
 	    	
 	    	if (!$by_hits)
 	    	$select->order("$order ASC");
 	    	else {
-	    		$select->order("rtvg_channels_ratings.hits DESC");
-	    		$select->order("$this->_name.title ASC");
+	    		$select->order("rating.hits DESC");
+	    		$select->order("channel.title ASC");
 	    	}
 	    	
+	    	//var_dump($select->assemble());
+	    	//die(__FILE__.': '.__LINE__);
+	    	
 	    	$result = $this->_db->query($select)->fetchAll(self::FETCH_MODE);
+	    		    	
     	} catch (Exception $e) {
-    		$e->getMessage();
+    		echo ($e->getMessage());
     	}
     	
-    	$this->_profileQuery();
+    	//var_dump($result);
+	    //die(__FILE__.': '.__LINE__);
 		
 		return $result;
     	
@@ -94,13 +100,16 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 		$days = array();
 		do{
 			$select = $this->_db->select()
-				->from('rtvg_programs', '*')
-				->joinLeft("rtvg_programs_props", "rtvg_programs_props.`hash` = rtvg_programs.`hash`", array('actors', 'directors', 'premiere', 'live'))
-				->joinLeft("rtvg_programs_descriptions", "rtvg_programs_descriptions.`hash` = rtvg_programs.`hash`", array('intro', 'body'))
-				->where("rtvg_programs.`start` LIKE '%".$start->toString('yyyy-MM-dd')."%'")
-				->where("rtvg_programs.`ch_id` = '$ch_id'")
+				->from( array( 'program'=>'rtvg_programs'), '*')
+				->joinLeft( array( 'props'=>"rtvg_programs_props"), "program.`hash`=props.`hash`", array('actors', 'directors', 'premiere', 'live'))
+				->joinLeft( array( 'description'=>"rtvg_programs_descriptions"), "program.`hash`=description.`hash`", array('intro', 'body'))
+				->where("program.`start` LIKE '".$start->toString('yyyy-MM-dd')."%'")
+				->where("program.`ch_id` = '$ch_id'")
 				->order("start", "ASC");
 			
+			//var_dump($select->assemble());
+			//die(__FILE__.': '.__LINE__);
+				
 			try {
 				$days[$start->toString('U')] = $this->_db->fetchAll($select, null, self::FETCH_MODE);
 			} catch (Exception $e) {
@@ -116,13 +125,19 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 			
 		} while ($start->toString('yyyy-MM-dd')!=$end->toString('yyyy-MM-dd'));
 		
+		//$safeTag = Zend_Controller_Action_HelperBroker::getStaticHelper('safeTag');
+		
 		foreach ($days as $day) {
 			foreach ($day as $program) {
 				$program->start = new Zend_Date($program->start);
 				$program->end   = new Zend_Date($program->end);
+				//$program->alias = $safeTag->convertTitle($program->title);
 			}
 		}
-				
+
+		//var_dump($days);
+		//die(__FILE__.': '.__LINE__);
+		
 		return $days;
     	
     }

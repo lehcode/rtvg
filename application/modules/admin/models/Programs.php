@@ -56,33 +56,44 @@ class Admin_Model_Programs
 	
 	private function _makeAlias($input=null){
 		
-		if( !$input )
-		return 'неизвестная-программа';
-		//throw new Exception("Не указан один или более параметров для ".__METHOD__, 500);
-		
+		if( !$input ) {
+			//return 'неизвестная-программа';
+			throw new Exception("Не указано название прграммы для ".__METHOD__, 500);
+		}
+			
 		$result = $input;
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/\(([0-9]+)-я серия - "(.+)"\. ([0-9]+)-я серия - "(.+)"\)/iu', 'replace'=>'\1-\2-\3-\4'));
-		$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я.*[и |-|- ][0-9]+-я сери[я|и]/iu', 'replace'=>''));
-		$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я серия/iu', 'replace'=>''));
-		$result = $regexp->filter($result);
+		if (Xmltv_String::stristr($result, 'серия') || Xmltv_String::stristr($result, 'серии')) {
+			$regexp = new Zend_Filter_PregReplace(array('match'=>'/\(([0-9]+)-я серия - "(.+)"\. ([0-9]+)-я серия - "(.+)"\)/iu', 'replace'=>'\1-\2-\3-\4'));
+			$result = $regexp->filter($result);
+			$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я.*[и |-|- ][0-9]+-я сери[я|и]/iu', 'replace'=>''));
+			$result = $regexp->filter($result);
+			$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я серия/iu', 'replace'=>''));
+			$result = $regexp->filter($result);
+		}
+		
+		
 		//$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я.*-.*[0-9]+-я.*серии/iu', 'replace'=>''));
 		//$result = $regexp->filter($result);
 		//$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я и [0-9]+-я/iu', 'replace'=>''));
 		//$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/часть-[0-9]+-я\.?/iu', 'replace'=>''));
-		$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я часть\.?/iu', 'replace'=>''));
-		$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/(сезон-[0-9]+-й\.?)|([0-9]+-й-сезон\.?)/iu', 'replace'=>''));
-		$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/[:;_,\.\[\]\(\)\\`\{\}"\!\+\?]+/', 'replace'=>''));
-		$result = $regexp->filter($result);
-		$regexp = new Zend_Filter_PregReplace(array('match'=>'/^(.*)-?премьера-?(.*)$/iu', 'replace'=>'\1\2'));
-		$result = $regexp->filter($result);
-		$slash  = new Zend_Filter_Word_SeparatorToSeparator( '/', '-' );
-		$result = $slash->filter($result);
+		if (Xmltv_String::stristr($result, 'часть')) {
+			$regexp = new Zend_Filter_PregReplace(array('match'=>'/часть-[0-9]+-я\.?/iu', 'replace'=>''));
+			$result = $regexp->filter($result);
+			$regexp = new Zend_Filter_PregReplace(array('match'=>'/[0-9]+-я часть\.?/iu', 'replace'=>''));
+			$result = $regexp->filter($result);
+		}
+		if (Xmltv_String::stristr($result, 'сезон')) {
+			$regexp = new Zend_Filter_PregReplace(array('match'=>'/(сезон-[0-9]+-й\.?)|([0-9]+-й-сезон\.?)/iu', 'replace'=>''));
+			$result = $regexp->filter($result);
+		}
+		
+		if (Xmltv_String::stristr($result, 'премьера')) {
+			$regexp = new Zend_Filter_PregReplace(array('match'=>'/^(.*)-?премьера-?(.*)$/iu', 'replace'=>'\1\2'));
+			$result = $regexp->filter($result);
+		}
+		
+		//$slash  = new Zend_Filter_Word_SeparatorToSeparator( '/', '-' );
+		//$result = $slash->filter($result);
 		
 		$result = Xmltv_String::str_ireplace('криминальный сериал', '', $result);
 		$result = Xmltv_String::str_ireplace('остросюжетный сериал', '', $result);
@@ -92,19 +103,47 @@ class Admin_Model_Programs
 		$result=Xmltv_String::str_ireplace( 'Ё', 'Е', $result );
 		$result=Xmltv_String::str_ireplace( '+', '-плюс-', $result );
 		
-		$todash=new Zend_Filter_Word_SeparatorToDash();
+		$result = preg_replace('/[^0-9\p{Cyrillic}\p{Latin}]+/ui', ' ', $result);
+		$result = preg_replace('/[\s"«»]+/u', ' ', $result);
+		//$result = preg_replace('/^[-]+/u', '', $result);
+		
+		$todash=new Zend_Filter_Word_SeparatorToDash(' ');
 		$result=$todash->filter( $result );
 		
+		/*
 		do {
 			$result=str_replace( '--', '-', $result );
 		} while(strstr($result, '--'));
-		
+		*/
 		$result = trim($result, ' -');
 		
-		$tolower = new Zend_Filter_StringToLower();
-		$result  = $tolower->filter($result);
+		//$tolower = new Zend_Filter_StringToLower();
+		$result  = Xmltv_String::strtolower($result);
+		/*
+		if ($input=='МультиПочта') {
+			var_dump($result);
+			die(__FILE__.': '.__LINE__);
+		}
 		
-		return $result;
+		$clean = array(
+			'пионеры-глубин',
+			'приют',
+			'хочу-знать-с-михаилом-ширвиндтом',
+			'новости',
+			'телеканал-доброе-утро',
+			'контрольная-закупка',
+			'жить-здорово',
+			'модный-приговор',
+			'новости-с-субтитрами',
+			'сердце-марии',
+		);
+		if (!in_array($result, $clean)) {
+			var_dump($input);
+			var_dump($result);
+			die(__FILE__.': '.__LINE__);
+		}
+		*/
+		return Xmltv_String::strtolower( $result );
 		
 	}
 	

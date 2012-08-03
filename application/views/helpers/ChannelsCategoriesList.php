@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsCategoriesList.php,v 1.3 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: ChannelsCategoriesList.php,v 1.4 2012-08-03 00:18:19 developer Exp $
  *
  */
 class Zend_View_Helper_ChannelsCategoriesList extends Zend_View_Helper_Abstract 
@@ -13,10 +13,8 @@ class Zend_View_Helper_ChannelsCategoriesList extends Zend_View_Helper_Abstract
 	public function channelsCategoriesList(){
 		
 		$escape = new Zend_Filter_HtmlEntities();
-		$css = "ul#channels_categories { padding:0; margin: 0; }
-		ul#channels_categories li { list-style: none; line-height: 26px;  }
-		ul#channels_categories li a { width:125px; display:block; text-align: left; padding-left: 34px; line-height: 26px; }";
-		$this->view->headStyle()->appendStyle($css);
+		//$css = "";
+		//$this->view->headStyle()->appendStyle($css);
 		
 		$table = new Xmltv_Model_DbTable_ChannelsCategories();
 		
@@ -38,11 +36,11 @@ class Zend_View_Helper_ChannelsCategoriesList extends Zend_View_Helper_Abstract
 		
 		//$requestParams = Zend_Controller_Front::getInstance()->getRequest()->getParams();
 				
-		$html = '<ul id="channels_categories" class="catlist">';
+		$html = '<ul id="channels_categories" class="nav nav-list">';
 		foreach ($cats as $cat) {
 			$catAlias = $escape->filter( Xmltv_String::strtolower( $cat->alias ) );
 			$catTitle = $escape->filter( Xmltv_String::ucfirst( $cat->title ) );
-			$html.='<li><a href="/каналы/'.$catAlias.'" class="btn" style="background: url(\'/images/categories/channels/'.$escape->filter( $cat->image ).'\') no-repeat scroll 4px 4px transparent;" title="'.$catTitle.' телеканалы">'.$catTitle.'</a></li>';
+			$html.='<li><a href="/каналы/'.$catAlias.'" title="'.$catTitle.' телеканалы"><img class="icon" src="'.'/images/categories/channels/'.$escape->filter( $cat->image ).'" width="18" />'.$catTitle.'</a></li>';
 		}
 		$html .= '</ul>';
 		return $html;

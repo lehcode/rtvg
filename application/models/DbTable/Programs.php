@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.5 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: Programs.php,v 1.6 2012-08-03 00:16:56 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
@@ -119,19 +119,25 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			$profiler = $this->_db->getProfiler();
 		}
 		
+		//var_dump(func_get_args());
+		
 		//var_dump($date->toString());
 		
 		$channels = new Xmltv_Model_DbTable_Channels();
 		$ch_id = (int)$channels->find($channel_alias)->current()->ch_id;
 		
 		$select = $this->_db->select()
-			->from('rtvg_programs', '*')
-			->joinLeft("rtvg_programs_props", "rtvg_programs_props.`hash` = rtvg_programs.`hash`", array('actors', 'directors', 'premiere', 'live'))
-			->joinLeft("rtvg_programs_descriptions", "rtvg_programs_descriptions.`hash` = rtvg_programs.`hash`", array('intro', 'body'))
-			->where("rtvg_programs.`alias` LIKE '$program_alias'")
-			->where("rtvg_programs.`start` LIKE '".$date->toString('yyyy-MM-dd')."%'")
-			->where("rtvg_programs.`ch_id` = '$ch_id'");
+			->from( array( 'program'=>'rtvg_programs' ), '*')
+			->joinLeft(array( 'props'=>"rtvg_programs_props"), "program.`hash`=props.`hash`", array('actors', 'directors', 'premiere', 'live'))
+			->joinLeft( array( 'description'=>"rtvg_programs_descriptions"), "program.`hash`=description.`hash`", array('intro', 'body'))
+			->where("program.`alias` LIKE '$program_alias'")
+			->where("program.`start` LIKE '".$date->toString('yyyy-MM-dd%')."'")
+			->where("program.`ch_id` = '$ch_id'");
 		
+			
+		//var_dump($select->assemble());
+		//die(__FILE__.': '.__LINE__);
+			
 		try {
 			$result = $this->_db->fetchAll($select, null, self::FETCH_MODE);
 		} catch (Exception $e) {
@@ -143,6 +149,7 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		}
 		
 		//var_dump($result);
+		//die(__FILE__.': '.__LINE__);
 		
 		if(Xmltv_Config::getProfiling()) {
 			$query = $profiler->getLastQueryProfile();

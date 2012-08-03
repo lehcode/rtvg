@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.9 2012-05-30 21:46:59 dev Exp $
+ * @version $Id: Init.php,v 1.10 2012-08-03 00:16:56 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -54,17 +54,21 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 
 		$moduleName = $request->getModuleName();
 		//var_dump($moduleName);
+		//die(__FILE__.": ".__LINE__);
 		switch ($moduleName) {
 			case 'admin':
 				if( $request->getControllerName() == 'channels' ) 
 				$request->setControllerName( 'index' );
 			break;
 			default:
+				//$request->setControllerName( 'frontpage' );
 		}
 		
 		if( $request->getModuleName() == 'admin' ) {
 			if( $request->getControllerName() == 'channels' ) 
 			$request->setControllerName( 'index' );
+		} else {
+			//$request->setControllerName( 'frontpage' );
 		}
 		
 		//var_dump($request->getModuleName());
@@ -123,6 +127,14 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-video') );
 			$this->_router->addRoute( 'show-video', $route );
 			
+			$route = new Zend_Controller_Router_Route('горячие-новости',
+			array('module'=>'default', 'controller'=>'error', 'action'=>'missing-page') );
+			$this->_router->addRoute( 'missing-page', $route );
+			
+			$route = new Zend_Controller_Router_Route('sitemap.xml',
+			array('module'=>'default', 'controller'=>'sitemap', 'action'=>'sitemap') );
+			$this->_router->addRoute( 'sitemap', $route );
+			
 			/*
 			 * Compat from card-sharing.org
 			 */
@@ -178,7 +190,6 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	protected function _initActionHelpers () {
 
 		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH . '/controllers/helpers', 'Xmltv_Controller_Helper' );
-		
 		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH . '/modules/admin/controllers/helpers', 'Admin_Controller_Helper' );
 		
 	}

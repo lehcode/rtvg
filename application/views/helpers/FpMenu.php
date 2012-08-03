@@ -17,13 +17,15 @@ class Zend_View_Helper_FpMenu extends Zend_View_Helper_Abstract
 			<li class="span4 lastcol"><a href="/режиссеры"><span>Режиссеры</span></a></li>
 		</ul>
 		
+		<div id="DIV_DA_85452" class="span12"></div>
+		
+		<?php /*
 		<div style="width: 976px; margin: 0 auto;">
 			
 			<div class="pull-left ad468x60">
 				<script type="text/javascript">
 					<!--
 					google_ad_client = "ca-pub-1744616629400880";
-					/* Rutvgid Frontpage */
 					google_ad_slot = "3801803939";
 					google_ad_width = 468;
 					google_ad_height = 60;
@@ -38,7 +40,6 @@ class Zend_View_Helper_FpMenu extends Zend_View_Helper_Abstract
 				<script type="text/javascript">
 					<!--
 					google_ad_client = "ca-pub-1744616629400880";
-					/* Rutvgid Frontpage */
 					google_ad_slot = "3801803939";
 					google_ad_width = 468;
 					google_ad_height = 60;
@@ -50,7 +51,8 @@ class Zend_View_Helper_FpMenu extends Zend_View_Helper_Abstract
 			</div>
 			
 		</div>
-		<?php 
+		*/
+		
 		return ob_get_clean();
 	}
 }

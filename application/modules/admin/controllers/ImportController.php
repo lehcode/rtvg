@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ImportController.php,v 1.9 2012-05-21 05:12:29 dev Exp $
+ * @version $Id: ImportController.php,v 1.10 2012-08-03 00:16:56 developer Exp $
  *
  */
 class Admin_ImportController extends Zend_Controller_Action
@@ -161,7 +161,9 @@ class Admin_ImportController extends Zend_Controller_Action
     		
     		$cache = new Xmltv_Cache(array('cache_lifetime'=>7200));
 	    	$lockFile = ROOT_PATH.'/cache/'.$cache->getHash($xml_file).'.lock';
-	    	unlink($lockFile);
+	    	if (is_file($lockFile) ) {
+	    		unlink($lockFile);
+	    	}
 	    	
 	    	$response = array('success'=>false);
     		
@@ -209,14 +211,15 @@ class Admin_ImportController extends Zend_Controller_Action
 							
 							if (!empty($desc['intro'])) {
 								
-								$desc['hash']  = $p['hash'];
+								$desc['hash'] = $p['hash'];
 								//var_dump($xml);
 								//die(__FILE__.": ".__LINE__);
 								$desc['alias'] = $programs->makeAlias( $programs->getProgramTitleFromXml($xml) );
 								
-								if (empty($desc['alias']))
-								$desc['alias'] = 'неизвестная-программа';
-								//throw new Exception("Alias не может быть NULL".__METHOD__, 500);
+								if (empty($desc['alias'])) {
+									//$desc['alias'] = 'неизвестная-программа';
+									throw new Exception("Alias не может быть NULL".__METHOD__, 500);
+								}
 								
 								//var_dump($desc);
 								//die(__FILE__.": ".__LINE__);

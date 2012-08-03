@@ -4,10 +4,15 @@ class Zend_View_Helper_Premieres extends Zend_View_Helper_Abstract
 	
 	public function premieres(){
 		
+		return '';
+		
 		$config = new Zend_Config_Xml(APPLICATION_PATH . '/configs/view-helpers.xml', 'premieres');
 		$programs = new Xmltv_Model_Programs();
 		$date = new Zend_Date(null, null, 'ru');
 		$today = $date->toString(Zend_Date::WEEKDAY_DIGIT);
+		
+		//var_dump($today);
+		
 		
 		$d = new Zend_Date(null, null, 'ru');
 		do{
@@ -16,6 +21,8 @@ class Zend_View_Helper_Premieres extends Zend_View_Helper_Abstract
 		} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>1);
 		$weekStart = $d;
 		
+		
+		
 		$d = new Zend_Date(null, null, 'ru');
 		do{
 			$d->addDay(1);
@@ -23,6 +30,10 @@ class Zend_View_Helper_Premieres extends Zend_View_Helper_Abstract
 		$weekEnd = $d;
 		
 		$programs_list = $programs->getPremieres(new Zend_Date(), $weekEnd);
+		
+		//var_dump($programs_list);
+		//die(__FILE__.': '.__LINE__);
+		
 		$heading = "Премьеры сегодня";
 		if (!$programs_list) {
 			$heading = "Премьеры недели";
@@ -30,6 +41,7 @@ class Zend_View_Helper_Premieres extends Zend_View_Helper_Abstract
 		}
 		
 		//var_dump($programs_list);
+		//die(__FILE__.': '.__LINE__);
 		
 		$toDash  = new Zend_Filter_Word_SeparatorToDash();
 		$toLower = new Zend_Filter_StringToLower();

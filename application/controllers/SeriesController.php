@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: SeriesController.php,v 1.1 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: SeriesController.php,v 1.2 2012-08-03 00:16:56 developer Exp $
  *
  */
 class SeriesController extends Zend_Controller_Action
@@ -22,7 +22,11 @@ class SeriesController extends Zend_Controller_Action
 	}
 	
 	public function seriesWeekAction(){
-		$this->render('under-constriction');
+		
+		
+		die(__FILE__.': '.__LINE__);
+		
+		//$this->render('under-constriction');
 	}
 	
 	private function _isValidRequest($action=null) {

@@ -42,15 +42,15 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			$query->setVideoQuery($qs);
 			$query->orderBy = $order;
 			$query->setSafeSearch($safesearch);
-			/*
+			
 			if (Xmltv_Config::getDebug()===true) {
-				var_dump($query);
+				//var_dump($query);
 			}
-			*/
+			
 			$cacheSub = 'Youtube';
 			$cache = new Xmltv_Cache(array('location'=>"/cache/$cacheSub"));
 			$hash = $cache->getHash( __FUNCTION__.'_'.md5($qs.$output));
-			if (Xmltv_Config::getCaching()){
+			if (Xmltv_Config::getYoutubeCaching()){
 				if (!$videos = $cache->load($hash, 'Core', $cacheSub)) {
 					$videos = $yt->getVideoFeed($query->getQueryUrl(2));
 					$cache->save($videos, $hash, 'Core', $cacheSub);
@@ -58,6 +58,9 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			} else {
 				$videos = $yt->getVideoFeed($query->getQueryUrl(2));
 			}
+			
+			//var_dump($videos);
+			//die(__FILE__.': '.__LINE__);
 			
 			$data_parent = "videos_$output";
 			$html= '<div class="'.$data_parent.'">';
@@ -70,11 +73,14 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			
 			foreach ($videos as $videoEntry) {
 				
+				//var_dump($videoEntry);
+				
+				
 				$videoDescription = $videoEntry->getVideoDescription();
 				if (!preg_match('/\p{Cyrillic}+/ui', $videoDescription))
-				break;
+				continue;
 				if (preg_match('/порн|эрот|проститут/ui', $videoDescription))
-				break;
+				continue;
 				
 				try {
 					$videoThumbnails = $videoEntry->getVideoThumbnails();
@@ -83,6 +89,9 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 				}
 				
 				foreach($videoThumbnails as $videoThumbnail) {
+					
+					//var_dump($videoThumbnail);
+					
 					if ($videoThumbnail['width'] >= $thumbWidth) {
 						
 						$vid = $this->_videoId($videoEntry->getVideoId());
@@ -125,11 +134,11 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 										} catch (Exception $e) {
 											echo $e->getMessage();
 										}
-										$html .= '<ul class="tags_list">';
+										$html .= '<ul class="btn-group">';
 										for ($i=0; $i<count($tags); $i++){
 											if ($i<(int)$showTags) {
 												$safe_tag = $this->view->safeTag($tags[$i]);
-												$html .= '<li><a href="/видео/тема/'.$safe_tag.'" title="">'.$tags[$i].'</a></li>';
+												$html .= '<li class="btn"><a href="/видео/тема/'.$safe_tag.'" title="">'.$tags[$i].'</a></li>';
 											}
 										}
 										$html .= "</ul>";
@@ -195,6 +204,9 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 			echo $e->getMessage();
 		}
 		
+		//var_dump($html);
+		//die(__FILE__.': '.__LINE__);
+		
 		return $html;
 		
 	}
@@ -232,7 +244,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 	private function _addLinks($text=null, $title='', $do='convert'){
 		
 		if (!$text)
-		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+			return '';
 		
 		$entities = new Zend_Filter_HtmlEntities();
 		//var_dump(func_get_args());
