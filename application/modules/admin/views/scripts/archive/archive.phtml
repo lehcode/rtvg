@@ -1,0 +1,28 @@
+<?php
+$this->headScript()->appendFile('/js/archive-programs.js');
+?>
+
+<h3>Архивация программ</h3>
+
+<div>
+	<?php 
+	$form = new ZendX_JQuery_Form();
+	$form->setAction ( '' )
+		->setMethod ( 'post' )
+		->addAttribs ( array (
+			'id' => 'archive_programs' ) );
+	
+	$button = new Zend_Form_Element_Button ( 'submit' );
+	$button->setLabel( 'Архивировать' )
+		->setAttribs(array( 'id'=>'archive_start', 'class'=>'btn btn-primary' ));
+	
+	$dateStart = new ZendX_JQuery_Form_Element_DatePicker( 'start_date');
+	$dateStart->setLabel('Начальная дата');
+	$dateEnd = new ZendX_JQuery_Form_Element_DatePicker( 'end_date');
+	$dateEnd->setLabel('Финальная дата');			
+		
+	$form->addElements ( array($dateStart, $dateEnd, $button) );
+	echo $form;
+	?>
+</div>
+<div id="result"></div>
