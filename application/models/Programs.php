@@ -24,11 +24,19 @@ class Xmltv_Model_Programs
 		//die(__FILE__.': '.__LINE__);
 		
 		$day = $date->toString('yyyy-MM-dd');
+		$rows = null;
 		try {
 			$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'));
 		} catch (Exception $e) {
 			echo $e->getMessage();
-			die(__FILE__.': '.__LINE__);
+		}
+		
+		if (!$rows) {
+			try {
+				$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'), true);
+			} catch (Exception $e) {
+				echo $e->getMessage();
+			}
 		}
 		
 		//var_dump(count($rows));

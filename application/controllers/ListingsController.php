@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.9 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: ListingsController.php,v 1.10 2012-08-04 20:59:05 developer Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -37,6 +37,9 @@ class ListingsController extends Zend_Controller_Action
 		$this->_forward('day-listing');
 	}
 	
+	/*
+	 * Programs listing for 1 particular day
+	 */
 	public function dayListingAction () {
 
 		if( !$this->_validateRequest() ) {
@@ -52,8 +55,8 @@ class ListingsController extends Zend_Controller_Action
 		//var_dump($channel);
 		//die(__FILE__.': '.__LINE__);
 		
-		$paramDate = $this->_getParam('date');
-		$today = @isset( $paramDate ) ? new Zend_Date( $paramDate, 'yyyy-MM-dd', 'ru' ) : new Zend_Date( null, null, 'ru' );
+		$paramDate = $this->_getParam('date', null);
+		$today = $paramDate!==null ? new Zend_Date( $paramDate, 'yyyy-MM-dd', 'ru' ) : new Zend_Date( null, null, 'ru' );
 		$cache = new Xmltv_Cache(array('location'=>'/cache/Listings'));
 		$hash = $cache->getHash(__FUNCTION__.'_'.$channel['ch_id'].'_'.$today->toString('yyyyMMdd'));
 		try {
@@ -244,6 +247,10 @@ class ListingsController extends Zend_Controller_Action
 		
 	}
 	
+	/**
+	 * 
+	 * Request parameters validation
+	 */
 	private function _validateRequest(){
 		
 		$filters = array('*'=>'StringTrim', '*'=>'StringToLower');

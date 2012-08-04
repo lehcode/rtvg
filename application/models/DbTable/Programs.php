@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.6 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: Programs.php,v 1.7 2012-08-04 20:59:05 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
@@ -65,7 +65,7 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 	 * @param int $channel_id
 	 * @param string $date
 	 */
-	public function fetchDayItems($channel_id=null, $date=null) {
+	public function fetchDayItems($channel_id=null, $date=null, $archived=false) {
 		
 		if (!$channel_id || !$date)
 		throw new Zend_Exception("Не передаг один или более параметров для ".__FUNCTION__, 500);
@@ -75,22 +75,28 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			$profiler = $this->_db->getProfiler();
 		}
 		
-		$select = $this->_db->select()->from( array('p'=>$this->_name), '*' )
-			->joinLeft( 'rtvg_programs_props', "p.`hash`=rtvg_programs_props.`hash` ", 
-			array('actors', 'directors', 'premiere', 'premiere_date', 'rating') )
-			->joinLeft( 'rtvg_programs_descriptions', "p.`hash`=rtvg_programs_descriptions.`hash`", 
-			array('desc_intro'=>'intro', 'desc_body'=>'body') )
-			//->joinLeft(array('ch'=>'rtvg_channels'), "p.`ch_id`=ch.`ch_id`", array('channel_title'=>'ch.title', 'channel_alias'=>'ch.alias'))
-			->joinLeft(array('cat'=>'rtvg_programs_categories'), "p.`category`=cat.`id`", array('category_title'=>'cat.title'))
-			->where( "p.`start` LIKE '$date%'" )
-			->where( "p.`ch_id` = '$channel_id'" )
-			->order( "p.start ASC" );
-		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
-		
-		if( $this->_profiling ) {
-			$query = $profiler->getLastQueryProfile();
-			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
+		$progsTable = $this->_name;
+		$descsTable = 'rtvg_programs_descriptions';
+		if ($archived===true) {
+			$progsTable = 'rtvg_programs_archive';
+			$descsTable = 'rtvg_programs_descriptions_archive';
 		}
+		
+		$select = $this->_db->select()
+			->from( array('program'=>$progsTable), '*' )
+			->joinLeft( array( 'props'=>'rtvg_programs_props'), $this->_db->quoteIdentifier('program.hash')."=".$this->_db->quoteIdentifier('props.hash'), 
+				array('actors', 'directors', 'premiere', 'premiere_date', 'rating') )
+			->joinLeft( array('desc'=>$descsTable), $this->_db->quoteIdentifier('program.hash')."=".$this->_db->quoteIdentifier('desc.hash'), 
+				array('desc_intro'=>'intro', 'desc_body'=>'body') )
+			->joinLeft(array('cat'=>'rtvg_programs_categories'), "program.category=cat.id", 
+				array('category_title'=>'title'))
+			->where( "program.start LIKE '$date%'" )
+			->where( "program.ch_id = '$channel_id'" )
+			->order( "program.start ASC" );
+			
+		//var_dump($select->assemble());
+		
+		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
 		
 		$serializer = new Zend_Serializer_Adapter_Json();
 		foreach ($result as $k=>$row) {
