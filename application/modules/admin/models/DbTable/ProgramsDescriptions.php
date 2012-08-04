@@ -5,6 +5,10 @@ class Admin_Model_DbTable_ProgramsDescriptions extends Zend_Db_Table_Abstract
 
     protected $_name = 'rtvg_programs_descriptions';
 
+	public function __construct($config=array()){
+    	parent::__construct( $config );
+    	
+    }
 
     public function getCount(){
     	$select = $this->_db->select();

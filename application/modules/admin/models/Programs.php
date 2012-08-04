@@ -53,9 +53,14 @@ class Admin_Model_Programs
 		//die(__FILE__.': '.__LINE__);
 		
 		$batch_size = 500;
-		$acrhiveTable = new Admin_Model_DbTable_Archive();
+		$programsAcrhive     = new Admin_Model_DbTable_ProgramsArchive();
+		$descriptionsAcrhive = new Admin_Model_DbTable_ProgramsDescriptionsArchive();
+		$descriptions        = new Admin_Model_DbTable_ProgramsDescriptions();
 		
 		$list = $this->_table->fetchAll($where);
+		
+		ini_set('max_execution_time', 0);
+		
 		do {
 			
 			if (count($list)>0){
@@ -65,23 +70,66 @@ class Admin_Model_Programs
 				
 				foreach ($list as $i) {
 					
-					$data = $i->toArray();
-					
-					//var_dump($data);
+					//var_dump($i);
 					//die(__FILE__.': '.__LINE__);
 					
+					$descData = array();
+					$descRow = $descriptions->fetchRow("`hash`='".$i->hash."'");
+					if (!empty($descRow)) {
+						$descData = $descRow->toArray();
+					}
+					$programData = $i->toArray();
+					
 					try {
-						$acrhiveTable->insert($data);
+						$programsAcrhive->insert($programData);
+						if (!empty($descData)) {
+							try {
+								$descriptionsAcrhive->insert($descData);
+							} catch (Exception $e) {
+								echo $e->getMessage();
+								exit();
+							}
+						}
 					} catch (Exception $e) {
 						try {
-							$acrhiveTable->update($data, "`hash`='".$data['hash']."'");
+							$programsAcrhive->update($programData, "`hash`='".$programData['hash']."'");
+							if (!empty($descData)) {
+								try {
+									$descriptionsAcrhive->update($descData, "`hash`='".$programData['hash']."'");
+								} catch (Exception $e) {
+									echo $e->getMessage();
+								exit();
+								}
+								
+							}
 						} catch (Exception $e) {
 							throw new Exception($e->getMessage(), 500, true);
 							exit();
 						}
 					}
-					$this->_table->delete("`hash`='".$data['hash']."'");
+					
+					
+					try {
+						$this->_table->delete("`hash`='".$programData['hash']."'");
+					} catch (Exception $e) {
+						echo $e->getMessage();
+						exit();
+					}
+					
+					
+					if (!empty($descData)) {
+						try {
+							$descriptions->delete("`hash`='".$programData['hash']."'");
+						} catch (Exception $e) {
+							echo $e->getMessage();
+							exit();
+						}
+						
+					}
 				}
+			} else {
+				echo "За этот период программ не найдено";
+				exit();
 			}
 			
 		} while(!count($list)>0);

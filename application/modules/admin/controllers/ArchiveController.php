@@ -36,10 +36,17 @@ class Admin_ArchiveController extends Zend_Controller_Action
 			
 			ini_set('max_execution_time', 0);
 			
-			$end = null;
 			$start = new Zend_Date($this->_getParam('start_date'), 'dd.MM.yyyy');
-			if ($this->_getParam('end_date')!='') {
-				$end = new Zend_Date($this->_getParam('end_date'), 'dd.MM.yyyy');
+			
+			if ($this->_getParam('end_date')=='') {
+				echo "Не указана дата окончания периода!";
+				exit();
+			} 
+			$end = new Zend_Date($this->_getParam('end_date'), 'dd.MM.yyyy');
+			
+			if ($end->toString("U") > $start->toString("U")) {
+				echo "Дата окончания должна быть ранее даты начала!";
+				exit();
 			}
 			
 			$programs = new Admin_Model_Programs();
