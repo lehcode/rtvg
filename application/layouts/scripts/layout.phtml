@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.13 2012-08-03 17:37:55 developer Exp $
+ * @version $Id: layout.phtml,v 1.14 2012-08-04 20:53:41 developer Exp $
  *
  */
 //var_dump(ini_get('error_reporting'));
@@ -150,7 +150,9 @@ if ($this->hide_sidebar=='right'){
 		<?php endif; ?>
 		
 		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
+			<?php if (!$this->isDev()): ?>
 			<div id="DIV_DA_85979"></div><?php //directadvert rollin left ?>
+			<?php endif; ?>
 			<?php echo $this->layout()->content; ?>
 		</div>
 		
