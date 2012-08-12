@@ -1,0 +1,18 @@
+@CHARSET "UTF-8";
+
+@font-face {
+    font-family: "OpenSans Condensed Bold";
+    src: url("../fonts/opnsancb.ttf") format("truetype");
+}
+@font-face {
+    font-family: "Universe Bold";
+    src: url("../fonts/universb.ttf") format("truetype");
+}
+@font-face {
+    font-family: "Universe Condensed Bold";
+    src: url("../fonts/universcb.ttf") format("truetype");
+}
+@font-face {
+    font-family: "Univers Condensed Medium Italic";
+    src: url("../fonts/universcmi.ttf") format("truetype");
+}
