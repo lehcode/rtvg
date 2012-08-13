@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.6 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: ChannelsController.php,v 1.7 2012-08-13 13:20:15 developer Exp $
  *
  */
 class ChannelsController extends Zend_Controller_Action
@@ -22,32 +22,38 @@ class ChannelsController extends Zend_Controller_Action
 
 
 	public function indexAction () {
-
 		$this->_forward( 'frontpage', 'index' );
 	}
 
 
 	public function __call ($method, $arguments) {
-		throw new Exception("Ошибка сервера", 500);
-		$this->_redirect( '/error' );
+		header( 'HTTP/1.0 404 Not Found' );
+		$this->_helper->layout->setLayout( 'error' );
+		$this->view->render();
 	}
 
-
+	/**
+	 * All channels list
+	 */
 	public function listAction () {
 		
 		$this->view->baseUrl = $this->getRequest()->getBaseUrl();
 		$model = new Xmltv_Model_Channels();
 		$rows = $model->getPublished();
-		$channels = array();
+		
 		$c = 0;
 		foreach ($rows as $row) {
-			$item = $row->toArray();
-			$channels[$c] = $model->fixImage( $item, $this->view->baseUrl() );
+			$rows[$c] = $model->fixImage( $row, $this->view->baseUrl() );
 			$c++ ;
-		}
-		$this->view->assign( 'channels', $channels );
+		}		
+		$this->view->assign( 'channels', $rows );
+		$this->view->assign('pageclass', 'allchannels');
+		
 	}
 	
+	/**
+	 * Fetch typeahead items
+	 */
 	public function typeheadAction () {
 		$response=array();
 		$channels = new Xmltv_Model_Channels();
@@ -55,7 +61,12 @@ class ChannelsController extends Zend_Controller_Action
 		$this->view->assign('response', $response);
 	}
 	
+	/**
+	 * Category of channels
+	 */
 	public function categoryAction() {
+		
+		//Zend_Debug::dump( $this->_getAllParams());
 		
 		$params = $this->_getAllParams();
 		$cats_table = new Xmltv_Model_DbTable_ChannelsCategories();
@@ -65,12 +76,13 @@ class ChannelsController extends Zend_Controller_Action
 		$channels_model = new Xmltv_Model_Channels();
 		$rows = $channels_model->getCategory($params['category']);
 		$c = 0;
-		$channels = array();
 		foreach ($rows as $row) {
-			$channels[$c] = $channels_model->fixImage( $row, $this->view->baseUrl() );
+			$rows[$c] = $channels_model->fixImage( $row, $this->view->baseUrl() );
 			$c++ ;
 		}
-		$this->view->assign('channels', $channels);
+		$this->view->assign('channels', $rows);
+		$this->view->assign('category', $params['category']);
+		$this->view->assign('pageclass', 'category');
 		
 		$this->render('list');
 		
@@ -86,19 +98,24 @@ class ChannelsController extends Zend_Controller_Action
 			$channels = new Xmltv_Model_Channels();
 			$channel  = $channels->getByAlias( $this->_getParam('channel') );
 
-			//var_dump($channel);
-			
+			/*
+			 * initialize week start and week end dates
+			 */
 			$d = $this->_getParam('start', null)!==null ? new Zend_Date($this->_getParam('start'), null, 'ru') : new Zend_Date( null, null, 'ru' ) ; 
 			$start = $this->_helper->weekDays(array('method'=>'getStart', "data"=>array('date'=>$d) ));
 			$d = $this->_getParam('end', null)!==null ? new Zend_Date($this->_getParam('end'), null, 'ru') : new Zend_Date( null, null, 'ru' ) ; 
 			$end = $this->_helper->weekDays(array('method'=>'getEnd', "data"=>array('date'=>$d) ));
-						
-			Zend_Registry::set('channel', $channel);
-			Zend_Registry::set('week_start', $start);
-			Zend_Registry::set('week_end', $end->subMinute(1));
-			Zend_Registry::set('show_videos', true);
-			
-			$schedule = $channels->getWeekSchedule();
+
+			try {
+				$schedule = $channels->getWeekSchedule($channel, $start, $end);
+			} catch (Zend_Exception $e) {
+				echo $e->getMessage();
+			}
+			/*
+			 * re-initialize $start date
+			 */
+			$d = $this->_getParam('start', null)!==null ? new Zend_Date($this->_getParam('start'), null, 'ru') : new Zend_Date( null, null, 'ru' ) ; 
+			$start = $this->_helper->weekDays(array('method'=>'getStart', "data"=>array('date'=>$d) ));
 			
 			$this->view->assign('channel', $channel);
 	    	$this->view->assign('days', $schedule);
@@ -106,6 +123,7 @@ class ChannelsController extends Zend_Controller_Action
 	    	$this->view->assign('week_end', $end);
 	    	$this->view->assign('hide_sidebar', 'left');
 	    	$this->view->assign( 'sidebar_videos', true );
+	    	$this->view->assign('pageclass', 'channel-week');
 	    	
 	    	$channels->addHit( $channel->ch_id );
 			
@@ -115,6 +133,8 @@ class ChannelsController extends Zend_Controller_Action
     	}
 		
 	}
+	
+	
 	
 }
 

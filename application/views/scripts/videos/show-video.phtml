@@ -31,8 +31,8 @@ $this->headScript()->appendScript("$(document).ready(function() {
 			    var attrs = { id: "mytplayer" };
 			    swfobject.embedSWF("http://www.youtube.com/v/'.$this->main_video->getVideoId().'?enablejsapi=1&playerapiid=ytplayer&version=3&allowfullscreen=true",
 			    	"player",
-			    	"488",
-			    	"274",
+			    	"460",
+			    	"258",
 			    	"8",
 			    	null,
 			    	null,
@@ -41,8 +41,10 @@ $this->headScript()->appendScript("$(document).ready(function() {
 			echo $this->inlineScript();
 			?>
 			
-			<div class="taglist title">Темы этого видео</div>
-			<ul class="taglist btn-group">
+			<div class="taglist title">
+				Темы этого видео
+			</div>
+			<ul class="taglist">
 			<?php 
 			$tags = $this->main_video->getVideoTags();
 			
@@ -52,17 +54,13 @@ $this->headScript()->appendScript("$(document).ready(function() {
 					$t = trim($tags[$i]);
 					if (!empty($t)) {
 						$t = $this->safeTag($t);
-						//var_dump($t);
-						//jexit(__FILE__.': '.__LINE__);
 						?>
-						<li class="btn btn-primary">
-							<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>" title="Видео про <?php echo $this->safeTag($tags[$i]); ?>" target="_blank"><?php echo $tags[$i] ?></a>
+						<li class="btn btn-mini">
+							<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>?p=<?php echo base64_encode($tags[$i]) ?>" title="Видео про <?php echo $this->escape($tags[$i]); ?>" target="_blank"><?php echo $tags[$i] ?></a>
 						</li>
 						<?php 
 					}
 					unset($tags[$i]);
-					//var_dump(count($tags));
-					//die(__FILE__.": ".__LINE__);
 					$i++;
 				} while (count($tags)>0);
 			 } ?>
@@ -84,7 +82,19 @@ $this->headScript()->appendScript("$(document).ready(function() {
 		continue;
 		
 		?>
-		<div class="infowrap">
+		<div class="videocell">
+			
+			<?php 
+			$title = $current->getVideoTitle();
+			$tag = $this->safeTag($title);
+			$vid = $current->getVideoId();
+			$vid = Xmltv_Youtube::videoId($vid);
+			?>
+			
+			<h3 class="title">
+				<a href="/видео/онлайн/<?php echo $tag.'/'.$vid ?>" title="Смотреть онлайн <?php echo $title ?>" target="_blank"><?php echo $title ?></a></h2>
+			</h3>
+		
 			<div class="videothumb">
 				
 				<?php 
@@ -98,7 +108,7 @@ $this->headScript()->appendScript("$(document).ready(function() {
 					if ($videoThumbnail['width'] >= 200) {
 						
 						?>
-						<a style="float:left" href="/видео/онлайн/<?php echo $this->videoAlias( $current->getVideoTitle() ) .'/'. $this->videoId( $current->getVideoId() ) ?>">
+						<a class="imagelink" href="/видео/онлайн/<?php echo $this->videoAlias( $current->getVideoTitle() ) .'/'. $this->videoId( $current->getVideoId() ) ?>">
 							<img src="<?php echo $videoThumbnail['url'] ?>" width="240" alt="<?php echo $current->getVideoTitle()?>" />
 						</a>
 						
@@ -110,7 +120,9 @@ $this->headScript()->appendScript("$(document).ready(function() {
 				
 				?>
 				
-				<p class="video-category">
+				<p class="viewcount">Посмотрели: <?php echo number_format( (int)$current->getVideoViewCount(), 0 ) ?></p>
+				
+				<p class="cat">
 					<?php 
 					$catEn = $current->getVideoCategory();
 					$catRu = Xmltv_Youtube::getCatRu($catEn); 
@@ -126,39 +138,55 @@ $this->headScript()->appendScript("$(document).ready(function() {
 					 
 				</p>
 				
-				<p class="video-date">
+				<p class="date">
 					<?php $date = new Zend_Date ( $current->getUpdated() ); ?>
 					Добавлено <?php echo $date->toString('d MMM YYYY');  ?>
 				</p>
 				
 			</div>
 				
-			<div class="video-info">
-					
-				<?php 
-				$title = $current->getVideoTitle();
-				$tag = $this->safeTag($title);
-				$vid = $current->getVideoId();
-				$vid = Xmltv_Youtube::videoId($vid);
-				?>
-				
-				<h3 class="video-title">
-					<a href="/видео/онлайн/<?php echo $tag.'/'.$vid ?>" title="Смотреть онлайн <?php echo $title ?>" target="_blank"><?php echo $title ?></a></h2>
-				</h3>
+			<div class="videoinfo">
 				
 				
+				
+				<?php
+				$desc = $this->truncateString( $current->getVideoDescription(), 35, 'words' );
+				if (!empty($desc)) {
+					?>
+				<p class="desc">
+					<?php echo $desc ?>
+				</p>
+					<?php 
+				} ?>
 				
 			</div>
 			
-			<?php
-			$desc = $current->getVideoDescription();
-			if (!empty($desc)) {
+			<?php 
+			$tags = $current->getVideoTags();
+			//var_dump($tags);
+			if (count($tags)) {
 				?>
-			<p class="desc">
-				<?php echo $desc ?>
-			</p>
+				<ul class="tags">
 				<?php 
-			} ?>
+				$i=0;
+				do {
+					$t = trim($tags[$i]);
+					if (!empty($t)) {
+						$t = $this->safeTag($t);
+						?>
+						<li class="btn btn-mini">
+							<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>?p=<?php echo urlencode ( base64_encode( $tags[$i] ) ) ?>" title="Видео про <?php echo $this->safeTag($tags[$i]); ?>" target="_blank"><?php echo $tags[$i] ?></a>
+						</li>
+						<?php 
+					}
+					unset($tags[$i]);
+					$i++;
+				} while (count($tags)>0);
+				?>
+				</ul>
+				<?php 
+			 } ?>
+			
 			
 		</div>
 		<?php 

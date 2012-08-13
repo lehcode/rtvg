@@ -4,27 +4,54 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.8 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.9 2012-08-13 13:20:15 developer Exp $
  *
  */
 $this->headScript()
-	->appendFile($this->baseUrl()."/js/bootstrap-carousel.js")
-	->appendFile($this->baseUrl()."/js/listing-day.js");
+	//->appendFile($this->baseUrl()."/js/bootstrap-carousel.js")
+	->appendFile($this->baseUrl()."/js/listing-day.js")
+	->appendScript("$('.carousel').carousel('pause')");
 
+/*
+ * figure out if current day is today
+ */
 $this->is_today=false;
 $date = new Zend_Date(null, null, 'ru');
 if ($this->today->toString('yyyy-MM-dd')==$date->toString('yyyy-MM-dd')) 
 $this->is_today=true;
 
 $tolower = new Zend_Filter_StringToLower();
+$channelTitle = $this->escape( $this->channel->title );
+$channelAlias = Xmltv_String::strtolower( $this->escape( $this->channel->alias ));
 
-if ($this->is_today) {
-	$this->headMeta()->setName('title', sprintf ('Программа телеканала %s на сегодня', $this->channel->title));
-} else {
-	$this->headMeta()->setName('title', sprintf ('Программа канала %s на %s', $this->channel->title, $this->today->toString('EEEE, d MMMM YYYY')));
+/*
+ * Set META title
+ */
+if ($this->is_today)
+	$this->headMeta()->setName('title', sprintf ('Программа телеканала %s на сегодня', $channelTitle));
+else
+	$this->headMeta()->setName('title', sprintf ('Программа канала %s за %s', $channelTitle, $this->today->toString('EEEE, d MMMM YYYY')));
+
+/*
+ * Set browser window title
+ */
+if ($this->is_today)
+	$this->headTitle( sprintf ('Телепрограмма канала %s на сегодня, %s', $channelTitle, $this->today->toString( 'EEEE, d MMMM YYYY' ) ) );
+else
+	$this->headTitle( sprintf ('Телепрограмма %s за %s', $channelTitle, $this->today->toString( 'EEEE, d MMMM YYYY' ) ) );
+
+
+/*
+ * prevent indexing of time-shifted pages
+ */
+if ((int)$this->timeshift!=0) {
+	$this->headMeta()->setName('robots', 'noindex,follow');
 }
 
-$kw = array($tolower->filter( $this->channel->title ), $this->today->toString('d MMMM YYYY'));
+/*
+ * Generate keywords
+ */
+$kw = array($tolower->filter( $channelTitle ), $this->today->toString('d MMMM YYYY'));
 if (!empty($this->programs)) {
 	foreach ($this->programs as $p) {
 		if (count($kw)<5) {
@@ -35,29 +62,37 @@ if (!empty($this->programs)) {
 }
 $this->headMeta()->setName('keywords', implode(',', $kw) );
 
-if ($this->is_today) {
-	$this->headTitle( sprintf ('%s сегодня', $this->channel->title ) );
-} else {
-	$this->headTitle( sprintf ('%s %s', $this->channel->title, $this->today->toString( 'EEEE, d MMMM YYYY' ) ) );
-}
-
-$channel_alias = Xmltv_String::strtolower($this->channel->alias);
-//$css = ".carousel-inner { }";
-//$this->headStyle()->appendStyle($css);
 
 ?>
-<div id="fastsearch-wrap">
-	<?php $form = new Xmltv_Form_FastChannelSearchForm(); echo $form; ?>
+
+<div class="forms2">
+	<div id="fastsearch-wrap">
+		<?php 
+		$form = new Xmltv_Form_FastChannelSearchForm(array('label_class'=>'smallheading'));
+		echo $form;
+		?>
+	</div>
+	<?php 
+	$form = new Xmltv_Form_TimezoneSwitch(array('label_class'=>'smallheading', 'time_shift'=>$this->timeshift));
+	echo $form; 
+	?>
 </div>
-<h1><?php printf('Канал %s сегодня', $this->channel->title) ?></h1>
+
+
+<h1><?php printf('Канал %s сегодня', $channelTitle) ?></h1>
+
 <p><?php echo Xmltv_String::ucfirst( $this->today->toString("EEEE, d MMMM YYYY") ); ?></p>
-<p><a class="btn week" title="<?php printf('Перейти к расписанию программ канала "%s" на неделю', $this->channel->title); ?>" href="/телепрограмма/<?php echo Xmltv_String::strtolower( $this->channel->alias ) ?>/неделя" title=""><?php printf ('Программа передач "%s" на всю неделю', $this->channel->title) ?></a></p>
+<p>
+	<a class="btn week btn-mini" title="<?php printf('Перейти к расписанию программ канала %s на неделю', $channelTitle); ?>" href="/телепрограмма/<?php echo Xmltv_String::strtolower( $channelAlias ) ?>/неделя">
+		<?php printf ('Программа передач "%s" на всю неделю', $channelTitle) ?>
+	</a>
+</p>
 
 <?php 
 if (!empty($this->programs)) {
 ?>
 <a class="btn btn-mini btn-primary" id="slideshow_onoff" href="#">Показать расписание списком</a>
-<div id="programslist" class="carousel">
+<div id="programslist" class="carousel slide">
 	<div class="carousel-inner" id="programs-carousel">
 	<?php 
 	
@@ -74,29 +109,33 @@ if (!empty($this->programs)) {
 		else
 		$active = $k==0 ? ' active' : '' ;
 		
+		$prog->title = preg_replace('/([\w]+)\.[\w]+/ui', '\1. ', $prog->title);
+		
 		?>
 	<div class="item<?php echo $active; ?> programcontainer">
+		
+		<div class="program-times">
+			<div class="time start">
+				<span class="start_time"><?php echo $prog->start->toString('HH:mm') ?></span>
+			</div>
+			<div class="time end">
+				<span class="end_time"><?php echo $prog->end->toString('HH:mm') ?></span>
+			</div>
+		</div>
+		
 		<div class="programtitle">
-		
-			<p class="start">
-				<span class="start_time"><?php echo $prog->start->toString(Zend_Date::HOUR.':'.Zend_Date::MINUTE) ?></span>
-			</p>
-		
 			<h3>
-				<?php $prog_title = $this->truncateProgramTitle($prog->title) ?> 
+				<?php $prog_title = $prog->title; ?> 
 				<?php if ($this->is_today) : ?>
-				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channel_alias, $prog->alias  ); ?>"><?php echo ltrim( trim($prog_title, ':.'), '"'); ?></a>
+				<a href="<?php printf( '/телепрограмма/%s/%s/сегодня', $channelAlias, $prog->alias  ); ?>"><?php echo ltrim( trim($prog_title, ':.'), '"'); ?></a>
 				<?php else : ?>
-				<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channel_alias, $prog->alias, $this->today->toString("yyyy-MM-dd")  ); ?>"><?php echo trim($prog->title, ':') ?></a>
+				<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channelAlias, $prog->alias, $this->today->toString("yyyy-MM-dd")  ); ?>"><?php echo trim($prog->title, ':') ?></a>
 				<?php endif; ?>
 			</h3>
 			
 			<?php if (!empty($prog->sub_title)) : ?>
 			<p class="subtitle"><?php echo $prog->sub_title ?></p>
 			<?php endif; ?>
-			
-			<p class="end"><span class="end_time"><?php echo $prog->end->toString('HH:mm') ?></span></p>
-			
 		</div>
 		
 		<?php if (!empty($prog->desc_intro)) : ?>
@@ -107,70 +146,123 @@ if (!empty($this->programs)) {
 		<p class="desc body"><?php echo $this->truncateString( $prog->desc_body, 100, 'words' ) ?></p>
 		<?php endif; ?>
 		
-		<?php 
 		
-		if ($this->adult_channel !== true ) {
-			if (!Xmltv_String::stristr($prog->title, 'новости')) {
-				$query = array();
-				if (stristr($prog->title, '.')) {
-					$parts = explode('.', $prog->title);
-					$parts = array_reverse($parts);
-					foreach ($parts as $k=>$item) {
-						if (!empty($item))
-						$query[] = trim( $item );
-					}
-				}elseif (stristr($prog->title, ':')) {
-					$parts = explode(':', $prog->title);
-					$parts = array_reverse($parts);
-					foreach ($parts as $k=>$item) {
-						if (!empty($item))
-						$query[] = trim( $item );
-					}
-				}elseif (stristr($prog->title, '-')) {
-					$parts = explode('-', $prog->title);
-					$parts = array_reverse($parts);
-					foreach ($parts as $k=>$item) {
-						if (!empty($item))
-						$query[] = trim( $item );
-					}
-				}  else {
-					$query[]=trim( $prog->title );
-				}
-				//$query[]=$this->channel->title;
-				?>
 				
 				
-				<?php 
-				echo $this->youtubeVideos($query, array(
-					'max_results'=>1,
-					'show_duration'=>false,
-					'show_tags'=>10,
-					'thumb_width'=>200,
-					'safe_search'=>'none',
-					'order'=>'published',
-					'debug'=>false,
-					'link_title'=>true,
-					'truncate_description'=>false), 'content');
-				?>
 				
-				<?php 
-			}
-		} else {
-			//echo $this->teasernet(372424, 'popin');
+		<?php 
+			
+		$query = array();
+		$query = explode(' ', preg_replace('/[^\w\d]/ui', ' ', $prog->title));
+		//var_dump($query);
+		$kwAmount = 3;
+		foreach ($query as $k=>$v) {
+			$word = trim($v);
+			if(!empty($word) && Xmltv_String::strlen($v)>3 )
+				$query[$k] = Xmltv_String::strtolower($v);
+			else
+				unset($query[$k]);
+		}
+		sort($query);
+		//var_dump($query);
+	
+		if ( count($query) > $kwAmount ){
+			$k = (count($query)-1);
+			do {
+				unset($query[$k]);
+				$k--;
+			} while (count($query)>$kwAmount);
 		}
 		
+		//var_dump($query);
+		//die(__FILE__.': '.__LINE__);
+		if (count($query)) {
+		$youtube = new Xmltv_Youtube(array(
+			'max_results'=>3,
+			'order'=>'relevance',
+			'unique_token'=>'program-listing'
+		));
+		$videos = $youtube->fetchVideos($query);
+		
+		//var_dump(count($videos));
+		//die(__FILE__.': '.__LINE__);
+		if (count($videos)) {
+			?>
+			<div class="program-video">
+			<?php 
+			if ($current = $videos->offsetGet(1))  {
+				
+				$videoTitle = $current->getVideoTitle();
+				$videoAlias = $this->videoAlias( $videoTitle );
+				$videoDesc  = $current->getVideoDescription();
+				$videoId    = $this->videoId( $current->getVideoId() );
+				?>
+				
+				<h3>
+					<?php 
+					$link_title = empty($videoDesc) ? $videoTitle. $this->truncateString( $videoDesc, 40, 'letters') : $videoTitle ; 
+					$link_href = "/видео/онлайн/".$videoAlias .'/'. $videoId;
+					?>
+					<a class="video-link" href="<?php echo $link_href; ?>" title="<?php echo $link_title; ?>">
+						<?php echo $videoTitle ?> Видео
+					</a>
+				</h3>
+					
+				<?php 
+				try {
+					$videoThumbnails = $current->getVideoThumbnails();
+				} catch (Exception $e) {
+					echo $e->getMessage();
+				}
+				$k=0;
+				foreach($videoThumbnails as $videoThumbnail) {
+					if ($videoThumbnail['width'] >= 200) {
+						
+						?>
+						<a href="/видео/онлайн/<?php echo $videoAlias .'/'. $videoId ?>">
+							<img src="<?php echo $videoThumbnail['url'] ?>" width="240" alt="<?php echo $videoTitle ?>" />
+						</a>
+						
+						<?php 
+						break;
+					}
+					$k++;
+				}
+				?>
+				
+				<?php if(!empty($videoDesc)) : ?>
+				<p class="video-desc">
+					<?php
+					$desc_short = $this->truncateString( $videoDesc, 40, 'words' );
+					//echo $this->synonimize($desc_short);
+					echo $desc_short; ?>
+				</p>
+				<?php endif; ?>
+				
+				<?php 
+					
+				
+			} 
+			?>
+			</div>	
+			<?php 
+		}
+		}
 		?>
 		
 	</div>
 	<?php 
-} ?>
+	}
+	//die(__FILE__.': '.__LINE__);
+	?>
 	</div>
 	<div id="slides-nav">
-		<a data-slide="prev" href="#programslist" class="left carousel-control btn btn-warning">‹</a>
-		<a data-slide="next" href="#programslist" class="right carousel-control btn btn-warning">›</a>
+		<a data-slide="prev" href="#programslist" class="left carousel-control btn">‹</a>
+		<a data-slide="next" href="#programslist" class="right carousel-control btn">›</a>
 	</div>
 </div>
 <?php
+
 } else {
 ?>
 <p>К сожалению в выбранный вами период программ не найдено. Попробуйте посетить эту страницу позже.</p>
@@ -184,14 +276,14 @@ if (!empty($this->programs)) {
 		$y = $this->today;
 		$y->subDay(1, $y, 'ru'); 
 		?>
-		<a href="<?php printf ('/телепрограмма/%s/%s', $channel_alias, $y->toString('yyyy-MM-dd')) ?>" title="" class="prev">Программы вчера</a>
+		<a href="<?php printf ('/телепрограмма/%s/%s', $channelAlias, $y->toString('yyyy-MM-dd')) ?>" title="" class="btn prev">Программы вчера</a>
 	</div>
 	<div class="next">
 		<?php 
 		$t = $this->today;
 		$t->addDay(2, $t, 'ru');
 		?>
-		<a href="<?php printf ('/телепрограмма/%s/%s', $channel_alias, $t->toString('yyyy-MM-dd')) ?>" style="float:right;" class="next" title="">Программы завтра</a>
+		<a href="<?php printf ('/телепрограмма/%s/%s', $channelAlias, $t->toString('yyyy-MM-dd')) ?>" style="float:right;" class="btn next" title="">Программы завтра</a>
 	</div>
 	
 </div>
@@ -201,9 +293,11 @@ if (!empty($this->programs)) {
 </div>
 
 <?php 
+//die(__FILE__.': '.__LINE__);
+
 if (!empty($this->comments)) { ?>
-<div class="comments">
-	<h3><?php printf('Комментарии пользователей про телеканал "%s"', $this->channel->title) ?></h3>
+<div id="comments">
+	<h3><?php printf('Комментарии пользователей про телеканал "%s"', $channelTitle) ?></h3>
 	<br />
 	<a href="/комменты/новый">Добавить комментарий</a>
 	<?php

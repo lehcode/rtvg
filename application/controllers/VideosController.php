@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.5 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: VideosController.php,v 1.6 2012-08-13 13:20:15 developer Exp $
  *
  */
 class VideosController extends Zend_Controller_Action
@@ -37,16 +37,29 @@ class VideosController extends Zend_Controller_Action
 		
 		if ( $this->_isValidRequest($this->_getParam('action')) ) {  
 			
-			$videos_model = new Xmltv_Model_Videos();
+			//$videos_model = new Xmltv_Model_Videos();
 			
-			$video = $videos_model->getVideo( $this->_getParam('id'), true );
-			$this->view->assign( 'main_video', $video );
+			$youtube = new Xmltv_Youtube();
 			
-			$related = $videos_model->getRelatedVideos( $video );
-			$this->view->assign( 'related_videos', $related );
+			try {
+				$video = $youtube->fetchVideo( $this->_decodeId( $this->_getParam( 'id' )));
+				$this->view->assign( 'main_video', $video );
+			} catch (Exception $e) {
+				echo $e->getMessage();
+			}
+			
+			try {
+				$related = $youtube->fetchRelated( $video->getVideoId() );
+				$this->view->assign( 'related_videos', $related );
+			} catch (Exception $e) {
+				echo $e->getMessage();
+			}
+			
+			
+			$this->view->assign( 'pageclass', 'show-video' );
 			
 		} else {
-			exit("Неверные данные");
+			$this->_redirect('/горячие-новости', array('exit'=>true));
 		}
 		
 	}
@@ -84,15 +97,12 @@ class VideosController extends Zend_Controller_Action
 	public function showTagAction(){
 		
 		//var_dump($this->_getAllParams());
+		//die(__FILE__.': '.__LINE__);
 		
 		if ( $this->_isValidRequest( $this->_getParam( 'action' ) )) { 
-			$safeTag = Xmltv_SafeTag::convertTitle($this->_getParam( 'tag' ));
-			//var_dump($safeTag);
-			//$videos  = new Xmltv_Model_Videos();
-			//$tag = Controller_Helper_SafeTag::convertTitle(   $this->_getParam( 'tag' ));
-			//var_dump($tag);
-			//die(__FILE__.': '.__LINE__);
-			$this->view->assign('video_data', array($safeTag));
+			$this->view->assign( 'pageclass', 'show-tag' );
+			$this->view->assign( 'tag', base64_decode( $this->_getParam( 'p' ) ) );
+			$this->view->assign( 'tag-alias', $this->_getParam( 'tag' ) );
 		} else {
 			exit("Неверные данные");
 		}
@@ -147,6 +157,15 @@ class VideosController extends Zend_Controller_Action
     	$this->_redirect('/горячие-новости' );
     	
     }
+    
+	private function _decodeId($input=null){
+		
+		if (!$input)
+		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		return base64_decode( strrev($input).'=');
+		
+	}
     
 	
 }

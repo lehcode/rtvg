@@ -4,49 +4,78 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.6 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: program-week.phtml,v 1.7 2012-08-13 13:20:15 developer Exp $
  *
  */
 
-$programTitle = @isset($this->list[0]) ? $this->escape( $this->list[0]['title'] ) : '';
-$weekStart    = $this->escape( $this->dates['start']->toString('EEEE, d MMMM'));
-$weekEnd      = $this->escape( $this->dates['end']->toString('EEEE, d MMMM'));
+//var_dump($this->program);
+//die(__FILE__.': '.__LINE__);
+
+$programTitle = $this->escape( $this->program->title );
+$programAlias = $this->escape( $this->program->alias );
 $channelTitle = @isset($this->channel->title) ? $this->escape( $this->channel->title ) : '' ;
 $channelAlias = @isset($this->channel->alias) ? $this->escape( Xmltv_String::strtolower( $this->channel->alias )): '' ;
-
 ?>
 
 <div id="fast_search">
-	<?php $form = new Xmltv_Form_FastChannelSearchForm(); echo $form; ?>
+	<?php
+	$form = new Xmltv_Form_FastChannelSearchForm();
+	echo $form;
+	?>
 </div>
-<h4><?php echo $weekStart; ?> - <?php echo $weekEnd; ?></h4>
-<h1><?php printf('<i>«%s»</i><br />на канале <i>«%s»</i>', $programTitle, $channelTitle) ?></h1>
 
-<?php 
-$startDates = array();
-foreach ($this->list as $single) {
-	$singleAlias = $this->escape($single['alias']);
-	$start = new Zend_Date( $single['start']);
-	$startDates[]= '<li><a href="/телепрограмма/'.$channelAlias.'/'.$singleAlias.'/'.$this->escape( $start->toString('yyyy-MM-dd') ).'#'.$start->toString('U').'">'.$this->escape( Xmltv_String::ucfirst( $start->toString( 'd MMMM (EEEE) в HH:mm'))).'</a></li>';
-}
+
+
+<h1>
+	<i><?php echo $programTitle ?></i> на канале <i><?php echo $channelTitle ?></i>
+</h1>
+
+<p>
+	<?php echo Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') ) ?> - <?php echo Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') ); ?>
+</p>
+
+<h2>
+	<a href="/телепрограмма/<?php echo $channelAlias ?>" title="Телепрограмма <?php echo $channelTitle ?> на <?php echo $this->escape($this->program->start->toString('d MMM YYYY')) ?>">
+		Программа передач <?php echo $channelTitle; ?> сегодня
+	</a>
+</h2>
+
+
+<?php  
+/**
+ * If not found
+ */
+if (@isset($this->notfound) && $this->notfound===true) {
 ?>
+<p>
+	На этой неделе программу <em><?php echo $programTitle ?></em> показывать позже не будут. Но мы нашли похожие программы, которые возможно вас заинтересуют.
+</p>
 
-<?php  if (!empty($startDates)) : ?>
-<p><?php printf('На этой неделе вы можете посмотреть программу <b>«%s»</b> на канале <a href="%s">«%s»</a> в следующие дни:<br/>%s', $programTitle, '/телепрограмма/'.$channelAlias, $channelTitle, '<ul class="nav nav-tabs nav-stacked">'.implode(PHP_EOL, $startDates)).'</ul>' ?></p>
-<?php else : ?>
-<p><?php printf("На этой неделе программу <b>«%s»</b> показывать позже не будут.", $programTitle) ?></p>
-<?php endif; ?>
-
-<?php /*
 <table class="table table-condensed">
+	<thead>
+		<tr>
+			<th>Время начала</th>
+			<th>Программа</th>
+			<th>Канал</th>
+		</tr>
+	</thead>
 	<tbody>
 		<?php
 		foreach ($this->list as $single) {
-		$start = new Zend_Date($single['start']);
-		?>
+			$program_start = new Zend_Date($single->start, 'YYYY-MM-dd HH:mm:ss' );
+			$program_title = $single->title;
+			$program_alias = $single->alias;
+			$channel_title = $single->channel_title;
+			$channel_alias = $single->channel_alias;
+			?>
 		<tr>
-			<td><?php echo Xmltv_String::ucfirst( $start->toString( 'EEEE, d MMMM', null, 'ru' ) ); ?></td>
-			<td><?php echo $single['title'] ?></td>
+			<td><?php echo Xmltv_String::ucfirst( $program_start->toString( 'dd MMM в HH:mm', null, 'ru' ) ); ?></td>
+			<td><?php echo $single->title ?></td>
+			<td>
+				<a href="/телепрограмма/<?php echo $channel_alias.'/'.$program_alias.'/'.$program_start->toString("YYYY-MM-dd").'/?layout=list#'.$program_start->toString("U"); ?>" target="_blank" title="Программа <?php echo $program_title ?> на канале <?php echo $channel_title.' '.$program_start->toString('EEEE, d YYYY') ?>">
+					<?php echo $channel_title ?>
+				</a>
+			</td>
 		</tr>
 		
 		<?php 
@@ -54,4 +83,32 @@ foreach ($this->list as $single) {
 ?>
 	</tbody>
 </table>
-*/ ?>
+
+<?php
+} else {
+	/**
+	 * If found
+	 */
+	$startDates = array();
+	foreach ($this->list as $single) {
+		//var_dump($single);
+		//die();
+		$singleAlias = $this->escape( $single->alias );
+		//$start = $single->start->toString( 'YYYY-MM-dd HH:mm' );
+		$startDates[]= '<li><a href="/телепрограмма/'.$channelAlias.'/'.$singleAlias.'/'.$this->escape( $single->start->toString('yyyy-MM-dd') ).'">'.$this->escape( Xmltv_String::ucfirst( $single->start->toString( 'EEEE, d MMMM в HH:mm'))).'</a></li>';
+	}
+	?>
+
+<p>
+	На этой неделе вы можете посмотреть программу <b><?php echo $programTitle ?></b> на канале <a href="<?php echo '/телепрограмма/'.$channelAlias ?>" title="<?php echo $programTitle ?>"><i>«<?php echo $channelTitle ?>»</i></a> в следующие дни:
+	<br/>
+	<ul class="nav nav-tabs nav-stacked">
+		<?php echo implode(PHP_EOL, $startDates); ?>
+	</ul>
+</p>
+
+<?php 
+} ?>
+
+ 
+

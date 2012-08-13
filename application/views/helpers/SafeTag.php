@@ -12,14 +12,19 @@ class Zend_View_helper_SafeTag extends Zend_View_Helper_Abstract
 		$trim       = new Zend_Filter_StringTrim(' -');
 		//$regex      = new Zend_Filter_PregReplace(array("match"=>'/[^\w]+/u', 'replace'=>' '));
 		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
-		$tolower    = new Zend_Filter_StringToLower();
+		//$tolower    = new Zend_Filter_StringToLower();
 		$doubledash = new Zend_Filter_PregReplace(array("match"=>'/[-]{2,}/', 'replace'=>'-'));
 		
 		//var_dump($tag);
 		//var_dump($regex->filter($tag));
 		//die(__FILE__.': '.__LINE__);
 		
-		$result = preg_replace('/[^0-9\p{Cyrillic}\p{Latin}]+/u', ' ', $tag);
+		$result = $tag;
+		
+		//var_dump($tag);
+		
+		$result = preg_replace('/[^\p{Cyrillic}\p{Latin}0-9 -]+/u', ' ', $tag);
+		
 		
 		if (@$_GET[d]==1) {
 			//var_dump($tag);
@@ -27,9 +32,13 @@ class Zend_View_helper_SafeTag extends Zend_View_Helper_Abstract
 			//die(__FILE__.': '.__LINE__);
 		}
 		
-		$result = $tolower->filter( $trim->filter( $doubledash->filter( $separator->filter( $result ))));
+		$result = Xmltv_String::strtolower( $trim->filter( $doubledash->filter( $separator->filter( $result ))));
 		
-		return $result;
+		$escape = new Zend_Filter_HtmlEntities();
+		
+		//var_dump($escape->filter($result));
+		
+		return $escape->filter($result);
 		
 	}
 }

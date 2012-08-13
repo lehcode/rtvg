@@ -18,6 +18,35 @@ class Xmltv_Model_Programs
 		
 	}
 	
+	public function getByAlias($alias='', $channel_id=null, Zend_Date $date){
+		
+		$where = array(
+			"alias LIKE '%$alias%'",
+			"start >= '".$date->toString('YYYY-MM-dd HH:mm:00')."'"
+		);
+		if ($channel_id) {
+			$where[] = "ch_id='".$channel_id."'";
+		}
+		
+		//var_dump($where);
+		//die(__FILE__.': '.__LINE__);
+		
+		return $this->_table->fetchRow($where, 'start DESC');
+		
+	}
+	
+	public function getCategoryForPeriod(Zend_Date $start=null, Zend_Date $end=null, $type=0){
+	
+		if (!is_a($start, 'Zend_Date'))
+			return;
+		if (!is_a($end, 'Zend_Date')) {
+			$end = new Zend_Date(null, null,'ru');
+		}
+		
+		die(__FILE__.': '.__LINE__);
+			
+	}
+	
 	public function getProgramsForDay(Zend_Date $date=null, $ch_id=null){
 		
 		//var_dump($date->toString('yyyy-MM-dd'));
@@ -118,16 +147,43 @@ class Xmltv_Model_Programs
 		
 	}
 	
-	
-	public function getProgramThisWeek ($prog_alias=null, $channel_alias=null, Zend_Date $date) {
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param string $program_alias
+	 * @param Zend_Date $date
+	 */
+	public function getSimilarProgramsThisWeek($program_alias='', Zend_Date $date){
 		
-		if(  !$prog_alias ||  !$channel_alias )
-		throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
+		//var_dump(func_get_args());
+		//die(__FILE__.': '.__LINE__);
+		
+		if (empty($program_alias)) {
+			throw new Zend_Exception(__METHOD__." - Empty program alias");
+			return false;
+		}
+		$a = array();
+		if (strstr($program_alias, '-'))
+			$a = explode('-', $program_alias);
+		else 
+			$a[]=$program_alias;
+		
+		//var_dump(func_get_args());
+		//die(__FILE__.': '.__LINE__);	
+			
+		return $this->_table->fetchSimilarProgramsThisWeek($a, $date);
+		
+	}
+	
+	public function getProgramThisWeek ($prog_alias=null, $channel_id=null, Zend_Date $date) {
+		
+		if(  !$prog_alias ||  !$channel_id )
+			throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
 		
 		if (!$date)
-		$date = new Zend_Date(null, null, 'ru');
+			$date = new Zend_Date(null, null, 'ru');
 		
-		$result = $this->_table->fetchProgramThisWeek($prog_alias, $channel_alias, $date);
+		$result = $this->_table->fetchProgramThisWeek($prog_alias, $channel_id, $date);
 		
 		$actors         = array();
 		$directors      = array();
@@ -137,17 +193,20 @@ class Xmltv_Model_Programs
 		
 		foreach ($result as $k=>$r) {
 			
-			if (!empty($r['actors'])) {
-				$ids = $serializer->unserialize($r['actors']);
-				$result[$k]['actors'] = $actorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
+			if (!empty($r->actors)) {
+				$ids = $serializer->unserialize($r->actors);
+				$r->actors = $actorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
 			}
 			
-			if (!empty($r['directors'])) {
-				$ids = $serializer->unserialize($r['directors']);
-				$result[$k]['directors'] = $directorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
+			if (!empty($r->directors)) {
+				$ids = $serializer->unserialize($r->directors);
+				$r->directors = $directorsTable->fetchAll("`id` IN ( ".implode(',', $ids)." )")->toArray();
 			}
 			
 		}
+		
+		//var_dump($result);
+		//die(__FILE__.': '.__LINE__);
 		
 		return $result;
 		

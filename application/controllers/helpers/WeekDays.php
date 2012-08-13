@@ -1,5 +1,5 @@
 <?php
-class Xmltv_Controller_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {
+class Zend_Controller_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {
 	
 	/**
      * @var Zend_Loader_PluginLoader
@@ -21,10 +21,12 @@ class Xmltv_Controller_Helper_WeekDays extends Zend_Controller_Action_Helper_Abs
     	if (!$date)
 		$date = new Zend_Date(null, null, 'ru');
 		
-		do{
-			if ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1)
-			$date->subDay(1);			
-		} while ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1);
+		if ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
+			do{
+				$date->subDay(1);
+				//var_dump($date->toString(Zend_Date::WEEKDAY_DIGIT));			
+			} while ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1);
+		}
 		
 		return $date;
     	
@@ -36,9 +38,11 @@ class Xmltv_Controller_Helper_WeekDays extends Zend_Controller_Action_Helper_Abs
     	if (!$date)
 		$date = new Zend_Date();
 		
-		do{
-			$date->addDay(1);
-		} while ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1);
+		if ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+			do{
+				$date->addDay(1);
+			} while ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0);
+   		}
 		$date->sub(1, Zend_Date::MINUTE);
 		
 		return $date;
@@ -46,6 +50,9 @@ class Xmltv_Controller_Helper_WeekDays extends Zend_Controller_Action_Helper_Abs
     }
     
     public function direct($params=array()){
+    	
+    	//var_dump( func_get_args() );
+    	//die(__FILE__.': '.__LINE__);
     	
     	if (empty($params))
     	throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);

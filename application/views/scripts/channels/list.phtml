@@ -1,38 +1,51 @@
 <?php 
+$this->headTitle( 'Программа всех каналов телевидения на сегодня и текущую неделю.' );
 $this->headMeta()->setName('title', 'Телепрограмма всех каналов');
 $this->headScript()->appendFile('/js/channellist.js');
 $this->headStyle()->appendStyle('p.channeltitle { margin: 0 0 12px; }');
 $tolower = new Zend_Filter_StringToLower(array('encoding'=>'UTF-8'));
 
 //var_dump($this->channels);
-
 ?>
+
+<?php  if (!$this->category) { ?>
 <div id="fastsearch-wrap">
-	<label for="channel_filter">Быстрый переход</label>
+	<label for="channel_filter" class="mediumheading">Быстрый переход</label>
 	<input type="text" name="fast_search" data-provide="typeahead" />
-	<div style="font-size: x-small;">Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.</div>
+	<div style="font-size: x-small;line-height: 1em;">Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.</div>
 </div>
+<?php } else { ?>
+<div id="fastsearch-wrap">
+	<?php $form = new Xmltv_Form_FastChannelSearchForm(); echo $form; ?>
+</div>
+<?php 
+}?>
+
+
 <div id="xmltv">
 	
 	<?php if (isset($this->cat_title)): ?>
 	<h2><?php echo $this->cat_title; ?></h2>
 	<?php endif; ?>
 
+	<h4>Всего каналов:&nbsp;<?php echo count($this->channels); ?></h4>
+
 	<div id="channels">
+	
 		<?php
 		foreach ($this->channels as $channel) {  ?>
-		<h3 class="channeltitle" id="#channeltitle<?php echo $channel['ch_id'] ?>">
-			<img class="channelicon" width="40" src="<?php echo $channel['icon'] ?>" alt="<?php printf('%s лого', $tolower->filter($channel['title'])) ?>" />
-			<?php echo $channel['title'] ?>
-			<?php /* <a class="btn btn-mini btn-inverse moreaboutchannel" href="#channeldesc<?php echo $channel['ch_id'] ?>" title="<?php printf('Информация про телеканал %s', $channel['title'])?>">Больше об этом телеканале</a> */ ?>
+		<h3 class="channeltitle" id="#channeltitle<?php echo $channel->ch_id ?>">
+			<img class="channelicon" width="40" src="<?php echo $channel->icon ?>" alt="<?php printf('%s лого', $tolower->filter($channel->title)) ?>" />
+			<?php echo $channel->title ?>
+			<?php /* <a class="btn btn-mini btn-inverse moreaboutchannel" href="#channeldesc<?php echo $channel->ch_id ?>" title="<?php printf('Информация про телеканал %s', $channel->title)?>">Больше об этом телеканале</a> */ ?>
 		</h3>
-		<?php /* <span class="channellanchor" id="#channeltitle<?php echo $channel['ch_id'] ?>"><?php echo $channel['title'] ?></span> */ ?>
+		<?php /* <span class="channellanchor" id="#channeltitle<?php echo $channel->ch_id ?>"><?php echo $channel->title ?></span> */ ?>
 		<div class="channeldesc">
-			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel['alias']); ?>" title="<?php printf('Телепрограмма канала %s на сегодня', $channel['title']) ?>">
-				Программа на сегодня<?php //printf('%s сегодня', $channel['title']) ?>
+			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel->alias); ?>" title="<?php printf('Телепрограмма канала %s на сегодня', $channel->title) ?>">
+				Программа на сегодня<?php //printf('%s сегодня', $channel->title) ?>
 			</a>
-			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel['alias']); ?>/неделя" title="<?php printf('Телепрограмма канала %s на неделю', $channel['title']) ?>">
-				Программа на неделю<?php //printf('%s на неделю', $channel['title']) ?>
+			<a class="btn btn-small" href="<?php echo '/телепрограмма/'.$tolower->filter($channel->alias); ?>/неделя" title="<?php printf('Телепрограмма канала %s на неделю', $channel->title) ?>">
+				Программа на неделю<?php //printf('%s на неделю', $channel->title) ?>
 			</a>
 			<?php 
 			/*
@@ -41,11 +54,11 @@ $tolower = new Zend_Filter_StringToLower(array('encoding'=>'UTF-8'));
 			</a> 
 			*/ ?>
 			<?php /* <a class="channelweek btn btn-info btn-mini" href="<?php echo JRoute::_($channel->week_link) ?>" title="<?php echo ucfirst( JText::sprintf('COM_XMLTV_CHANNEL_THIS_WEEK', $channel->display_name)) ?>"><?php echo ucfirst( JText::_('COM_XMLTV_PROGRAMS_CURRENT_WEEK')) ?></a> */ ?>
-			<h3>
-				<?php echo strip_tags($channel['desc_intro']) ?>
-			</h3>
+			<h4>
+				<?php echo strip_tags($channel->desc_intro) ?>
+			</h4>
 			<p>
-				<?php echo $this->truncateString( strip_tags($channel['desc_body']), 38, 'words'); ?>
+				<?php echo $this->truncateString( strip_tags($channel->desc_body), 38, 'words'); ?>
 			</p>
 		</div>
 	

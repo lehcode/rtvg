@@ -1374,7 +1374,7 @@ class Admin_Model_Programs
 	public function parseProgramXml($xml=null){
 		
 		if( !$xml )
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
+			throw new Exception(__METHOD__." - Не передан XML файл для обработки.", 500);
 		
 		$info    = array();
 		$attrs   = $xml->attributes();
@@ -1399,8 +1399,14 @@ class Admin_Model_Programs
 		/*
 		 * category
 		 */
+		
+		
 		$cat_title = @isset($xml->category) ? (string)$xml->category : 0 ;
 		$info = $this->setProgramCategory($info, $cat_title);
+		
+		//var_dump($info);
+		//var_dump($xml->category);
+		//die(__FILE__.': '.__LINE__);
 		
 		$info ['title'] = (string)$xml->title;
 		$info ['alias'] = $this->_makeAlias((string)$xml->title);

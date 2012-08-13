@@ -1,16 +1,17 @@
 <?php
 defined('APP_STARTED') or die();
-class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
+
+class Admin_Model_DbTable_ProgramsArchive extends Zend_Db_Table_Abstract
 {
 
-    protected $_name = 'rtvg_programs';
+    protected $_name = 'rtvg_programs_archive';
     protected $_profiling = false;
     
     const FETCH_MODE = Zend_Db::FETCH_OBJ;
     
     public function __construct($config=array()){
     	parent::__construct( $config );
-    	$this->_profiling = Xmltv_Config::getProfiling();
+    	//$this->_profiling = Xmltv_Config::getProfiling();
     	
     }
 
@@ -44,10 +45,6 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			$weekEnd = $end;
 		}
 		
-		//var_dump($weekStart->toString('YYYY-mm-dd'));
-		//var_dump($weekEnd->toString('YYYY-mm-dd'));
-		//exit();
-		
     	$select = $this->_db->select();
 		$select->from($this->_name, array('count(*) as amount'))
 			->where("`start`>='".$weekStart->toString('yyyy-MM-dd')."' AND `start`<'".$weekEnd->toString('yyyy-MM-dd')." 23:59:59'");
@@ -55,6 +52,8 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			$result = $this->_db->fetchAll($select);
 		} catch (Exception $e) {
 			echo $e->getMessage();
+			
+			//var_dump($e->getTrace());
 			die(__FILE__.': '.__LINE__);
 			
 		}
@@ -64,10 +63,8 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			echo 'Method: '.__METHOD__.'<br />Query: '.$query->getQuery().'<br />';
 		}
 		*/
-		
 		//var_dump($result);
-		
-		return (int)$result[0]->amount;
+		return (int)$result[0]['amount'];
     }
 
     public function deleteProgramsWithInfo(Zend_Date $start, Zend_Date $end){

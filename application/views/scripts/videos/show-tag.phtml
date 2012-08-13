@@ -1,44 +1,48 @@
 <?php 
-$this->headTitle( sprintf("Онлайн-видео: %s", implode(' ', $this->video_data)));
-
+$this->headTitle( sprintf("Онлайн-видео: %s", $this->tag ));
 ?>
 
 
-<h1><?php printf("10 новых видео на тему «%s»", implode(' ', $this->video_data)) ?></h1>
+<h1>
+	<?php printf("10 новых видео на тему «%s»", $this->tag) ?>
+</h1>
 
 <?php
 
-//var_dump(implode(' ', $this->video_data));
-/*
-$videos = $this->youtubeVideos($this->video_data, array(
+$ytConfig = array(
 	'max_results'=>10,
-	'show_duration'=>true,
-	'show_tags'=>10,
-	'thumb_width'=>400,
-	'safe_search'=>'strict',
-	'order'=>'published',
-	'link_title'=>true,
-	'collapse'=>false,
-	'description_links'=>'add',
-	'truncate_description'=>true), 'content');
-*/
-$ytConfig = array( 'max_results'=>10, 'safe_search'=>'strict', 'order'=>'published' );
-if (Xmltv_Config::getDebug()===true) $ytConfig['debug']=true;
+	'safe_search'=>'none',
+	'order'=>'published'
+);
+
+//$ytConfig['debug']=true;
+
 $yt = new Xmltv_Youtube( $ytConfig );
-$videos = $yt->fetchVideos( $this->video_data );
-//var_dump($videos);
+
+if (strstr($this->tag, ' ')) {
+	$queryData = explode(' ', $this->tag);
+} else {
+	$queryData = array($this->tag);
+}
+$videos = $yt->fetchVideos( $queryData );
+
 ?>
 
-<div class="page videos">
+
 <?php if (!count( $videos) ) { ?>
 <p>К сожалению на эту тему видео не найдено</p>
 <?php 
 } else {
+	//var_dump($videos->getEntry());
 	$k=0;
-	foreach ($videos as $videoEntry) {
+	for ($i=1; $i<count($videos); $i++) {
+		
+		$videoEntry = $videos->offsetGet($i);
+		if (!is_a($videoEntry, 'Zend_Gdata_YouTube_VideoEntry'))
+			continue;
 		
 		if ($k==0)
-		$this->headMeta()->setName( 'description', $this->truncateString( htmlspecialchars( $videoEntry->getVideoDescription()), 12, 'words'));
+			$this->headMeta()->setName( 'description', $this->truncateString( htmlspecialchars( $videoEntry->getVideoDescription()), 12, 'words'));
 		
 		$videoProps = array();
 		
@@ -84,57 +88,60 @@ $videos = $yt->fetchVideos( $this->video_data );
 		//die(__FILE__.': '.__LINE__);
 		?>
 		
-	<div class="video tag">
-		<div class="infowrap">
-		
-			<div class="videothumb">
+		<div class="videocell">
+			
+			<h3 class="title">
 				<a href="/видео/онлайн/<?php echo $videoProps['alias'] ?>/<?php echo $videoProps['id'] ?>">
-					<img align="right" width="<?php echo $videoProps['thumb']['width'] ?>" src="<?php echo $videoProps['thumb']['url'] ?>" alt="<?php echo $videoProps['title'] ?>" />
+					<?php echo $videoProps['title'] ?>
 				</a>
-				<p class="video-category">Категория: 
-					<?php if ($videoProps['link_category']===true) : ?>
-					<a href="/каналы/<?php echo Xmltv_String::strtolower( $videoProps['category'] ) ?>" target="_blank" title="<?php echo $videoProps['category'] ?> каналы телепрограмма"><?php echo $videoProps['category'] ?></a>
-					<?php else: ?>
-					<?php echo $videoProps['category'] ?>
-					<?php endif; ?>
-				</p>
-				<p class="video-date">
-					<?php echo $videoProps['date'] ?>
-				</p>
-			</div>
+			</h3>
 			
-				<h3 class="video-title">
-					<a href="/видео/онлайн/<?php echo $videoProps['alias'] ?>/<?php echo $videoProps['id'] ?>">
-						<?php echo $videoProps['title'] ?>
+			<a class="imagelink" href="/видео/онлайн/<?php echo $videoProps['alias'] ?>/<?php echo $videoProps['id'] ?>">
+				<img width="<?php echo $videoProps['thumb']['width'] ?>" src="<?php echo $videoProps['thumb']['url'] ?>" alt="<?php echo $videoProps['title'] ?>" />
+			</a>
+			
+			<p class="cat">Категория: 
+				<?php if ($videoProps['link_category']===true) : ?>
+				<a href="/каналы/<?php echo Xmltv_String::strtolower( $videoProps['category'] ) ?>" target="_blank" title="<?php echo $videoProps['category'] ?> каналы телепрограмма"><?php echo $videoProps['category'] ?></a>
+				<?php else: ?>
+				<?php echo $videoProps['category'] ?>
+				<?php endif; ?>
+			</p>
+			<p class="pub">
+				<?php echo $videoProps['date'] ?>
+			</p>
+			
+				
+				
+			<?php
+			if (!empty($videoProps['desc'])) {
+				?>
+			<p class="desc">
+				<?php echo $this->truncateString( $videoProps['desc'], 50, 'words') ?>
+			</p>
+				<?php 
+			} ?>
+			
+		
+			<ul class="tags">
+			<?php 
+			foreach ($videoProps['tags'] as $tag) {
+				$safeTag = Xmltv_String::strtolower( $this->safeTag($tag) );
+				$fullTag = $this->escape($tag);
+				?>
+				<li>
+					<a class="badge badge-important" href="/видео/тема/<?php echo $safeTag ?>?p=<?php echo urlencode( base64_encode( $fullTag )) ?>" target="_blank" title="Онлайн-видео на тему <?php echo $fullTag ?>">
+						<?php echo $fullTag ?>
 					</a>
-				</h3>
+				</li>
+			<?php 
+			} ?>
+			</ul>
 				
-				<?php
-				if (!empty($videoProps['desc'])) {
-					?>
-				<p class="desc">
-					<?php echo $videoProps['desc'] ?>
-				</p>
-					<?php 
-				} ?>
-				
-			
-			<div class="video-tags">
-				Темы этого видео
-				<ul class="btn-group">
-				<?php foreach ($videoProps['tags'] as $tag) :
-				$tag =  Xmltv_String::strtolower($tag); ?>
-					<li class="btn"><a href="/видео/тема/<?php echo $this->safeTag( $tag ) ?>" target="_blank" title="Виде онлайн на тему <?php echo $tag ?>"><?php echo $tag ?></a></li>
-				<?php endforeach; ?>
-				</ul>
-				
-			</div>
 			
 			
 		</div>
-	</div>
 	<?php 
 	}
 }
 ?>
-</div>

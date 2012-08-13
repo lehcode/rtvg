@@ -7,6 +7,9 @@ class Xmltv_Youtube {
 	private $_order='relevance_lang_ru';
 	private $_maxResults=5;
 	private $_startIndex=1;
+	private $_cacheSubfolder='';
+	private $_operator='+';
+	private $_language='ru';
 	
 	/**
 	 * 
@@ -14,6 +17,8 @@ class Xmltv_Youtube {
 	 * @param array $config
 	 */
 	function __construct($config=array()){
+		
+		//var_dump($config);
 		
 		if (isset($config['safe_search']) && !empty($config['safe_search']))
 			$this->_safeSearch = (string)$config['safe_search'];
@@ -32,11 +37,96 @@ class Xmltv_Youtube {
 
 		if (isset($config['start_index']) && !empty($config['start_index']))
 			$this->_startIndex = intval( $config['start_index'] );
+
+		if (isset($config['cache_subfolder']) && !empty($config['cache_subfolder']))
+			$this->_cacheSubfolder = '/'.$config['cache_subfolder'];
+
+		if (isset($config['operator']) && !empty($config['operator']))
+			$this->_operator = (string)$config['operator'];
+
+		if (isset($config['language']) && !empty($config['language']))
+			$this->_language = (string)$config['language'];
 			
-		if ($this->_debug===true) {
-			//var_dump($config);
-		}
+		
+			
+		
 				
+	}
+	
+	public function fetchVideo($vid=null){
+		
+		if (!$vid)
+		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		/*
+		if ((bool)$decode===true) {
+			$id = $this->_decodeId($id);
+		}
+		*/
+		
+		//var_dump(func_get_args());
+		//var_dump($id);
+		//die(__FILE__.': '.__LINE__);
+		
+		$yt = new Zend_Gdata_YouTube();
+		$yt->setMajorProtocolVersion(2);
+		
+		try {
+			if (Xmltv_Config::getCaching()){
+				$cache = new Xmltv_Cache();
+				$hash = $cache->getHash( __FUNCTION__.'_'.$vid);
+				if (!$result = $cache->load($hash, 'Function')) {
+					$result = $yt->getVideoEntry($vid);
+					$cache->save($result, $hash, 'Function');
+				}
+			} else {
+				$result = $yt->getVideoEntry($vid);
+			}
+		} catch (Exception $e) {
+			echo $e->getMessage();
+			exit();
+		}
+		
+		return $result;
+		//die(__FILE__.': '.__LINE__);
+		
+	}
+	
+	public function fetchRelated($vid=null){
+		
+		if (!$vid) {
+			throw new Exception("Не задан параметр поиска видео");
+			return false;
+		}
+		
+		//var_dump($vid);
+		//die(__FILE__.": ".__LINE__);
+			
+		$yt = new Zend_Gdata_YouTube();
+		$yt->setMajorProtocolVersion(2);
+		
+		try {
+			
+			$cache = new Xmltv_Cache();
+			$hash = $cache->getHash( __FUNCTION__.'_'.$vid);
+			
+			if (Xmltv_Config::getCaching()){
+				if (!$result = $cache->load($hash, 'Function')) {
+					$result = $yt->getRelatedVideoFeed($vid);
+					$cache->save($result, $hash, 'Function');
+				}
+			} else {
+				$result = $yt->getRelatedVideoFeed($vid);
+			}
+		} catch (Exception $e) {
+			echo $e->getMessage();
+		}
+		
+		//var_dump($result);
+		//die(__FILE__.": ".__LINE__);
+		
+		return $result;
+	
 	}
 	
 	/**
@@ -48,21 +138,30 @@ class Xmltv_Youtube {
 	 */
 	public function fetchVideos($data=array(), $html_output=false){
 		
-		if (!count($data))
+		//var_dump(func_get_args());
+		//die(__FILE__.': '.__LINE__);
+		
+		if (count($data)<1)
 			throw new Exception("Не задан параметр поиска видео");
 		
 		$yt = new Zend_Gdata_YouTube();
 		$yt->setMajorProtocolVersion(2);
+		/*
+		 * Zend_Gdata_YouTube_VideoQuery
+		 */
 		$query = $yt->newVideoQuery();
 		$query->setMaxResults($this->_maxResults);
-		$query->setStartIndex($this->_startIndex);
 		$query->orderBy = $this->_order;
-		$query->setSafeSearch($this->_safeSearch);
-		$query->setParam('lang', 'ru');
+		//$query->setSafeSearch($this->_safeSearch);
+		$query->setParam( 'lang', $this->_language );
+		
+		if ($this->_startIndex>1)
+			$query->setStartIndex($this->_startIndex);
 		
 		/*
 		 * Cleanup query items
 		 */
+		/*
 		$colon  = new Zend_Filter_PregReplace(array( 'match'=>'/[:]/', 'replace'=>'|' ));
 		$trim   = new Zend_Filter_StringTrim(' ,."\'`|');
 		$quotes = new Zend_Filter_Word_SeparatorToSeparator( '"', '' );
@@ -76,10 +175,26 @@ class Xmltv_Youtube {
 		if ($this->_debug===true) {
 			//var_dump($qs);
 		}
+		*/
+		foreach ($data as $k=>$word) {
+			if ( Xmltv_String::strlen($word) <=2 ) {
+				unset($data[$k]);
+			} elseif ( is_numeric($word) ) {
+				unset($data[$k]);
+			} else {
+				$data[$k] = trim( Xmltv_String::strtolower( $data[$k] ));
+			}
+		}
+		$qs = implode($this->_operator, $data);
 		
 		$query->setVideoQuery($qs);
 		
-		$cacheSubfolder = 'Youtube';
+		if ($this->_debug) {
+			var_dump($qs);
+			var_dump($query->getQueryUrl());
+		}
+		
+		$cacheSubfolder = 'Youtube'.$this->_cacheSubfolder;
 		$cache = new Xmltv_Cache(array('location'=>"/cache/$cacheSubfolder"));
 		$hash = $cache->getHash( __FUNCTION__.'_'.md5($qs.$this->_uniqueToken));
 		if (Xmltv_Config::getYoutubeCaching()){
@@ -91,29 +206,71 @@ class Xmltv_Youtube {
 			$videos = $yt->getVideoFeed($query->getQueryUrl(2));
 		}
 		
+		//var_dump(count($videos));
 		//die(__FILE__.': '.__LINE__);
+		
+		
+		
+		//var_dump(count($videos));
+		//var_dump($videos->offsetExists(1));
+		//var_dump($videos->offsetGet(1));
+		//die(__FILE__.': '.__LINE__);
+		$offset=0;
+		if (count($videos)) {
+			foreach ($videos as $k=>$v) {
+				//$offset++;
+				//if (@$videos->offsetExists($offset)) {
+					//$current = $videos->current();
+					//if ($current) {
+						//
+						$desc = $v->getVideoDescription();
+						if (!empty($desc)) {
+							
+							if (self::isPorn($desc))
+							$videos->offsetUnset($offset);
+							//if (!self::isRussian($desc))
+							//$videos->offsetUnset($offset);
+							
+						}
+						
+						$title = $v->getVideoTitle();
+						if (!empty($title)) {
+							
+							if (self::isPorn($title))
+							$videos->offsetUnset($offset);
+							//if (!self::isRussian($title))
+							//$videos->offsetUnset($offset);
+							
+						}
+						
+						if (!preg_match('/\p{Cyrillic}+/ui', $title))
+						$videos->offsetUnset($offset);
+						
+						
+					//}
+					//$offset++;
+				//}
+				$offset++;
+			}
+		} else 
+		return null;
+		
 		
 		if ((bool)$html_output===true) {
 			return $this->getHtml($videos);
 		}
 		
-		//var_dump(count($videos));
+		return $videos;
+			
+	}
+	
+	public static function isPorn($title=''){
 		
-		if (count($videos)) {
-			foreach ($videos as $v) {
-				$desc = @$v->getVideoDescription();
-				if (!empty($desc)) {
-					if (!self::descIsRussian($desc))
-					unset($v);
-				}
-			}
-			
-			//var_dump($videos);
-			//die(__FILE__.': '.__LINE__);
-			return $videos;
-		} else 
-		return null;
-			
+		if ( preg_match('/анал|порн|эрот|проститут|sex|секс/ui', $title))
+		return true;
+		
+		return false;
+		
 	}
 	
 	public function getHtml($input=null){
@@ -123,12 +280,12 @@ class Xmltv_Youtube {
 	
 	}
 	
-	public static function descIsRussian($desc=''){
+	public static function isRussian($desc=''){
 		
-		if (!preg_match('/\p{Cyrillic}+/ui', $desc))
+		if (preg_match('/[\p{Cyrillic}]+/ui', $desc))
+			return true;
+		
 		return false;
-		
-		return true;
 	}
 	
 	public static function videoId($yt_id=''){
@@ -158,6 +315,8 @@ class Xmltv_Youtube {
 			'people'=>'Общественные',
 			'music'=>'Музыкальные',
 			'news'=>'Новости',
+			'sports'=>'Спорт',
+			'entertainment'=>'Развлекательные',
 		);
 		
 		$tolower = strtolower($cat_en);

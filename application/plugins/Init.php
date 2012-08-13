@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.10 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: Init.php,v 1.11 2012-08-13 13:20:15 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -85,55 +85,72 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		
 		try {
 			
-			$route = new Zend_Controller_Router_Route_Regex( 'телепрограмма\/?$', 
+			$route = new Zend_Controller_Router_Route_Regex( 
+			'телепрограмма\/?$', 
 			array('module'=>'default', 'controller'=>'channels', 'action'=>'list') );
 			$this->_router->addRoute( 'channels', $route );
 			
-			$route = new Zend_Controller_Router_Route( 'телепрограмма/:channel', 
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/:channel', 
 			array('module'=>'default', 'controller'=>'listings', 'action'=>'day-listing') );
-			$this->_router->addRoute( 'channel-day-listing', $route );
+			$this->_router->addRoute( 'channel', $route );
 			
-			$route = new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', 
-			array('module'=>'default', 'controller'=>'listings', 'action'=>'day-date') );
-			$this->_router->addRoute( 'channel-date-listing', $route );
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/:channel/:date', 
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'day-listing') );
+			$this->_router->addRoute( 'channel-date', $route );
+			
 			/*
 			$route = new Zend_Controller_Router_Route( 
-			'телепрограмма/:channel/:program/сегодня', 
+			'телепрограмма/:channel/:alias/сегодня', 
 			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-day') );
-			$this->_router->addRoute( 'program-day', $route );
+			$this->_router->addRoute( 'channel-alias-today', $route );
 			*/
+			
 			$route = new Zend_Controller_Router_Route( 
-			'телепрограмма/:channel/:program/:date', 
+			'телепрограмма/:channel/:alias/неделя', 
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-week') );
+			$this->_router->addRoute( 'channel-alias-week', $route );
+			
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/:channel/:alias', 
 			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-day') );
-			$this->_router->addRoute( 'program-day-listing', $route );
+			$this->_router->addRoute( 'channel-alias', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
 			'телепрограмма/:channel/неделя', 
 			array('module'=>'default', 'controller'=>'channels', 'action'=>'channel-week') );
-			$this->_router->addRoute( 'channel-week-listing', $route );
+			$this->_router->addRoute( 'channel-week', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
-			'телепрограмма/:channel/:program/неделя', 
-			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-week') );
-			$this->_router->addRoute( 'program-week-listing', $route );
+			'телепрограмма/:channel/:alias/:date', 
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'program-day') );
+			$this->_router->addRoute( 'channel-alias-date', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
 			'каналы/:category', 
 			array('module'=>'default', 'controller'=>'channels',  'action'=>'category') );
-			$this->_router->addRoute( 'channels-category', $route );
+			$this->_router->addRoute( 'channel-category', $route );
 			
 			$route = new Zend_Controller_Router_Route( 
 			'видео/онлайн/:alias/:id', 
 			array('module'=>'default', 'controller'=>'videos',  'action'=>'show-video') );
 			$this->_router->addRoute( 'show-video', $route );
 			
-			$route = new Zend_Controller_Router_Route('горячие-новости',
+			$route = new Zend_Controller_Router_Route(
+			'горячие-новости',
 			array('module'=>'default', 'controller'=>'error', 'action'=>'missing-page') );
 			$this->_router->addRoute( 'missing-page', $route );
 			
-			$route = new Zend_Controller_Router_Route('sitemap.xml',
+			$route = new Zend_Controller_Router_Route(
+			'sitemap.xml',
 			array('module'=>'default', 'controller'=>'sitemap', 'action'=>'sitemap') );
 			$this->_router->addRoute( 'sitemap', $route );
+			
+			$route = new Zend_Controller_Router_Route( 
+			'телепрограмма/поиск/канал', 
+			array('module'=>'default', 'controller'=>'listings', 'action'=>'search') );
+			$this->_router->addRoute( 'search-channel', $route );
 			
 			/*
 			 * Compat from card-sharing.org
@@ -177,11 +194,11 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		} catch (Exception $e) {
 			if( $this->debug ) {
 				echo $e->getMessage();
-				var_dump( $e->getTrace() );
+				//var_dump( $e->getTrace() );
 			} else {
 				throw new Exception( $e->getMessage() );
 			}
-			exit( __FILE__ . ': ' . __LINE__ );
+			exit();
 		}
 	
 	}
@@ -189,7 +206,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 
 	protected function _initActionHelpers () {
 
-		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH . '/controllers/helpers', 'Xmltv_Controller_Helper' );
+		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH . '/controllers/helpers', 'Zend_Controller_Helper' );
 		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH . '/modules/admin/controllers/helpers', 'Admin_Controller_Helper' );
 		
 	}
@@ -260,6 +277,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		 
 		//add the global helper directory path
 		$viewRenderer->view->addHelperPath(ROOT_PATH.'/library/Xmltv/View/Helper/');
+		
 	}
 	
 	protected function _initAutoloader(){

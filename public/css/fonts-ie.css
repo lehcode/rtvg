@@ -2,5 +2,20 @@
 
 @font-face {
     font-family: "OpenSans Condensed Bold";
-    src: url("../fonts/opnsancb.eot");
+    src: url("/fonts/opnsancb.eot");
+}
+
+@font-face {
+    font-family: "OfficinaSans";
+    src: url("/fonts/osn45__c.eot");
+}
+
+@font-face {
+    font-family: "Univers Condensed Medium Italic";
+    src: url("/fonts/universcmi.eot");
+}
+
+#header h1,
+#header h1 a {
+	font-family: "OpenSans Condensed Bold", Verdana, Helvetica, sans-serif;
 }

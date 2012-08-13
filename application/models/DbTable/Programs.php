@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.7 2012-08-04 20:59:05 developer Exp $
+ * @version $Id: Programs.php,v 1.8 2012-08-13 13:20:15 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
@@ -25,6 +25,51 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		
 	}
 
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param array $program_alias
+	 * @param Zend_Date $date
+	 * @throws Zend_Exception
+	 */
+	public function fetchSimilarProgramsThisWeek($program_alias=array(), Zend_Date $date){
+		
+		if (empty($program_alias))
+			throw new Zend_Exception(__METHOD__." - Empty program alias");
+		
+		$select = $this->_db->select()
+		->from(array( 'prog'=>'rtvg_programs'), '*')
+		->joinLeft(array( 'prop'=>"rtvg_programs_props" ), "prog.hash=prop.hash", array('actors', 'directors', 'premiere', 'live'))
+		->joinLeft(array('desc'=>"rtvg_programs_descriptions" ), "prog.hash=desc.hash", array('desc_intro'=>'intro', 'desc_body'=>'body'))
+		->joinLeft(array('channel'=>"rtvg_channels" ), "prog.ch_id=channel.ch_id", array('channel_title'=>'title', 'channel_alias'=>'alias'));
+		$w = array();
+		foreach ($program_alias as $word) {
+			$w[] = "prog.alias LIKE '%$word%'";
+		}
+		$where = implode(' OR ', $w);
+		$select
+			->where( $where )
+			->where( "prog.start >= '".$date->toString('yyyy-MM-dd HH:mm:ss')."'" );	
+			
+		//var_dump($select->assemble());
+		//die(__FILE__.': '.__LINE__);
+			
+		try {
+			$result = $this->_db->fetchAll($select);
+		} catch (Exception $e) {
+			throw new Zend_Exception($e->getMessage());
+		}
+		
+		if (count($result)){
+			foreach ($result as $a){
+				$a->channel_alias = Xmltv_String::strtolower($a->channel_alias);
+			}
+		}
+		
+		return $result;
+		
+	}
+	
 
 	public function getPremieres (Zend_Date $start, Zend_Date $end) {
 
@@ -149,7 +194,7 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		} catch (Exception $e) {
 			if ($this->debug) {
 				echo $e->getMessage();
-				var_dump($e->getTrace());
+				//var_dump($e->getTrace());
 				exit();
 			}
 		}
@@ -166,38 +211,45 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		
 	}
 	
-	public function fetchProgramThisWeek($program_alias=null, $channel_alias=null, Zend_Date $date){
-		
+	public function fetchProgramThisWeek($program_alias=null, $channel_id=null, Zend_Date $date){
+		/*
 		if(Xmltv_Config::getProfiling()) {
 			$this->_db->getProfiler()->setEnabled( true );
 			$profiler = $this->_db->getProfiler();
 		}
+		*/
 		
-		$channels = new Xmltv_Model_DbTable_Channels();
-		$ch_id = (int)$channels->find($channel_alias)->current()->ch_id;
+		//$channels = new Xmltv_Model_DbTable_Channels();
+		//$ch_id = (int)$channels->find($channel_alias)->current()->ch_id;
 		
+		/**
+		 * @var Zend_Db_Select
+		 */
 		$select = $this->_db->select()
-			->from('rtvg_programs', '*')
-			->joinLeft("rtvg_programs_props", "rtvg_programs_props.`hash` = rtvg_programs.`hash`", array('actors', 'directors', 'premiere', 'live'))
-			->joinLeft("rtvg_programs_descriptions", "rtvg_programs_descriptions.`hash` = rtvg_programs.`hash`", array('intro', 'body'))
-			->where("rtvg_programs.`alias` LIKE '$program_alias'")
-			->where("rtvg_programs.`start` >= '".$date->toString('yyyy-MM-dd HH:mm:ss')."'")
-			->where("rtvg_programs.`ch_id` = '$ch_id'");
+			->from(array( 'prog'=>'rtvg_programs'), '*')
+			->joinLeft(array( 'prop'=>"rtvg_programs_props" ), "prog.hash=prop.hash", array('actors', 'directors', 'premiere', 'live'))
+			->joinLeft(array('desc'=>"rtvg_programs_descriptions" ), "prog.hash=desc.hash", array('desc_intro'=>'intro', 'desc_body'=>'body'))
+			->where("prog.alias LIKE '$program_alias'")
+			->where("prog.start >= '".$date->toString('yyyy-MM-dd HH:mm:ss')."'")
+			->where("prog.ch_id = '$channel_id'");
 		
+		//var_dump($select->assemble());
+		//die(__FILE__.': '.__LINE__);	
+			
 		try {
 			$result = $this->_db->fetchAll($select);
 		} catch (Exception $e) {
-			if ($this->debug) {
-				echo $e->getMessage();
-				var_dump($e->getTrace());
-				exit();
-			}
+			throw new Zend_Exception($e->getMessage());
 		}
 		
+		
+		
+		/*
 		if(Xmltv_Config::getProfiling()) {
 			$query = $profiler->getLastQueryProfile();
 			echo $query->getElapsedSecs().': '.$query->getQuery();
 		}
+		*/
 		
 		return $result;
 		

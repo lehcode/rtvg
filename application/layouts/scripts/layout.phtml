@@ -4,12 +4,21 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.14 2012-08-04 20:53:41 developer Exp $
+ * @version $Id: layout.phtml,v 1.15 2012-08-13 13:20:15 developer Exp $
  *
  */
 //var_dump(ini_get('error_reporting'));
 //var_dump(ini_get('display_errors'));
 //die(__FILE__.': '.__LINE__);
+
+$browser = $this->userAgent()->getUserAgent();
+$browserMsie = false;
+if (strstr($browser, 'MSIE')) {
+	$browserMsie = true;
+}
+//var_dump($browser);
+//die(__FILE__.': '.__LINE__);
+
 $this->headTitle()->setSeparator(' :: ');
 //die(__FILE__.': '.__LINE__);
 $this->headScript()->setAllowArbitraryAttributes(true);
@@ -17,7 +26,6 @@ $this->jQuery()->enable() //enable jquery ;
 	//->setCdnSsl(true) if need to load from ssl location
 	->setVersion('1.7.1') //jQuery version, automatically 1.5 = 1.5.latest
 	->setUiVersion('1.8.18') //jQuery UI version, automatically 1.8 = 1.8.latest
-	//->addStylesheet('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css') //add the css
 	->uiEnable();
 
 /*
@@ -33,8 +41,16 @@ $fpMenu    = $this->fpMenu();
 $footer    = $this->footer();
 $featuredChannelsBlock = $this->featuredChannelsList();
 
-//var_dump($featuredChannels);
-//die(__FILE__.': '.__LINE__);
+if ($this->is_frontpage) {
+$this->headTitle( 'Программа всех каналов телевидения на сегодня и текущую неделю.' );
+$this->headMeta()
+	->setName('keywords', Xmltv_String::strtolower('телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв'))
+	->appendName('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.');
+}
+
+$pageclass = isset($this->pageclass) && !empty($this->pageclass) ? ' '.$this->pageclass : '' ;
+
+//var_dump($pageclass);
 
 if (!$this->is_frontpage) {
 	$sidebarLeft = $this->sidebarLeft();
@@ -57,50 +73,59 @@ echo $this->doctype(); ?>
  */
 $this->headMeta()
 	->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8');
-	//->setName('keywords', Xmltv_String::strtolower('телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв'))
-	//->appendName('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.');
+	
 echo $this->headTitle();
 echo $this->headMeta();
 echo $this->jQuery();
 /*
  * javascripts
  */
-$googleCounter = "var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-778789-8']);
-  _gaq.push(['_trackPageview']);
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-";
-$liCounter = 'new Image().src = "//counter.yadro.ru/hit?r"+
-escape(document.referrer)+((typeof(screen)=="undefined")?"":
-";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
-screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
-";h"+escape(document.title.substring(0,80))+
-";"+Math.random();';
-$this->headScript()->prependFile($this->baseUrl().'/js/jcarousel-7bb2e0a/lib/jquery.jcarousel.min.js')
-	->prependFile($this->baseUrl().'/js/bootstrap.min.js')
-	->prependFile('http://userapi.com/js/api/openapi.js?50')
-	->appendFile('/js/forms/vklogin.js')
-	->appendScript($googleCounter."\n".$liCounter)
-	->appendScript("jQuery(document).ready(function(){
-		$('#footer .counter_logo').hide();
-		if  ($('.da_adp_links')) $('.da_adp_links').hide();
-	});")
-	->appendScript('VK.init({ apiId: 2963750, onlyWidgets: true}); ');
+$this->headScript()
+	->prependFile( 'http://userapi.com/js/api/openapi.js?50' )
+	->prependFile( '/js/bootstrap.js' )
+	->appendFile( '/js/forms/vklogin.js' )
+	->offsetSetScript( 1, 'VK.init({ apiId: 2963750, onlyWidgets: true});
+	jQuery(document).ready(function(){ $("#footer .counter_logo").hide(); if  ($(".da_adp_links")) $(".da_adp_links").hide(); }); 
+	');
+
+if (!$this->isDev()) {
+	$googleCounter = "var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-778789-8']);
+	  _gaq.push(['_trackPageview']);
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+	";
+	$liCounter = 'new Image().src = "//counter.yadro.ru/hit?r"+
+	escape(document.referrer)+((typeof(screen)=="undefined")?"":
+	";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
+	screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
+	";h"+escape(document.title.substring(0,80))+
+	";"+Math.random();';
+	$this->headScript()
+		->appendScript($googleCounter."\n".$liCounter);
+}
+
 echo $this->headScript();
+
 /*
- * css files
+ * head css files
  */
 $this->headLink()
 	->offsetSetStylesheet(1, $this->baseUrl().'/css/bootstrap.css')
-	->offsetSetStylesheet(2, $this->baseUrl().'/css/template.css')
-	->offsetSetStylesheet(3, $this->baseUrl().'/js/jcarousel-7bb2e0a/skins/tango/skin.css');
+	->offsetSetStylesheet(2, $this->baseUrl().'/css/template.css');
+
+if ($browserMsie===true) {
+	$this->headLink()
+		->offsetSetStylesheet(4, $this->baseUrl().'/css/fonts-ie.css')
+		->offsetSetStylesheet(3, $this->baseUrl().'/css/ie.css');
+}
 echo $this->headLink();
+
 /*
- * add styles
+ * head styles
  */
 echo $this->headStyle();
 
@@ -149,12 +174,14 @@ if ($this->hide_sidebar=='right'){
 		</div>
 		<?php endif; ?>
 		
-		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
+		<div class="span<?php echo $this->maincontent_width ?><?php echo $pageclass ?>" id="maincontent">
 			<?php if (!$this->isDev()): ?>
 			<div id="DIV_DA_85979"></div><?php //directadvert rollin left ?>
 			<?php endif; ?>
 			<?php echo $this->layout()->content; ?>
 		</div>
+		
+		<?php //var_dump($this->hide_sidebar) ?>
 		
 		<?php if (!($this->hide_sidebar=='right')): ?>
 		<div class="span4" id="col_r">
@@ -184,10 +211,14 @@ if ($this->hide_sidebar=='right'){
 <?php endif; ?>
 
 
+<script type="text/javascript" charset="windows-1251" src="http://rotation-media.net/codes/21010/40198_rutvgid.ru.js"></script><?php //mediarich adspot ?>
+<script type="text/javascript" charset="windows-1251" src="http://rotationmessage.net/codes/21010/40198_rutvgid.ru.js"></script><?php //mediarich vk message ?>
 
 <?php if ($this->is_frontpage): ?>
 <script charset="windows-1251" type="text/javascript" src="http://www.directadvert.ru/show.cgi?adp=85452&div=DIV_DA_85452"></script><?php //directadvert frontpage ?>
 <?php endif; ?>
+
+<?php if (!$this->isDev()){ ?>
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript">
 (function (d, w, c) {
@@ -211,5 +242,8 @@ if ($this->hide_sidebar=='right'){
 </script>
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
+<?php 
+ } ?>
+ 
 </body>
 </html>

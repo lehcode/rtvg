@@ -174,7 +174,7 @@ class Xmltv_Model_Comments
 	    }
 	    	
 		if ($response->isError()) {
-			throw new Exception("Ошибка апередачи данных.\n"."Ответсервера vk: " . $response->getStatus() . " " . $response->getMessage() . "\n");
+			throw new Exception("Ошибка передачи данных.\n"."Ответ сервера vk: " . $response->getStatus() . " " . $response->getMessage() . "\n");
 		} else {
 			
 		}
@@ -225,9 +225,10 @@ class Xmltv_Model_Comments
 	
 	
 	/**
+	 * Get RSS search results for particular query
 	 * @param string|array $query
 	 */
-	public function getYandexRss($query=null){
+	public function getYandexRss($query=''){
 		
 		if (is_array($query))
 		$query = implode('|', $query);
@@ -253,7 +254,10 @@ class Xmltv_Model_Comments
 	}
 	
 	/**
+	 * 
+	 * Parse Yandex RSS feed
 	 * @param Zend_Feed_Reader_Feed_Rss $feed_data
+	 * @param Int $min_length
 	 */
 	public function parseYandexFeed(Zend_Feed_Reader_Feed_Rss $feed_data, $min_length=128){
 		
@@ -332,20 +336,25 @@ class Xmltv_Model_Comments
 		
 	}
 	
+	/**
+	 * 
+	 * Save comments to database
+	 * @param array $list
+	 * @param int $parent_id
+	 * @param string $parent_type
+	 * @throws Zend_Exception
+	 */
 	public function saveComments($list=array(), $parent_id=null, $parent_type='channel'){
 	
 		if (empty($list) || !$parent_id)
 		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
-		
-		//var_dump(func_get_args());
-		
+				
 		foreach ( $list as $list_item ) {
 			
 			$now = new Zend_Date();
 			$row = $this->_table->createRow(array(), Zend_Db_Table::DEFAULT_CLASS);
 			
 			if (is_object( $list_item )) {
-				//var_dump( $list_item );
 				$t = array();
 				foreach ($list_item as $k=>$i) {
 					if ($k=='date')
@@ -355,9 +364,6 @@ class Xmltv_Model_Comments
 				}
 			} else 
 			$t = $list_item;
-			
-			//var_dump($t);
-			//die(__FILE__.': '.__LINE__);
 			
 			$row->date_created  = $t['date']->toString("yyyy-MM-dd hh:mm:ss");
 			$row->date_added    = $now->toString("yyyy-MM-dd hh:mm:ss");
@@ -395,6 +401,11 @@ class Xmltv_Model_Comments
 			else return $trim->filter($m[1]);
 		} elseif (stristr($link, 'blogs.mail.ru/bk/')) {
 			preg_match('/\/\/blogs\.mail\.ru\/bk\/(.+)\/[A-F0-9]+/u', $link, $m);
+			if (empty($m[1]))
+			throw new Exception("Не могу получить ник автора из ссылки $link");
+			else return $trim->filter($m[1]);
+		} elseif (stristr($link, 'blogs.mail.ru/mail/')) {
+			preg_match('/\/\/blogs\.mail\.ru\/mail\/(.+)\/[A-F0-9]+/u', $link, $m);
 			if (empty($m[1]))
 			throw new Exception("Не могу получить ник автора из ссылки $link");
 			else return $trim->filter($m[1]);
@@ -445,10 +456,10 @@ class Xmltv_Model_Comments
 		
 	}
 	
-	public function dbGetComments($parent_id=null, $parent_type='channel'){
+	public function dbGetComments($parent_id=null, $parent_type='channel', $paginate=false){
 	
 		if (!$parent_id)
-		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+			throw new Zend_Exception(__FUNCTION__.' - Не указан $parent_id', 500);
 		
 		$id = Xmltv_String::strtolower($parent_id);
 		$type = $parent_type=='channel' ? 'c' : 'p';

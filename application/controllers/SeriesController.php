@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: SeriesController.php,v 1.2 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: SeriesController.php,v 1.3 2012-08-13 13:20:15 developer Exp $
  *
  */
 class SeriesController extends Zend_Controller_Action
@@ -16,6 +16,10 @@ class SeriesController extends Zend_Controller_Action
 					'/views/scripts/');
 	}
 	
+	protected $categoriesMap = array(
+		'series'=>5
+	);
+	
 	public function indexAction () {
 
 		$this->_forward( 'series-week' );
@@ -23,7 +27,17 @@ class SeriesController extends Zend_Controller_Action
 	
 	public function seriesWeekAction(){
 		
+		$model = new Xmltv_Model_Programs();
+		$data['date'] = new Zend_Date(null, null, 'ru');
+		$weekStart = $this->_helper->WeekDays( array( 'method'=>'getStart', 'data'=>$data));
+		$data['date'] = new Zend_Date(null, null, 'ru');
+		$weekEnd = $this->_helper->WeekDays( array( 'method'=>'getEnd', 'data'=>$data));
+		$seriesList = $model->getCategoryForPeriod( $weekStart, $weekEnd, $this->categoriesMap['series'] );
+		//var_dump($weekStart->toString('YYYY-MM-dd'));
+		//var_dump($weekEnd->toString('YYYY-MM-dd'));
 		
+		
+		var_dump($seriesList);
 		die(__FILE__.': '.__LINE__);
 		
 		//$this->render('under-constriction');
@@ -32,7 +46,7 @@ class SeriesController extends Zend_Controller_Action
 	private function _isValidRequest($action=null) {
 		
     	if (!$action)
-		return false;
+			return false;
 		
 		$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
 		$validators = array(

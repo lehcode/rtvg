@@ -79,7 +79,7 @@ class Zend_View_Helper_YoutubeVideos extends Zend_View_Helper_Abstract
 				$videoDescription = $videoEntry->getVideoDescription();
 				if (!preg_match('/\p{Cyrillic}+/ui', $videoDescription))
 				continue;
-				if (preg_match('/порн|эрот|проститут/ui', $videoDescription))
+				if (preg_match('/порн|эрот|проститут|sex|секс/ui', $videoDescription))
 				continue;
 				
 				try {

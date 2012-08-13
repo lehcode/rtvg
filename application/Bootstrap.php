@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.6 2012-07-31 21:21:00 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.7 2012-08-13 13:20:15 developer Exp $
  *
  */
 
@@ -30,7 +30,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		date_default_timezone_set($config->site->get('timezone', 'Europe/Moscow'));
 		
-		//$this->bootstrap('db')->getResource('db')->setFetchMode(Zend_DB::FETCH_OBJ);
+		$this->bootstrap('db')->getResource('db')->setFetchMode(Zend_DB::FETCH_OBJ);
 		
 		$init = new Xmltv_Plugin_Init( APPLICATION_ENV );
 		$fc = Zend_Controller_Front::getInstance()
@@ -47,6 +47,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		$init->setRouter( $fc->getRouter() );
 		$fc->setRouter( $init->getRouter() );		
+		
+		//var_dump( $fc->getParams() );
 		
 		try {
 			$response = $fc->dispatch();
@@ -65,11 +67,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		if (isset($response)) {
 			if( $response->isException() ) {
-				//die(__FILE__.': '.__LINE__);
 				$exception = $response->getException();
-				Zend_Debug::dump($exception->getTrace());
-				$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-				$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
+				//var_dump($response);
+				//var_dump($exception);
+				//die(__FILE__.': '.__LINE__);
+				//$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+				//$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
 			} else {
 				$response->sendHeaders();
 				$response->outputBody();

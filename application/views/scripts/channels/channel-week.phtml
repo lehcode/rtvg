@@ -3,7 +3,7 @@
  * Week listing script for channel
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: channel-week.phtml,v 1.2 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: channel-week.phtml,v 1.3 2012-08-13 13:20:15 developer Exp $
  */
 $this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на неделю', $this->channel->title));
 $this->headMeta()->setName('keywords', sprintf ('телепрограмма,%s,неделя', strtolower( $this->channel->title )));
@@ -17,8 +17,18 @@ $today = new Zend_Date(null, null, 'ru');
 //var_dump($this->days);
 //die();
 ?>
-<h1><?php printf( 'Программа канала «%s» на неделю', $this->channel->title ); ?></h1>
-<p><?php printf( '%s - %s', $this->week_start->toString('EEEE, d MMMM'), $this->week_end->toString('EEEE, d MMMM') ); ?></p>
+
+<h1>
+	<?php printf( 'Программа канала «%s» на неделю', $this->channel->title ); ?>
+</h1>
+
+<p>
+	<?php echo Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') ).' - '. Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') ); ?>
+</p>
+
+<a class="btn btn-mini" href="/телепрограмма/<?php echo $channel_alias ?>" title="Программа <?php echo $this->channel->title ?> на сегодня, <?php echo $today->toString('EEEE, d MMMM YYYY') ?> ">
+	<?php echo $this->channel->title ?> сегодня <?php echo $today->toString("EE, d MMMM") ?>
+</a>
 
 <div class="week_list tabbable" id="programslist">
 	<ul class="nav nav-tabs" id="days_tabs">
@@ -32,7 +42,7 @@ $today = new Zend_Date(null, null, 'ru');
 		$tabsJs .= '$("ul#days_tabs li a[href=\'#day'.$dayId.'\']").click(function (e) { e.preventDefault(); $(this).tab("show"); });'."\n";
 		?>
 		<li class="<?php echo $class; ?>">
-			<a href="<?php echo "#day$dayId" ?>" data-toggle="tab"><?php echo (Xmltv_String::ucfirst($date->toString("EEEE, d MMMM"))) ?></a>
+			<a href="<?php echo "#day$dayId" ?>" data-toggle="tab"><?php echo Xmltv_String::ucfirst($date->toString("EEE, d MMM")) ?></a>
 		</li>
 		<?php 
 		$i++;
@@ -54,17 +64,29 @@ $today = new Zend_Date(null, null, 'ru');
 		<div id="<?php echo "day$day_id" ?>" class="<?php echo $class; ?>">
 		<?php 
 		foreach ($programs as $k=>$prog) { 
-		?>
+			//var_dump($prog);
+			?>
 		<div class="item<?php echo $prog->start->toString('U'); ?> programdiv">
 			<div class="programtitle">
+				
 				<p class="start">
 					<span class="start_time"><?php echo $prog->start->toString(Zend_Date::HOUR.':'.Zend_Date::MINUTE) ?></span>
 				</p>
-				<h3>
-					<a href="<?php printf( '/телепрограмма/%s/%s/%s', $channel_alias, $prog->alias, $prog->start->toString("yyyy-MM-dd")  ); ?>">
-						<?php echo $this->truncateProgramTitle($prog->title) ?>
-					</a>
-				</h3>
+				
+				<div class="info">
+					<h3>
+						<a href="<?php printf( '/телепрограмма/%s/%s/%s#%s', $channel_alias, $prog->alias, $prog->start->toString("yyyy-MM-dd"), $prog->start->toString("U")  ); ?>">
+							<?php echo $this->truncateProgramTitle($prog->title) ?>
+						</a>
+					</h3>
+					
+					<?php /* if (!empty($prog->desc_intro)) : ?>
+					<p class="desc">
+						<?php echo $this->truncateString($prog->desc_intro, 15, 'words'); ?>
+					</p>
+					<?php endif; */ ?>
+					
+				</div>
 				
 				<?php if (!empty($prog->sub_title)) : ?>
 				<p class="subtitle"><?php echo $prog->sub_title ?></p>

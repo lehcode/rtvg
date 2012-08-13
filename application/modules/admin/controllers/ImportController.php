@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ImportController.php,v 1.10 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: ImportController.php,v 1.11 2012-08-13 13:20:15 developer Exp $
  *
  */
 class Admin_ImportController extends Zend_Controller_Action
@@ -136,7 +136,7 @@ class Admin_ImportController extends Zend_Controller_Action
     			$this->view->assign('response', $response);
 			}
     	}
-		//$this->render('xmlparsechannels-ajax');
+		
     }
 
     
@@ -185,13 +185,24 @@ class Admin_ImportController extends Zend_Controller_Action
 					//var_dump($xml);
 					//die(__FILE__.": ".__LINE__);
 					
-					$p = $programs->parseProgramXml($xml);
-					$p['hash'] = $hash;
-					$programs->saveProgram( $p );
+					try {
+						$p = $programs->parseProgramXml($xml);
+						$p['hash'] = $hash;
+					} catch (Exception $e) {
+						echo $e->getMessage();
+						exit();
+					}
 					
-					//var_dump($info);
+					//var_dump($p);
 					//die(__FILE__.": ".__LINE__);
-						
+					
+					try {
+						$programs->saveProgram( $p );
+					} catch (Exception $e) {
+						echo $e->getMessage();
+						exit();
+					}
+					
 					$d = trim((string)$xml->desc);
 					if (!empty($d)) {
 						

@@ -1,5 +1,5 @@
 <?php
-class Xmltv_Controller_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
+class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
 	/**
      * @var Zend_Loader_PluginLoader
@@ -11,23 +11,22 @@ class Xmltv_Controller_Helper_RequestValidator extends Zend_Controller_Action_He
      *
      * @return void
      */
-    /*
+    
     public function __construct()
     {
-    	die(__FILE__.': '.__LINE__);
-        $this->pluginLoader = new Zend_Loader_PluginLoader();
+    	$this->pluginLoader = new Zend_Loader_PluginLoader();
     }
     
-    public function isValidRequest($action=array())
-    {
+    public function isValidRequest($action='') {
     	
-    	if (!$action)
-		return false;
+    	//die(__FILE__.': '.__LINE__);
+    	
+    	if (empty($action))
+			return false;
 		
 		//var_dump($this->getRequest()->getParams());
-		//die();
-		var_dump($action);
-		die(__FILE__.': '.__LINE__);
+		//var_dump($action);
+		//die(__FILE__.': '.__LINE__);
 		
 		$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
 		$validators = array(
@@ -48,13 +47,18 @@ class Xmltv_Controller_Helper_RequestValidator extends Zend_Controller_Action_He
 				$validators['id']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
 				$validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
 				break;
+			case 'search':
+				die(__FILE__.': '.__LINE__);
+				$validators['id']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
+				$validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
+				break;
 			default:
 				return false;
 		}
 		
 		$input = new Zend_Filter_Input($filters, $validators, $this->getRequest()->getParams());
     	
-		var_dump($input->isValid());
+		//var_dump($input->isValid());
 		
 		if ($input->isValid())
     	return true;
@@ -62,16 +66,16 @@ class Xmltv_Controller_Helper_RequestValidator extends Zend_Controller_Action_He
     	return false;
     	
     }
-    */
+    
 	/**
      * Strategy pattern: call helper as broker method
      */
-    /*
+    
     public function direct($params=array())
     {
     	
-    	var_dump($params);
-    	die(__FILE__.': '.__LINE__);
+    	//var_dump($params);
+    	//die(__FILE__.': '.__LINE__);
     	
     	if (isset($params['method']) && !empty($params['method'])) {
     		switch (strtolower($params['method'])) {
@@ -87,5 +91,5 @@ class Xmltv_Controller_Helper_RequestValidator extends Zend_Controller_Action_He
     		return false;
     	}
     }
-    */
+    
 }

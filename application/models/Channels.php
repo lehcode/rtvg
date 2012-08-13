@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.6 2012-05-27 20:05:50 dev Exp $
+ * @version $Id: Channels.php,v 1.7 2012-08-13 13:20:15 developer Exp $
  */
 class Xmltv_Model_Channels
 {
@@ -51,7 +51,7 @@ class Xmltv_Model_Channels
 		if (!$channel || $baseUrl===null)
 		return;
 		
-		$channel['icon'] = $baseUrl.'/images/channel_logo/'.$channel['icon'];
+		$channel->icon = $baseUrl.'/images/channel_logo/'.$channel->icon;
 		//var_dump($channel);
 		return $channel;
 	}
@@ -71,6 +71,18 @@ class Xmltv_Model_Channels
 		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
 		
 		return $this->_table->fetchRow("`alias` LIKE '$alias'");
+		
+	}
+
+	public function getByTitle($alias=null){
+		
+		if (!$alias)
+		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		$alias = Xmltv_String::strtolower($alias);
+		$result = $this->_table->fetchRow(" `title` LIKE '$alias'");
+		$result->alias = Xmltv_String::strtolower($result->alias);
+		return $result;
 		
 	}
 	
@@ -117,22 +129,25 @@ class Xmltv_Model_Channels
 		
 	}
 	
-	public function getWeekSchedule(){
+	public function getWeekSchedule($channel=null, Zend_Date $start, Zend_Date $end){
 	
-		$days = array();
+		if (!$channel) {
+			throw new Zend_Exception(__METHOD__." - Не указан канал", 500);
+		}
+		if (!is_a($start, 'Zend_Date') || !is_a($end, 'Zend_Date')) {
+			throw new Zend_Exception(__METHOD__." - Неверная дата", 500);
+		}
 		
-		$channel = Zend_Registry::get('channel');
-		$week_start = Zend_Registry::get('week_start');
 		$cache = new Xmltv_Cache(array('location'=>'/cache/Listings'));
-		$hash = $cache->getHash(__FUNCTION__.'_'.$channel['ch_id'].'_week_'.$week_start->toString("yyyyMMdd"));
+		$hash = $cache->getHash(__FUNCTION__.'_'.$channel->ch_id.'_week_'.$start->toString("yyyyMMdd"));
 		try {
 			if (Xmltv_Config::getCaching()){
 				if (!$schedule = $cache->load($hash, 'Core', 'Listings')) {
-					$schedule = $this->_table->fetchWeekItems(Zend_Registry::get('channel')->ch_id, Zend_Registry::get('week_start'), Zend_Registry::get('week_end'));
+					$schedule = $this->_table->fetchWeekItems($channel->ch_id, $start, $end);
 					$cache->save($schedule, $hash, 'Core', 'Listings');
 				}
 			} else {
-				$schedule = $this->_table->fetchWeekItems(Zend_Registry::get('channel')->ch_id, Zend_Registry::get('week_start'), Zend_Registry::get('week_end'));
+				$schedule = $this->_table->fetchWeekItems($channel->ch_id, $start, $end);
 			}
 		} catch (Exception $e) {
 			echo $e->getMessage();

@@ -22,7 +22,7 @@ class SitemapController extends Zend_Controller_Action
 		$published = $channels->getPublished();
 		$ch_aliases = array();
 		$d = new Zend_Date( null, null, 'ru' ) ; 
-		$week_start = $this->_helper->weekDays(array('method'=>'getStart', "data"=>array('date'=>$d) ));
+		$week_start = $this->_helper->weekDays(array('method'=>'getStart', 'data'=>array('date'=>$d) ));
 		$week_start = $week_start->toString('YYYY-MM-dd');
 		
 		foreach ($published as $i) {

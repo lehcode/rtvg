@@ -3,7 +3,7 @@
  * Database table for channels model
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.8 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: Channels.php,v 1.9 2012-08-13 13:20:15 developer Exp $
  */
 
 class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
@@ -96,13 +96,13 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     
     public function fetchWeekItems($ch_id, Zend_Date $start, Zend_Date $end){
     	
-    	$this->_initProfiler();
+    	//$this->_initProfiler();
 		$days = array();
 		do{
 			$select = $this->_db->select()
 				->from( array( 'program'=>'rtvg_programs'), '*')
 				->joinLeft( array( 'props'=>"rtvg_programs_props"), "program.`hash`=props.`hash`", array('actors', 'directors', 'premiere', 'live'))
-				->joinLeft( array( 'description'=>"rtvg_programs_descriptions"), "program.`hash`=description.`hash`", array('intro', 'body'))
+				->joinLeft( array( 'description'=>"rtvg_programs_descriptions"), "program.`hash`=description.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
 				->where("program.`start` LIKE '".$start->toString('yyyy-MM-dd')."%'")
 				->where("program.`ch_id` = '$ch_id'")
 				->order("start", "ASC");
@@ -115,23 +115,22 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 			} catch (Exception $e) {
 				if ($this->debug) {
 					echo $e->getMessage();
-					var_dump($e->getTrace());
+					//var_dump($e->getTrace());
 					exit();
 				}
 			}
 			
-			$this->_profileQuery();
+			//$this->_profileQuery();
 			$start->addDay(1);
 			
-		} while ($start->toString('yyyy-MM-dd')!=$end->toString('yyyy-MM-dd'));
-		
+		} while ( $start->compare($end, 'dd', 'ru')!=1 );
+		//var_dump($end->toString('YYYY-MM-dd'));
 		//$safeTag = Zend_Controller_Action_HelperBroker::getStaticHelper('safeTag');
 		
 		foreach ($days as $day) {
 			foreach ($day as $program) {
 				$program->start = new Zend_Date($program->start);
 				$program->end   = new Zend_Date($program->end);
-				//$program->alias = $safeTag->convertTitle($program->title);
 			}
 		}
 
