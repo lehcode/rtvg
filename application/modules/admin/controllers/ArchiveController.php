@@ -1,62 +1,103 @@
 <?php
+/**
+ * 
+ * Controller for archiving tasks
+ * @uses Zend_Controller_Action
+ * @version $Id: ArchiveController.php,v 1.3 2012-12-16 15:16:33 developer Exp $
+ *
+ */
 class Admin_ArchiveController extends Zend_Controller_Action
 {
-
+	/**
+	 * 
+	 * Request validation universal helper
+	 * @var Xmltv_Controller_Action_Helper_RequestValidator
+	 */
+	protected $validator;
+	
+	/**
+	 * 
+	 * Input Filter
+	 * @var Zend_Filter_Input
+	 */
+	protected $inputFilter;
+	
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see Zend_Controller_Action::__call()
+	 */
 	public function __call ($method, $arguments) {
-		throw new Exception($method." не найден", 500);
-		die();
+		throw new Zend_Exception($method." не найден");
 	}
 	
-	public function init()
-    {
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see Zend_Controller_Action::init()
+	 */
+	public function init() {
+		
         $this->_helper->layout->setLayout('admin');
         $ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
 		$ajaxContext->addActionContext( 'archive', 'html' )
 			->initContext();
+		
+		$this->validator = $this->_helper->getHelper('RequestValidator');
+		
+		//var_dump($this->validator);
+		//die(__FILE__.': '.__LINE__);
     }
 
-    public function indexAction()
-    {
+    /**
+     * 
+     * Default
+     * Redirects to archive page
+     */
+    public function indexAction() {
         $this->_forward('archive');
     }
     
- 	public function archiveAction()
-    {
-        //$requestVars = $this->_getAllParams();
-		//var_dump($requestVars);
+    /**
+     * 
+     * Show archive page
+     */
+ 	public function archiveAction() {
+        
     }
 
+    /**
+     * 
+     * Archiving routines
+     */
     public function storeAction()
     {
         
-    	$requestVars = $this->_getAllParams();
-		var_dump($requestVars);
+    	//var_dump($this->_getAllParams());
+    	//die(__FILE__.': '.__LINE__);
 		
-		if ($this->_parseRequestValid($this->_getParam('action'))===true){
+		$this->inputFilter = $this->validator->direct( array( 'method'=>'isvalidrequest', 'vars'=>$this->_getAllParams() ));
+		if ($this->inputFilter){
 			
 			ini_set('max_execution_time', 0);
-			
-			$start = new Zend_Date($this->_getParam('start_date'), 'dd.MM.yyyy');
-			
+			/*
+			 * Setup dates
+			 */
+			$start = new Zend_Date($this->inputFilter->getEscaped('start_date'), 'dd.MM.yyyy');
 			if ($this->_getParam('end_date')=='') {
 				echo "Не указана дата окончания периода!";
 				exit();
 			} 
-			$end = new Zend_Date($this->_getParam('end_date'), 'dd.MM.yyyy');
-			
+			$end = new Zend_Date($this->inputFilter->getEscaped('end_date'), 'dd.MM.yyyy');
 			if ($end->toString("U") > $start->toString("U")) {
-				echo "Дата окончания должна быть ранее даты начала!";
-				exit();
+				exit("Дата окончания должна быть ранее даты начала!");
 			}
-			
-			$programs = new Admin_Model_Programs();
-			
-			//var_dump($start);
-			//var_dump($end);
-			//die(__FILE__.": ".__LINE__);
-			
+			/*
+			 * Process
+			 */
+			$model = new Admin_Model_Programs();
 			try {
-				$programs->archivePrograms($start, $end);
+				$model->archivePrograms($start, $end);
 			} catch (Exception $e) {
 				echo $e->getMessage();
 				exit;
@@ -68,35 +109,5 @@ class Admin_ArchiveController extends Zend_Controller_Action
 		}
 		exit();
     }
-    
-    private function _parseRequestValid($action=null){
-    	
-    	if (!$action)
-			throw new Exception(__METHOD__." - No action defined", 500);
-
-		//var_dump($action);
-		//die(__FILE__.": ".__LINE__);
-			
-		$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
-		$validators = array(
-	    	'module'=>array( new Zend_Validate_Regex('/^[a-z]+$/')),
-	    	'controller'=>array( new Zend_Validate_Regex('/^[a-z]+$/')),
-	    	'action'=>array( new Zend_Validate_Regex('/^[a-z-]+$/')),
-	    	'format'=>array( new Zend_Validate_Regex('/^html|json$/')));
-		switch ($action) {
-			case 'store':
-				$validators['start_date']  = array( new Zend_Validate_Date(array('format'=>'dd.MM.yyyy', 'locale'=>'ru')) );
-				//$validators['end_date']    = array( new Zend_Validate_Date(array('format'=>'dd.MM.yyyy', 'locale'=>'ru')) );
-				break;
-		}
-		
-		$input = new Zend_Filter_Input($filters, $validators, $this->_request->getParams());
-    	if ($input->isValid())
-    	return true;
-    	
-    	return false;
-    	
-    }
-
 
 }
