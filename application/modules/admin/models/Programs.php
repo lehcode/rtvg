@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.17 2012-12-25 01:57:53 developer Exp $
+ * @version $Id: Programs.php,v 1.18 2012-12-25 02:14:18 developer Exp $
  */
 
 class Admin_Model_Programs 

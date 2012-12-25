@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.8 2012-12-25 01:57:53 developer Exp $
+ * @version $Id: Channels.php,v 1.9 2012-12-25 02:14:18 developer Exp $
  */
 class Xmltv_Model_Channels
 {

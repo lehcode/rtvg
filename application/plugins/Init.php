@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.12 2012-12-25 01:57:53 developer Exp $
+ * @version $Id: Init.php,v 1.13 2012-12-25 02:14:18 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {

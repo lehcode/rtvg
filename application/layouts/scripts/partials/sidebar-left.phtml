@@ -1,0 +1,70 @@
+<?php
+/**
+ * Left sidebar view script
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: sidebar-left.phtml,v 1.1 2012-12-25 02:14:18 developer Exp $
+ *
+ */
+?>
+
+<?php 
+/*
+ * Top programs block
+ */
+if (isset($this->top_programs)) {
+	?>
+<div class="module">
+	<h4>Популярные программы</h4>
+	<ul id="program-top">
+		<?php 
+		foreach ($this->top_programs as $p){
+		    //var_dump($p);
+		    //die(__FILE__.': '.__LINE__);
+			?>
+		<li>
+			<img src="<?php echo $p['channel_icon'] ?>" width="16" />
+			<a href="<?php echo $this->url(array(
+				'channel'=>$p['channel_alias'], 
+				'alias'=>$p['prog_alias'],
+			), 'default_listings_program-week'); ?>"
+			title="<?php echo $p['prog_title'] ?> на канале <?php echo $p['channel_title'] ?> этой неделе "><?php echo $this->truncateString( $p['prog_title'], 3, 'words') ?></a>
+		</li>
+			<?php 
+		}
+		?>
+	</ul>
+</div>	
+	<?php 
+}
+?>
+
+<?php
+/*
+ * Channels categories block
+ */ 
+if (isset($this->cats)) {
+    ?>
+<div class="module">
+	<h4>Каналы</h4>
+	<ul id="channels_categories" class="nav nav-list">
+	<?php 
+	foreach ($this->cats as $c) {
+		$catAlias = $this->escape( $c['alias'] );
+		$catTitle = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
+		?>
+		<li>
+			<a href="<?php echo $this->url(array('category'=>$catAlias), 'default_channels_channel-category' ) ?>" title="<?php echo $catTitle ?> телеканалы">
+				<img class="icon" src="/images/categories/channels/<?php echo $this->escape( $c['image'] ) ?>" />
+				<?php echo $catTitle ?>
+			</a>
+		</li>		
+		<?php 
+	}
+	?>
+	</ul>
+</div>	
+	<?php 
+}
+?>

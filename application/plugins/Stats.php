@@ -5,7 +5,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Stats.php,v $
- * @version $Id: Stats.php,v 1.2 2012-12-25 01:57:53 developer Exp $
+ * @version $Id: Stats.php,v 1.3 2012-12-25 02:14:18 developer Exp $
  *
  */
 class Xmltv_Plugin_Stats extends Zend_Controller_Plugin_Abstract 
