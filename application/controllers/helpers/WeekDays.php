@@ -1,81 +1,104 @@
 <?php
-class Zend_Controller_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {
+/**
+ * 
+ * Helper class
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: WeekDays.php,v 1.4 2012-12-25 01:57:53 developer Exp $
+ *
+ */
+class Xmltv_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {
 	
 	/**
-     * @var Zend_Loader_PluginLoader
-     */
-    public $pluginLoader;
-    
+	 * @var Zend_Loader_PluginLoader
+	 */
+	public $pluginLoader;
+	
 	/**
-     * Constructor: initialize plugin loader
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->pluginLoader = new Zend_Loader_PluginLoader();
-    }
-    
-    public function getStart($date=null){
-    
-    	if (!$date)
-		$date = new Zend_Date(null, null, 'ru');
-		
-		if ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
-			do{
-				$date->subDay(1);
-				//var_dump($date->toString(Zend_Date::WEEKDAY_DIGIT));			
-			} while ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1);
+	 * Constructor: initialize plugin loader
+	 *
+	 * @return void
+	 */
+	public function __construct()
+	{
+		$this->pluginLoader = new Zend_Loader_PluginLoader();
+	}
+	
+	/**
+	 * 
+	 * Calculate week start date
+	 * @param Zend_Date $date
+	 */
+	public function getStart($date=null){
+	
+		if (!$date) {
+			$result = new Zend_Date();
+		} else {
+			$result = new Zend_Date( $date->toString('U'), 'U' );
 		}
 		
-		return $date;
-    	
-    }
-    
-    
-    public function getEnd($date=null){
-    
-    	if (!$date)
-		$date = new Zend_Date();
+		if ($result->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
+			while ($result->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
+				$result->subDay(1);		
+			};
+		}
 		
-		if ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
-			do{
-				$date->addDay(1);
-			} while ($date->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0);
+		return $result;
+		
+	}
+	
+	/**
+	 * 
+	 * Calculate week end date
+	 * @param Zend_Date $date
+	 */
+	public function getEnd($date=null){
+	
+		if (!$date){
+			$result = new Zend_Date();
+		} else {
+			$result = new Zend_Date( $date->toString('U'), 'U' );
+		}
+		
+		if ($result->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+		    while ($result->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+		        $result->addDay(1);
+		    }
    		}
-		$date->sub(1, Zend_Date::MINUTE);
+   		//$result->addDay(1);
+   		//$result->subMinute(1);
+   		
 		
-		return $date;
-    	
-    }
-    
-    public function direct($params=array()){
-    	
-    	//var_dump( func_get_args() );
-    	//die(__FILE__.': '.__LINE__);
-    	
-    	if (empty($params))
-    	throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
-    	
-    	if (isset($params['method']) && !empty($params['method'])) {
-    		switch (strtolower($params['method'])) {
-    			
-    			case 'getstart':
-    				if (isset($params['data']) && !empty($params['data']))
-    				return $this->getStart($params['data']['date']);
-    				else
-    				return;
-
-    			case 'getend':
-    				if (isset($params['data']) && !empty($params['data']))
-    				return $this->getEnd($params['data']['date']);
-    				else
-    				return;
-    				
-    			default:
-    		}
-    	}
-    	
-    }
+		return $result;
+		
+	}
+	
+	/**
+	 * 
+	 * @param  string	 $method
+	 * @param  Zend_Date  $date
+	 * @throws Zend_Exception
+	 * @return null|Zend_Date
+	 */
+	public function direct($method=null, Zend_Date $date){
+		
+		var_dump(func_get_args());
+		die(__FILE__.': '.__LINE__);
+		
+		if (!$method)
+			return false;
+		
+		switch (strtolower($method)) {
+			case 'getstart':
+				return $this->getStart( $date );
+				break;
+			case 'getend':
+				return $this->getEnd( $date );
+				break;
+			default:
+				break;
+		}
+		
+	}
 	
 }

@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: IndexController.php,v 1.4 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: IndexController.php,v 1.5 2012-12-25 01:57:52 developer Exp $
  *
  */
 class IndexController extends Zend_Controller_Action
@@ -14,13 +14,18 @@ class IndexController extends Zend_Controller_Action
 
 	public function __call ($method, $arguments) {
 
-		header( 'HTTP/1.0 404 Not Found' );
-		$this->_helper->layout->setLayout( 'error' );
-		$this->view->render();
+		//header( 'HTTP/1.0 404 Not Found' );
+		//$this->_helper->layout->setLayout( 'error' );
+		//$this->view->render();
+		
 	}
 	
 	public function init () {
-
+		$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
+		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
+		$ajaxContext->addActionContext( 'live', 'json' )
+			->initContext();
+		$this->initView();
 	}
 
 
@@ -29,33 +34,31 @@ class IndexController extends Zend_Controller_Action
 	 */
 	public function indexAction () {
 
-		$this->_forward( 'index', 'frontpage' );
+		$this->_forward( 'index', 'front-page' );
 	
 	}
 	
 	/**
-	 * Process wrong routing
+	 * 
+	 * Front page
 	 */
-	public function noRouteAction () {
-		
-		header( 'HTTP/1.0 404 Not Found' );
-		$this->_helper->layout->setLayout( 'error' );
-		$this->view->render();
-	}
-	
-	
 	public function frontpageAction(){
-		//
+		
 		$this->view->assign('is_frontpage', true);
 		//die(__FILE__.': '.__LINE__);
 	}
 	
-	/*
-	public function missingPageAction(){
-		die(__FILE__.': '.__LINE__);
-		//$this->view->render();
+	/**
+	 * 
+	 * Offline message
+	 */
+	public function offlineAction(){
+		die("Site is offline");
 	}
-	*/
+	
+	public function liveAction(){
+		die("liveAction");
+	}
 
 }
 

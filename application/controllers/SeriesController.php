@@ -4,14 +4,14 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: SeriesController.php,v 1.3 2012-08-13 13:20:15 developer Exp $
+ * @version $Id: SeriesController.php,v 1.4 2012-12-25 01:57:52 developer Exp $
  *
  */
 class SeriesController extends Zend_Controller_Action
 {
 	public function init () {
 		//$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
-		//$ajaxContext->addActionContext( 'typehead', 'json' )
+		//$ajaxContext->addActionContext( 'typeahead', 'json' )
 		$this->view->setScriptPath(APPLICATION_PATH . 
 					'/views/scripts/');
 	}
@@ -37,8 +37,8 @@ class SeriesController extends Zend_Controller_Action
 		//var_dump($weekEnd->toString('YYYY-MM-dd'));
 		
 		
-		var_dump($seriesList);
-		die(__FILE__.': '.__LINE__);
+		//var_dump($seriesList);
+		//die(__FILE__.': '.__LINE__);
 		
 		//$this->render('under-constriction');
 	}
