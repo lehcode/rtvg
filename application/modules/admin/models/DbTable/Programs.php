@@ -1,19 +1,35 @@
 <?php
-defined('APP_STARTED') or die();
-class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
-{
 
-    protected $_name = 'rtvg_programs';
-    protected $_profiling = false;
+class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
+{
+	/**
+	 * 
+	 * Programs table
+	 * 
+	 * @var unknown_type
+	 */
+    protected $_name = 'programs';
     
     const FETCH_MODE = Zend_Db::FETCH_OBJ;
     
+    
     public function __construct($config=array()){
-    	parent::__construct( $config );
-    	$this->_profiling = Xmltv_Config::getProfiling();
+    	
+    	parent::__construct();
+		
+    	if (isset($config['tbl_prefix'])) {
+    		$pfx = (string)$config['tbl_prefix'];
+    	} else {
+    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix', 'rtvg_');
+    	}
+    	
+    	//var_dump($this);
+    	//die();
+    	
+    	$this->setName($this->_name);
     	
     }
-
+    
     public function getProgramsCountForWeek(Zend_Date $start=null, Zend_Date $end=null){
     	
     	//var_dump($this->_db);
@@ -263,5 +279,19 @@ class Admin_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		return $result;
     	
     }
+	/**
+	 * @return string
+	 */
+	public function getName() {
+		return $this->_name;
+	}
+
+	/**
+	 * @param string $_name
+	 */
+	public function setName( $string ) {
+		$this->_name = $string;
+	}
+
 }
 

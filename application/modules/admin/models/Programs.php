@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.16 2012-12-21 14:49:54 developer Exp $
+ * @version $Id: Programs.php,v 1.17 2012-12-25 01:57:53 developer Exp $
  */
 
 class Admin_Model_Programs 
@@ -62,9 +62,12 @@ class Admin_Model_Programs
 	private $_tolower_options=array('encoding'=>'UTF-8');
 	private $_regex_list='/[:;_,\.\[\]\(\)\\`\{\}"\!\+\?]+/';
 	private $_logger;
-	private $_nameRegex = '/^[\w]{2,}\s+[\w]{2,}\s?([\w-]{2,})?\s*(мл\.|ст\.|jr|sr)?$/ui';
-	private $_ageRatingRegex = '/\s\(?([\d]+)\+\)?$/ui';
-	private $_lAgeRatingRegex = '/^([\d]{1,2})\+\s/ui';
+	private $_nameRegex = '/^[\w]{2,}-?\s*[\w]{2,}-?\s*([\w]{2,})?\s*(мл\.|ст\.|jr|sr)?$/ui';
+	private $_ageRatingRegex = '/\s\(?([0-9]{1,2})\+\)?$/ui';
+	private $_lAgeRatingRegex = '/^([0-9]{1,2})\+\s/ui';
+	
+	const ERR_MISSING_PARAMS = "Пропущен параметр!";
+	const ERR_CANNOT_SAVE = "Не могу сохранить запись!";
 
 	/**
 	 * Model onstructor
@@ -162,6 +165,7 @@ class Admin_Model_Programs
 							}
 						}
 						
+						
 						if ($propsData){
 							try {
 								$propsAcrhive->insert($propsData);
@@ -187,6 +191,9 @@ class Admin_Model_Programs
 					if (!empty($descData)) {
 						$this->programsDescTable->delete("`hash`='".$programData['hash']."'");
 					}
+					if (!empty($propsData)) {
+						$this->programsPropsTable->delete("`hash`='".$programData['hash']."'");
+					}
 				}
 			} else {
 				echo "За этот период программ не найдено";
@@ -210,13 +217,17 @@ class Admin_Model_Programs
 	    
 	    if ($string){
 	        
+	        //var_dump($string);
+	        
 	        if (preg_match($this->_ageRatingRegex, $string, $m))
 		    	$r = (int)$m[1];
 		    elseif (preg_match($this->_lAgeRatingRegex, $string, $m))
 		        $r = (int)$m[1];
 		    
-		    if (isset($r))
-		        return $r;
+		    //var_dump($r);
+		    
+		    if ($r>0)
+		        return $r; 
 		    
 	    }
 	    
@@ -255,8 +266,8 @@ class Admin_Model_Programs
 		//Проверка возрастного рейтинга в названии
 		//var_dump(preg_match($this->_ageRatingRegex, $input));
 		//die();
-		if (preg_match($this->_ageRatingRegex, $input)) {
-			$result['rating'] = $this->extractAgeRating($input);
+		if ($rating = $this->extractAgeRating($input)) {
+			$result['rating'] = $rating;
 			$result['title']  = Xmltv_String::ucfirst($this->stripAgeRating($input));
 		} else {
 		    $result['title'] = Xmltv_String::ucfirst($input);
@@ -264,6 +275,7 @@ class Admin_Model_Programs
 		$result['title'] = str_replace('...', '…', $result['title']);
 		
 		//var_dump($result);
+		//die(__FILE__.': '.__LINE__);
 		
 		// Detect premiere
 		$premieresRegex = array(
@@ -293,21 +305,24 @@ class Admin_Model_Programs
 		// Обработка названий сериалов
 		$regex = '/\s*\("(.+)",\s+([\d])+-[\w]\s+серия\)/ui';
 		if (preg_match($regex, $result['title'], $m)){
-			$result['title']     = preg_replace($regex, '', $result['title']);
+			$result['title'] = Xmltv_String::str_ireplace($m[0], '', $result['title']);
 			$result['sub_title'] = trim($m[1]);
-			//$result['episode']['system'] = 'xmltv_ns';
-			$result['episode']['num']    = (int)$m[2];
-			$result['episode'] = Zend_Json::encode($result['episode']);
+			$result['episode'] = (int)$m[2];
 			
 		}
-		
+
+		$regex = '/^(.+),\s(ч|часть)\.?\s?([\d]+)\.?$/ui'; //"Горница", ч. 1.
+		if (preg_match($regex, $result['title'], $m)){
+			$result['title'] = trim($m[1]);
+			$result['episode'] = (int)$m[3];
+			
+		}
+
 		$regex = '/\s*\(\s*"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui'; //Опергруппа-2 ( "Деньги - это бумага", 1-я и 2-я серии)
 		if (preg_match($regex, $result['title'], $m)){
-			$result['title']     = preg_replace($regex, '', $result['title']);
+			$result['title'] = Xmltv_String::str_ireplace($m[0], '', $result['title']);
 			$result['sub_title'] = trim($m[1]);
-			//$result['episode']['system'] = 'xmltv_ns';
-			$result['episode']['num'] = (int)$m[2].','.(int)$m[3];
-			$result['episode'] = Zend_Json::encode($result['episode']);
+			$result['episode'] = (int)$m[2].','.(int)$m[3];
 			
 		}
 		
@@ -321,8 +336,7 @@ class Admin_Model_Programs
 			if (preg_match($r, $result['title'], $m)){
 				$result['title'] = trim($m[1]);
 				$result['sub_title'] = trim($m[3]);
-				//$result['episode']['system'] = 'xmltv_ns';
-				$result['episode']['num'] = (int)$m[2];
+				$result['episode'] = (int)$m[2];
 				$result['episode']  = Zend_Json::encode($result['episode']);
 				$result['category'] = $this->catIdFromTitle('познавательные');
 			}
@@ -341,11 +355,9 @@ class Admin_Model_Programs
 		foreach ($regex as $r) {
 			if (preg_match($r, $result['title'], $m)) {
 			    //var_dump($m);
-			    $result['title'] = preg_replace($r, '', $result['title']);
+			    $result['title'] = Xmltv_String::str_ireplace($m[0], '', $result['title']);
 				unset($m[0]);
-				//$result['episode']['system'] = 'xmltv_ns';
-				$result['episode']['num']    = implode(',', $m);
-				$result['episode'] = Zend_Json::encode($result['episode']);
+				$result['episode'] = implode(',', $m);
 				$result['category'] = $this->catIdFromTitle('сериал');
 				//var_dump($result);
 				//die(__FILE__.': '.__LINE__);
@@ -358,11 +370,9 @@ class Admin_Model_Programs
 		);
 		foreach ($regex as $r){
 			if (preg_match($r, $result['title'], $m)){
-				$result['title']             = trim($m[1]);
-				$result['sub_title']         = trim($m[2]).'. '.trim($m[4]);
-				//$result['episode']['system'] = 'xmltv_ns';
-				$result['episode']['num']    = (int)$m[3];
-				$result['episode']           = Zend_Json::encode($result['episode']);
+				$result['title'] = trim($m[1]);
+				$result['sub_title'] = trim($m[2]).'. '.trim($m[4]);
+				$result['episode'] = (int)$m[3];
 				$result['category'] = $this->catIdFromTitle('познавательные');
 			}
 		}
@@ -372,32 +382,28 @@ class Admin_Model_Programs
 		if (preg_match($regex, $result['title'], $m)){
 		    $result['title'] = trim($m[1]);
 			$result['sub_title'] = trim($m[3]);
-			//$result['episode']['system'] = 'xmltv_ns';
 			switch(trim($m[2])){
 				default:
 				case 'первый':
-					$result['episode']['num'] = 1;
+					$result['episode'] = 1;
 					break;
 				case 'второй':
-					$result['episode']['num'] = 2;
+					$result['episode'] = 2;
 					break;
 				case 'третий':
-					$result['episode']['num'] = 3;
+					$result['episode'] = 3;
 					break;
 				case 'четвертый':
-					$result['episode']['num'] = 4;
+					$result['episode'] = 4;
 					break;
 			}
-			$result['episode'] = Zend_Json::encode($result['episode']);
 		}
 		
 		$regex = '/^(.+)\s\((Фильм\s+[\d]+)-[\w]\s+-\s+"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui'; //Шериф (Фильм 5-й - "Сто тысяч для сына", 1-я и 2-я серии)
 		if (preg_match($regex, $result['title'], $m)){
 			$result['title'] = trim($m[1]);
 			$result['sub_title'] = trim($m[2]).'. '.trim($m[3]);
-			//$result['episode']['system'] = 'xmltv_ns';
-			$result['episode']['num'] = (int)trim($m[4]).','.trim($m[5]);
-			$result['episode'] = Zend_Json::encode($result['episode']);
+			$result['episode'] = (int)trim($m[4]).','.trim($m[5]);
 		}
 		
 		$sports = array(
@@ -464,7 +470,7 @@ class Admin_Model_Programs
 		);
 		foreach ($regex as $r){
 			if (preg_match($r, $result['title'], $m)){
-				$result['title']     = trim(trim($m[1]).'. '.trim($m[2]), ' .');
+				$result['title'] = trim(trim($m[1]).'. '.trim($m[2]), ' .');
 				$result['sub_title'] = isset($m[3]) ? trim($m[3]) : '' ;
 				$result['category'] = $this->catIdFromTitle('спорт');
 			}
@@ -524,8 +530,8 @@ class Admin_Model_Programs
 		    $comma = Xmltv_String::strpos($result['title'], ',');
 		    $title = trim( Xmltv_String::substr($result['title'], 0, $comma));
 		    $result['sub_title'] = Xmltv_String::ucfirst( trim( Xmltv_String::substr( $result['title'], $comma+1, Xmltv_String::strlen($result['title']))) );
-		    $result['title']     = $title;
-		    $result['category']  = $this->catIdFromTitle('новости');
+		    $result['title'] = $title;
+		    $result['category'] = $this->catIdFromTitle('новости');
 		}
 		
 		//Название с восклицательным знаком
@@ -616,14 +622,14 @@ class Admin_Model_Programs
 		foreach ($regex as $r){
 			if (preg_match($r, $result['sub_title'], $m)){
 				$result['sub_title'] = '';
-				//$result['episode']['system'] = 'xmltv_ns';
-				$result['episode']['num']    = (int)$m[1];
-				$result['episode'] = Zend_Json::encode($result['episode']);
+				$result['episode'] = (int)$m[1];
 			}
 		}
 		
-		$result['title']     = str_replace('...', '…', $result['title']);
-		//$result['title']     = str_replace('"', '', $result['title']);
+		$result['title'] = str_replace('...', '…', $result['title']);
+		//$result['title'] = str_replace('"', '', $result['title']);
+		$f = new Zend_Filter_StringTrim(array('charlist'=>'",!?:;- \/\''));
+		$result['title'] = $f->filter($result['title']);
 		$result['sub_title'] = trim($result['sub_title']);
 		
 		if (preg_match('/^([\p{Cyrillic}\s]+)\s+and\s+([\p{Cyrillic}\s]+)$/ui', $result['title'], $m)){
@@ -812,12 +818,22 @@ class Admin_Model_Programs
 		    
 		    $result = array();
 		    
-		    var_dump($desc);
+		    //var_dump($desc);
 		    
 		    //Проверка возрастного рейтинга в названии
 		    if ($r = $this->extractAgeRating($desc)) {
 		    	$result['rating'] = $r;
 		    	$desc = $this->stripAgeRating($desc);
+		    }
+		    
+		    //var_dump($result);
+		    //die(__FILE__.': '.__LINE__);
+		    
+		    $regex = '/^([\d]+)-я\sсерия$/ui'; //6-я серия (12+)
+		    if (preg_match($regex, $result['title'], $m)){
+		    	$result['episode'] = (int)$m[1];
+		    	$result['text'] = '';
+		    	return $result;
 		    }
 		    
 		    
@@ -836,15 +852,17 @@ class Admin_Model_Programs
 			    'романтическая комедия',
 		    );
 		    $regex= array(
-		    		'/^-?\s*('.implode('|', $movies).')(\.)(\s)([\w-]+),\s([\d]{4}).+$/ui', //- фильм-фэнтези. Индия, 2011г. 12+
-		    		'/^-?\s*('.implode('|', $movies).')\.?\s(\w+\s\w+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w-]+),\s([\d]{4}).+$/ui',
-		    		'/^-?\s*('.implode('|', $movies).')\.(\s)В главной роли\s([\w\s-]+)\.\s([\w-]+),\s([\d]{4}).+$$/ui',
-		    		'/^-?\s*(боевик)\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w-]+),\s([\d]{4}).+$/ui',
-		    		'/^-?\s*(боевик)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w-]+),\s([\d]{4}).+$/ui',
-		    		'/^-?\s*('.implode('|', $movies).')\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w-]+),\s([\d]{4}).+$/ui', //- приключенческая комедия. В ролях: Зэвьер Сэмюэл и Кевин Бишоп. Австралия-Великобритания, 2011г. 18+
-		    		'/^-?\s*(комедия)\s([\w\s-]+)\.(\s)([\w-]+),\s([\d]{4}).+$/ui',
-		    		'/^-?\s*(фильм)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w-]+),\s([\d]{4}).+$/ui', //- фильм Джеймса Кэмерона. В ролях: Леонардо Ди Каприо, Кейт Уинслет, Билли Зейн и Кэти Бэйтс. США, 1997г. 12+
-		    		'/^-?\s*(комедия)\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w-]+),\s([\d]{4}).+$/ui', //- комедия. В ролях: Гэри Энтин, Линдси Шоу и Роберт Адамсон. США, 2010г. 18+
+		    		'/^-?\s*('.implode('|', $movies).')(\.)(\s)([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм-фэнтези. Индия, 2011г. 12+
+		    		'/^-?\s*('.implode('|', $movies).')\.?\s(\w+\s\w+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
+		    		'/^-?\s*('.implode('|', $movies).')\.(\s)В главной роли\s([\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$$/ui',
+		    		'/^-?\s*(боевик)\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
+		    		'/^-?\s*(боевик)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
+		    		'/^-?\s*('.implode('|', $movies).')\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- приключенческая комедия. В ролях: Зэвьер Сэмюэл и Кевин Бишоп. Австралия-Великобритания, 2011г. 18+
+		    		'/^-?\s*(комедия)\s([\w\s-]+)\.(\s)([\w\s-]+),\s([\d]{4}).+$/ui',
+		    		'/^-?\s*(фильм)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм Джеймса Кэмерона. В ролях: Леонардо Ди Каприо, Кейт Уинслет, Билли Зейн и Кэти Бэйтс. США, 1997г. 12+
+		    		'/^-?\s*(фильм)\s([\w\s-]+)\.\sВ главной роли:?\s([\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм братьев Коэн. В главной роли Майкл Стулбарг. США-Великобритания-Франция, 2009. 16+
+		    		'/^-?\s*(комедия)\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- комедия. В ролях: Гэри Энтин, Линдси Шоу и Роберт Адамсон. США, 2010г. 18+
+		    		'/^-?\s*(вестерн)\.(\s)В ролях:\s([\w\s,-]+,?)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', //- вестерн. В ролях: Кристиан Бейл, Расселл Кроу, Чад Брамметт, Крис Браунинг, Кевин Дьюранд. США, 2007. 12+
 		    );
 		    foreach ($regex as $r){
 		    	if (preg_match($r, $desc, $m)){
@@ -904,6 +922,9 @@ class Admin_Model_Programs
 		    			case 'Великобритания-Франция-Германия':
 		    				$result['country']='gb-fr-de';
 		    				break;
+		    			case 'США-Великобритания-Франция':
+		    				$result['country']='us-gb-fr';
+		    				break;
 		    			default:
 		    				beak;
 		    		}
@@ -919,11 +940,11 @@ class Admin_Model_Programs
 		    }
 		    
 		    
-		    
+		    //'([-\w+\s\w+,^A-Z]+,?)'
 		    $regex= array(
-		    	'/^([\w\s]+)\s-\s(комедия)\.?\sВ главной роли\s([\w\s-]+)\.(\s)([\w-]+),\s([\d]{4}).*$/ui', //ПОМЕСТЬЕ - комедия. В главной роли Гэбриэл Диани. США, 2011г. 16+
-		    	'/^([\w\s,]+)\s-\s(фильм-фэнтези)(\s)([\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', //ЛЕВ, КОЛДУНЬЯ И ВОЛШЕБНЫЙ ШКАФ - фильм-фэнтези Эндрю Эдамсона. США-Новая Зеландия, 2005г. 0+
-		    	'/^([\w\s,]+)\s-\s(фильм-фэнтези)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //ПРИНЦ КАСПИАН - фильм-фэнтези. В ролях: Бен Барнс, Джорджи Хенли, Уильям Мозли, Скандер Кейнс и Анна Попплуэлл. Великобритания-США, 2008г. 0+
+		    	'/^([\w\s]+)\s-\s(комедия)\.?\sВ главной роли\s([-\w+\s\w+,^A-Z]+)\.(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //ПОМЕСТЬЕ - комедия. В главной роли Гэбриэл Диани. США, 2011г. 16+
+		    	'/^([\w\s,]+)\s-\s(фильм-фэнтези)(\s)([-\w+\s\w+,^A-Z]+)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', //ЛЕВ, КОЛДУНЬЯ И ВОЛШЕБНЫЙ ШКАФ - фильм-фэнтези Эндрю Эдамсона. США-Новая Зеландия, 2005г. 0+
+		    	'/^([\w\s,]+)\s-\s(фильм-фэнтези)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+ и [-\w+\s\w+,^A-Z]+)\.(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //ПРИНЦ КАСПИАН - фильм-фэнтези. В ролях: Бен Барнс, Джорджи Хенли, Уильям Мозли, Скандер Кейнс и Анна Попплуэлл. Великобритания-США, 2008г. 0+
 		    	'/^-(\s)фантастический\s(анимационный фильм)(\.)(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //- фантастический анимационный фильм. США, 2011г. 6+
 		    );
 		    foreach ($regex as $r) {
@@ -971,8 +992,57 @@ class Admin_Model_Programs
 		    
 		    
 		    
-		    //ЗАТЕРЯННЫЙ МИР - фантастико-приключенческий фильм Стивена Спилберга. В ролях: Джефф Голдблюм, Джулианна Мур и Ричард Аттенборо. США, 1997г. 12+
-		    if (preg_match('/^([\w\s,]+)\s-\s(фантастико-приключенческий фильм)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', $desc, $m)){
+		    $regex = array(
+		    	//Детективный сериал. Великобритания, 2001 - 2004гг. Режиссер Мартин Хатчингс. В ролях Тревор Ив, Сью Джонстон, Холи Эйрд, Клэр Гуз. Самые страшные слова для любого следователя “ "убийство раскрыть нельзя". Однако новые технологии позволяют решать самые непростые задачи, в том числе раскрывать преступления, совершенные много лет назад. Именно с этой целью был создан специальный "убойный" отдел под руководством старшего детектива Бойда. Бойду и его команде предстоит расследовать загадочную смерть фотожурналиста в автокатастрофе, двойное убийство, за которое женщина провела 25 лет в тюрьме, убийство полицейского и многие другие страшные преступления.
+		    	'/^(Детективный сериал)\.(\s)(\w+),\s+[\d]{4}\s+-\s+([\d]{4})\w+\.\sРежиссер:?\s+([\w\s-]+)\.\sВ ролях\s([-\w+\s\w+,^A-Z]+,?)\.\s(.+)/ui',
+		    	//Триллер, детектив. Studio Canal, Франция, 2005г. Режиссер: Жером Саль.Интерпол преследует неуловимого мошенника Энтони Циммера, специализирующегося на отмывании денег для русской мафии. Недавно Циммер сделал пластическую операцию, которая целиком изменила его внешность. Теперь единственная ниточка - любовница Энтони, обворожительная красотка Кьяра. Но Кьяра это тоже понимает, и заводит интрижку напоказ с ничего не подозревающим простаком Франсуа. Он того же роста и того же возраста, что и Циммер. И для спецслужб, и для мафии это достаточное основание, чтобы попытаться убить Франсуа.
+		    	'/^(Триллер|детектив).+\.\s([\w\s]+),\s(\w+),\s([\d]{4})г\.\sРежиссер:\s([\w\s-]+)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+,?)\.\s(.+)$/ui',
+			    //Комедия. Великобритания, 2004г. Режиссер: Джон МакКэй. В ролях: Сэм Рокуэлл, Кассандра Белл, Том Уилкинсон. Джим Крокер, дебошир и постоянный персонаж скандальной хроники лондонских газет, впервые в жизни влюбляется. Но дело в том, что избранница - американка и заочно терпеть Крокера не может. Джимми прикидывается сыном своего дворецкого, садится на атлантический лайнер и отправляется за девушкой своей мечты. Положение сильно осложняется тем, что и в Нью - Йорке немало людей, которые близко знакомы с Крокером.
+		    	'/^(Комедия)\.\(s+)(\w+),\s+([\d]+).+\s+Режиссер:\s+(.+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.(.+)$/ui',
+			    //Приключения. Таллинфильм, 1969г. Режиссер: Григорий Кроманов. В ролях: Александр Голобородько, Ингрид Андринь, Эльзе Радзиня, Ролан Быков, Ээве Киви, Улдис Ваздикс ХVI век. Лифляндия. В одном из аристократических домов умирает старый рыцарь Рисбитер. Он завещал сыну шкатулку с семейной реликвией. Духовные пастыри ближайшего монастыря хотят завладеть шкатулкой, чтобы приумножить славу обители. Молодой наследник согласен уступить церкви реликвию, но с одним условием: ему должны отдать в жены прекрасную Агнес, племянницу аббатисы женского монастыря. А сердце юной красавицы принадлежит свободолюбивому рыцарю в Габриэлю, другу всех обманутых и беззащитных.... Фильм снят по роману эстонского писателя Э. Борнхeэ "Последний день монастыря святой Бригитты".
+		    	'/^([\w\s,]+)\.(\s+)([\w\s-?\.?]+),\s+([\d]{4})г\.?\s+Режиссер:\s+(\w+\s\w+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.?\s+(.+)/ui',
+		    );
+		    foreach ($regex as $r){
+		        if (preg_match($r, $desc, $m)){
+		            //var_dump($m);
+		            
+		            $result['category'] = $this->catIdFromTitle(trim($m[1]));
+		            $result['studio']   = trim($m[2]);
+		            
+		            switch (trim($m[3])){
+		            	case 'Франция';
+		            		$result['country'] = 'fr';
+		            		break;
+		            	case 'Великобритания';
+		            		$result['country'] = 'gb';
+		            		break;
+		            }
+		            
+		            $result['year'] = (int)trim($m[4]);
+		            
+		            $directors = explode(',', $m[5]);
+		            foreach ($directors as $p){
+		            	if (($id=$this->personId(trim($p), 'director'))!==null)
+		            		$result['directors'][] = $id;
+		            }
+		            
+		            $actors = explode(', ', $m[6]);
+		            foreach ($actors as $p){
+		            	if (($id=$this->personId(trim($p), 'actor'))!==null)
+		            		$result['actors'][] = $id;
+		            }
+		            
+		            $desc = trim($m[7]);
+		            
+		            //var_dump($result);
+		            //var_dump($desc);
+		            //die(__FILE__.': '.__LINE__);
+		        }
+		    }
+		    
+		    
+			//ЗАТЕРЯННЫЙ МИР - фантастико-приключенческий фильм Стивена Спилберга. В ролях: Джефф Голдблюм, Джулианна Мур и Ричард Аттенборо. США, 1997г. 12+
+		    if (preg_match('/^([\w\s,]+)\s-\s(фантастико-приключенческий фильм)\s([\w\s-]+)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+ и [-\w+\s\w+,^A-Z]+)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', $desc, $m)){
 		        //var_dump($m);
 		        
 		        $result['category']  = $this->catIdFromTitle(trim($m[2]));
@@ -1003,16 +1073,7 @@ class Admin_Model_Programs
 		        //var_dump($result);
 		        //var_dump($desc);
 		        //die(__FILE__.': '.__LINE__);
-		    }
-		    
-		    
-		    if (preg_match('/^(Триллер|детектив)\.\s([a-z\s]+),\s(\w+),\s([\d]+)/ui', $desc, $m)){ //Триллер, детектив. Studio Canal, Франция, 2005г. Режиссер: Жером Саль.Интерпол преследует неуловимого мошенника Энтони Циммера, специализирующегося на отмывании денег для русской мафии. Недавно Циммер сделал пластическую операцию, которая целиком изменила его внешность. Теперь единственная ниточка - любовница Энтони, обворожительная красотка Кьяра. Но Кьяра это тоже понимает, и заводит интрижку напоказ с ничего не подозревающим простаком Франсуа. Он того же роста и того же возраста, что и Циммер. И для спецслужб, и для мафии это достаточное основание, чтобы попытаться убить Франсуа.
-		    	
-		        var_dump($m);
-		        
-		        die(__FILE__.': '.__LINE__);
-		        
-		    } elseif (preg_match('/^([\w\s,]+)\.\s+(.+)\,\s+(\w+),\s+([\d]{4})г\.\s+Режиссер:\s+([\w\s]+)\.\sСценарий:\s+([\w\s]+)\.\s+В ролях:\s+([\w\s"\',]+)\.\s(.+)/ui', $desc, $m)){
+		    } elseif (preg_match('/^([\w\s,]+)\.\s+(.+)\,\s+(\w+),\s+([\d]{4})г\.\s+Режиссер:\s+([-\w+\s\w+,^A-Z]+)\.\sСценарий:\s+([-\w+\s\w+,^A-Z]+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.\s(.+)/ui', $desc, $m)){
 		        //Фантастика, приключения, мелодрама. Warner Bros. - DreamWorks SKG, США, 2001г. Режиссер: Стивен Спилберг. Сценарий: Стивен Спилберг. В ролях: Стивен Спилберг, Бонни Кертис, Хэйли Джоэл Осмент, Джуд Ло, Фрэнсис О"Коннор, Брендан Глисон, Сэм Робардс, Уильям Херт, Джейк Томас, Кен Леунг. Середина 21 века. Из - за глобального потепления климат на планете становится непредсказуемым. Люди создают новое поколение роботов, способное помочь им в борьбе за выживание. И, хотя природные ресурсы скудеют, высокие технологии развиваются со стремительной скоростью. Киборги живут бок о бок с людьми и выручают их во всех сферах деятельности. И тут наука преподносит человечеству очередной сюрприз - создается чудо - робот совершенно иного порядка: с разумом, нервной системой, способный испытывать все человеческие эмоции и главное - любить. Это настоящий подарок для супружеских пар, не имеющих детей. Творение нарекают Дэвидом. Кибернетический мальчик, по виду ничем не отличающийся от живого ребенка, попадает в семью ученых Генри и Моники, участвовавших в работе над проектом, и становится их сыном. Но готовы ли его новые родители ко всем последствиям такого рискованного эксперимента?
 		    	//var_dump($m);
 		        
@@ -1053,85 +1114,7 @@ class Admin_Model_Programs
 		        //var_dump($result);
 		    	//die(__FILE__.': '.__LINE__);
 		    	
-		    } elseif (preg_match('/^([\w\s,]+)\.\s+([\w\s-?\.?]+),\s+([\d]{4})г\.?\s+Режиссер:\s+(\w+\s\w+)\.\s+В ролях:\s+([\w+\s\w+,^A-Z]+)\.?\s+(.+)/ui', $desc, $m)){
-		    	//Приключения. Таллинфильм, 1969г. Режиссер: Григорий Кроманов. В ролях: Александр Голобородько, Ингрид Андринь, Эльзе Радзиня, Ролан Быков, Ээве Киви, Улдис Ваздикс ХVI век. Лифляндия. В одном из аристократических домов умирает старый рыцарь Рисбитер. Он завещал сыну шкатулку с семейной реликвией. Духовные пастыри ближайшего монастыря хотят завладеть шкатулкой, чтобы приумножить славу обители. Молодой наследник согласен уступить церкви реликвию, но с одним условием: ему должны отдать в жены прекрасную Агнес, племянницу аббатисы женского монастыря. А сердце юной красавицы принадлежит свободолюбивому рыцарю в Габриэлю, другу всех обманутых и беззащитных.... Фильм снят по роману эстонского писателя Э. Борнхeэ "Последний день монастыря святой Бригитты".
-		        //var_dump($m);
-		        
-		        $result['category'] = $this->catIdFromTitle(trim($m[1]));
-		        
-		        switch (Xmltv_String::strtolower(trim($m[2]))){
-		            case 'таллинфильм':
-		            	$result['country'] = 'ee'; //http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-		            	break;
-		        }
-		        
-		        $result['year']     = (int)trim($m[3]);
-		        $directors = explode(',', trim($m[4]));
-		        foreach ($directors as $p){
-		        	if (($id=$this->personId(trim($p), 'director'))!==null)
-		        		$result['directors'][] = $id;
-		        }
-		        
-				$actors = explode(',', trim($m[5]));
-				foreach ($actors as $p){
-					if (($id=$this->personId(trim($p), 'actor'))!==null)
-		        		$result['actors'][] = $id;
-				}
-				
-				$desc = Xmltv_String::str_ireplace($m[1], '', $desc);
-				$desc = Xmltv_String::str_ireplace($m[2], '', $desc);
-				$desc = Xmltv_String::str_ireplace($m[3], '', $desc);
-				$desc = Xmltv_String::str_ireplace('Режиссер: '.$m[4], '', $desc);
-				unset($e[count($e)-2]);
-				$desc = trim($m[6]);
-				
-				
-				//var_dump($desc);
-		        //var_dump($result);
-		        //die(__FILE__.': '.__LINE__);
-		        
-		    } elseif (preg_match('/^(\w+)\.\s+(\w+),\s+([\d]+).+\s+Режиссер:\s+(.+)\.\s+В ролях:\s+([\w+\s\w+,^A-Z]+)\.(.+)$/ui', $desc, $m)){
-		        //Комедия. Великобритания, 2004г. Режиссер: Джон МакКэй. В ролях: Сэм Рокуэлл, Кассандра Белл, Том Уилкинсон. Джим Крокер, дебошир и постоянный персонаж скандальной хроники лондонских газет, впервые в жизни влюбляется. Но дело в том, что избранница - американка и заочно терпеть Крокера не может. Джимми прикидывается сыном своего дворецкого, садится на атлантический лайнер и отправляется за девушкой своей мечты. Положение сильно осложняется тем, что и в Нью - Йорке немало людей, которые близко знакомы с Крокером.
-		    	//var_dump($m);
-		    	//die(__FILE__.': '.__LINE__);
-		    	
-		        $result['category'] = $this->catIdFromTitle(trim($m[1]));
-		    	
-		    	switch (Xmltv_String::strtolower(trim($m[2]))){
-		    		case 'великобритания':
-		    		    $result['country'] = 'gb'; //http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-		    		    break;
-		    	}
-		    	
-		    	$result['year'] = (int)trim($m[3]);
-		    	
-				$directors = explode(',', trim($m[4]));
-				foreach ($directors as $p){
-					if (($id=$this->personId(trim($p), 'director'))!==null)
-					    $result['directors'][] = $id;
-				}
-		        
-		    	$desc = Xmltv_String::str_ireplace($m[1], '', $desc);
-		    	$desc = Xmltv_String::str_ireplace($m[2], '', $desc);
-		    	$desc = Xmltv_String::str_ireplace($m[3], '', $desc);
-		    	$desc = Xmltv_String::str_ireplace('Режиссер: '.$m[4], '', $desc);
-		    	
-		    	if (Xmltv_String::stristr(trim($m[5]), '.')) {
-		    	    $e = explode('.', trim($m[5]));
-		    	    $actors = explode(',', $e[0]);
-			    	foreach ($actors as $p){
-			        	if (($id = $this->personId(trim($p), 'actor'))!==null)
-							$result['actors'][] = $id;
-			        }
-		    	    unset($e[count($e)-1]);
-		    	    $desc = implode('. ', $e).'.';
-		    	}
-		    	
-		    	//var_dump($result);
-		    	//var_dump($desc);
-		    	//die(__FILE__.': '.__LINE__);
-		    	
-		    }  elseif (preg_match('/^(.+)\.?\.?(\.|!|\?)\s+([\w+\s\w+,^A-Z]+,?)\.?$/ui', $desc, $m)){
+		    } elseif (preg_match('/^(.+)\.?\.?(\.|!|\?)\s+([-\w+\s\w+,^A-Z]+,?)\.?$/ui', $desc, $m)){
 		        //var_dump($m);
 		        $actors = explode(',', trim($m[3]));
 		        //var_dump($actors);
@@ -1148,17 +1131,18 @@ class Admin_Model_Programs
 			
 		    if (Xmltv_String::stristr($desc, 'В ролях') || Xmltv_String::stristr($desc, 'Звезды кино')){
 		        $result['actors']=array();
-		        if (preg_match('/^(.*)\s(В\sролях|Звезды\sкино):\s([\w+\s\w+,^A-Z]+,?)\.?\s*(.*)$/ui', $desc, $m)){
+		        if (preg_match('/^(.*)\s(В\sролях|Звезды\sкино):\s([-\w+\s\w+,^A-Z]+,?)\.?\s*(.*)$/ui', $desc, $m)){
 		            //var_dump($m);
 			        $result['text'] = trim($m[1]);
 			        $actors = explode(', ', $m[3]);
-			        //var_dump($actors);
 			        foreach ($actors as $p){
 			            if (($id = $this->personId(trim($p), 'actor'))!==null)
 							$result['actors'][] = $id;
 			        }
 			        $desc = @trim($m[1]).@trim($m[4]);
 		        }
+		        //var_dump($result);
+		        //var_dump($desc);
 		        //die(__FILE__.': '.__LINE__);
 		    }
 		    
@@ -1196,6 +1180,8 @@ class Admin_Model_Programs
 	public function personId($name=null, $position='actor'){
 		
 	    if ($name){
+	        //var_dump($name);
+	        //var_dump(preg_match($this->_nameRegex, $name, $m));
 	        if (preg_match($this->_nameRegex, $name, $m)){
 	            switch ($position){
 	                case 'actor':
@@ -1227,23 +1213,24 @@ class Admin_Model_Programs
 	 * @throws Exception
 	 * @return boolean
 	 */
-	public function saveDescription($desc=array()){
+	public function saveDescription($data=array()){
 		
-		if( empty($desc) || !is_array($desc) )
-		throw new Exception("Пропущен или неверно указан один или все параметры для ".__METHOD__, 500);
-		
-		try {
-			$this->programsDescTable->insert( $desc );
-		} catch (Exception $e) {
-			if ($e->getCode()==1062) {
-				return true;
-				//$this->programsDescTable->update( $description, "`hash`='$hash'" );
-			} else {
-				echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
-				die(__FILE__.': '.__LINE__);
+		if( !empty($data) && is_array($data) ) {
+			try {
+				$this->programsDescTable->insert( $data );
+			} catch (Exception $e) {
+				if ($e->getCode()==1062) {
+				    try {
+				        $this->programsDescTable->update($data, "hash = '".$data['hash']."'");
+				    } catch (Zend_Db_Table_Exception $e) {}
+				    return true;
+				} else {
+					throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+				}
 			}
+		} else {
+		    throw new Exception(self::ERR_MISSING_PARAMS, 500);
 		}
-		
 	}
 
 
@@ -1618,418 +1605,10 @@ class Admin_Model_Programs
 		return $info;
 	}
 
-
-	private function _processSportsTitle ($info=array()) {
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		$trim=new Zend_Filter_StringTrim( $this->_trim_options );
-		
-		if( Xmltv_String::stristr($info['title'], 'чемпионат ')
-		|| Xmltv_String::stristr( $info['title'], 'кубок ' )
-		|| Xmltv_String::stristr( $info['title'], 'лига чемпионов' )
-		|| Xmltv_String::stristr( $info['title'], 'американский футбол' ) 
-		|| Xmltv_String::stristr( $info['title'], 'мини-футбол' ) 
-		|| Xmltv_String::stristr( $info['title'], 'хокке'  ) 
-		|| Xmltv_String::stristr( $info['title'], 'баскетбол' ) 
-		|| Xmltv_String::stristr( $info['title'], 'теннис' ) 
-		|| Xmltv_String::stristr( $info['title'], 'волейбол' ) 
-		|| Xmltv_String::stristr( $info['title'], 'гандбол' ) 
-		|| Xmltv_String::stristr( $info['title'], 'регби' ) 
-		|| Xmltv_String::stristr( $info['title'], 'биатлон' ) 
-		|| Xmltv_String::stristr( $info['title'], 'снукер' )
-		|| Xmltv_String::stristr( $info['title'], 'фигурное катание' )
-		|| Xmltv_String::stristr( $info['title'], 'автоспорт' )
-		|| Xmltv_String::stristr( $info['title'], 'тимберспорт' )
-		|| Xmltv_String::stristr( $info['title'], 'кубка дэвиса' )
-		|| preg_match( '/плей[- ]?офф/iu', $info['title'] )
-		|| Xmltv_String::stristr( $info['title'], 'бокс' )
-		|| preg_match( '/^борьба\.? (.+)$/iu', $info['title'] ) 
-		|| preg_match( '/^.+\. Бойцовский клуб\.? (.+)$/u', $info['title'] ) 
-		|| preg_match( '/^.* ?бокс\.? (.+)$/iu', $info['title'] ) 
-		|| preg_match( '/^л[её]гкая атлетика\.? (.+)$/iu', $info['title'] ) 
-		|| preg_match( '/^(стиль\.)? спортивные танцы\.? (.+)$/iu', $info['title'] ) 
-		|| Xmltv_String::stristr( $info['title'], 'большой ринг' )) {
-			
-			if (strstr($info['title'], '.')) {
-				
-				$parts = explode( '.', $info['title'] );
-				if (Xmltv_String::strlen($trim->filter( $parts[1] ))==1 && isset($parts[2])) {
-					$info['title'] = $trim->filter( $parts[0] ) . '. ' . $trim->filter( $parts[1] ).'. '.$trim->filter( $parts[2] );
-					unset( $parts[2] );
-				} else {
-					$info['title'] = $trim->filter( $parts[0] ) . '. ' . $trim->filter( $parts[1] );
-				}
-				unset( $parts[0] );
-				unset( $parts[1] );
-				$info['sub_title'] = strlen( $trim->filter( implode( '. ', $parts ) ) ) > 1 . '.' ? $trim->filter( 
-				implode( '. ', $parts ) . '.' ) : '';
-				
-				$info = $this->setProgramCategory( $info, 'Спорт' );
-				
-			} else {
-				
-				$info['sub_title'] = '';
-				$info = $this->setProgramCategory( $info, 'Спорт' );
-				
-			}
-		} 
-		
-		
-		
-		return $info;
-	}
-
-	/*
-	private function _processDocumentaryTitle ($info=array()) {
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		$trim=new Zend_Filter_StringTrim( $this->_trim_options );
-		
-		if( Xmltv_String::stristr( $info['title'], 'дворцы европы'  ) ) {
-			$parts=explode( '.', $info['title'] );
-			$info['title']=$trim->filter( $parts[0] );
-			$info['sub_title']=$trim->filter( $parts[1] );
-			$info=$this->setProgramCategory( $info, 'Документальный фильм' );
-		} elseif( preg_match( '/^(aсademia\.) (.+\.?)$/iu', $info['title'], $m ) ) {
-			$parts=explode( '.', $m[2] );
-			$info['title']=$trim->filter( $m[1] ) . ' ' . $trim->filter( $parts[0] );
-			$info['sub_title']=$trim->filter( $parts[1] );
-			$info=$this->setProgramCategory( $info, 'Документальный фильм' );
-		} elseif( preg_match( '/(хроники московского быта\.?)(.*)/iu', $info['title'], $m ) 
-		|| preg_match( '/(тайны нашего кино\.?)(.*)/iu', $info['title'], $m ) ) {
-			$info['title']=@isset( $m[1] ) ? $m[1] : $info['title'];
-			$info['sub_title']=@isset( $m[2] ) ? $m[2] : '';
-			$info=$this->setProgramCategory( $info, 'Документальный фильм' );
-		} elseif (Xmltv_String::stristr($info['title'], 'документал')) {
-			$info=$this->setProgramCategory( $info, 'Документальный фильм' );
-		} 
-		
-		return $info;
-	}
-	*/
-
-	/**
-	 * 
-	 * @param unknown_type $info
-	 * @throws Exception
-	 * @return Ambigous <string, mixed>
-	 * @deprecated
-	 */
-	/*
-	private function _processMovies($info=array()){
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		$trim    = new Zend_Filter_StringTrim( $this->_trim_options );
-		$tolower = new Zend_Filter_StringToLower( $this->_tolower_options );
-		$serializer = new Zend_Serializer_Adapter_Json();
-		$logger = new Zend_Log( new Zend_Log_Writer_Stream( ROOT_PATH . '/log/parse-movies.log' ) );
-		
-		if (Xmltv_String::stristr($info['title'], 'в многосерийном фильме') ) {
-			
-			$info = $this->setProgramCategory($info, 'Многосерийный фильм');
-			$actors_table = new Admin_Model_DbTable_Actors();
-			$props_table = new Admin_Model_DbTable_ProgramsProps();
-			
-			if (preg_match_all('/(\p{Cyrillic}+ \p{Cyrillic}+,? )+ в?/iu', $info['title'], $m)) {
-				$actors = Xmltv_String::str_ireplace(' в', '', $m[0][0]);
-				if (Xmltv_String::stristr($actors, ',')) {
-					if ($actors = explode(',', $actors)) {
-						foreach ($actors as $k=>$a) {
-							$aa = explode(' ', trim($a));
-							if ( count( $aa==2 ) ) {
-								
-								$aaa['f_name']=trim($aa[0]);
-								$aaa['s_name']=trim($aa[1]);
-								$actor_id = $this->_saveActor($aaa);
-								$props = $this->_addActorToProps($actor_id, $info);
-								
-							}
-						}
-						$parts = explode('в многосерийном фильме', $info['title']);
-						if( Xmltv_String::stristr($parts[0], 'премьера') ) {
-							$info['title']='Премьера. ';
-						}
-						$info['title'].= trim($parts[1]);
-						$info['alias'] = $this->_makeAlias(trim($parts[1]));
-					} else {
-						if (Xmltv_Config::getDebug()) {
-							$msg = print_r($info, true);
-							$logger->debug( __LINE__.':'. $msg );
-						}
-					}
-					
-				} else {
-					if (Xmltv_Config::getDebug()) {
-						$msg = print_r($info, true);
-						$logger->debug( __LINE__.':'. $msg );
-					}
-				}
-				
-				//$parts = explode('. ', $info['title']);
-				
-				
-			} else {
-				if (Xmltv_Config::getDebug()) {
-					$msg = print_r($info, true);
-					$logger->debug( __LINE__.':'. $msg );
-				}
-			}
-		} elseif ( preg_match('/^.*премьера[\.!]? "?(\p{Cyrillic}+ \p{Cyrillic}+) в .+ "?(.+)"/iu', $info['title'], $m)
-		|| preg_match('/Премьера. Фильм (\p{Cyrillic}+ \p{Cyrillic}+) "(.+)"/iu', $info['title'], $m) ) {
-			//die(__FILE__.': '.__LINE__);
-			$actor = explode( ' ', trim( $m[1] ) );
-			$actor_id = $this->_saveActor(array(
-				'f_name'=>trim($actor[0]),
-				's_name'=>trim($actor[1])
-			));
-			$props = $this->_addActorToProps($actor_id, $info);
-			$info['title']='Премьера. "'.$m[2].'"';
-			$info['alias']= $this->_makeAlias($m[2]);
-			
-		}
-		
-		if(preg_match('/^Премьера. (\p{Cyrillic}+ \p{Cyrillic}+) в детективе "(.+)" из цикла "(.+)"/iu', $info['title'], $m)) {
-			$actor = explode(' ', trim( $m[1] ) );
-			if (count($actor)==2) {
-				$actor_id = $this->_saveActor(array(
-					'f_name'=>$actor[0],
-					's_name'=>$actor[1]
-				));
-				$this->_addActorToProps($actor_id, $info);
-			}
-			
-			$info['title'] = 'Премьера. "'.$m[3].'. '.$m[2].'"';
-			$info['alias'] = $this->_makeAlias($info['title']);
-		}
-		
-		
-		if (Xmltv_String::stristr($info['title'], 'в детективе') ) {
-			
-			if (Xmltv_Config::getDebug()) {
-				$parts = explode('в детективе', $info['title']);
-				$msg = print_r($info, true);
-				$logger->debug( __LINE__.':'. $msg.': '.$parts );
-			}
-			
-			$info = $this->setProgramCategory($info, 'Остросюжетный детектив');
-			
-		}
-		
-		if (Xmltv_String::stristr($info['title'], 'многосерийный фильм') ) {
-			
-			if (Xmltv_Config::getDebug()) {
-				$parts = explode('многосерийный фильм', $info['title']);
-				$msg   = print_r($info, true);
-				$logger->debug( __LINE__.':'. $msg.': '.$parts );
-			}
-			
-			$info = $this->setProgramCategory($info, 'Многосерийный фильм');
-			$info['alias'] = Xmltv_String::str_ireplace('многосерийный фильм', '', $info['title']);
-			
-			
-		}
-		
-		if (Xmltv_String::stristr($info['title'], 'криминальный сериал')) {
-
-			if (Xmltv_Config::getDebug()) {
-				$parts = explode('криминальный сериал', $info['title']);
-				$msg = print_r($info, true);
-				$logger->debug( __LINE__.':'. $msg.': '.$parts );
-			}
-			
-			$info = $this->setProgramCategory($info, 'Криминальный сериал');
-			$info['alias'] = Xmltv_String::str_ireplace('криминальный сериал', '', $info['title']);
-			
-			
-		}
-		
-		if (Xmltv_String::stristr($info['title'], 'остросюжетный детектив')) {
-			
-			if (Xmltv_Config::getDebug()) {
-				$msg = print_r($info, true);
-				$logger->debug( __LINE__.':'. $msg );
-			}
-			
-			$info = $this->setProgramCategory($info, 'Остросюжетный детектив');
-			$info['alias'] = $this->_makeAlias( $info['title'] );
-			$info['title'] = Xmltv_String::str_ireplace('остросюжетный детектив', '', $info['title']);
-			
-		}
-		
-		$info['alias'] = $trim->filter($info['alias']);
-		return $info;
-		
-	}
-	*/
 	
-	/**
-	 * 
-	 * @param unknown_type $info
-	 * @throws Exception
-	 * @return unknown
-	 * @deprecated
-	 */
-	/*
-	private function _processSeries ($info=array()) {
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		$trim    = new Zend_Filter_StringTrim( $this->_trim_options );
-		$tolower = new Zend_Filter_StringToLower( $this->_tolower_options );
-		
-		if( (preg_match( '/[0-9]+-я /iu', $info['title'] ) || preg_match( '/[0-9]+-я /iu', $info['sub_title'] )) ||
-			( preg_match( '/сери[яиал]/iu', $info['title'] ) || preg_match( '/сери[яиал]/iu', $info['sub_title'] ) ) ) {
-			$info = $this->setProgramCategory( $info, 'Сериал' );
-		}
-		
-		$logger = new Zend_Log( new Zend_Log_Writer_Stream( ROOT_PATH . '/log/parse-series.log' ) );
-		
-		if (preg_match_all('/(\p{Cyrillic}+ \p{Cyrillic}+,? ? в [теле]?сериале) "(.+)"/iu', $info['title'], $m)) {
-			if (Xmltv_Config::getDebug()) {
-				$msg = print_r($info, true);
-				$logger->debug( __LINE__.':'. $msg );
-			}
-			$actors = Xmltv_String::str_ireplace(' в', '', $m[0][0]);
-		}
-		
-		return $info;
-	}
-	*/
+	
 
 	
-	/**
-	 * 
-	 * @param unknown_type $info
-	 * @throws Exception
-	 * @return string
-	 * @deprecated
-	 */
-	/*
-	private function _checkLive ($info = array()) {
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		$tolower = new Zend_Filter_StringToLower( $this->_tolower_options );
-		$trim = new Zend_Filter_StringTrim( $this->_trim_options );
-		
-		if( preg_match( '/(.+\.?) прям(ая|ой) (трансляция|эфир)/iu', $info['title'], $m ) 
-		|| preg_match( '/(.+\.?) трансляция из.+$/iu', $info['title'], $m ) 
-		|| Xmltv_String::stristr( $info['title'], 'live' )) {
-			$info['title'] = $trim->filter( Xmltv_String::str_ireplace( 'live', '', $info['title'] ) );
-			$info['live'] = 1;
-			$parts = explode( '.', $m[1] );
-			$info['title'] = $trim->filter( $parts[0] ) . '. ' . $trim->filter( $parts[1] );
-			unset( $parts[0] );
-			unset( $parts[1] );
-			$info['sub_title'] = implode( '. ', $parts );
-		}
-		return $info;
-	}
-	*/
-
-	/**
-	 * @deprecated
-	 */
-	/*
-	private function _processBreak ($info=array()) {
-		
-		if( empty( $info ) )
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		if( preg_match( '/^внимание\!?.+$/iu', $info['title'] ) 
-		|| Xmltv_String::stristr( $info['title'], 'профилактика' ) 
-		|| Xmltv_String::stristr( $info['title'], 'канал заканчивает' ) ) {
-			$info['title']='Перерыв в вещании канала';
-			$info['sub_title']='';
-		}
-		return $info;
-	
-	}
-	*/
-
-	/*
-	private function _processCartoonsTitle ($info=array()) {
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		if( Xmltv_String::stristr( $info['title'], 'мультф') 
-		|| Xmltv_String::stristr( $info['title'], 'мультиплик') ) {
-			$info=$this->setProgramCategory( $info, 'Мультфильм' );
-		}
-		return $info;
-	}
-	*/
-
-	/*
-	private function _processMusicTitle ($info=array()) {
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		if( preg_match( '/ ?музыка /isu', $info['title'] ) 
-		|| preg_match( '/ ?клип(ы)? /isu', $info['title'] ) 
-		|| preg_match( '/ ?music ?/isu', $info['title'] ) ) {
-			$info=$this->setProgramCategory( $info, 'Музыка' );
-		}
-		return $info;
-	
-	}
-	*/
-
-	/*
-	private function _processMiscTitle ($info=array()) {
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		$trim=new Zend_Filter_StringTrim( array('charlist'=>$this->_trim_thars) );
-		
-		if( preg_match( '/^(\.\.\.).*(.+).*(\.\.\.)$/iu', $info['title'], $m ) ) {
-			$info['title']=Xmltv_String::ucfirst( $trim->filter( $m[2] ) );
-		}
-		if( preg_match( '/^(И другие)\.\.\.(.+)$/iu', $info['title'], $m ) ) {
-			$info['title']=Xmltv_String::ucfirst( $trim->filter( $m[2] ) ) . ' ' . Xmltv_String::strtolower( 
-			$trim->filter( $m[1] ) );
-		}
-		if( preg_match( '/(.+)\((.+)\)/', $info['title'], $m ) ) {
-			$info['title']=$trim->filter( $m[1] );
-			$info['sub_title']=$trim->filter( $m[2] );
-		}
-		return $info;
-	}
-	*/
-	
-	/*
-	private function _processKinoreysTitle ($info=array()) {
-		
-		if( empty( $info ) ) 
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		return $info;
-	
-	}
-	
-	private function _processSportsAnalyticsTitle($info=array()){
-		
-		if( empty( $info ) )
-		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		if( Xmltv_String::stristr($info['title'], 'обзор матч') ) {
-			$info = $this->setProgramCategory( $info, 'Спортивная аналитика' );
-		}
-		return $info;
-		
-	}
-	*/
 	
 	public function getPremieresCurrentWeek(){
 		
@@ -2064,53 +1643,12 @@ class Admin_Model_Programs
 		//var_dump($weekEnd->toString(Zend_Date::DATE_MEDIUM));
 	}
 	
-	public function parseProgramXml($xml=null){
-		
-		if( !$xml )
-			throw new Exception(__METHOD__." - Не передан XML файл для обработки.", 500);
-		
-		$info    = array();
-		$attrs   = $xml->attributes();
-		$tolower = new Zend_Filter_StringToLower();
-		/*
-		 * calcuate dates
-		 */
-		
-		$dates['end'] = new Zend_Date($date_str, $f);
-		$info ['start'] = $dates['start']->toString("yyyy-MM-dd HH:mm:ss");
-		$info ['end']   = $dates['end']->toString("yyyy-MM-dd HH:mm:ss");
-		/*
-		 * channel ID
-		 */
-		$info ['ch_id'] = (int)$attrs->channel;
-		/*
-		 * category
-		 */
-		
-		
-		$cat_title = @isset($xml->category) ? (string)$xml->category : 0 ;
-		$info = $this->setProgramCategory($info, $cat_title);
-		
-		//var_dump($info);
-		//var_dump($xml->category);
-		//die(__FILE__.': '.__LINE__);
-		
-		$info ['title'] = (string)$xml->title;
-		$info ['alias'] = $this->_makeAlias((string)$xml->title);
-		$info ['sub_title'] = '';
-		//$info ['hash'] = $hash;
-		//$info = $this->makeTitles ( $info );
-		/*
-		if (Xmltv_String::stristr($tolower->filter((string)$xml->title), 'премьера') ||
-		Xmltv_String::stristr($tolower->filter((string)$xml->title), 'premiere')) {
-			$info = $this->savePremiere($info);
-		}
-		*/
-		
-		return $info;
-		
-	}
-	
+	/**
+	 * 
+	 * @param  string $input
+	 * @throws Exception
+	 * @return string
+	 */
 	private function _getDateString($input=null){
 		
 		if(!$input)
@@ -2126,6 +1664,7 @@ class Admin_Model_Programs
 		return $date['year'].'-'.$date['month'].'-'.$date['day'].' '.$date['hours'].':'.$date['minutes'].':'.$date['seconds'].' '.$date['gmt_diff'];
 		
 	}
+	
 	
 	public function saveActor($data=array()){
 		
@@ -2207,26 +1746,63 @@ class Admin_Model_Programs
 	 * @throws Exception
 	 * @return unknown|Ambigous <mixed, multitype:>
 	 */
-	public function saveProgram($info=array()){
+	public function saveProgram($data=array()){
 		
-		if (!empty($info) && is_array($info)) {
-			try {
-				$hash = $this->programsTable->insert($info);
+		if (!empty($data) && is_array($data)) {
+		    try {
+				$hash = $this->programsTable->insert($data);
 			} catch (Exception $e) {
+			    //var_dump($e->getCode());
+			    //die(__FILE__.': '.__LINE__);
 				if ($e->getCode()==1062) {
-					return $info['hash'];
+				    try {
+				        $this->programsTable->update($data, "hash = '".$data['hash']."'");
+				    } catch (Zend_Db_Table_Exception $e) {}
+				    return $data['hash'];
 				} else {
 					throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 				}
 			}
 			
 			if (!$hash)
-				throw new Exception("Ошибка сохранения в ".__METHOD__."<br />Данные: ".print_r($info, true));
+				throw new Exception(self::ERR_CANNOT_SAVE);
 			
 			return $hash;
 		} else {
-		    throw new Exception("Пропущен один или все параметры для ".__METHOD__);
+		    throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
 		}
+	}
+	
+	/**
+	 * 
+	 * @param  array $info
+	 * @throws Zend_Exception
+	 * @return string
+	 */
+	public function saveProps($data=array()){
+		
+	    if (!empty($data) && is_array($data)) {
+	    	try {
+	    		$hash = $this->programsPropsTable->insert($data);
+	    	} catch (Exception $e) {
+	    		if ($e->getCode()==1062) {
+	    		    try {
+	    		        $this->programsPropsTable->update($data, "hash = '".$data['hash']."'");
+	    		    } catch (Zend_Db_Table_Exception $e) {}
+	    		    return $data['hash'];
+	    		} else {
+	    			throw new Zend_Exception($e->getMessage(), $e->getCode());
+	    		}
+	    	}
+	    		
+	    	if (!$hash)
+	    		throw new Zend_Exception(self::ERR_CANNOT_SAVE, 500);
+	    		
+	    	return $hash;
+	    } else {
+	    	throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
+	    }
+	    
 	}
 	
 	/**
@@ -2423,12 +1999,17 @@ class Admin_Model_Programs
 		
 		if($input) {
 		    $result = $input;
+		    $result = str_replace(array('"', '.', ',', '...', '…', '!', '?', ':', ';', '-'), ' ', $result );
 		    $result = Xmltv_String::str_ireplace( 'ё', 'е', $result );
 		    $result = Xmltv_String::str_ireplace( 'Ё', 'Е', $result );
 		    $result = Xmltv_String::str_ireplace( '+', '-плюс-', $result );
 		    $result = preg_replace('/[^0-9\p{Cyrillic}\p{Latin}]+/ui', ' ', $result);
-		    $todash = new Zend_Filter_Word_SeparatorToDash(' ');
-		    $result = Xmltv_String::strtolower($todash->filter( $result ));
+		    $f = new Zend_Filter_Word_SeparatorToSeparator('  ', ' ');
+		    $result = $f->filter($result);
+		    $f = new Zend_Filter_StringTrim(array('charlist'=>'".,…!?:;- \/\''));
+		    $result = $f->filter($result);
+		    $f = new Zend_Filter_Word_SeparatorToDash(' ');
+		    $result = Xmltv_String::strtolower($f->filter( $result ));
 		    return Xmltv_String::strtolower( $result );
 		    
 		}

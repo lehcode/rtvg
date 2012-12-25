@@ -64,6 +64,7 @@ class Zend_View_Helper_MainNav extends Zend_View_Helper_Abstract
 				</ul>
 			</li>
 			<?php endif; ?>
+			<li><a href="/admin/cache">Кэш</a></li>
 		</ul>
 		<?php 
 		return ob_get_clean();

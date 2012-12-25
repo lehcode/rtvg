@@ -4,7 +4,7 @@
  * Helper class
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: WeekDays.php,v 1.4 2012-12-25 01:57:53 developer Exp $
+ * @version $Id: WeekDays.php,v 1.5 2012-12-25 01:59:41 developer Exp $
  *
  */
 class Xmltv_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {

@@ -6,12 +6,12 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/models/DbTable/Users.php,v $
- * @version $Id: Users.php,v 1.1 2012-12-14 03:56:28 developer Exp $
+ * @version $Id: Users.php,v 1.2 2012-12-25 01:57:53 developer Exp $
  */
 class Xmltv_Model_DbTable_Users extends Zend_Db_Table_Abstract
 {
 
-	protected $_name = '';
+	protected $_name = 'users';
 	protected $_user;
 
 	protected static $_instance;
@@ -19,19 +19,36 @@ class Xmltv_Model_DbTable_Users extends Zend_Db_Table_Abstract
 	const FETCH_MODE = Zend_Db::FETCH_OBJ;
 	
 	
-	public function __construct($config=array()){
-		
-		parent::__construct($config);
-		
-		$config = new Zend_Config_Ini(APPLICATION_PATH .'/configs/application.ini', APPLICATION_ENV);
-		$this->_setTableName('users', $config->resources->db->params->tbl_prefix);
-		
-		$db = new Zend_Db_Adapter_Mysqli( $config->resources->db->params );
-		$this->_setAdapter($db);
-		
-		
-		
-	}
+	/**
+     * Constructor
+     * @param unknown_type $config
+     */
+    public function __construct ($config = array()) {
+    
+    	parent::__construct(array('name'=>$this->_name));
+    
+    	if (isset($config['tbl_prefix'])) {
+    		$pfx = $config['tbl_prefix'];
+    	} else {
+    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
+    	}
+    	$this->setName($pfx.$this->_name);
+    
+    }
+    
+    /**
+     * @return string
+     */
+    public function getName() {
+    	return $this->_name;
+    }
+    
+    /**
+     * @param string $string
+     */
+    public function setName($string=null) {
+    	$this->_name = $string;
+    }
 	
 	/**
 	 * 

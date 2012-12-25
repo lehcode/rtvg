@@ -24,14 +24,14 @@ class Xmltv_Form_FastChannelSearchForm extends Zend_Form
 			$this->_labelClass = $options['label_class'];
 		}
 		
-		$search = new Zend_Form_Element_Text('fs');
+		$search = new Zend_Form_Element_Text('fast_search');
 		$decorators = array(
             array('ViewHelper'),
             array('Errors'),
             array('Label', array('tag' => 'div', 'class' => $this->_labelClass )),
         );
 		
-		$search->setLabel("Быстрый поиск канала")
+		$search->setLabel("Быстрый поиск по телеканалам")
 			->setAttrib('data-provide', 'typeahead')
 			->addFilter('StripTags')
 			->addValidator('NotEmpty')

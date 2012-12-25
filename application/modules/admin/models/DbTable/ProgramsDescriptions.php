@@ -1,9 +1,9 @@
 <?php
 
-class Admin_Model_DbTable_ProgramsDescriptions extends Zend_Db_Table_Abstract
+class Admin_Model_DbTable_ProgramsDescriptions extends Xmltv_Model_DbTable_ProgramsDescriptions
 {
 
-    protected $_name = 'rtvg_programs_descriptions';
+    protected $_name = 'programs_descriptions';
 
 	public function __construct($config=array()){
     	parent::__construct( $config );
@@ -22,6 +22,20 @@ class Admin_Model_DbTable_ProgramsDescriptions extends Zend_Db_Table_Abstract
 		}
 		return (int)$result[0]['amount'];
     }
+	/**
+	 * @return the $_name
+	 */
+	public function getName() {
+		return $this->_name;
+	}
+
+	/**
+	 * @param field_type $_name
+	 */
+	public function setName($_name) {
+		$this->_name = $_name;
+	}
+
     
 }
 

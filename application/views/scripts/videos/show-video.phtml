@@ -3,21 +3,63 @@ $this->headTitle( sprintf("Онлайн-видео: %s", str_replace("\n", ' ', 
 $this->headMeta()->setName( 'description', $this->truncateString( str_replace( "\n", ' ', $this->main_video->getVideoDescription()), 12, 'words'));
 $this->headMeta()->setName( 'keywords', Xmltv_String::strtolower( implode(',', $this->main_video->getVideoTags()) ));
 $this->headScript()->appendFile("/js/swfobject/swfobject.js");
-//$this->headScript()->appendFile("/js/bootstrap-modal.js");
 $this->headScript()->appendScript("$(document).ready(function() {
 	var descP = $('.video.thumbnails .span4 p.desc');
 	var descHeight = descP.prop('offsetHeight');
-	if (descHeight>150) {
-		descP.css({ height:'8.4em' }).after('<button class=\"btn\" id=\"fulldesc\">Читать полностью</a>');
-	}
-	$('#fulldesc').click( function(e){
-		descP.css({ height:descHeight });
-		$(this).hide(500);
-	});
+	if (descHeight>150) { descP.css({ height:'8.4em' }).after('<button class=\"btn\" id=\"fulldesc\">Читать полностью</a>'); }
+	$('#fulldesc').click( function(e){ descP.css({ height:descHeight }); $(this).hide(500); });
 	
 });");
+
+/*
+ * banners
+ */
+$ads = array(
+	array(
+		"title"=>'GTA 5 Online',
+		"id"=>'82',
+		"image"=>'images/ad/gta5.jpg',
+		"url"=>'http://gta5.qr1x.asia/?r=12582',
+	),
+	array(
+		"title"=>'Универ Онлайн',
+		"id"=>'70',
+		"image"=>'images/ad/univer.jpg',
+		"url"=>'http://uuniveronline.qr1x.asia/?r=12582',
+	),
+	array(
+		"title"=>'ВК Приложения',
+		"id"=>'56',
+		"image"=>'images/ad/vk-apps.jpg',
+		"url"=>'http://vvkapps.e5xj.org/?r=12582',
+	),
+	array(
+		"title"=>'Шаг вперёд 4',
+		"id"=>'71',
+		"image"=>'images/ad/stepforward4.jpg',
+		"url"=>'http://sstepforward1.qr1x.asia/?r=12582',
+	),
+	array(
+		"title"=>'Ваша диетка',
+		"id"=>'23',
+		"image"=>'images/ad/vasha-dieta.jpg',
+		"url"=>'http://vassha-dieta.bg9.in/?r=12582',
+	),
+);
+$idx = rand(0, count($ads)-1);
+$banner = $ads[$idx];
 ?>
+
 <div class="page videos">
+
+	<div style="width:100%;">
+		<div style="width:400px; height:175px; margin: 1.5em auto;">
+			<a href="<?php echo $banner['url'] ?>" target="_blank">
+				<img src="http://rutvgid.ru/<?php echo $banner['image'] ?>" alt="<?php echo $banner['title'] ?>" />
+			</a>
+		</div>
+		<p class="desc"><?php echo strip_tags( $this->main_video->getVideoDescription() ) ?></p>
+	</div>
 
 	<div class="video main">
 	

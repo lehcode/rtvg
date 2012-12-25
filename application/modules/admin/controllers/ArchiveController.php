@@ -3,7 +3,7 @@
  * 
  * Controller for archiving tasks
  * @uses Zend_Controller_Action
- * @version $Id: ArchiveController.php,v 1.3 2012-12-16 15:16:33 developer Exp $
+ * @version $Id: ArchiveController.php,v 1.4 2012-12-25 01:57:53 developer Exp $
  *
  */
 class Admin_ArchiveController extends Zend_Controller_Action
@@ -17,10 +17,10 @@ class Admin_ArchiveController extends Zend_Controller_Action
 	
 	/**
 	 * 
-	 * Input Filter
+	 * Input filtering plugin
 	 * @var Zend_Filter_Input
 	 */
-	protected $inputFilter;
+	protected $input;
 	
 	
 	/**
@@ -45,8 +45,6 @@ class Admin_ArchiveController extends Zend_Controller_Action
 		
 		$this->validator = $this->_helper->getHelper('RequestValidator');
 		
-		//var_dump($this->validator);
-		//die(__FILE__.': '.__LINE__);
     }
 
     /**
@@ -76,19 +74,21 @@ class Admin_ArchiveController extends Zend_Controller_Action
     	//var_dump($this->_getAllParams());
     	//die(__FILE__.': '.__LINE__);
 		
-		$this->inputFilter = $this->validator->direct( array( 'method'=>'isvalidrequest', 'vars'=>$this->_getAllParams() ));
-		if ($this->inputFilter){
+		$this->input = $this->validator->direct( array( 'isvalidrequest', 'vars'=>$this->_getAllParams() ));
+		//var_dump($this->_getAllParams());
+		//die(__FILE__.': '.__LINE__);
+		if ($this->input->isValid()){
 			
 			ini_set('max_execution_time', 0);
 			/*
 			 * Setup dates
 			 */
-			$start = new Zend_Date($this->inputFilter->getEscaped('start_date'), 'dd.MM.yyyy');
+			$start = new Zend_Date($this->input->getEscaped('start_date'), 'dd.MM.yyyy');
 			if ($this->_getParam('end_date')=='') {
 				echo "Не указана дата окончания периода!";
 				exit();
 			} 
-			$end = new Zend_Date($this->inputFilter->getEscaped('end_date'), 'dd.MM.yyyy');
+			$end = new Zend_Date($this->input->getEscaped('end_date'), 'dd.MM.yyyy');
 			if ($end->toString("U") > $start->toString("U")) {
 				exit("Дата окончания должна быть ранее даты начала!");
 			}

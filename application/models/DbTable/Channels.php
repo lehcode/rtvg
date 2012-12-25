@@ -1,31 +1,32 @@
 <?php
 /**
- * Database table for channels model
+ * Database table for channels info
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.9 2012-08-13 13:20:15 developer Exp $
+ * @version $Id: Channels.php,v 1.10 2012-12-25 01:57:53 developer Exp $
  */
 
 class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 {
 
-    protected $_name = 'rtvg_channels';
-    private $_debug;
-	private $_profiling;
-	private $_profiler;
+    protected $_name = 'channels';
 	
 	const FETCH_MODE = Zend_Db::FETCH_OBJ;
 	
     public function __construct($config=array()) {
     	
     	parent::__construct(array('name'=>$this->_name));
-    	
-    	$this->_debug     = Xmltv_Config::getDebug();
-		$this->_profiling = Xmltv_Config::getProfiling();
+		
+    	if (isset($config['tbl_prefix'])) {
+    		$pfx = (string)$config['tbl_prefix'];
+    	} else {
+    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix', 'rtvg_');
+    	}
+    	$this->setName($pfx.$this->_name);
 		
     }
     
-    public function getTypeheadItems(){
+    public function getTypeaheadItems(){
     	
     	try {
     		$select = $this->_db->select()->from($this->_name, array( 'title' ));
@@ -76,20 +77,15 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     public function fetchCategory($alias=null){
     	
     	if (!$alias)
-		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
 		
-    	$this->_initProfiler();
-		
-    	$select = $this->_db->select()
-    		->from( $this->_name, '*' )
-    		->joinLeft('rtvg_channels_categories', "$this->_name.`category`=rtvg_channels_categories.`id`", array());
-    	$select->where( "rtvg_channels_categories.`alias`='$alias'" );
-    	$select->order("$this->_name.title ASC");
+    	$select = $this->select()
+    		->from(array('ch'=>$this->_name), '*')
+    		->join(array('cat'=>'rtvg_channels_categories'), "`ch`.`category`=`cat`.`id`", array())
+    		->where("`cat`.`alias` LIKE '$alias'")
+    		->order("ch.title ASC");
     	
-    	$result = $this->_db->query($select)->fetchAll( );
-    	
-    	$this->_profileQuery();
-		
+    	$result = $this->fetchAll($select);
     	return $result;
     	
     }
@@ -158,6 +154,20 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 		}
     	
     }
+	/**
+	 * @return string
+	 */
+	public function getName() {
+		return $this->_name;
+	}
+
+	/**
+	 * @param string $string
+	 */
+	public function setName($string=null) {
+		$this->_name = $string;
+	}
+
 	
 }
 

@@ -8,6 +8,7 @@ class Xmltv_Model_Comments
 	private $_vkPass  = "majordata";
 	
 	const CURL_USERAGENT  = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/0.2.153.1 Safari/525.19';
+	const ERR_MISSING_PARAM = "Пропущен необходимый параметр!";
 	
 	public function __construct(){
 		
@@ -231,24 +232,23 @@ class Xmltv_Model_Comments
 	public function getYandexRss($query=''){
 		
 		if (is_array($query))
-		$query = implode('|', $query);
+			$query = implode('|', $query);
 		
 		$regex = new Zend_Filter_PregReplace( array( 'match'=>'/[\.:\(\)]+/', 'replace'=>'' ) );
 		$query = $regex->filter($query);
 		
-		if (Xmltv_Config::getDebug()===true) {
-			//var_dump($query);
-		}
-			    
-		$frontendOptions = array( 'lifetime'=>7200, 'automatic_serialization'=>true );
-	    $backendOptions  = array('cache_dir'=>ROOT_PATH.'/cache/Comments' );
+		$frontendOptions = array( 'lifetime'=>86400, 'automatic_serialization'=>true );
+		$backendOptions  = array('cache_dir'=>ROOT_PATH.'/cache/Comments' );
 	   	$feedCache       = Zend_Cache::factory( 'Core', 'File', $frontendOptions, $backendOptions );
 	    
 	   	Zend_Feed_Reader::setCache( $feedCache );
 	    Zend_Feed_Reader::useHttpConditionalGet();
 	    
-	    $result = Zend_Feed_Reader::import('http://blogs.yandex.ru/search.rss?text='.urlencode($query).'&ft=all');
-	    
+	    $url = 'http://blogs.yandex.ru/search.rss?text='.urlencode($query).'&ft=all';
+	    if (APPLICATION_ENV=='development'){
+	    	var_dump($url);
+	    }
+	    $result = Zend_Feed_Reader::import($url);
 	    return $result;
 		
 	}
@@ -262,47 +262,45 @@ class Xmltv_Model_Comments
 	public function parseYandexFeed(Zend_Feed_Reader_Feed_Rss $feed_data, $min_length=128){
 		
 		$comments = array();
-		$trim = new Zend_Filter_StringTrim(' -——');
+		//$trim = new Zend_Filter_StringTrim(' -——');
 		$c=0;
 		foreach ($feed_data as $feed_item) {
 			
-			//$content = str_ireplace($feed_item->getTitle(), "", $feed_item->getContent());
 			$content = strip_tags( $feed_item->getContent() );
-			$content = preg_replace('/<\s*.+\s*>/mi', '', $content);
-			$content = preg_replace('/\s+/mui', ' ', $content);
-			$content = str_replace('/', '', $content);
-
+			$content = trim(strip_tags($content, 'em,b,u,strong'));
+			
 			//var_dump($content);
+			//die(__FILE__.': '.__LINE__);
 			
 			if (preg_match('/[\p{Cyrillic}]+/ui', $content)){
 				
-				$content = $trim->filter( preg_replace('/\s+/', ' ', $content) );
+				//$content = trim( preg_replace('/\s+/', ' ', $content) );
 				if ( Xmltv_String::strlen($content) >= $min_length ) {
 					if (strstr($content, '. ')) {
 						$ca = explode('.', $content);
 						foreach ($ca as $k=>$a) {
-							$ca[$k] = $trim->filter( $a );
+							$ca[$k] = trim( $a );
 						}
 						$content = implode('. ', $ca);
 					} else {
-						$content = $trim->filter( $content );
+						$content = trim( $content );
 					}
 					//var_dump($content);
 					/*
 					 * Проверка совпадения текста заголовка и сообщения
 					 */ 
-					$t = $trim->filter( preg_replace('/\s+/mui', ' ', strip_tags( $feed_item->getTitle() )));
+					$t = trim( preg_replace('/\s+/mui', ' ', strip_tags( $feed_item->getTitle() )));
 					$expl = explode(' ', $t);
 					$chunks = array_chunk($expl, 3);
 					foreach ($chunks as $p) {
 						$impl = implode(' ', $p);
 						if (Xmltv_String::stristr($content, $impl ));
-						$match = true;
+							$match = true;
 					}
 					if ($match===true)
-					$intro = $content;
+						$intro = $content;
 					else
-					$intro = $t.' '.$content;
+						$intro = $t.' '.$content;
 					
 					$comments[$c]['intro'] = html_entity_decode( $intro );
 					$comments[$c]['link']  = $feed_item->getLink();
@@ -396,74 +394,87 @@ class Xmltv_Model_Comments
 		
 		if (stristr($link, 'blogs.mail.ru/mail/mail/')) {
 			preg_match('/http:\/\/blogs\.mail\.ru\/mail\/(.+)\/[A-F0-9]+/u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		} elseif (stristr($link, 'blogs.mail.ru/bk/')) {
 			preg_match('/\/\/blogs\.mail\.ru\/bk\/(.+)\/[A-F0-9]+/u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		} elseif (stristr($link, 'blogs.mail.ru/mail/')) {
 			preg_match('/\/\/blogs\.mail\.ru\/mail\/(.+)\/[A-F0-9]+/u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		} elseif (stristr($link, 'my.mail.ru/community/')) {
 			preg_match('/\/\/my\.mail\.ru\/community\/(.+)\/[A-F0-9]+/u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		} elseif (stristr($link, '.livejournal.com/')) {
 			preg_match('/\/\/(.+)\.livejournal\.com/u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		} elseif (stristr($link, 'my.mail.ru/community/')) {
 			preg_match('/\/\/my\.mail\.ru\/community\/(.+)\/[A-Z]+\.html/u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		} elseif (stristr($link, 'twitter.com/')) {
 			preg_match('/\/\/twitter\.com\/(.+)\/statuses/u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		} elseif (stristr($link, 'diary.ru/')) {
 			preg_match('/\/\/(.+)\.diary\.ru\//u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		}  elseif (stristr($link, 'comon.ru/user')) {
 			preg_match('/comon\.ru\/user\/(.+)\/blog/u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		}  elseif (stristr($link, '.blogspot.com/')) {
 			preg_match('/\/\/(.+)\.blogspot\.com\//u', $link, $m);
-			if (empty($m[1]))
-			throw new Exception("Не могу получить ник автора из ссылки $link");
-			else return $trim->filter($m[1]);
+			if (!empty($m[1]))
+				return $trim->filter($m[1]);
 		} else {
 			$d = Xmltv_Filesystem_Folder::files(ROOT_PATH.'/dicts');
 			$w1 = explode("\n", Xmltv_Filesystem_File::read(ROOT_PATH.'/dicts/'.$d[array_rand( $d )]));
 			$w2 = explode("\n", Xmltv_Filesystem_File::read(ROOT_PATH.'/dicts/'.$d[array_rand( $d )]));
 			$a = $w1[rand(0, count($w1)-1)].$w2[rand(0, count($w2)-1)];
 			$a = preg_replace('/\s/', '', $a );
-			$a = preg_replace('/[0-9]+/', '', $a );
+			$a = preg_replace('/[\d]+/', '', $a );
 			return $a;
 		}
 		
 	}
 	
-	public function dbGetComments($parent_id=null, $parent_type='channel', $paginate=false){
+	/**
+	 * 
+	 * @param  string $alias    //Channel or program alias
+	 * @param  string $type     //channel|program
+	 * @param  bool   $paginate
+	 * @throws Zend_Exception
+	 * @return array
+	 */
+	public function channelComments($alias=null, $type='channel', $paginate=false){
 	
-		if (!$parent_id)
-			throw new Zend_Exception(__FUNCTION__.' - Не указан $parent_id', 500);
+		if (!$alias)
+			throw new Zend_Exception( self::ERR_MISSING_PARAM, 500 );
 		
-		$id = Xmltv_String::strtolower($parent_id);
-		$type = $parent_type=='channel' ? 'c' : 'p';
-		return $this->_table->fetchAll(array("`parent_id` LIKE '%$id%'", "`parent_type`='$type'"), "date_created DESC", 30)->toArray();
+		$amt = (int)Zend_Registry::get('site_config')->channels->comments->get('amount');
+		$type = $type=='channel' ? 'c' : 'p';
+		$select = new Zend_Db_Table_Select($this->_table);
+		$select->where("`parent_id` LIKE '$alias'")
+			->where("`parent_type`='$type'")
+			->order("date_added DESC")
+			->limit($amt);
+		
+		//var_dump($select->assemble());
+		//die(__FILE__.': '.__LINE__);
+		
+		$result = $this->_table->fetchAll($select);
+		foreach ($result as $r){
+		    $r->published = (bool)$r->published;
+		}
+		$result = $result->toArray();
+		
+		return $result;
 		
 	}
 	
@@ -473,6 +484,7 @@ class Xmltv_Model_Comments
 		return $json->decode( $this->_curl("https://oauth.vk.com/access_token?client_id={$this->_appKey}&client_secret={$this->_appSecret}&grant_type=client_credentials") );
 		
 	}
+	
 	
 	public function vkVideoSearch( $query = null, $token=null){
 		

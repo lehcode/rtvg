@@ -1,10 +1,7 @@
 <?php
 
-class Admin_Model_DbTable_Actors extends Zend_Db_Table_Abstract
+class Admin_Model_DbTable_Actors extends Xmltv_Model_DbTable_Actors
 {
-
-    protected $_name = 'rtvg_actors';
-
-
+	
 }
 

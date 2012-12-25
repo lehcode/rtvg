@@ -1,30 +1,28 @@
 <?php
-defined('APP_STARTED') or die();
 
 class Admin_Model_DbTable_ProgramsArchive extends Zend_Db_Table_Abstract
 {
 
-    protected $_name = 'rtvg_programs_archive';
-    protected $_profiling = false;
+    protected $_name='programs';
     
     const FETCH_MODE = Zend_Db::FETCH_OBJ;
     
+    /**
+     * 
+     * Constructor
+     * @param array $config
+     */
     public function __construct($config=array()){
-    	parent::__construct( $config );
-    	//$this->_profiling = Xmltv_Config::getProfiling();
+		
+    	$this->_db = new Zend_Db_Adapter_Mysqli( Zend_Registry::get('app_config')->resources->multidb->get('archive') );
+    	$pfx = Zend_Registry::get('app_config')->resources->multidb->archive->get('tbl_prefix');
+    	$this->_name = $pfx.$this->_name;
     	
     }
 
     public function getProgramsCountForWeek(Zend_Date $start=null, Zend_Date $end=null){
     	
-    	//var_dump($this->_db);
-    	/*
-   		if( $this->_profiling ) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$profiler = $this->_db->getProfiler();
-		}
-    	*/
-		if (!$start && !$end) {
+    	if (!$start && !$end) {
 			$d = new Zend_Date();
 			do{
 				if ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {

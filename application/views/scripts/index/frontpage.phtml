@@ -1,3 +1,17 @@
 <?php
-echo "<h1>This is frontpage</h1>";
+/**
+ * Frontpage view script
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: frontpage.phtml,v 1.3 2012-12-25 01:57:53 developer Exp $
+ *
+ */
+$this->headTitle( 'Программа всех каналов телевидения на сегодня и текущую неделю.' );
+$this->headMeta()
+	->setName( 'keywords', Zend_Registry::get('site_config')->site->get('keywords', 'телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв') )
+	->appendName( 'description', Zend_Registry::get('site_config')->site->get('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.') );
+$this->inlineScript()
+	->appendFile("http://www.directadvert.ru/show.cgi?adp=85452&div=DIV_DA_85452"); //directadvert frontpage
 ?>
+<gcse:searchbox></gcse:searchbox>

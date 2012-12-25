@@ -4,69 +4,97 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-day.phtml,v 1.4 2012-08-13 13:20:15 developer Exp $
+ * @version $Id: program-day.phtml,v 1.5 2012-12-25 01:57:53 developer Exp $
  *
  */
 
-$today = new Zend_Date(null, null, 'ru');
-$this->is_today = false;
 
-if ($today->toString('yyyyMMdd')==$this->date->toString('yyyyMMdd')) {
-	$this->date = $today;
-	$this->is_today = true;
-}
-if ($today->toString('U')<$this->date->toString('U')) {
-	$this->after_today = true;
-}
+//die(__FILE__.': '.__LINE__);
 
-$tolower  = new Zend_Filter_StringToLower();
 
 /*
  * Channel properties
  */
 $channelTitle = $this->escape( $this->channel->title );
-$channelAlias = $this->escape( $tolower->filter( $this->channel->alias ));
-$channel_link = '<a href="/телепрограмма/'.$channelAlias.'" title="Программа передач канала '.$channelTitle.' на '.$this->escape($this->date->toString('d MMM YYYY')).' ">Телепрограмма '.$channelTitle.' на сегодня</a>';
+$channelAlias = $this->escape( $this->channel->ch_alias );
 
+/*
+ * Generate keywords
+ */
+$kw = array($channelTitle, $this->date->toString('d MMMM YYYY'), 'сегодня');
+if (!empty($this->programs)) {
+	foreach ($this->programs as $p) {
+		if (count($kw)<5) {
+			if (!in_array($p->title, $kw))
+			$kw[]= Xmltv_String::strtolower( htmlspecialchars( $p->title, ENT_NOQUOTES, 'utf-8' ) );
+		}
+	}
+}
+$this->headMeta()->setName('keywords', implode(',', $kw) );
+
+//var_dump(count($this->programs));
 //var_dump($this->programs);
-
+//die(__FILE__.': '.__LINE__);
 
 if (!empty($this->programs)) {
 
 	$programTitle = $this->escape( $this->programs[0]->title );
 	$programAlias = $this->escape( $this->programs[0]->alias );
-	
-	
-	/*
-	 * Set META title
-	 */
+		
 	if ($this->is_today) {
+		//META title
 		$this->headMeta()->setName('title', sprintf ('«%s» сегодня', $programTitle, $channelTitle));
-	} else {
-		$this->headMeta()->setName('title', sprintf ('«%s» %s', $programTitle, $this->escape( $this->date->toString('dd MMM YYYY'))));
-	}
-	/*
-	 * Set page title
-	 */
-	if ($this->is_today) {
+		//page title
 		$this->headTitle( sprintf ('Программа «%s» сегодня, %s, на канале «%s»', $programTitle, $this->escape( $this->date->toString('dd MMM')), $channelTitle));
 	} else {
+		//META title
+		$this->headMeta()->setName('title', sprintf ('«%s» %s', $programTitle, $this->escape( $this->date->toString('dd MMM YYYY'))));
+		//page title
 		$this->headTitle( sprintf ('«%s» на канале «%s» %s', $programTitle, $channelTitle, $this->escape( $this->date->toString('dd MMM YYYY'))));
 	}
-	
+	/*
 	$start_times = array();
 	foreach ($this->programs as $single) {
-		
 		$start = new Zend_Date( $single->start );
 		$start_times[] = $this->escape( $start->toString( "HH:mm" ));
 	}
+	*/
 	?>
-	<h1><?php echo $programTitle ?></h1>
-	<h2><?php echo $channel_link ?></h2>
-	<p class="date"><?php echo Xmltv_String::ucfirst( $this->escape( $this->date->toString(Zend_Date::DATE_FULL))) ?></p>
+	
+	
+	
+	<h1><?php echo $programTitle ?> на <?php echo $channelTitle ?></h1>
+	
+	
+	
+	<?php if (!empty($this->channel->desc_intro)): ?>
+	<p>
+		<?php echo strip_tags( $this->channel->desc_intro ) ?>
+	</p> 
+	<?php endif; ?>
+	
+	
+	
+	<p>
+		<a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>">
+			<em>Программа <?php echo $channelTitle ?> на сегодня</em>
+		</a>	
+	</p>
+	<p>
+		<a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>">
+			<em>Программа <?php echo $channelTitle ?> на неделю</em>
+		</a>	
+	</p>
+	
+	
+	
 	<?php 
+	/*
+	$channel_link_url = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week');
+	$channel_link = '<a href="'.$this->url( array('channel'=>$channelAlias), 'default_listings_day-listing').'" title="Программа передач канала '.$channelTitle.' на '.$this->escape($this->date->toString('d MMM YYYY')).' ">Телепрограмма '.$channelTitle.' на сегодня</a>';
 	$introText = '';
-	$program_link = '<a href="/телепрограмма/'.$channelAlias.'/'.$programAlias.'/неделя" title="'.$programTitle.' на этой неделе">'.$programTitle.'</a>';
+	$program_link_url = $this->url(array('channel'=>$channelAlias, 'alias'=>$programAlias), 'default_listings_program-week');
+	$program_link = '<a href="'.$program_link_url.'" title="'.$programTitle.' на этой неделе">'.$programTitle.'</a>';
 	if (!$this->is_today)
 	$introText = $this->escape( sprintf( 'Программа «%s» выходила в эфир на канале «%s» %s в %s.', $programTitle, $channel_link, $this->date->toString('dd MMMM'), implode(', ', $start_times)));
 	if ($this->after_today)
@@ -77,25 +105,24 @@ if (!empty($this->programs)) {
 		<?php
 		//$channel_link = '<a href="/телепрограмма/'.$channelAlias.'" title="Программа передач канала '.$channelTitle.' на '.$this->date->toString('d MMM YYYY').' ">'.$channelTitle.'</a>';
 		//$program_link = '<a href="/телепрограмма/'.$channelAlias.'/'.$programAlias.'/неделя" title="'.$programTitle.' на этой неделе">'.$programTitle.'</a>';
-		/*
-		if ($this->is_today===true)
-		printf( $entities->filter('Cегодня вы можете посмотреть программу «%s» на канале «%s» в %s.'), $programTitle, $channel_link,  implode(', ', $start_times)); 
+		$entities = new Zend_Filter_HtmlEntities();
+		if ($this->date->isToday())
+		printf( $entities->filter('Программа «%s» на канале «%s» сегодня.'), $programTitle, $channel_link); 
 		else
 		printf( $entities->filter('Программа "%s" выходила в эфир на канале «%s» %s в %s.'), $programTitle, $channel_link, $this->date->toString('dd MMMM'),  implode(', ', $start_times));
-		*/
-		/*
-		if (!$this->is_today)
+		
+		
+		if (!$this->date->isToday())
 		$text = sprintf( $entities->filter('Программа «%s» выходила в эфир на канале «%s» %s в %s.'), $programTitle, $channel_link, $this->date->toString('dd MMMM'),  implode(', ', $start_times));
-		if ($this->after_today)
+		if ($this->date->isTomorrow())
 		$text = sprintf( $entities->filter('Программа «%s» будет выходить в эфир на канале «%s» %s в %s.'), $programTitle, $channel_link, $this->date->toString('dd MMMM'),  implode(', ', $start_times));
-		*/
+		
 		?>
 	</p>
+	
 	<?php 
-	} ?>
-	<?php if (!empty($this->channel->desc_intro)): ?>
-	<p><?php echo strip_tags( $this->channel->desc_intro ) ?></p> 
-	<?php endif; ?>
+	}*/ ?>
+	
 	
 	<p class="label label-important">
 		<a href="/телепрограмма/<?php echo $channelAlias.'/'.$programAlias?>/неделя" title="<?php echo $this->escape( sprintf("Все выпуски программы «%s» на этой неделе", $programTitle)) ?>">
@@ -103,8 +130,9 @@ if (!empty($this->programs)) {
 		</a>
 	</p>
 
+
 	<table class="table table-condensed">
-		<caption><?php echo  sprintf ("<strong>«%s»</strong> %s", $programTitle, $this->escape( $this->date->toString("d MMM") )) ?></caption>
+		<caption><?php echo sprintf ("<strong>«%s»</strong> %s", $programTitle, $this->date->toString(Zend_Date::DATE_FULL)) ?></caption>
 		<tbody>
 			<?php
 			foreach ($this->programs as $single) {
@@ -122,7 +150,11 @@ if (!empty($this->programs)) {
 		</tbody>
 	</table>
 	
+	
+	
 	<?php
+	
+	
 	
 } else {
 	
@@ -154,7 +186,8 @@ if (!empty($this->programs)) {
 	
 <?php 
 
-}?>
+} ?>
+<?php //die(__FILE__.': '.__LINE__); ?>
 
 
 

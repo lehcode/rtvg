@@ -4,9 +4,10 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsCategoriesList.php,v 1.5 2012-08-13 13:20:28 developer Exp $
+ * @version $Id: ChannelsCategoriesList.php,v 1.6 2012-12-25 01:57:59 developer Exp $
  *
  */
+/*
 class Zend_View_Helper_ChannelsCategoriesList extends Zend_View_Helper_Abstract 
 {
 	
@@ -28,12 +29,13 @@ class Zend_View_Helper_ChannelsCategoriesList extends Zend_View_Helper_Abstract
 				$cache->save($cats, $hash, 'Core', $subDir);
 			}
 			} else {
-				$cats = $table->fetchAll()->toArray();
+				$cats = $table->fetchAll();
 			}
 		} catch (Exception $e) {
 				echo $e->getMessage();
 		}
 		
+		$cats = $cats->toArray();
 		$allChannels = array(
 			'id'=>'',
 			'title'=>'Все каналы',
@@ -61,3 +63,4 @@ class Zend_View_Helper_ChannelsCategoriesList extends Zend_View_Helper_Abstract
 		
 	}
 }
+*/

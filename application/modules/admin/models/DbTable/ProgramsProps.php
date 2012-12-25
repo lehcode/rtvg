@@ -1,9 +1,9 @@
 <?php
 
-class Admin_Model_DbTable_ProgramsProps extends Zend_Db_Table_Abstract
+class Admin_Model_DbTable_ProgramsProps extends Xmltv_Model_DbTable_ProgramsProps
 {
 
-    protected $_name = 'rtvg_programs_props';
+    protected $_name = 'programs_props';
     
     public function getByHash($hash=null){
     	
