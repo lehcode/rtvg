@@ -3,6 +3,8 @@ class Xmltv_Model_Videos
 {
 	public $debug = false;
 	
+	const ERR_MISSING_PARAMS="Пропущен енобходимый параметр!";
+	
 	public function __construct(){
 		$siteConfig = Zend_Registry::get('site_config')->site;
 		$this->debug = (bool)$siteConfig->get('debug', false);
@@ -20,12 +22,12 @@ class Xmltv_Model_Videos
 		if ($ok) {
 			$v = new stdClass();
 			$v->title   = $entry->getVideoTitle();
-			$v->alias   = self::videoAlias( $v->title );
+			$v->alias   = Xmltv_Youtube::videoAlias( $v->title );
 			$v->desc    = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
 			$v->yt_id   = $entry->getVideoId();
-			$v->rtvg_id = self::videoId( $entry->getVideoId() );
+			$v->rtvg_id = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
 			$v->views   = (int)$entry->getVideoViewCount();
-			//$v->tags    = $entry->getVideoTags();
+			//$v->tags  = $entry->getVideoTags();
 			
 			$config = Zend_Registry::get('site_config')->videos->sidebar->right;
 			$thumbs = $entry->getVideoThumbnails();
@@ -56,46 +58,6 @@ class Xmltv_Model_Videos
 	
 	/**
 	 * 
-	 * Generate RTVG video alias
-	 * @param  string $title
-	 * @throws Zend_Exception
-	 * @return string
-	 */
-	public static function videoAlias($title=null){
-		
-		if (!$title)
-			throw new Zend_Exception("Не указан один или более параметров для ".__METHOD__, 500);
-		
-		$trim       = new Zend_Filter_StringTrim(' -');
-		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
-		$regex      = new Zend_Filter_PregReplace(array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)]+/ui', 'replace'=>' '));
-		$tolower    = new Zend_Filter_StringToLower();
-		$doubledash = new Zend_Filter_PregReplace(array("match"=>'/[-]+/', 'replace'=>'-'));
-		//$cyrlatin   = new Zend_Filter_PregReplace(array("match"=>'/[^\p{Latin}\p{Cyrillic}\p{N} -]+/ui', 'replace'=>''));
-		
-		$result = $tolower->filter( $trim->filter( $doubledash->filter( $separator->filter( $regex->filter($title)))));
-		
-		//if (preg_match('/[^\p{Latin}\p{Cyrillic}\p{N} -]+/ui', $result))
-		//$result = $cyrlatin->filter($result);
-		
-		return $result;
-		
-	}
-	
-	/**
-	 * 
-	 * Generate RTVG video ID
-	 * @param  string $yt_id
-	 * @return string
-	 */
-	public static function videoId($yt_id=null){
-		
-		return strrev( str_replace( "%3D", "", urlencode( base64_encode( (string)$yt_id))));
-	
-	}
-	
-	/**
-	 * 
 	 * Enter description here ...
 	 * @param Zend_Gdata_YouTube_VideoEntry $entry
 	 * @return bool
@@ -122,6 +84,11 @@ class Xmltv_Model_Videos
 				//die(__FILE__.': '.__LINE__);
 				return false;
 			}
+			if (!self::isRussian($string)) {
+				//var_dump($string);
+				//die(__FILE__.': '.__LINE__);
+				return false;
+			}
 		}
 		
 		//var_dump($string);
@@ -143,6 +110,7 @@ class Xmltv_Model_Videos
 		
 	    $regex = array(
 	    	'\sанал.*',
+	    	'\sвиагр.*',
 	    	'\sпорн.*',
 	    	'\sэрот.+',
 	    	'\sпроститу.+',

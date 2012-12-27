@@ -4,7 +4,7 @@
  * Helper class
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: WeekDays.php,v 1.5 2012-12-25 01:59:41 developer Exp $
+ * @version $Id: WeekDays.php,v 1.6 2012-12-27 17:04:37 developer Exp $
  *
  */
 class Xmltv_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {
@@ -82,8 +82,8 @@ class Xmltv_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Hel
 	 */
 	public function direct($method=null, Zend_Date $date){
 		
-		var_dump(func_get_args());
-		die(__FILE__.': '.__LINE__);
+		//var_dump(func_get_args());
+		die(__METHOD__);
 		
 		if (!$method)
 			return false;

@@ -1,4 +1,11 @@
 <?php
+/**
+ * 
+ */
+//var_dump(dirname(__FILE__).'/../UTF8/utf8.php');
+require_once dirname(__FILE__).'/../UTF8/utf8.php';
+require_once dirname(__FILE__).'/../UTF8/strcasecmp.php';
+
 if (extension_loaded('mbstring') || ((!strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && dl('mbstring.so'))))
 {
 	// Make sure to suppress the output in case ini_set is disabled
@@ -15,9 +22,6 @@ if (function_exists('iconv') || ((!strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' &&
 	iconv_set_encoding("input_encoding", "UTF-8");
 	iconv_set_encoding("output_encoding", "UTF-8");
 }
-
-include_once APPLICATION_PATH.'/../library/UTF8/utf8.php';
-include_once APPLICATION_PATH.'/../library/UTF8/strcasecmp.php';
 
 class Xmltv_String 
 {
@@ -230,7 +234,7 @@ class Xmltv_String
 	 */
 	public static function str_ireplace($search, $replace, $str, $count = null)
 	{
-		include_once APPLICATION_PATH.'/../library/UTF8/str_ireplace.php';
+		include_once dirname(__FILE__).'/../UTF8/str_ireplace.php';
 		if ($count === false)
 		return utf8_ireplace($search, $replace, $str);
 		else
@@ -404,7 +408,7 @@ class Xmltv_String
 	 */
 	public static function stristr($str, $search)
 	{
-		include_once APPLICATION_PATH.'/../library/UTF8/stristr.php';
+		include_once dirname(__FILE__).'/../UTF8/stristr.php';
 		return utf8_stristr($str, $search);
 	}
 
@@ -418,7 +422,7 @@ class Xmltv_String
 	 */
 	public static function strrev($str)
 	{
-		include_once APPLICATION_PATH.'/../library/UTF8/strrev.php';
+		include_once dirname(__FILE__).'/../UTF8/strrev.php';
 		return utf8_strrev($str);
 	}
 
@@ -553,7 +557,7 @@ class Xmltv_String
 		{
 			return $str;
 		}
-		include_once APPLICATION_PATH.'/../library/UTF8/trim.php';
+		include_once dirname(__FILE__).'/../UTF8/trim.php';
 		if ($charlist === false)
 		{
 			return utf8_trim($str);
@@ -578,7 +582,7 @@ class Xmltv_String
 	 */
 	public static function ucfirst($str, $delimiter = null, $newDelimiter = null)
 	{
-		include_once APPLICATION_PATH.'/../library/UTF8/ucfirst.php';
+		include_once dirname(__FILE__).'/../UTF8/ucfirst.php';
 		if ($delimiter === null)
 		{
 			return utf8_ucfirst($str);
@@ -603,7 +607,7 @@ class Xmltv_String
 	 */
 	public static function ucwords($str)
 	{
-		include_once APPLICATION_PATH.'/../library/UTF8/ucwords.php';
+		include_once dirname(__FILE__).'/../UTF8/ucwords.php';
 		return utf8_ucwords($str);
 	}
 

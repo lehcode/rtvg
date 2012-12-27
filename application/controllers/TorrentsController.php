@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: TorrentsController.php,v 1.1 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: TorrentsController.php,v 1.2 2012-12-27 17:04:37 developer Exp $
  *
  */
 class TorrentsController extends Zend_Controller_Action
@@ -36,7 +36,7 @@ class TorrentsController extends Zend_Controller_Action
 		if ($this->_validateRequest()){
 			try {
 				$url = 'http://torrent-poisk.com/search.php?q='.urlencode($this->_getParam('w'));
-				var_dump($url);
+				//var_dump($url);
 				$curl = new Xmltv_Parser_Curl();
 				$curl->setOption(CURLOPT_CONNECTTIMEOUT, 5);
 				$curl->setOption(CURLOPT_TIMEOUT, 5);
@@ -60,7 +60,7 @@ class TorrentsController extends Zend_Controller_Action
 		    		$links = $xpath->query("descendant-or-self::a[contains(concat(' ', normalize-space(@class), ' '), ' visit ')]");
 				}
 				foreach ($links as $link){
-					var_dump($link->getAttribute('href'));
+					//var_dump($link->getAttribute('href'));
 					echo($link->nodeValue);
 				}
 				

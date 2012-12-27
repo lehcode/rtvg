@@ -22,6 +22,8 @@ class Xmltv_Model_Programs
 	 */
 	protected $siteConfig;
 	
+	const ERR_MISSING_PARAMS="Пропущены необходимые параметры!";
+	
 	/**
 	 * Constructor
 	 * @param array $config
@@ -47,11 +49,14 @@ class Xmltv_Model_Programs
 		
 	}
 	
-	public function getByAlias($alias='', $channel_id=null, Zend_Date $date){
+	public function getByAlias($alias='', $channel_id=null, $date){
 		
-		$where = array(
+	    if (!$alias || !$channel_id)
+	        throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
+	    
+	    $where = array(
 			"`alias` LIKE '%$alias%'",
-			"`start` >= '".$date->toString('YYYY-MM-dd HH:mm:00')."'"
+			"`start` >= '".$date->toString('YYYY-MM-dd 00:00:00')."'"
 		);
 		
 		if ($channel_id)
@@ -195,30 +200,30 @@ class Xmltv_Model_Programs
 	 * @param string $program_alias
 	 * @param Zend_Date $date
 	 */
-	public function getSimilarProgramsThisWeek($program_alias='', Zend_Date $start, Zend_Date $end){
+	public function getSimilarProgramsThisWeek($program_alias=null, Zend_Date $start, Zend_Date $end){
 		
-		//var_dump(func_get_args());
-		//die(__FILE__.': '.__LINE__);
-		
-		if (empty($program_alias)) {
-			throw new Zend_Exception(__METHOD__." - Empty program alias");
-			return false;
-		}
-		$a = array();
+		if (!$program_alias)
+			throw new Zend_Exception("Empty program alias!", 500);
+		/*
 		if (strstr($program_alias, '-'))
-			$a = explode('-', $program_alias);
+			$w = explode('-', $program_alias);
 		else 
-			$a[]=$program_alias;
+			$w[]=$program_alias;
 		
-		//var_dump(func_get_args());
-		//die(__FILE__.': '.__LINE__);	
-			
-		$result = $this->_table->fetchSimilarProgramsThisWeek($a, $start, $end);
+		foreach ($w as $k=>$e){
+		    if (Xmltv_String::strlen($e)<=4){
+		        unset($w[$k]);
+		    }
+		}
+		*/
+		$result = $this->_table->fetchSimilarProgramsThisWeek($program_alias, $start, $end);
 		
 		foreach ($result as $item){
 			$item->start = new Zend_Date($item->start, 'yyyy-MM-dd HH:mm:ss');
 			$item->end   = new Zend_Date($item->end, 'yyyy-MM-dd HH:mm:ss');
 		}
+		
+		return $result;
 		
 	}
 	

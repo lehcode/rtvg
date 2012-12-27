@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.9 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: Channels.php,v 1.10 2012-12-27 17:04:37 developer Exp $
  */
 class Xmltv_Model_Channels
 {
@@ -99,29 +99,31 @@ class Xmltv_Model_Channels
 	
 	public function getByAlias($alias=null){
 		
-		try {
-			
-			$select = $this->_db->select()
-			->from(array('ch'=>$this->_table->getName()), array('ch'=>'*', 'ch_alias'=>'LOWER(`ch`.`alias`)'))
-			->where("`ch`.`alias` LIKE '$alias'")
-			->where("`ch`.`published`='1'")
-			->join(array('ch_cat'=>$this->_tbl_pfx.'channels_categories'), '`ch`.`category`=`ch_cat`.`id`', array(
-				'category_title'=>'ch_cat.title',
-				'category_alias'=>'LOWER(`ch_cat`.`alias`)',
-				'category_image'=>'ch_cat.image')
+		$select = $this->_db->select()
+			->from( array('ch'=>$this->_table->getName()), array('ch'=>'*', 'ch_alias'=>'LOWER(`ch`.`alias`)'))
+			->where( "`ch`.`alias` LIKE '$alias'")
+			->where( "`ch`.`published`='1'")
+			->joinLeft( array('cat'=>$this->_tbl_pfx.'channels_categories'), '`ch`.`category`=`cat`.`id`', array(
+				'category_title'=>'cat.title',
+				'category_alias'=>'LOWER(`cat`.`alias`)',
+				'category_image'=>'cat.image')
 			);
-			//var_dump($select->assemble());
-			//die(__FILE__.': '.__LINE__);
-			$result = $this->_db->fetchRow( $select, null, Zend_Db::FETCH_OBJ );
-			
-		} catch (Zend_Db_Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		
+		//var_dump($select->assemble());
+		//die(__FILE__.': '.__LINE__);
+		
+		try {
+		    $result = $this->_db->fetchRow( $select, null, Zend_Db::FETCH_OBJ );
+		} catch (Zend_Db_Table_Exception $e) {
+		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
 		
-		$result->featured  = (bool)$result->featured;
-		$result->published = (bool)$result->published;
-		$result->parse     = (bool)$result->parse;
-		$result->adult     = (bool)$result->adult;
+				if ($result){
+			$result->featured  = (bool)$result->featured;
+			$result->published = (bool)$result->published;
+			$result->parse     = (bool)$result->parse;
+			$result->adult     = (bool)$result->adult;
+		}
 		
 		//var_dump($result);
 		//die(__FILE__.': '.__LINE__);	
@@ -192,27 +194,7 @@ class Xmltv_Model_Channels
 	
 	public function getWeekSchedule($channel=null, Zend_Date $start, Zend_Date $end){
 	
-		if (!$channel)
-			throw new Zend_Exception(self::ERR_WRONG_PARAMS, 500);
-		
-		if (!is_a($start, 'Zend_Date') || !is_a($end, 'Zend_Date'))
-			throw new Zend_Exception(self::ERR_WRONG_PARAMS, 500);
-		
-		$hash = md5(__FUNCTION__.'_'.$channel->ch_id.'_week_'.$start->toString("yyyyMMdd"));
-		try {
-			if (Xmltv_Config::getCaching()){
-				if (!$schedule = $this->cache->load($hash, 'Core', 'Listings')) {
-					$schedule = $this->_table->fetchWeekItems($channel->ch_id, $start, $end);
-					$this->cache->save($schedule, $hash, 'Core', 'Listings');
-				}
-			} else {
-				$schedule = $this->_table->fetchWeekItems($channel->ch_id, $start, $end);
-			}
-		} catch (Exception $e) {
-			echo $e->getMessage();
-		}
-		
-		return $schedule;
+		return $this->_table->fetchWeekItems($channel->ch_id, $start, $end);
 		
 	}
 	

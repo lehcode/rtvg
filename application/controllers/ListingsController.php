@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.12 2012-12-25 01:57:52 developer Exp $
+ * @version $Id: ListingsController.php,v 1.13 2012-12-27 17:04:37 developer Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -75,6 +75,10 @@ class ListingsController extends Zend_Controller_Action
 		$this->validator = $this->_helper->getHelper('requestValidator');
 		$this->cache = new Xmltv_Cache();
 		
+		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
+		$ajaxContext->addActionContext( 'update-comments', 'html' )
+			->initContext();
+		
 	}
 
 	/**
@@ -98,6 +102,9 @@ class ListingsController extends Zend_Controller_Action
 	 */
 	public function dayListingAction () {
 
+	    //var_dump($this->_getAllParams());
+	    //die(__LINE__);
+	    
 	    // Validation routines
 		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
 		if ($this->input===false) {
@@ -137,6 +144,7 @@ class ListingsController extends Zend_Controller_Action
 		    } else {
 		        $channel = $channelsModel->getByAlias($ch);
 		    }
+			//var_dump($ch);
 			//var_dump($channel);
 			//die(__FILE__.': '.__LINE__);
 		    $this->view->assign('channel', $channel );
@@ -176,7 +184,10 @@ class ListingsController extends Zend_Controller_Action
 		     * (1)Load programs list for day
 		     * 
 		    */
-			if ($this->cache->enabled){
+		    //var_dump($listingDate);
+		    //var_dump($channel);
+		    //die(__FILE__.': '.__LINE__);
+		    if ($this->cache->enabled){
 		        $f = "/Listings/Programs";
 		        $hash = Xmltv_Cache::getHash( $channel->ch_id.'_'.$listingDate->toString('U') );
 			    if (!$list = $this->cache->load($hash, 'Core', $f)) {
@@ -215,17 +226,19 @@ class ListingsController extends Zend_Controller_Action
 		     * Get current program
 		     */
 	    	$currentProgram=null;
-	    	foreach ($list as $list_item) {
-	    	    $start = $list_item->start;
-	    		$end   = $list_item->end;
-	    		if ($list_item->now_showing===true){
-	    		    $currentProgram = $list_item;
-	    		}
-	    		$currentProgram = $list[0];
-	    	}
-	    	if ($currentProgram===null){
-	    	    $currentProgram = $list[0];
-	    	    $list[0]->now_showing=true;
+	    	if ($list){
+		    	foreach ($list as $list_item) {
+		    	    $start = $list_item->start;
+		    		$end   = $list_item->end;
+		    		if ($list_item->now_showing===true){
+		    		    $currentProgram = $list_item;
+		    		}
+		    		$currentProgram = $list[0];
+		    	}
+		    	if ($currentProgram===null){
+		    	    $currentProgram = $list[0];
+		    	    $list[0]->now_showing=true;
+		    	}
 	    	}
 	    	
 	    	//var_dump($list);
@@ -249,7 +262,7 @@ class ListingsController extends Zend_Controller_Action
 			$top = $this->_helper->getHelper('Top');
 			if ($this->cache->enabled){
 				$f = '/Listings/Programs';
-				$hash = Xmltv_Cache::getHash('topPrograms');
+				$hash = Xmltv_Cache::getHash('top'.$amt);
 				if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
 					$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>20 ));
 					$this->cache->save($topPrograms, $hash, 'Core', $f);
@@ -324,11 +337,11 @@ class ListingsController extends Zend_Controller_Action
 	    	    $hash = Xmltv_Cache::getHash('sidebar_'.$channel->ch_id);
 	    	    $f = '/Youtube/SidebarRight';
 	    		if (($videos = $this->cache->load($hash, 'Core', $f))===false) {
-	    			$videos = $this->_fetchSidebarVideos( 'тв '.$channel->title, null, $ytConfig);
+	    			$videos = $this->_fetchSidebarVideos( 'телеканал '.$channel->title, null, $ytConfig);
 	    			$this->cache->save($videos, $hash, 'Core', $f);
 	    		}
 	    	} else {
-	    	    $videos = $this->_fetchSidebarVideos( 'тв '.$channel->title, null, $ytConfig);
+	    	    $videos = $this->_fetchSidebarVideos( 'телеканал '.$channel->title, null, $ytConfig);
 	    	}
 	    	//var_dump($videos);
 	    	//die(__FILE__.': '.__LINE__);
@@ -416,10 +429,11 @@ class ListingsController extends Zend_Controller_Action
 			}
 			
 			
+			
 			$tinyurl = new Zend_Service_ShortUrl_BitLy( $this->bitlyLogin, $this->bitlyKey);
 			$url = 'http://'.$_SERVER['HTTP_HOST'].$this->view->url( array( 'channel'=>$channel->ch_alias), 'default_listings_day-listing');
 			if ($this->cache->enabled){
-	    	    $hash = Xmltv_Cache::getHash('tinyurl_'.$this->_getParam('module').'_'.$this->_getParam('controller').'_'.$this->_getParam('action'));
+	    	    $hash = Xmltv_Cache::getHash('tinyurl_'.$this->_getParam('module').'_'.$this->_getParam('controller').'_'.$this->_getParam('action').'_'.$channel->ch_id);
 	    	    $f = '/Tinyurl/Pages';
 	    	    if (($link = $this->cache->load($hash, 'Core', $f))===false) {
 	    	    	$link = trim($tinyurl->shorten( $url ));
@@ -437,10 +451,7 @@ class ListingsController extends Zend_Controller_Action
 	    	if ($currentProgram)
 	    		$programsModel->addHit( $currentProgram );
 	    	
-	    	//var_dump($this->_getAllParams());
 	    	//die(__FILE__.': '.__LINE__);
-	    	
-	    	//$this->view->render();
 		    
 		}
 		
@@ -555,15 +566,23 @@ class ListingsController extends Zend_Controller_Action
 	    	        $listingDate = new Zend_Date($this->input->getEscaped('date'), 'dd-MM-yyyy');
 	    	    } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $dg)) {
 	    	        $listingDate = new Zend_Date($this->input->getEscaped('date'), 'yyyy-MM-dd');
+	    	    } else {
+	    	        $listingDate = Zend_Date::now();
 	    	    }
 	    	} else {
 	    	    $listingDate = Zend_Date::now();
 	    	}
-	    	//var_dump($date->toString());
+	    	//var_dump($listingDate->toString());
+	    	//die(__FILE__.': '.__LINE__);
+	    	
 	    	
 	    	$currentProgram = $programsModel->getByAlias( $this->input->getEscaped('alias'), $channel->ch_id, $listingDate );
 	    	//var_dump($currentProgram);
-	    	$list = $programsModel->getProgramForDay( $currentProgram->alias, $channel->alias, $listingDate );
+	    	//var_dump($channel->ch_alias);
+	    	//var_dump($listingDate);
+	    	die(__FILE__.': '.__LINE__);
+	    	$list = $programsModel->getProgramForDay( $currentProgram->alias, $channel->ch_alias, $listingDate );
+	    	
 	    	//var_dump($list);
 	    	//die(__FILE__.': '.__LINE__);
 	    	
@@ -729,7 +748,7 @@ class ListingsController extends Zend_Controller_Action
 			}
 			
 			$tinyurl = new Zend_Service_ShortUrl_BitLy( $this->bitlyLogin, $this->bitlyKey);
-			$url = 'http://'.$_SERVER['HTTP_HOST'].$this->view->url(array(1=>$channel->ch_alias), 'default_listings_day-listing');
+			$url = 'http://'.$_SERVER['HTTP_HOST'].$this->view->url(array('channel'=>$channel->ch_alias), 'default_listings_day-listing');
 			if ($this->cache->enabled){
 	    	    $hash = Xmltv_Cache::getHash('tinyurl_'.$this->_getParam('module').'_'.$this->_getParam('controller').'_'.$this->_getParam('action'));
 	    	    $f = '/Tinyurl/Pages';
@@ -792,56 +811,61 @@ class ListingsController extends Zend_Controller_Action
 	    			$listingDate = new Zend_Date($this->input->getEscaped('date'), 'dd-MM-yyyy');
 	    		} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $dg)) {
 	    			$listingDate = new Zend_Date($this->input->getEscaped('date'), 'yyyy-MM-dd');
-	    		}
+		    	} elseif (!$this->input->getEscaped('date')) {
+		    		$listingDate = Zend_Date::now();
+		    	}
 	    	} else {
 	    		$listingDate = Zend_Date::now();
 	    	}
 	    	
-	    	try {
-	    	    $currentProgram = $programsModel->getByAlias( $this->input->getEscaped('alias'), $channel->ch_id, $listingDate);
-	    	} catch (Exception $e) {
-	    	    throw new Zend_Exception("CC");
-	    	}
+	    	$currentProgram = $programsModel->getByAlias( $this->input->getEscaped('alias'), $channel->ch_id, $listingDate);
+	    	//var_dump($currentProgram);
+	    	//die(__FILE__.': '.__LINE__);
 	    	
-	    	
-	    	//$weekStart = new Zend_Date();
 	    	$weekDays  = $this->_helper->getHelper('weekDays');
 	    	$weekStart = $weekDays->getStart( $listingDate );
 	    	$weekEnd   = $weekDays->getEnd( $listingDate );
-	    	
 	    	//var_dump($weekStart->toString());
 	    	//var_dump($weekEnd->toString());
 	    	//die(__FILE__.': '.__LINE__);
 	    	
-	    	$list = $programsModel->getProgramThisWeek( $this->input->getEscaped('alias'), $channel->ch_id, $weekStart, $weekEnd );
-	    	
-	    	//var_dump($list);
+	    	//var_dump($this->_getAllParams());
+	    	//var_dump($this->input->getEscaped('alias'));
 	    	//die(__FILE__.': '.__LINE__);
 	    	
+	    	$list = $programsModel->getProgramThisWeek( $this->input->getEscaped('alias'), $channel->ch_id, $weekStart, $weekEnd );
 	    	if (!count($list)) {
 	    	    $this->view->assign( 'notfound', true );
-	    		$list = $programsModel->getSimilarProgramsThisWeek( $this->_getParam('alias'), $weekStart, $weekEnd );
-	    		if (!$list)
-	    		    $this->view->headMeta()->setName('robots', 'noindex,nofollow');
-	    	}
-	    	
+	    		$similar = $programsModel->getSimilarProgramsThisWeek( $this->input->getEscaped('alias'), $weekStart, $weekEnd );
+	    	} 
+	    	$similar = $programsModel->getSimilarProgramsThisWeek( $this->input->getEscaped('alias'), $weekStart, $weekEnd );
+	    	//var_dump($list);
+	    	//var_dump($similar);
 	    	//die(__FILE__.': '.__LINE__);
 	    		
 	    	//$program->start = new Zend_Date($program->start, 'YYYY-MM-dd HH:mm:ss');
 	    	//$program->end   = new Zend_Date($program->end, 'YYYY-MM-dd HH:mm:ss');
 	    		
-	    	//var_dump($list);
+	    	//var_dump($currentProgram);
 	    	//die(__FILE__.': '.__LINE__);
-	    		
-	    	$programsModel->addHit( $currentProgram );
+	    	
+	    	if ($currentProgram) {
+	    		$programsModel->addHit( $currentProgram );
+	    	}
+	    	
+	    	//var_dump(ini_get('error_reporting'));
+	    	
+	    	
 	    	$channelsModel->addHit( $channel->ch_id );
 	    	
 	    	$this->view->assign( 'week_start', $weekStart );
 	    	$this->view->assign( 'week_end', $weekEnd );
 	    	$this->view->assign( 'list', $list );
+	    	$this->view->assign( 'similar', $similar );
 	    	$this->view->assign( 'program', $currentProgram );
 	    	$this->view->assign( 'channel', $channel );
 	    	$this->view->assign( 'pageclass', 'program-week' );
+	    	$this->view->assign('hide_sidebar', 'left');
 	    	
 	    	//die(__FILE__.': '.__LINE__);
 	    }
@@ -916,18 +940,7 @@ class ListingsController extends Zend_Controller_Action
 	
 	}
 	
-	/**
-	 * Update comments for channel
-	 */
-	public function updateCommentsAction(){
-	    
-	    //var_dump($this->_getAllParams());
-	    die(__FILE__.': '.__LINE__);
-	    
-	    $feedData    = $this->getYandexRss( array( '"'.$channel->title.'"', $currentProgram->title ) );
-	    //$commentsNew = $this->parseYandexFeed( $feedData, 164 );
-	    
-	}
+	
 	
 	
 }

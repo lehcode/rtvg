@@ -14,6 +14,7 @@ $this->headScript()->appendScript("$(document).ready(function() {
 /*
  * banners
  */
+/*
 $ads = array(
 	array(
 		"title"=>'GTA 5 Online',
@@ -48,10 +49,11 @@ $ads = array(
 );
 $idx = rand(0, count($ads)-1);
 $banner = $ads[$idx];
+*/
 ?>
 
 <div class="page videos">
-
+	<?php /*
 	<div style="width:100%;">
 		<div style="width:400px; height:175px; margin: 1.5em auto;">
 			<a href="<?php echo $banner['url'] ?>" target="_blank">
@@ -60,6 +62,7 @@ $banner = $ads[$idx];
 		</div>
 		<p class="desc"><?php echo strip_tags( $this->main_video->getVideoDescription() ) ?></p>
 	</div>
+	*/ ?>
 
 	<div class="video main">
 	
@@ -83,30 +86,36 @@ $banner = $ads[$idx];
 			echo $this->inlineScript();
 			?>
 			
-			<div class="taglist title">
-				Темы этого видео
-			</div>
-			<ul class="taglist">
 			<?php 
+			/*
 			$tags = $this->main_video->getVideoTags();
 			
-			if (!empty($tags)) {
+			if (count($tags)) {
+			    ?>
+			    <div class="taglist title">
+					Темы этого видео
+				</div>
+			    <ul class="taglist">
+			    <?php 
 				$i=0;
 				do {
 					$t = trim($tags[$i]);
 					if (!empty($t)) {
 						$t = $this->safeTag($t);
 						?>
-						<li class="btn btn-mini">
-							<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>?p=<?php echo base64_encode($tags[$i]) ?>" title="Видео про <?php echo $this->escape($tags[$i]); ?>" target="_blank"><?php echo $tags[$i] ?></a>
-						</li>
+					<li class="btn btn-mini">
+						<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>?p=<?php echo base64_encode($tags[$i]) ?>" title="Видео про <?php echo $this->escape($tags[$i]); ?>" target="_blank"><?php echo $tags[$i] ?></a>
+					</li>
 						<?php 
 					}
 					unset($tags[$i]);
 					$i++;
 				} while (count($tags)>0);
-			 } ?>
-			</ul>
+				?>
+				</ul>
+				<?php 
+			 } */ ?>
+			
 	
 	
 	</div>
@@ -115,10 +124,10 @@ $banner = $ads[$idx];
 	<?php 
 	//$grid_columns = 1;
 	//$col_width_pct = floor(100/$grid_columns)-1;
-	$amount=5;
-	for ($i=0; $i<$amount; $i++) {
+	//$amount=(int)Zend_Registry::get('site_config')->videos->related->get('amount');
+	foreach ($this->related_videos as $v) {
 		
-		$current = $this->related_videos[$i];
+		$current = $v;
 		
 		if (!preg_match('/\p{Cyrillic}+/ui', $current->getVideoTitle()))
 		continue;
@@ -128,13 +137,12 @@ $banner = $ads[$idx];
 			
 			<?php 
 			$title = $current->getVideoTitle();
-			$tag = $this->safeTag($title);
-			$vid = $current->getVideoId();
-			$vid = Xmltv_Youtube::videoId($vid);
+			$vid   = Xmltv_Youtube::genRtvgId( $current->getVideoId() );
+			$alias = Xmltv_Youtube::videoAlias( $title);
 			?>
 			
 			<h3 class="title">
-				<a href="/видео/онлайн/<?php echo $tag.'/'.$vid ?>" title="Смотреть онлайн <?php echo $title ?>" target="_blank"><?php echo $title ?></a></h2>
+				<a href="<?php echo $this->url( array('alias'=>$alias, 'id'=>$vid), 'default_videos_show-video' )  ?>" title="Смотреть онлайн <?php echo $title ?>" target="_blank"><?php echo $title ?></a></h2>
 			</h3>
 		
 			<div class="videothumb">
@@ -150,8 +158,8 @@ $banner = $ads[$idx];
 					if ($videoThumbnail['width'] >= 200) {
 						
 						?>
-						<a class="imagelink" href="/видео/онлайн/<?php echo $this->videoAlias( $current->getVideoTitle() ) .'/'. $this->videoId( $current->getVideoId() ) ?>">
-							<img src="<?php echo $videoThumbnail['url'] ?>" width="240" alt="<?php echo $current->getVideoTitle()?>" />
+						<a class="imagelink" href="<?php echo $this->url( array('alias'=>Xmltv_Youtube::videoAlias( $title), 'id'=>$vid), 'default_videos_show-video' ) ?>">
+							<img src="<?php echo $videoThumbnail['url'] ?>" width="240" alt="<?php echo $title ?>" />
 						</a>
 						
 						<?php 
@@ -204,6 +212,7 @@ $banner = $ads[$idx];
 			</div>
 			
 			<?php 
+			/*
 			$tags = $current->getVideoTags();
 			//var_dump($tags);
 			if (count($tags)) {
@@ -227,7 +236,7 @@ $banner = $ads[$idx];
 				?>
 				</ul>
 				<?php 
-			 } ?>
+			 }*/ ?>
 			
 			
 		</div>

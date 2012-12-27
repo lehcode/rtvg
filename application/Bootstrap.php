@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.8 2012-12-25 01:57:52 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.9 2012-12-27 17:04:37 developer Exp $
  *
  */
 
@@ -20,7 +20,7 @@
  * 
  */
 mb_internal_encoding('UTF-8');
-mysqli_set_charset('utf8');
+//mysqli_set_charset('utf8');
 
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
@@ -34,25 +34,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		date_default_timezone_set( Zend_Registry::get('site_config')->site->get( 'timezone', 'Europe/Moscow' ) );
 		
-		/*
-		 * Database
-		 */
-		try {
-			/**
-			 * @var Zend_Db_Adapter_Mysqli
-			 */
-			$db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
-			$db->setFetchMode(Zend_DB::FETCH_OBJ);
-			Zend_Registry::set('db_local', $db);
-			
-			$db = $this->bootstrap('multidb')->getResource('multidb')->getDb('archive');
-			$db->setFetchMode(Zend_DB::FETCH_OBJ);
-			Zend_Registry::set('db_archive', $db);
-			
-		} catch (Zend_Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-		}
+		$db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
+		$db->setFetchMode(Zend_DB::FETCH_OBJ);
+		Zend_Registry::set('db_local', $db);
 		
+		$db = $this->bootstrap('multidb')->getResource('multidb')->getDb('archive');
+		$db->setFetchMode(Zend_DB::FETCH_OBJ);
+		Zend_Registry::set('db_archive', $db);
+
 		Zend_Layout::startMvc();
 		
 		/*
@@ -77,15 +66,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->setParam( 'bootstrap', $this )
 			->registerPlugin( $router )
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
-			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) );
+			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
+			->returnResponse(true);
 		
-		if( APPLICATION_ENV == 'production' ) {
-			$fc->throwExceptions( true ); // disable ErrorController and logging
-			$fc->returnResponse ( true );
+		/*
+		 * http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
+		 */
+		
+		if( APPLICATION_ENV != 'development' ) {
+			$fc->throwExceptions( false ); //Enable ErrorController and logging
 		} else {
-			$fc->throwExceptions( true ); // enable ErrorController and logging
-			$fc->returnResponse ( false );
+		    $fc->throwExceptions( true ); //Disable ErrorController and logging
 		}
+		
 		
 		$router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());		
@@ -93,37 +86,66 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		try {
 			$response = $fc->dispatch();
-		} catch (Exception $e) {
 			
-			if( APPLICATION_ENV != 'production' ) {
-				echo $e->getMessage();
-				Zend_Debug::dump($e->getTrace());
-			} else {
-				$log = new Zend_Log( 
-				new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-				$log->debug( $e->getMessage() . PHP_EOL . $e->getTraceAsString() );
-			}
-			
-		}
-		
-		/*
-		if (isset($response)) {
 			if( $response->isException() ) {
 				$exception = $response->getException();
-				
-				
 				
 				//var_dump($response);
 				//var_dump($exception);
 				//die(__FILE__.': '.__LINE__);
-				//$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-				//$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
-			} else {
-				$response->sendHeaders();
-				$response->outputBody();
+				
+				/*
+				$mail = new Zend_Mail();
+				$mail->setBodyText( $exception->getTraceAsString() );
+				$mail->setFrom('robot@rutvgid.ru', 'Robot');
+				$mail->addTo('egeshi@gmail.com', 'Admin');
+				$mail->setSubject($exception->getMessage());
+				$mail->send();
+				*/
+				
+				//var_dump($exception);
+				//die(__FILE__.': '.__LINE__);
+				
+				//$log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
+				//$log->debug( $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
+				
+			
 			}
+			
+		} catch (Zend_Exception $e) {
+			if( APPLICATION_ENV == 'development' ) {
+				echo $e->getMessage();
+				Zend_Debug::dump($e->getTrace());
+			} else {
+			    
+			    /*
+				$mail = new Zend_Mail();
+				$mail->setBodyText( $e->getTraceAsString() );
+				$mail->setFrom('robot@rutvgid.ru', 'Robot');
+				$mail->addTo('egeshi@gmail.com', 'Admin');
+				$mail->setSubject($e->getMessage());
+				$mail->send();
+				*/
+			    if( APPLICATION_ENV == 'testing' ){
+			        //die(__FILE__.': '.__LINE__);
+			        $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/testing.log' ));
+			        $log->debug( $e->getMessage() . PHP_EOL . print_r( $e->getTraceAsString(), true ) );
+			    } else {
+			        $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
+			        $log->debug( $e->getMessage() . PHP_EOL . print_r( $e->getTraceAsString(), true ) );
+			    }
+				
+				
+			}
+			
 		}
-		*/
+		
+		
+		if (isset($response)) {
+			$response->sendHeaders();
+			$response->outputBody();
+		}
+		
 				
 	}
 	

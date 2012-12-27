@@ -83,7 +83,7 @@ $(document).ready(function(){
 				}, "15000");
 			},
 			success: function(response, textStatus, jqXHR){
-				Progress.fadeOut(100, function(){ Progress.html('<h3>Завершено!</h3>'+response).fadeIn(); })
+				Progress.fadeOut(100, function(){ Progress.html('<h3>Завершено!</h3>'+response).fadeIn(); });
 				window.clearInterval(pollParsing);
 				return true;
 			},

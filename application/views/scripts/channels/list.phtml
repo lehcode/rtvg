@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: list.phtml,v 1.10 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: list.phtml,v 1.11 2012-12-27 17:04:38 developer Exp $
  *
  */
 
@@ -37,7 +37,10 @@ if (APPLICATION_ENV=='development') {
 
 ?>
 
-<?php  
+<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
+
+<?php 
+
 if (!$this->category) {
 	?>
 <div id="fastsearch-wrap">
@@ -62,14 +65,26 @@ if (!$this->category) {
 	<?php 
 } ?>
 
-
-
+<?php /*<script src="http://myads.ru/blocks.php?block=1061" type="text/javascript" charset="utf-8"></script>*/ ?>
 	
-<?php if (isset($this->cat_title)): ?>
-<h2><?php echo $this->cat_title; ?> телеканалы</h2>
+<?php if (isset($this->category) && $this->category!==null): ?>
+<?php //var_dump($this->category) ?>
+<h2>
+	<?php /*img src="<?php echo $this->baseUrl('images/categories/channels/'.$this->escape( $this->category['image']) ); ?>" />*/ ?>
+	<?php echo $this->category['title']; ?> каналы
+</h2>
 <?php endif; ?>
 
-<h4>Всего каналов:&nbsp;<?php echo count($this->channels); ?></h4>
+<?php if (isset($this->category) && $this->category!==null): ?>
+<p class="label label-info">
+	<?php echo count($this->channels); ?> в категории <?php echo $this->escape( '«'.$this->category['title'].'»' ) ?>
+</p>
+<?php else: ?>
+<p class="label label-info">
+	Всего <?php echo count($this->channels); ?>
+</p>
+<?php endif; ?>
+
 
 <div id="channels">
 
@@ -90,8 +105,8 @@ if (!$this->category) {
 	</h3>
 	
 	<div class="channeldesc">
-		<a class="label label-info" 
-			href="<?php echo $this->url(array(1=>Xmltv_String::strtolower($alias)), 'default_listings_day-listing'); ?>" 
+		<a class="label label-important" 
+			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_listings_day-listing'); ?>" 
 			title="<?php printf('Телепрограмма канала %s на сегодня', $title) ?>">
 			Программа на сегодня
 		</a>
@@ -101,9 +116,9 @@ if (!$this->category) {
 			Программа на неделю
 		</a>
 		
-		<h4>
+		<p>
 			<?php echo $this->escape( strip_tags($channel['desc_intro']) ) ?>
-		</h4>
+		</p>
 		<p>
 			<?php echo $this->truncateString( strip_tags($channel['desc_body']), 20, 'words'); ?>
 		</p>

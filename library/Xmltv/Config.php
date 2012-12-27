@@ -3,22 +3,23 @@
 class Xmltv_Config
 {
 	
-	//protected $mode;
+    /**
+     * 
+     * @param string $type
+     * @param string $mode
+     * @return Zend_Config
+     */
+	public static function getConfig ($type = 'application', $mode = 'production') {
+
+		if( $type=='site' ) {
+			return Zend_Registry::get('site_config');
+		} else {
+			return Zend_Registry::get('app_config');
+		}
 	
-	function __construct(){
-		
 	}
-	
-	public static function getConfig ($type = 'application', $mode = 'development') {
 
-		if( $type == 'site' ) 
-		return new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', $mode );
-		
-		return new Zend_Config_Ini( APPLICATION_PATH . '/configs/application.ini', $mode );
-	
-	}
-
-
+	/*
 	public static function getSitesXmlConfig ($group = null) {
 
 		if(  !$group ) throw new Exception( "Нужно название группы сайтов", 500 );
@@ -26,22 +27,29 @@ class Xmltv_Config
 		return new Zend_Config_Xml(APPLICATION_PATH.'/configs/sites.xml', $group);
 	
 	}
+	*/
 	
-	public static function getDebug() {
-		return (bool)self::getConfig('site', APPLICATION_ENV )->site->debug;
-	}
+	//public static function getDebug() {
+	//	return (bool)self::getConfig('site', APPLICATION_ENV )->site->debug;
+	//}
+	/**
+	 * Cache lifetime (seconds)
+	 */
+	/*
 	public static function getCacheLifetime() {
-		return (int)self::getConfig('site', APPLICATION_ENV)->cache->lifetime;
+		return (int)Zend_Registry::get('site_config')->cache->system->get('lifetime', 86400);
 	}
 	public static function getCaching() {
-		return (bool)self::getConfig('site', APPLICATION_ENV)->cache->caching;
+		return (bool)Zend_Registry::get('site_config')->cache->system->get('enabled', false);
 	}
 	public static function getYoutubeCaching() {
-		return (bool)self::getConfig('site', APPLICATION_ENV)->cache->youtubecaching;
+		return (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled', false);
 	}
 	public static function getCacheLocation() {
-		return (string)self::getConfig('site', APPLICATION_ENV)->cache->location;
+		return (string)Zend_Registry::get('site_config')->cache->system->get('location', ROOT_PATH."/cache");
 	}
+	*/
+	/*
 	public static function getProxyHost() {
 		return (string)self::getConfig('site', APPLICATION_ENV)->proxy->host;
 	}
@@ -66,7 +74,7 @@ class Xmltv_Config
 	public static function getSiteDescription() {
 		return (string)self::getConfig('site', APPLICATION_ENV)->site->description;
 	}
-	
+	*/
 	
 
 }

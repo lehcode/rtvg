@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.18 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: Programs.php,v 1.19 2012-12-27 17:04:37 developer Exp $
  */
 
 class Admin_Model_Programs 
@@ -278,13 +278,17 @@ class Admin_Model_Programs
 		//die(__FILE__.': '.__LINE__);
 		
 		// Detect premiere
-		$premieresRegex = array(
-			'/Нов(ые|ая)\s+сери(и/я)/ui',
-			'/премьера/ui',
+		$regex = array(
+			'/\s+Нов(ые|ая)\s+сери(и|я)/ui',
+			'/\s+премьера/ui',
 		);
-		foreach ($premieresRegex as $regex) {
-			if (Xmltv_String::stristr($result['title'], 'Новые серии'))
-				$result['premiere']=1;
+		foreach ($regex as $r) {
+		    if (preg_match($r, $result['title'])){
+		    	var_dump($result['title']);
+		        $result['premiere']=1;
+		    } else {
+		        $result['premiere']=0;
+		    }
 		}
 		
 		if (Xmltv_String::stristr($result['title'], 'Прямая трансляция') || 
@@ -580,7 +584,7 @@ class Admin_Model_Programs
 				//Музыка "Antilles Mizik" на Мартиниканском джазовом фестивале-2010
 				//Юссу Ндур и "Super Etoile de Dakar" на фестивале в Фесе-2011
 				'/^(.+).?(\s)('.implode('|', $music).')$/u',
-				'/^(.+).?(\s)()$/ui', //Мейнард Фергюсон на джазовом фестивале в Монреале
+				//'/^(.+).?(\s)()$/ui', //Мейнард Фергюсон на джазовом фестивале в Монреале
 			
 				
 		);
@@ -610,6 +614,15 @@ class Admin_Model_Programs
 				$result['category'] = $this->catIdFromTitle('классическая музыка');
 				//var_dump($result);
 				//die(__FILE__.': '.__LINE__);
+			}
+		}
+		
+		$regex = array(
+				'/^Новости$/ui'
+		);
+		foreach ($regex as $r){
+			if (preg_match($r, $result['title'], $m)){
+				$result['category'] = $this->catIdFromTitle('новости');
 			}
 		}
 		

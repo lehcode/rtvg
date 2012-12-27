@@ -5,7 +5,7 @@
  * @author  toshihir
  * @package rutvgid
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.13 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: ImportController.php,v 1.14 2012-12-27 17:04:37 developer Exp $
  *
  */
 
@@ -140,33 +140,12 @@ class Admin_ImportController extends Zend_Controller_Action
 						throw new Zend_Exception($e->getMessage(), $e->getCode());
 					}
 					$newChannels[]=$info;
-					/*
-					 $where = "`ch_id`='".$info['ch_id']."'";
-					 $present = $channelsTable->fetchRow($where)->toArray();
-					 if ($present===null) {
-						//Save if new
-						try {
-							$channelsTable->insert($info);
-						} catch (Zend_Db_Table_Exception $e) {
-							throw new Zend_Exception($e->getMessage(), $e->getCode());
-						}
-						$newChannels[]=$info;
-					} else {
-						//Update existing
-						$present['title'] = $info['title'];
-						$present['alias'] = $info['alias'];
-						try {
-							$channelsTable->update($present, $where);
-						} catch (Zend_Db_Table_Exception $e) {
-							throw new Zend_Exception($e->getMessage(), $e->getCode());
-						}
-						$updatedChannels[]=$info;
-					}*/
+					
 				}
 			}
 			
 			$response['added']   = $newChannels;
-			$response['updated'] = $updatedChannels;
+			//$response['updated'] = $updatedChannels;
 			$this->view->assign('response', $response);
 			
 		}

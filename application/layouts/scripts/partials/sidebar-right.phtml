@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-right.phtml,v 1.1 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: sidebar-right.phtml,v 1.2 2012-12-27 17:04:37 developer Exp $
  *
  */
 ?>
@@ -14,7 +14,10 @@
 <script type="text/javascript" src="http://www.adcash.com/script/java.php?option=rotateur&rotateur=106375"></script>
 
 <?php
-if (count($this->videos)>0) {
+//var_dump($this->videos);
+if (count($this->videos)>0 && $this->videos!==true) {
+    //var_dump($this->videos);
+    //die(__FILE__.': '.__LINE__);
 	$channelTitle = $this->escape($this->channel->title);
 	$this->headScript()->appendScript("$(function() { 
 	var icons = { header: 'ui-icon-circle-arrow-e', activeHeader: 'ui-icon-circle-arrow-s' };
@@ -76,50 +79,13 @@ if (count($this->videos)>0) {
 					<?php 
 					$desc = $this->truncateString( $video->desc, 30, 'words') ; 
 					if (stristr($desc, $this->channel->title)) {
-						$href = '<a href="'.$this->url(array(1=>$this->channel->alias), 'default_listings_day-listing').'" target="_blank" title="Программа канала '.$this->channel->title.'">'.$this->channel->title.'</a>';
+						$href = '<a href="'.$this->url(array('channel'=>$this->channel->ch_alias), 'default_listings_day-listing').'" target="_blank" title="Программа канала '.$this->channel->title.'">'.$this->channel->title.'</a>';
 						$desc = str_ireplace($this->channel->title, $href, $desc);
 					}
 					echo $desc;
 					?>
 				</p>
 				<?php endif; ?>
-				
-				<?php
-				/*
-				$tags = $video->getVideoTags();
-				if (count($tags)) {
-					
-					$limit = Zend_Registry::get('site_config')->videos->sidebar->get('limit', 5);
-					$limit = count($tags)>$limit ? $limit : count($tags) ; 
-					?>
-					<ul class="tags">
-						<?php 
-						$added=0;
-						foreach($tags as $tag){
-							if ($added<$limit) {
-								$safe_tag = $this->safeTag($tag);
-								//var_dump($safe_tag);
-								if ( Xmltv_String::strlen($safe_tag)>3 ) {
-									?>
-								<li>
-									<a class="" href="/видео/тема/<?php echo $safe_tag ?>?p=<?php echo urlencode( base64_encode( $this->escape( $tag ))); ?>" title="10 новых видео на тему <?php echo $tag; ?>">
-										<span class="badge badge-important"><?php echo $tag ?></span>
-									</a>
-								</li>
-									<?php 
-									$added++;
-								}
-							} else break;
-						}
-						?>
-						<li>
-							<a class="pull-left" href="<?php echo "/видео/онлайн/$videoAlias/$videoId" ?>" title="<?php echo $this->truncateString($videoDesc, 5, 'words'); ?>">
-								<span class="badge badge-important">Все темы этого видео</span>
-							</a>
-						</li>
-					</ul>
-					<?php 
-				} */ ?>
 				
 			</div> 
 		<?php 
@@ -139,7 +105,7 @@ if (count($this->videos)>0) {
 	
 <?php 
 if (@!in_array($this->channel->category, $this->kids_channels)) {
-	$this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').fadeIn(1000); });");
+	$this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').css({ display: 'block' }); });");
 ?>
 <div class="module" id="rumor-ads">
 	<h4 class="mediumheading">Желтая пресса</h4>
@@ -148,18 +114,5 @@ if (@!in_array($this->channel->category, $this->kids_channels)) {
 <?php 
 } ?>
 
-<?php
-if (APPLICATION_ENV!='development') { ?>
-<div class="module">
-	<h5 class="mediumheading">Телепрограмма vkontakte</h5>
-	<div id="vk_groups"></div>
-	<?php 
-	$this->inlineScript()->appendScript('VK.Widgets.Group("vk_groups", {mode: 1, width: "350", height: "290"}, 27716041);');
-	?>
-</div>
-<?php 
-} ?>
 
-<?php
 
-?>

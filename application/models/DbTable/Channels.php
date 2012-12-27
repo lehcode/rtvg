@@ -3,13 +3,14 @@
  * Database table for channels info
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.10 2012-12-25 01:57:53 developer Exp $
+ * @version $Id: Channels.php,v 1.11 2012-12-27 17:04:37 developer Exp $
  */
 
 class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 {
 
     protected $_name = 'channels';
+    protected $_pfx;
 	
 	const FETCH_MODE = Zend_Db::FETCH_OBJ;
 	
@@ -22,7 +23,8 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     	} else {
     		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix', 'rtvg_');
     	}
-    	$this->setName($pfx.$this->_name);
+    	$this->_pfx = $pfx;
+    	$this->setName($this->_pfx.$this->_name);
 		
     }
     
@@ -63,8 +65,8 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 	    	
 	    	$result = $this->_db->query($select)->fetchAll(self::FETCH_MODE);
 	    		    	
-    	} catch (Exception $e) {
-    		echo ($e->getMessage());
+    	} catch (Zend_Db_Table_Exception $e) {
+    		throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
     	}
     	
     	//var_dump($result);
@@ -83,6 +85,7 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     		->from(array('ch'=>$this->_name), '*')
     		->join(array('cat'=>'rtvg_channels_categories'), "`ch`.`category`=`cat`.`id`", array())
     		->where("`cat`.`alias` LIKE '$alias'")
+    		->where("`ch`.`published`='1'")
     		->order("ch.title ASC");
     	
     	$result = $this->fetchAll($select);
@@ -96,24 +99,22 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
 		$days = array();
 		do{
 			$select = $this->_db->select()
-				->from( array( 'program'=>'rtvg_programs'), '*')
-				->joinLeft( array( 'props'=>"rtvg_programs_props"), "program.`hash`=props.`hash`", array('actors', 'directors', 'premiere', 'live'))
-				->joinLeft( array( 'description'=>"rtvg_programs_descriptions"), "program.`hash`=description.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
-				->where("program.`start` LIKE '".$start->toString('yyyy-MM-dd')."%'")
-				->where("program.`ch_id` = '$ch_id'")
-				->order("start", "ASC");
+				->from( array( 'prog'=>$this->_pfx.'programs'), '*')
+				->joinLeft( array( 'props'=>$this->_pfx."programs_props"), "`prog`.`hash`=`props`.`hash`", array('actors', 'directors', 'premiere', 'live'))
+				->joinLeft( array( 'desc'=>$this->_pfx."programs_descriptions"), "`prog`.`hash`=`desc`.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
+				->joinLeft( array( 'ch'=>$this->_pfx."channels"), "`prog`.`ch_id`=`ch`.`ch_id`", array('ch_id'))
+				->where("`prog`.`start` LIKE '".$start->toString('yyyy-MM-dd')."%'")
+				->where("`prog`.`ch_id` = '$ch_id'")
+				->where("`ch`.`published` = '1'")
+				->order("prog.start", "ASC");
 			
 			//var_dump($select->assemble());
 			//die(__FILE__.': '.__LINE__);
 				
 			try {
 				$days[$start->toString('U')] = $this->_db->fetchAll($select, null, self::FETCH_MODE);
-			} catch (Exception $e) {
-				if ($this->debug) {
-					echo $e->getMessage();
-					//var_dump($e->getTrace());
-					exit();
-				}
+			} catch (Zend_Db_Adapter_Exception $e) {
+				throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 			}
 			
 			//$this->_profileQuery();

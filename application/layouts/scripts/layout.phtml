@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.17 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: layout.phtml,v 1.18 2012-12-27 17:04:37 developer Exp $
  *
  */
 
@@ -13,11 +13,12 @@ $this->headMeta()
 
 //$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/base.less')), 'APPEND');
 $this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND');
-$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/animations.less')), 'APPEND');
+$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/animations.css')), 'APPEND');
 $this->headLink()
 	->prependStylesheet( $this->baseUrl('css/base.css'))
 	->prependStylesheet( 'http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css')
 	->appendStylesheet($this->baseUrl('css/fonts.css'))
+	->prependStylesheet( $this->baseUrl('css/animations.css'))
 	->appendStylesheet($this->baseUrl('js/tip/jquery.tooltip.css'));
 
 /*
@@ -38,7 +39,7 @@ $this->headTitle()
 
 $this->jQuery()->enable() //enable jquery ;
 	//->setCdnSsl(true) if need to load from ssl location
-	->setVersion('1.7.1') //jQuery version, automatically 1.5 = 1.5.latest
+	->setVersion('1.8.3') //jQuery version, automatically 1.5 = 1.5.latest
 	->setUiVersion('1.8.18') //jQuery UI version, automatically 1.8 = 1.8.latest
 	->uiEnable();
 
@@ -49,30 +50,23 @@ $this->headScript()
 	->prependFile($this->baseUrl('js/bootstrap.js'))
 	->appendFile('http://yandex.st/share/share.js' )
 	->appendFile('http://userapi.com/js/api/openapi.js?50' )
+	//->appendFile('https://www.google.com/jsapi' )
 	->appendScript( 'VK.init({ apiId: 2963750, onlyWidgets: true}); 
 	jQuery(document).ready(function(){ 
-		$("#footer .counter_logo").hide(); if  ($(".da_adp_links")) $(".da_adp_links").hide();
+		$("#footer .counter_logo").css({ display: "none" }); 
+		if  ($(".da_adp_links")) { $(".da_adp_links").css({ display: "none" }); }
 	});');
 
 
-if (APPLICATION_ENV=='production') {
-	$googleCounter = "var _gaq = _gaq || [];
-	  _gaq.push(['_setAccount', 'UA-778789-8']);
-	  _gaq.push(['_trackPageview']);
-	  (function() {
-	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	  })();
-	";
-	$liCounter = 'new Image().src = "//counter.yadro.ru/hit?r"+
+if (APPLICATION_ENV!='development') {
+    //Liveinternet
+	$this->headScript()
+		->appendScript('new Image().src = "//counter.yadro.ru/hit?r"+
 	escape(document.referrer)+((typeof(screen)=="undefined")?"":
 	";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
 	screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 	";h"+escape(document.title.substring(0,80))+
-	";"+Math.random();';
-	$this->headScript()
-		->appendScript($googleCounter."\n".$liCounter);
+	";"+Math.random();');
 }
 
 $this->maincontent_width = 6;
@@ -83,39 +77,32 @@ if ($this->hide_sidebar=='right'){
 	$this->maincontent_width = 10;
 }
 
-try {
+
 	
-	$this->placeholder('maincontent')->set( $this->layout()->content );
-	$this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
-	$this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
-	$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array()) );
-	$this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
-		'top_programs'=>$this->top_programs,
-		'cats'=>$this->channels_cats,
-		'channel'=>$this->channel )));
-	
-	if ($this->is_frontpage) {
-		$this->placeholder('frontpage_menu')->set( $this->partial('partials/frontpage-menu.phtml', array()) );
-	}
-	
-	/*
-	 * right sidebar
-	 */
-	$sidebarConf = array(
-		'videos'=>$this->sidebar_videos,
-		'kids_channels'=>$this->kids_channels,
-		'show_videos'=>$this->show_videos,
-	);
-	if ($this->channel) $sidebarConf['channel'] = $this->channel;
-	if ($this->current_program) $sidebarConf['program'] = $this->current_program;
-	$this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', $sidebarConf ) );
-	
-} catch (Exception $e) {
-	throw new Zend_Exception($e->getMessage(), $e->getCode());
+$this->placeholder('maincontent')->set( $this->layout()->content );
+$this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
+$this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
+//$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array()) );
+$this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
+	'top_programs'=>$this->top_programs,
+	'cats'=>$this->channels_cats,
+	'channel'=>$this->channel )));
+if ($this->is_frontpage) {
+	$this->placeholder('frontpage_menu')->set( $this->partial('partials/frontpage-menu.phtml', array()) );
 }
 
-//$fpMenu = $this->fpMenu();
-//$footer = $this->footer();
+/*
+ * right sidebar
+ */
+$sidebarConf = array(
+	'videos'=>$this->sidebar_videos,
+	'kids_channels'=>$this->kids_channels,
+	'show_videos'=>$this->show_videos,
+);
+if ($this->channel) $sidebarConf['channel'] = $this->channel;
+if ($this->current_program) $sidebarConf['program'] = $this->current_program;
+$this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', $sidebarConf ) );
+//die(__FILE__.': '.__LINE__);
 
 ?>
 
@@ -123,23 +110,15 @@ try {
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://ogp.me/ns#" xml:lang="ru" lang="ru">
 <head>
 <?php 
-
 echo $this->headTitle(), PHP_EOL;
 echo $this->headMeta(), PHP_EOL;
 echo $this->jQuery();
 echo $this->headLink(), PHP_EOL;
 echo $this->headScript(), PHP_EOL;
 echo $this->headStyle(), PHP_EOL;
+?>
 
-$this->inlineScript()
-	->appendScript("(function() {
-	var cx = '006142482445578005725:vkbnaloj-g8';
-	var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
-	gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
-		'//www.google.com/cse/cse.js?cx=' + cx;
-	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-  })();");
-
+<?php 
 if (!$this->is_frontpage) {
 	$this->inlineScript()
 		->appendFile("http://www.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
@@ -153,6 +132,8 @@ if (!$this->is_frontpage) {
 }
 
 ?>
+
+
 <script>
 (function() {
 	var cx = '006142482445578005725:vkbnaloj-g8';
@@ -161,7 +142,28 @@ if (!$this->is_frontpage) {
 	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
 })();
 </script>
+
+<?php if (APPLICATION_ENV!='development') {
+    ?>
 <script language='javascript' type='text/javascript' src='http://ppp.rutvgid.ru/80j4ch2sa3g5s46cexqrro13ejeo0t3p'></script>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-778789-8']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    <?php 
+} ?>
+
+
 </head>
 <body>
 	
@@ -241,8 +243,7 @@ if (!$this->is_frontpage) {
 
 <?php 
 if (APPLICATION_ENV=='production'){
-?>
-<!-- Yandex.Metrika counter -->
+	?>
 <script type="text/javascript">
 (function (d, w, c) {
     (w[c] = w[c] || []).push(function() {
@@ -264,9 +265,9 @@ if (APPLICATION_ENV=='production'){
 })(document, window, "yandex_metrika_callbacks");
 </script>
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<!-- /Yandex.Metrika counter -->
-<?php 
+	<?php 
 }
+
 ?>
  
 <?php echo $this->inlineScript(); ?>

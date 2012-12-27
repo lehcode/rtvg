@@ -23,5 +23,12 @@ $application = new Zend_Application(
     APPLICATION_ENV,
     APPLICATION_PATH . '/configs/application.ini'
 );
+
+if (APPLICATION_ENV=='production'){
+    ini_set('error_reporting', -1);
+} else {
+    ini_set('error_reporting', 30711);
+}
+
 $application->bootstrap()
             ->run();

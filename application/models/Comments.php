@@ -85,10 +85,10 @@ class Xmltv_Model_Comments
 	    //die( __FILE__.": ".__LINE__ );
 	    //$url = "https://api.vk.com/api.php?v=3.0&api_id={$this->_appKey}&method={$api_method}&format=json&{$method_params}&access_token={$token}&sig={$sig}";
 	    $url = "http://api.vk.com/api.php?v=3.0&api_id={$this->_appKey}&format=json&method={$api_method}&{$method_params}&sig={$sig}";
-		var_dump( $url );
+		//var_dump( $url );
 	    $result = $json->decode( $this->_curl($url ), Zend_Json::TYPE_OBJECT);
 	    
-	    var_dump( $result );
+	    //var_dump( $result );
 	    //var_dump( $result->error->request_params );
 	    
 		die( __FILE__.": ".__LINE__ );
@@ -219,7 +219,7 @@ class Xmltv_Model_Comments
 		}
 		$responseHtml =$response->getBody();
 		Xmltv_Filesystem_File::write( ROOT_PATH.'/log/vk-resp.html', $responseHtml);
-		var_dump($responseHtml);
+		//var_dump($responseHtml);
 		die(__FILE__.': '.__LINE__);
 		*/
 	}
@@ -237,8 +237,8 @@ class Xmltv_Model_Comments
 		$regex = new Zend_Filter_PregReplace( array( 'match'=>'/[\.:\(\)]+/', 'replace'=>'' ) );
 		$query = $regex->filter($query);
 		
-		$frontendOptions = array( 'lifetime'=>86400, 'automatic_serialization'=>true );
-		$backendOptions  = array('cache_dir'=>ROOT_PATH.'/cache/Comments' );
+		$frontendOptions = array('lifetime'=>14400, 'automatic_serialization'=>true );
+		$backendOptions  = array('cache_dir'=>ROOT_PATH.'/cache/Feeds/Yandex' );
 	   	$feedCache       = Zend_Cache::factory( 'Core', 'File', $frontendOptions, $backendOptions );
 	    
 	   	Zend_Feed_Reader::setCache( $feedCache );
@@ -290,7 +290,7 @@ class Xmltv_Model_Comments
 					 * Проверка совпадения текста заголовка и сообщения
 					 */ 
 					$t = trim( preg_replace('/\s+/mui', ' ', strip_tags( $feed_item->getTitle() )));
-					$expl = explode(' ', $t);
+					$expl   = explode(' ', $t);
 					$chunks = array_chunk($expl, 3);
 					foreach ($chunks as $p) {
 						$impl = implode(' ', $p);
@@ -302,12 +302,9 @@ class Xmltv_Model_Comments
 					else
 						$intro = $t.' '.$content;
 					
-					$comments[$c]['intro'] = html_entity_decode( $intro );
+					$comments[$c]['intro'] = strip_tags( html_entity_decode( $intro ));
 					$comments[$c]['link']  = $feed_item->getLink();
-					
-					if ($feed_item->getAuthor())
-					$comments[$c]['author'] = $feed_item->getAuthor();
-	
+					$comments[$c]['author'] = $this->_extractBlogAuthor( $feed_item->getLink() );
 					if ($feed_item->getDateModified())
 					$comments[$c]['date'] = new Zend_Date($feed_item->getDateModified());
 					
@@ -471,8 +468,13 @@ class Xmltv_Model_Comments
 		$result = $this->_table->fetchAll($select);
 		foreach ($result as $r){
 		    $r->published = (bool)$r->published;
+		    $r->date_created = new Zend_Date( $r->date_created );
+		    $r->date_added   = new Zend_Date( $r->date_added );
 		}
 		$result = $result->toArray();
+		
+		//var_dump($result);
+		//die(__FILE__.': '.__LINE__);
 		
 		return $result;
 		

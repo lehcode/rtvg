@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/Top.php,v $
- * @version $Id: Top.php,v 1.1 2012-12-25 02:15:42 developer Exp $
+ * @version $Id: Top.php,v 1.2 2012-12-27 17:04:37 developer Exp $
  */
 
 class Xmltv_Controller_Action_Helper_Top extends Zend_Controller_Action_Helper_Abstract
@@ -65,10 +65,8 @@ class Xmltv_Controller_Action_Helper_Top extends Zend_Controller_Action_Helper_A
 	 */
 	public function topPrograms($amt=20){
 		
-		$table  = new Xmltv_Model_DbTable_ProgramsRatings();
+	    $table  = new Xmltv_Model_DbTable_ProgramsRatings();
 		$result = $table->fetchTopPrograms( $amt );
-		//var_dump($result);
-		//die(__FILE__.': '.__LINE__);
 		return $result;
 		
 	}

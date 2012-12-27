@@ -2,8 +2,6 @@
 @import "./animations.css";
 @import "./fonts.css";
 
-
-
 body > * {
 	font-family: Verdana,Helvetica,sans-serif;
 }
@@ -17,22 +15,26 @@ body > * {
 
 .btn-primary {
     background-color: #ffcc00;
-    background-image: -moz-linear-gradient(center top , #ffcc00, #FAA732);
+    background-image: -moz-linear-gradient(center top , #ffcc00, #ffcc00);
     background-repeat: repeat-x;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    color: #2b2b2b;
+    text-shadow:none;
     behavior: url("/css/PIE.htc");
+    
 }
 .btn:hover {
   color: #333333;
   text-decoration: none;
-  background-color: #e6e6e6;
-  *background-color: #d9d9d9;
+  /*background-color: #e6e6e6;
+  background-color: #d9d9d9;*/
   background-position: 0 -18px;
   -webkit-transition: background-position 0.1s linear;
   -moz-transition: background-position 0.1s linear;
   -ms-transition: background-position 0.1s linear;
   -o-transition: background-position 0.1s linear;
   transition: background-position 0.1s linear;
+  text-shadow:none;
 }
 
 .btn:hover {
@@ -134,10 +136,7 @@ li.lastcol:after {
 
 #maincontent.allchannels {}
 	
-	#maincontent.allchannels #fastsearch-wrap {
-		float:none;
-		width:100%;
-	}
+	
 	#maincontent.allchannels h3.channeltitle,
 	#maincontent.category h3.channeltitle {
 		cursor: pointer;
@@ -174,11 +173,18 @@ li.lastcol:after {
 	#maincontent.allchannels {
 	
 	}
+		/*
+		#maincontent.allchannels #fastsearch-wrap {
+			float:none;
+			width:100%;
+		}
+		*/
 		#maincontent.allchannels #fastearch-wrap:after {
 			content:"";
 			display:table;
 			clear:both;
 		}
+		
 
 	#maincontent.show-video {
 	}
@@ -192,13 +198,6 @@ li.lastcol:after {
 		#maincontent.show-video .main .tags_list {
 			margin-left: 0;
 		}
-		
-			#maincontent.show-video .main h1 {
-				background: none repeat scroll 0 0 #F5C31D;
-			    color: #FFFFFF;
-			    font-family: "OpenSans Condensed Bold",Verdana,Helvetica,sans-serif;
-			    padding: 0.1em 0 0.2em 0.3em;
-			}
 			
 			#maincontent.show-video .main p.desc {
 				font-size: 1.2em;
@@ -375,88 +374,99 @@ li.lastcol:after {
 		overflow: hidden;
 	}
 		
-		#maincontent.day-listing .programcontainer {
+		#maincontent .programcontainer {
 			height: auto;
 		    overflow: hidden;
 		    padding: 1em 0.1em;
 		}
-			#maincontent.day-listing .programcontainer .program-times {
+			#maincontent .programcontainer .program-times {
 				width: 50%;
 				margin: auto;
 			}
-			#maincontent.day-listing .programcontainer .program-times:after{
+			#maincontent .programcontainer .program-times:after{
 				clear: both;
 			    content: "";
 			    display: table;
 			}
-				#maincontent.day-listing .programcontainer .program-times .time {
+				#maincontent .programcontainer .program-times .time {
 					color: #B2B2B2;
 					font-size: 1.6em;
 					line-height: 2.4em;
 					margin-bottom: 0.5em;
 				}
-				#maincontent.day-listing .programcontainer .program-times .start {
+				#maincontent .programcontainer .program-times .start {
 					width: 50%;
 					float: left;
 				}
-				#maincontent.day-listing .programcontainer .program-times .end {
+				#maincontent .programcontainer .program-times .end {
 					width: 50%;
 					float: right;
 					text-align: right;
 				}
-			#maincontent.day-listing .programcontainer .programtitle {
+			#maincontent .programcontainer .programtitle {
 				
 			}
 			
-				#maincontent.day-listing .programcontainer .programtitle h3 {
-					
+				#maincontent .programcontainer .programtitle h4 {
+					/*font-size: 28px;
+					line-height: 28px;*/
 				}
-					#maincontent.day-listing .programcontainer h3 a {
-						/* color: #FAA732; */
-					    font-family: "OpenSans Condensed Bold", Verdana, Helvetica, sans-serif;
-					    font-size: 1.2em;
-					    line-height: 1.5em;
+			
+					#maincontent .programcontainer .programtitle h4 a {
+						
 					}
+						#maincontent .programcontainer h3 a {
+							/* color: #FAA732; */
+						    font-family: "OpenSans Condensed Bold", Verdana, Helvetica, sans-serif;
+						    font-size: 1.6em;
+						    line-height: 1.4em;
+						}
 					
-			#maincontent.day-listing .desc.intro {
+			#maincontent .desc.intro {
 				line-height: 1.5em;
 					font-family: Tahoma, Helvetica, sans-serif;
 			}
-					
-			#maincontent.day-listing .programcontainer .program-video:before {
+
+			#maincontent .programcontainer .program-video{
+				background: none repeat scroll 0 0 #E7E7E7;
+				padding: 1em;
+			}
+			
+			#maincontent .programcontainer .program-video:before {
 				clear: both;
 			    content: "";
 			    display: table;
 			}
-			#maincontent.day-listing .programcontainer .program-video:after {
+			#maincontent .programcontainer .program-video:after {
 				clear: both;
 			    content: "";
 			    display: table;
 			}
-				#maincontent.day-listing .programcontainer .program-video h3 {
+				#maincontent .programcontainer .program-video h3 {
 					margin-bottom: 1em;			
 				}
-				#maincontent.day-listing .programcontainer .program-video h3 a {
+				#maincontent .programcontainer .program-video h3 a {
 					float: none;
-					width: 100%;			
+					width: 100%;
+					font-size: 1em;		
 				}
 				
-				#maincontent.day-listing .programcontainer .program-video a {
-					display: block;
+				#maincontent .programcontainer .program-video a {
+					/*display: block;
     				float: left;
-					width: 250px;
+					width: 250px;*/
 				}
 				
-				#maincontent.day-listing .programcontainer .program-video p.video-desc {
-					background: none repeat scroll 0 0 #E7E7E7;
-				    border: 1px solid #CCCCCC;
-				    display: block;
-				    float: right;
+				#maincontent .programcontainer .program-video p.video-desc {
+					/*background: none repeat scroll 0 0 #E7E7E7;
+				    border: 1px solid #CCCCCC;*/
+				    /*display: block;
+				    float: right;*/
 				    padding: 2%;
-				    width: 41%;
+				    /*width: 61%;*/
 				}
 				
-					#maincontent.day-listing .programcontainer .program-video a img {
+					#maincontent .programcontainer .program-video a img {
 						margin: 0 1em 0.3em 0;			
 					}
 
@@ -870,6 +880,15 @@ ul#fpnav:after{
 	}
 
 #col_l {}
+	
+	#col_l .module ul {
+		list-style: none;
+		margin: 0;
+	}
+	
+	#col_l .module li a {
+		font-size: .86em;
+	}
 
 
 ul#channels_categories {
@@ -1088,4 +1107,40 @@ button#fulldesc {
 
 #featuredchannels {
 	margin-top: 3em;
+}
+
+/*
+ * comments
+ */
+#comments .comment {
+	margin-bottom: 1em;
+}
+	#comments a {
+		font-size: 0.8em;
+	}
+
+	#comments .comment .title {
+		font-size: 0.8em;
+	}
+	
+	#comments .comment .author a {
+		font-size: 0.8em;
+	}
+
+	#comments .comment .date {
+		font-size: 0.8em;
+	}
+
+	#comments .comment .intro {
+		font-size: 0.8em;
+	}
+	
+.dl a {
+	display: inline-block;
+    font-size: 0.88em;
+    margin: 0.5em 0 1.1em
+}
+
+ul li.program-top{
+	
 }

@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.8 2012-12-25 01:57:52 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.9 2012-12-27 17:04:37 developer Exp $
  *
  */
 class ChannelsController extends Zend_Controller_Action
@@ -123,15 +123,16 @@ class ChannelsController extends Zend_Controller_Action
 		 * ######################################################
 		 */
 		$top = $this->_helper->getHelper('Top');
+		$amt = Zend_Registry::get('site_config')->topprograms->channellist->get('amount');
 		if ($cache->enabled){
 			$f = '/Listings/Programs';
-			$hash = $this->cache->getHash('topPrograms');
+			$hash = Xmltv_Cache::getHash('top'.$amt);
 			if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
-				$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>20 ));
+				$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
 				$this->cache->save($topPrograms, $hash, 'Core', $f);
 			}
 		} else {
-			$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>20 ));
+			$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
 		}
 		//var_dump($top);
 		//var_dump($topPrograms);
@@ -204,7 +205,7 @@ class ChannelsController extends Zend_Controller_Action
 			 * ######################################################
 			 */
 			$top = $this->_helper->getHelper('Top');
-			$amt = 20;
+			$amt = Zend_Registry::get('site_config')->topprograms->channellist->get('amount');
 			//var_dump($top);
 			if ($cache->enabled){
 				$f = '/Listings/Programs';
@@ -257,86 +258,125 @@ class ChannelsController extends Zend_Controller_Action
 		 * Filter request vaiables
 		 * @var Zend_Filter_Input
 		 */
-		$input = $this->_helper->requestValidator( array( 'method'=>'isValidRequest', 'action'=>$this->_getParam('action')));
-		if ($input){ 
-			
-			$channels = new Xmltv_Model_Channels(array(
-				'site_config'=>$this->_siteConfig,
-				'app_config'=>$this->_appConfig,
-				'cache'=>$this->_cache,
-			));
-			$channel  = $channels->getByAlias( $input->getEscaped('channel') );
-
-			/*
-			 * initialize week start and week end dates
-			 */
-			$d = $this->_getParam('start', null)!==null ? new Zend_Date($input->getEscaped('start'), 'YYYY-MM-dd') : new Zend_Date() ; 
-			$start = $this->_helper->weekDays(array('method'=>'getStart', "data"=>array('date'=>$d) ));
-			$d = $this->_getParam('end', null)!==null ? new Zend_Date($input->getEscaped('end'), 'YYYY-MM-dd') : new Zend_Date() ; 
-			$end = $this->_helper->weekDays(array('method'=>'getEnd', "data"=>array('date'=>$d) ));
-
-			try {
-				$schedule = $channels->getWeekSchedule($channel, $start, $end);
-			} catch (Zend_Exception $e) {
-				echo $e->getMessage();
-			}
-			
-			/*
-			 * re-initialize $start date
-			 */
-			$d = $this->_getParam('start', null)!==null ? new Zend_Date($input->getEscaped('start'), 'YYYY-MM-dd') : new Zend_Date() ; 
-			$start = $this->_helper->weekDays(array('method'=>'getStart', "data"=>array('date'=>$d) ));
-			
-			$this->view->assign('channel', $channel);
-	    	$this->view->assign('days', $schedule);
-	    	$this->view->assign('week_start', $start);
-	    	$this->view->assign('week_end', $end);
-	    	$this->view->assign('hide_sidebar', 'left');
-	    	$this->view->assign( 'sidebar_videos', true );
-	    	$this->view->assign('pageclass', 'channel-week');
-	    	
-	    	$channels->addHit( $channel->ch_id );
-			
+		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
+		if ($this->input===false) {
+		    if (APPLICATION_ENV=='development'){
+	    		var_dump($this->_getAllParams());
+	    		die(__FILE__.': '.__LINE__);
+	    	} elseif(APPLICATION_ENV!='production'){
+	    		throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
+	    	}
+	    	$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
+		    
 		} else {
-    		throw new Exception("Неверные данные", 500);
-    		exit();
-    	}
+		    
+		    foreach ($this->_getAllParams() as $k=>$v){
+		        if (!$this->input->isValid($k)) {
+		            throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
+		        }
+		    }
+		    
+		    $this->view->assign('hide_sidebar', 'left');
+		    $this->view->assign('sidebar_videos', true);
+		    $this->view->assign('pageclass', 'channel-week');
+		    
+		    // Channel properties
+		    $channelsModel = new Xmltv_Model_Channels();
+		    $channel = $channelsModel->getByAlias( $this->input->getEscaped('channel') );
+		    $this->view->assign('channel', $channel);
+		    //var_dump($channel);
+		    //die(__FILE__.': '.__LINE__);
+		    
+		    //Week start and end dates
+		    $s = $this->_helper->getHelper('weekDays')->getStart( Zend_Date::now() );
+		    $this->view->assign('week_start', $s);
+		    $e = $this->_helper->getHelper('weekDays')->getEnd( Zend_Date::now() );
+		    $this->view->assign('week_end', $e);
+		    
+		    
+		    $start = new Zend_Date($s->toString('U'), 'U');
+		    $end   = new Zend_Date($e->toString('U'), 'U');
+		    if ($this->cache->enabled){
+		        $hash = Xmltv_Cache::getHash('channel_'.$channel->ch_alias.'_week');
+		        $f = '/Channels';
+		        if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
+		            $schedule = $channelsModel->getWeekSchedule($channel, $start, $end);
+		            $this->cache->save($schedule, $hash, 'Core', $f);
+		        }
+		    } else {
+		    	$schedule = $channelsModel->getWeekSchedule($channel, $start, $end);
+		    }
+		    $this->view->assign('days', $schedule);
+		    
+		    
+		    $channelsModel->addHit( $channel->ch_id );
+		    
+		}
 		
 	}
 	
 	/**
-	 * 
-	 * Validation routines
+	 * Update comments for channel
 	 */
-	/*
-	private function _validateRequest(){
-		
+	public function newCommentsAction(){
+		 
 		//var_dump($this->_getAllParams());
 		//die(__FILE__.': '.__LINE__);
 		
-		$filters = array('*'=>'StringTrim', '*'=>'StringToLower');
-		$validators = array(
-			//'channel'   => array(new Zend_Validate_Regex('/^[0-9\p{L} -]+$/iu')),
-			//'alias'     => array(new Zend_Validate_Regex('/^[0-9\p{L}-]+$/iu')), 
-			'module'    => array(new Zend_Validate_Regex('/^[a-z]+$/u')), 
-			'controller'=> array(new Zend_Validate_Regex('/^[a-z]+$/')), 
-			'action'    => array(new Zend_Validate_Regex('/^[a-z-]+$/')),
-		);
+		/**
+		 *
+		 * Filter request vaiables
+		 * @var Zend_Filter_Input
+		 */
+		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
+		if ($this->input===false) {
+			if (APPLICATION_ENV=='development'){
+				var_dump($this->_getAllParams());
+				die(__FILE__.': '.__LINE__);
+			} elseif(APPLICATION_ENV!='production'){
+				throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
+			}
+			$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
 		
-		if ($this->_getParam('category')){
-			$validators['category'] = array(new Zend_Validate_Regex('/^[\p{Cyrillic}-]+$/iu'));
+		} else {
+		
+			foreach ($this->_getAllParams() as $k=>$v){
+				if (!$this->input->isValid($k)) {
+					throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
+				}
+			}
+			
+			// Channel properties
+			$channelsModel = new Xmltv_Model_Channels();
+			$channel = $channelsModel->getByAlias( $this->input->getEscaped('channel') );
+			$this->view->assign('channel', $channel);
+			
+			//Attach model
+			$model = new Xmltv_Model_Comments();
+			
+			//Fetch and parse feed
+			try {
+			    $feedData = $model->getYandexRss( array( ' телеканал "'.$channel->title.'"', $currentProgram->title ) );
+			} catch (Zend_Feed_Exception $e) {
+			    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+			}
+			//var_dump($feedData);
+			if ($new = $model->parseYandexFeed( $feedData, 164 )){
+				if (count($new)>0){
+				    $model->saveComments($new, $channel->alias, 'channel');
+				    $this->view->assign('items', $new);
+				}
+			}
+			
+			$this->_helper->layout->disableLayout();
+			
+			//var_dump($new);
+			//die(__FILE__.': '.__LINE__);
+			
 		}
 		
-		
-		$input = new Zend_Filter_Input( $filters, $validators, $this->_getAllParams() );
-		
-		if( $input->isValid() ) {
-			return $input;
-		}
-		return false;
-		
+		  
 	}
-	*/
 	
 }
 

@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/RequestValidator.php,v $
- * @version $Id: RequestValidator.php,v 1.7 2012-12-25 01:59:41 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.8 2012-12-27 17:04:37 developer Exp $
  */
 class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -25,6 +25,8 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
     	$this->pluginLoader = new Zend_Loader_PluginLoader();
     }
     
+    const ALIAS_REGEX='/^[\p{Cyrillic}\p{Latin}\d-]+/u';
+    
     /**
      * 
      * Validate and filter
@@ -35,7 +37,8 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
     public function isValidRequest($module=null, $controller=null, $action=null) {
     	
     	if (APPLICATION_ENV=='development'){
-			var_dump(func_get_args());
+    	    //var_dump(func_get_args());
+			var_dump( $this->getRequest()->getParams() );
     	}
 		
 		$filters = array( 
@@ -85,24 +88,29 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 								break;
 								
 							case 'category':
-								$validators['category'] = array( new Zend_Validate_Regex( '/^[\p{L}\d-]+/ui' ));
+								$validators['category'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}-]+/ui' ));
 								break;
 								
 							case 'channel-week':
-								$validators['channel']    = array( new Zend_Validate_Regex( '/^[\w\d-]+$/u' ));
-								$validators['week_start'] = array( 
+								$validators['channel'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
+								/* $validators['week_start'] = array( 
 									new Zend_Validate_Date( array(
 										'format'=>'dd.MM.yyyy',
 										'locale'=>'ru' ))
-								);
+								); */
 								break;
 								
 							case 'search':
 								die(__FILE__.': '.__LINE__);
-								$validators['id']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/u' ));
-								$validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/u' ));
+								$validators['id']    = array( new Zend_Validate_Regex( '/^[\w\d]+/u' ));
+								$validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
 								$filters['alias']    = 'StringToLower';
 								break;
+								
+							case 'new-comments':
+							    $validators['format']  = array( new Zend_Validate_Regex('/^html|json$/'));
+							    $validators['channel'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
+							    break;
 								
 							default:
 								return false;
@@ -111,27 +119,41 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    				break;
 	    			
 	    			case 'listings':
-	    			    $validators['channel'] = array(new Zend_Validate_Regex( '/^[\w\d-]+$/u' ));
+	    			    
+	    			    $validators['channel'] = array(new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
+	    			    
 	    			    switch ($action) {
-	    			    	case 'program-day':
+	    			        case 'program-day':
+	    			            die(__FILE__.': '.__LINE__);
+	    			            $validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
+	    			            if ($this->getRequest()->getParam('date')) {
+	    			            	$d = $this->getRequest()->getParam('date');
+		    			            if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
+		    			            	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-yyyy', 'locale'=>'ru')), 'presence'=>'required');
+		    			            } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
+		    			            	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
+		    			            }
+	    			            }
+	    			            break;
 	    			    	case 'program-week':
-	    			    	    $validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/u' ));
-	    			    	    $d = $this->getRequest()->getParam('date');
-	    			    	    if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
-	    			    	    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-yyyy', 'locale'=>'ru')), 'presence'=>'required');
-	    			    	    } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
-	    			    	    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
-	    			    	    } else {
-	    			    	        if ($d=='сегодня' || $d=='неделя') {
-	    			    	            $validators['date'] = array( new Zend_Validate_Alpha(false) );
-	    			    	        } else return false;
+	    			    	    $validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
+	    			    	    if ($this->getRequest()->getParam('date')) {
+		    			    	    $d = $this->getRequest()->getParam('date');
+		    			    	    if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
+		    			    	    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-yyyy', 'locale'=>'ru')), 'presence'=>'required');
+		    			    	    } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
+		    			    	    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
+		    			    	    } else {
+		    			    	        if ($d=='сегодня' || $d=='неделя') {
+		    			    	            $validators['date'] = array( new Zend_Validate_Alpha(false) );
+		    			    	        } else return false;
+		    			    	    }
 	    			    	    }
 	    			    	    break;
-	    			    	case 'day-listing':
-	    			    	    $validators['tz'] = array( new Zend_Validate_Regex( '/^-?[0-9]{1,2}$/u' ));
-	    			    	    break;
 	    			    	    
+	    			    	case 'day-listing':
 							case 'day-date':
+							    $validators['ts'] = array( new Zend_Validate_Digits());
 							    if ($this->getRequest()->getParam('date')) {
 							    	$d = $this->getRequest()->getParam('date');
 							    	if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d))
@@ -140,13 +162,19 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 							    		$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
 							    	$validators['tz'] = array( new Zend_Validate_Regex( '/^-?[0-9]{1,2}$/u' ));
 							    }
+							    if ($this->getRequest()->getParam('tz')){
+							        $validators['tz'] = array( new Zend_Validate_Regex( '/^-?[0-9]{1,2}$/u' ));
+							    }
 								break;
 								
 							default:
 							    return false;
 	    			    }
 	    			    break;
-	    			
+	    			case 'videos':
+	    			    $validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
+	    			    $validators['id']    = array( new Zend_Validate_Regex( '/^[a-z\d]+$/i' ));
+	    			    break;
 	    			/*
 	    			 * default controller
 	    			 */

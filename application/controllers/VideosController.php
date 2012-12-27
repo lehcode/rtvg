@@ -4,63 +4,163 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.6 2012-08-13 13:20:15 developer Exp $
+ * @version $Id: VideosController.php,v 1.7 2012-12-27 17:04:37 developer Exp $
  *
  */
 class VideosController extends Zend_Controller_Action
 {
 	
-	private $_requestParams;
+	/**
+	 *
+	 * Validator
+	 * @var Xmltv_Controller_Action_Helper_RequestValidator
+	 */
+	protected $validator;
+	/**
+	 *
+	 * Input filtering plugin
+	 * @var Zend_Filter_Input
+	 */
+	protected $input;
 	
+	/**
+	 * Caching object
+	 * @var Xmltv_Cache
+	 */
+	protected $cache;
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see Zend_Controller_Action::__call()
+	 */
 	public function __call ($method, $arguments) {
-		header( 'HTTP/1.0 404 Not Found' );
-		$this->_helper->layout->setLayout( 'error' );
-		$this->view->render();
+		if (APPLICATION_ENV=='production') {
+			header( 'HTTP/1.0 404 Not Found' );
+			$this->_helper->layout->setLayout( 'error' );
+			$this->view->render();
+		}
 	}
 	
+	/**
+	 * (non-PHPdoc)
+	 * @see Zend_Controller_Action::init()
+	 */
 	public function init () {
+		
 		$this->view->setScriptPath( APPLICATION_PATH . '/views/scripts/' );
-		$this->siteConfig = Zend_Registry::get( 'site_config' )->site;
-		$this->_requestParams = $this->_getAllParams();
+		$this->validator = $this->_helper->getHelper('requestValidator');
+		$this->cache = new Xmltv_Cache();
 	}
 	
+	/**
+	 * Index page
+	 * Redirect to video page
+	 */
 	public function indexAction () {
 
 		$this->_forward( 'show-video' );
 	}
 	
+	/**
+	 * 
+	 * @throws Zend_Exception
+	 * @throws Zend_Controller_Action_Exception
+	 */
 	public function showVideoAction(){
 		
-		//var_dump($this->_requestParams);
-		//var_dump($this->_isValidRequest ($this->_getAllParams()));
-		//die(__FILE__.': '.__LINE__);
-		
-		if ( $this->_isValidRequest($this->_getParam('action')) ) {  
-			
-			//$videos_model = new Xmltv_Model_Videos();
-			
-			$youtube = new Xmltv_Youtube();
-			
-			try {
-				$video = $youtube->fetchVideo( $this->_decodeId( $this->_getParam( 'id' )));
-				$this->view->assign( 'main_video', $video );
-			} catch (Exception $e) {
-				echo $e->getMessage();
+		// Validation routines
+		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
+		if ($this->input===false) {
+			if (APPLICATION_ENV=='development'){
+				var_dump($this->_getAllParams());
+				die(__FILE__.': '.__LINE__);
+			} elseif(APPLICATION_ENV!='production'){
+				throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
 			}
-			
-			try {
-				$related = $youtube->fetchRelated( $video->getVideoId() );
-				$this->view->assign( 'related_videos', $related );
-			} catch (Exception $e) {
-				echo $e->getMessage();
-			}
-			
-			
-			$this->view->assign( 'pageclass', 'show-video' );
+			$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
 			
 		} else {
-			$this->_redirect('/горячие-новости', array('exit'=>true));
+			
+			foreach ($this->_getAllParams() as $k=>$v){
+				if (!$this->input->isValid($k)) {
+					if (APPLICATION_ENV!='production') {
+						throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
+					} else {
+						$this->_redirect($this->view->url( array(), 'default_error_missing-page' ), array('exit'=>true));
+					}
+				}
+			}
+			
+			$youtube = new Xmltv_Youtube();
+			$videos  = new Xmltv_Model_Videos();
+			
+			$video = $youtube->fetchVideo( Xmltv_Youtube::decodeRtvgId( $this->input->getEscaped('id')));
+			$this->view->assign( 'main_video', $video );
+			//var_dump($video);
+			
+			$related = $youtube->fetchRelated( $video->getVideoId() );
+			$this->view->assign( 'related_videos', $related );
+			//var_dump($related->count());
+				
+			$this->view->assign( 'pageclass', 'show-video' );
+			//$this->view->assign( 'hide_sidebar', 'left' );
+			
+			/*
+			 * ######################################################
+			* Top programs for left sidebar
+			* ######################################################
+			*/
+			$amt = (int)Zend_Registry::get('site_config')->topprograms->channellist->get('amount');
+			$top = $this->_helper->getHelper('Top');
+			if ($this->cache->enabled){
+				$f = '/Listings/Programs';
+				$hash = Xmltv_Cache::getHash('top'.$amt);
+				if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
+					$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
+					$this->cache->save($topPrograms, $hash, 'Core', $f);
+				}
+			} else {
+				$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
+			}
+			//var_dump($top);
+			//var_dump($topPrograms);
+			//die(__FILE__.': '.__LINE__);
+			$this->view->assign('top_programs', $topPrograms);
+			
+			/*
+			 * ######################################################
+			* Related videos
+			* (1)Right sidebar videos
+			* ######################################################
+			*/
+			$vc = Zend_Registry::get('site_config')->videos->sidebar->right;
+			$max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
+			$ytConfig = array(
+					'order'=>$vc->get('order', 'relevance'),
+					'max_results'=>(int)$vc->get('max_results', $max),
+					//'operator'=>$vc->get('operator', '|'),
+					//'start_index'=>$vc->get('start_index', 1),
+					//'safe_search'=>$vc->get('safe_search', 'none'),
+					'language'=>'ru',
+			);
+			 
+			if ($this->cache->enabled){
+				$hash = Xmltv_Cache::getHash('sidebar_'.$channel->ch_id);
+				$f = '/Youtube/SidebarRight';
+				if (($videos = $this->cache->load($hash, 'Core', $f))===false) {
+					$videos = $this->_fetchSidebarVideos( 'тв '.$channel->title, null, $ytConfig);
+					$this->cache->save($videos, $hash, 'Core', $f);
+				}
+			} else {
+				$videos = $this->_fetchSidebarVideos( 'тв '.$channel->title, null, $ytConfig);
+			}
+			//var_dump($videos);
+			//die(__FILE__.': '.__LINE__);
+			$this->view->assign('sidebar_videos', $videos);
+			
 		}
+		
+		
 		
 	}
 	
@@ -109,9 +209,10 @@ class VideosController extends Zend_Controller_Action
 				
 	}
 	
+	/*
 	private function _isValidRequest($action=null) {
 		
-    	if (!$action)
+		if (!$action)
 		return false;
 		
 		//var_dump( $action );
@@ -122,17 +223,17 @@ class VideosController extends Zend_Controller_Action
 
 		$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
 		$validators = array(
-	    	'module'=>array(
-	    		new Zend_Validate_Regex('/^[a-z]+$/')),
-	    	'controller'=>array(
-	    		new Zend_Validate_Regex('/^[a-z]+$/')),
-	    	'action'=>array(
-	    		new Zend_Validate_Regex('/^[a-z-]+$/')),
-	    	'format'=>array(
-	    		new Zend_Validate_Regex('/^html|json$/')));
+			'module'=>array(
+				new Zend_Validate_Regex('/^[a-z]+$/')),
+			'controller'=>array(
+				new Zend_Validate_Regex('/^[a-z]+$/')),
+			'action'=>array(
+				new Zend_Validate_Regex('/^[a-z-]+$/')),
+			'format'=>array(
+				new Zend_Validate_Regex('/^html|json$/')));
 		switch ($action) {
 			case 'show-video':
-				$validators['id']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
+				$validators['id']	= array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
 				$validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
 				break;
 			case 'show-tag':
@@ -147,25 +248,19 @@ class VideosController extends Zend_Controller_Action
 		}
 		
 		$input = new Zend_Filter_Input($filters, $validators, $this->_getAllParams());
-    	
+		
 		//var_dump($input->isValid());
 		//die(__FILE__.': '.__LINE__);
 		
 		if ($input->isValid())
-    	return true;
-    	else
-    	$this->_redirect('/горячие-новости' );
-    	
-    }
-    
-	private function _decodeId($input=null){
-		
-		if (!$input)
-		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
-		
-		return base64_decode( strrev($input).'=');
+		return true;
+		else
+		$this->_redirect('/горячие-новости' );
 		
 	}
-    
+	*/
+	
+	
+	
 	
 }

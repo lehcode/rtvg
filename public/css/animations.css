@@ -1,11 +1,11 @@
 @CHARSET "UTF-8";
 
-@keyframes carousel-control { from { background: #FAA732; } to { background: #ffcc00; } }
-@-moz-keyframes carousel-control { from {background: #FAA732;} to {background: #ffcc00;} }
-@-webkit-keyframes carousel-control { from {background: #FAA732;} to {background: #ffcc00;} }
-@-o-keyframes carousel-control { from {background: #FAA732;} to {background: #ffcc00;} }
+@keyframes carousel-control { from { background: #FAA732; } to { background: #E06D1B; } }
+@-moz-keyframes carousel-control { from {background: #FAA732;} to {background: #E06D1B;} }
+@-webkit-keyframes carousel-control { from {background: #FAA732;} to {background: #E06D1B;} }
+@-o-keyframes carousel-control { from {background: #FAA732;} to {background: #E06D1B;} }
 
-@keyframes directadvert-link { from { background: white; } to { background: #F5C31D; } }
-@-moz-keyframes directadvert-link { from {background: white;} to {background: #F5C31D;} }
-@-webkit-keyframes directadvert-link { from {background: white;} to {background: #F5C31D;} }
-@-o-keyframes directadvert-link { from {background: white;} to {background: #F5C31D;} }
+@keyframes directadvert-link { from { background: white; } to { background: #E06D1B; } }
+@-moz-keyframes directadvert-link { from {background: white;} to {background: #E06D1B;} }
+@-webkit-keyframes directadvert-link { from {background: white;} to {background: #E06D1B;} }
+@-o-keyframes directadvert-link { from {background: white;} to {background: #E06D1B;} }

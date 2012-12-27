@@ -1,7 +1,7 @@
 $(function() {
 	
 	//$('#fastsearch-wrap').hide(500, function(){
-		$.getJSON( '/channels/typehead/format/json', function(response) {
+		$.getJSON( '/channels/typeahead/format/json', function(response) {
 			
 			var typeahead_items = new Array();
 			$.each(response, function(key, val) {
