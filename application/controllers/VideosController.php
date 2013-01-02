@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.7 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: VideosController.php,v 1.8 2013-01-02 05:07:49 developer Exp $
  *
  */
 class VideosController extends Zend_Controller_Action
@@ -49,7 +49,7 @@ class VideosController extends Zend_Controller_Action
 		
 		$this->view->setScriptPath( APPLICATION_PATH . '/views/scripts/' );
 		$this->validator = $this->_helper->getHelper('requestValidator');
-		$this->cache = new Xmltv_Cache();
+		$this->cache     = new Xmltv_Cache();
 	}
 	
 	/**
@@ -57,8 +57,11 @@ class VideosController extends Zend_Controller_Action
 	 * Redirect to video page
 	 */
 	public function indexAction () {
-
-		$this->_forward( 'show-video' );
+	    
+	    if ($this->requestParamsValid()){
+			$this->_forward( 'show-video' );
+	    }
+	    
 	}
 	
 	/**
@@ -68,42 +71,23 @@ class VideosController extends Zend_Controller_Action
 	 */
 	public function showVideoAction(){
 		
-		// Validation routines
-		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
-		if ($this->input===false) {
-			if (APPLICATION_ENV=='development'){
-				var_dump($this->_getAllParams());
-				die(__FILE__.': '.__LINE__);
-			} elseif(APPLICATION_ENV!='production'){
-				throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
-			}
-			$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
-			
-		} else {
-			
-			foreach ($this->_getAllParams() as $k=>$v){
-				if (!$this->input->isValid($k)) {
-					if (APPLICATION_ENV!='production') {
-						throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
-					} else {
-						$this->_redirect($this->view->url( array(), 'default_error_missing-page' ), array('exit'=>true));
-					}
-				}
-			}
+		if ($this->requestParamsValid()){
 			
 			$youtube = new Xmltv_Youtube();
 			$videos  = new Xmltv_Model_Videos();
-			
-			$video = $youtube->fetchVideo( Xmltv_Youtube::decodeRtvgId( $this->input->getEscaped('id')));
-			$this->view->assign( 'main_video', $video );
-			//var_dump($video);
-			
-			$related = $youtube->fetchRelated( $video->getVideoId() );
-			$this->view->assign( 'related_videos', $related );
-			//var_dump($related->count());
+			if ($video = $youtube->fetchVideo( Xmltv_Youtube::decodeRtvgId( $this->input->getEscaped('id')))){
+				$this->view->assign( 'main_video', $video );
+				//var_dump($video);
+					
+				$related = $youtube->fetchRelated( $video->getVideoId() );
+				$this->view->assign( 'related_videos', $related );
+				//var_dump($related->count());
 				
-			$this->view->assign( 'pageclass', 'show-video' );
-			//$this->view->assign( 'hide_sidebar', 'left' );
+				$this->view->assign( 'pageclass', 'show-video' );
+				//$this->view->assign( 'hide_sidebar', 'left' );
+				
+			}
+			
 			
 			/*
 			 * ######################################################
@@ -167,18 +151,11 @@ class VideosController extends Zend_Controller_Action
 	
 	public function showVideoCompatAction(){
 		
-		//var_dump($this->_requestParams);
-		//var_dump($this->_isValidRequest($this->_getAllParams()));
-		//die(__FILE__.': '.__LINE__);
-		
-		if ( $this->_isValidRequest($this->_getParam('action')) ) {  
+		if ($this->requestParamsValid()) {  
 			
 			$videos_model = new Xmltv_Model_Videos();
 			
 			$id = base64_decode($this->_getParam('id'));
-			
-			//var_dump($id);
-			//die(__FILE__.': '.__LINE__);
 			
 			$video = $videos_model->getVideo( $id, false );
 			$this->view->assign( 'main_video', $video );
@@ -188,18 +165,16 @@ class VideosController extends Zend_Controller_Action
 			
 			$this->render('show-video');
 			
-		} else {
-			exit("Неверные данные");
 		}
 		
 	}
 	
+	/**
+	 * @deprecated //Youtube disabled tags functionality in API V3
+	 */
 	public function showTagAction(){
 		
-		//var_dump($this->_getAllParams());
-		//die(__FILE__.': '.__LINE__);
-		
-		if ( $this->_isValidRequest( $this->_getParam( 'action' ) )) { 
+		if ( $this->requestParamsValid()) { 
 			$this->view->assign( 'pageclass', 'show-tag' );
 			$this->view->assign( 'tag', base64_decode( $this->_getParam( 'p' ) ) );
 			$this->view->assign( 'tag-alias', $this->_getParam( 'tag' ) );
@@ -209,58 +184,39 @@ class VideosController extends Zend_Controller_Action
 				
 	}
 	
-	/*
-	private function _isValidRequest($action=null) {
-		
-		if (!$action)
-		return false;
-		
-		//var_dump( $action );
-		//var_dump( $this->_getAllParams() );
-		//preg_match('/^[\p{L}\p{N}]+\=/i', $this->_getParam('id'), $m ) ;
-		//var_dump($m);
-		//die(__FILE__.': '.__LINE__);
-
-		$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
-		$validators = array(
-			'module'=>array(
-				new Zend_Validate_Regex('/^[a-z]+$/')),
-			'controller'=>array(
-				new Zend_Validate_Regex('/^[a-z]+$/')),
-			'action'=>array(
-				new Zend_Validate_Regex('/^[a-z-]+$/')),
-			'format'=>array(
-				new Zend_Validate_Regex('/^html|json$/')));
-		switch ($action) {
-			case 'show-video':
-				$validators['id']	= array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
-				$validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
-				break;
-			case 'show-tag':
-				$validators['id']  = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
-				$validators['tag'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
-				break;
-			case 'show-video-compat':
-				$validators['id'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+\=$/i' ));
-				break;
-			default:
-				return false;
+	/**
+	 * Validate nad filter request parameters
+	 *
+	 * @throws Zend_Exception
+	 * @throws Zend_Controller_Action_Exception
+	 * @return boolean
+	 */
+	protected function requestParamsValid(){
+		 
+		// Validation routines
+		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
+		if ($this->input===false) {
+			if (APPLICATION_ENV=='development'){
+				var_dump($this->_getAllParams());
+				die(__FILE__.': '.__LINE__);
+			} elseif(APPLICATION_ENV!='production'){
+				throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
+			}
+			$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
+			 
+		} else {
+			 
+			foreach ($this->_getAllParams() as $k=>$v){
+				if (!$this->input->isValid($k)) {
+					throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
+				}
+			}
+		  
+			return true;
+		  
 		}
-		
-		$input = new Zend_Filter_Input($filters, $validators, $this->_getAllParams());
-		
-		//var_dump($input->isValid());
-		//die(__FILE__.': '.__LINE__);
-		
-		if ($input->isValid())
-		return true;
-		else
-		$this->_redirect('/горячие-новости' );
-		
+		 
 	}
-	*/
-	
-	
 	
 	
 }

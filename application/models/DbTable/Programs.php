@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.10 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: Programs.php,v 1.11 2013-01-02 05:07:50 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
@@ -19,12 +19,12 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 
 		parent::__construct(array('name'=>$this->_name));
 		
-    	if (isset($config['tbl_prefix'])) {
-    		$this->_pfx = (string)$config['tbl_prefix'];
-    	} else {
-    		$this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
-    	} 
-    	$this->setName($this->_pfx.$this->_name);
+		if (isset($config['tbl_prefix'])) {
+			$this->_pfx = (string)$config['tbl_prefix'];
+		} else {
+			$this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
+		} 
+		$this->setName($this->_pfx.$this->_name);
 		
 	}
 
@@ -104,16 +104,19 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 	 * @param int $channel_id
 	 * @param string $date
 	 */
-	public function fetchDayItems($channel_id=null, $date=null, $archived=false) {
+	public function fetchDayItems($channel_id=null, $date=null, $categories=null, $archived=false) {
 		
-		if (!$channel_id || !$date)
+		if (!$channel_id || !$date || !$categories)
 			throw new Zend_Exception(self::ERR_PARAMETER_MISSING, 500);
 		
-		$progsTable = $this->_name;
-		$descsTable = new Xmltv_Model_DbTable_ProgramsDescriptions();
-		$channelsTable  = new Xmltv_Model_DbTable_Channels();
-		$propsTable  = new Xmltv_Model_DbTable_ProgramsProps();
-		$categoriesTable  = new Xmltv_Model_DbTable_ProgramsCategories();
+		$progsTable	   = $this->_name;
+		$descsTable	   = new Xmltv_Model_DbTable_ProgramsDescriptions();
+		$channelsTable = new Xmltv_Model_DbTable_Channels();
+		$propsTable	   = new Xmltv_Model_DbTable_ProgramsProps();
+		
+		/**
+		 * Load and setup archive DB adapter
+		 */
 		if ($archived===true) {
 			$this->_db = Zend_Registry::get('db_archive');
 			$pfx = Zend_Registry::get('app_config')->resources->multidb->archive->tbl_prefix;
@@ -121,51 +124,65 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 			$descsTable = $pfx.'programs_descriptions';
 		}
 		
+		/**
+		 * Create SQL query
+		 * @var Zend_Db_Select
+		 */
 		$select = $this->_db->select()
 			->from( array('prog'=>$progsTable), array('*', 'prog_rating'=>'rating') )
-			->joinLeft( array( 'props'=>$propsTable->getName()), "`prog`.`hash`=`props`.`hash`", 
-				array('actors', 'directors', 'premiere', 'premiere_date') )
-			->joinLeft( array('desc'=>$descsTable->getName()), "`prog`.`hash`=`desc`.`hash`", 
-				array('desc_intro'=>'intro', 'desc_body'=>'body') );
-			
-		if (!$archived) {
-			$select
-				->joinLeft(array('cat'=>$categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array('category_title'=>'title'));
-		}
-		$select
-			->where( "`prog`.`start` LIKE '$date%'" )
-			->where( "`prog`.`ch_id` = '$channel_id'" )
-			->order( "prog.start ASC" );
+			->joinLeft( array('desc'=>$descsTable->getName()), "`desc`.`hash`=`prog`.`hash`", 
+				array('desc_intro'=>'intro', 'desc_body'=>'body') )
+			->joinLeft( array( 'props'=>$propsTable->getName()), "`props`.`hash`=`prog`.`hash`",
+					array('actors', 'directors', 'premiere', 'premiere_date') )
+			->where("`prog`.`start` LIKE '$date%'")
+			->where("`prog`.`ch_id` = '$channel_id'")
+			->order("prog.start ASC");
 			
 		//var_dump($select->assemble());
 		//die(__FILE__.": ".__LINE__);
 		
 		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
 		
-		$serializer = new Zend_Serializer_Adapter_Json();
+		/**
+		 * Add category
+		 */
+		foreach ($result as $row){
+		    foreach ($categories as $c){
+		        if ($c['id']==$row->category){
+		            $row->category_title=$c['title'];
+		            $row->category_alias=$c['alias'];
+		        }
+		    }
+		}
+		
+		//var_dump($categories);
+		//var_dump($result);
+		//die(__FILE__.": ".__LINE__);
+		
+		$actorsTable	= new Xmltv_Model_DbTable_Actors();
+		$directorsTable = new Xmltv_Model_DbTable_Directors();
 		foreach ($result as $k=>$row) {
+			
 			$result[$k]->start = new Zend_Date($row->start);
 			$result[$k]->end   = new Zend_Date($row->end);
+			
 			if (!empty($result[$k]->actors)) {
-			    if (preg_match('/^\[.+\]$/', $result[$k]->actors)){
-			        $where = "`id` IN ( ".implode(',', $serializer->unserialize($result[$k]->actors))." )";
-			    } else {
-			        $where = "`id` IN ( ".$result[$k]->actors." )";
-			    }
-				$table = new Xmltv_Model_DbTable_Actors();
-				$result[$k]->actors = $table->fetchAll($where)->toArray();
+				if( !is_array($result[$k]->actors) ){
+					$where = "`id` IN ( ".$result[$k]->actors." )";
+				}
+				$result[$k]->actors = $actorsTable->fetchAll($where)->toArray();
 			}
+			
 			if (!empty($result[$k]->directors)) {
-			    if (preg_match('/^\[.+\]$/', $result[$k]->directors)){
-			        $where = "`id` IN ( ".implode(',', $serializer->unserialize($result[$k]->directors))." )";
-			    } else {
-			        $where = "`id` IN ( ".$result[$k]->directors." )";
-			    }
-				$table = new Xmltv_Model_DbTable_Directors();
-				$result[$k]->directors = $table->fetchAll($where)->toArray();
+				if( !is_array($result[$k]->directors) ){
+					$where = "`id` IN ( ".$result[$k]->directors." )";
+				}
+				$result[$k]->directors = $directorsTable->fetchAll($where)->toArray();
 			}
+			
 			$result[$k]->premiere = (bool)$result[$k]->premiere;
-			$result[$k]->live     = (bool)$result[$k]->live;
+			$result[$k]->live	 = (bool)$result[$k]->live;
+			
 		}
 		
 		return $result;
@@ -210,7 +227,7 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 	
 	public function fetchProgramThisWeek($program_alias=null, $channel_id=null, Zend_Date $start, Zend_Date $end){
 		
-	    /**
+		/**
 		 * @var Zend_Db_Select
 		 */
 		$select = $this->_db->select()

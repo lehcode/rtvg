@@ -9,7 +9,7 @@ $this->headScript()
 	$('.remote').click(function(){
 		$.ajax({
 			url: '".$this->url(array('site'=>'teleguide'), 'admin_import_remote')."',
-			data: '?format=html',
+			data: 'format=html',
 			type: 'get',
 			dataType: 'html',
 			beforeSend: function(){

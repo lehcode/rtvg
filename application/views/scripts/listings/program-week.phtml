@@ -4,19 +4,19 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.10 2012-12-27 17:04:38 developer Exp $
+ * @version $Id: program-week.phtml,v 1.11 2013-01-02 05:07:50 developer Exp $
  *
  */
 
-$programTitle = $this->escape( $this->program->title );
-$programAlias = $this->escape( $this->program->alias );
+$programTitle = $this->list[0]->title;
+$programAlias = $this->escape( $this->list[0]->alias );
 $channelTitle = isset($this->channel->title) ? $this->escape( $this->channel->title ) : null ;
-$channelAlias = isset($this->channel->alias) ? $this->escape( $this->channel->ch_alias ): null ;
+$channelAlias = isset($this->channel->alias) ? $this->escape( $this->channel->alias ): null ;
 
-//META title
-$this->headMeta()->setName('title', "$programTitle, $channelTitle" );
-//Browser window title
-$this->headTitle( $this->escape( sprintf ('Программа «%s» на этой неделе на канале %s.', $programTitle, $channelTitle )));
+if ($programTitle){
+	$this->headMeta()->setName( 'title', "$programTitle, $channelTitle" );
+	$this->headTitle( $this->escape( sprintf ('Программа «%s» на этой неделе на канале %s :: rutvgid.ru', $programTitle, $channelTitle )));
+}
 ?>
 
 <?php /*
@@ -32,7 +32,7 @@ $this->headTitle( $this->escape( sprintf ('Программа «%s» на это
 
 <h1>
 	<?php if ($programTitle) : ?>
-	<?php echo $programTitle ?> на канале <?php echo $channelTitle ?>
+	<?php echo $this->escape( '«'.$programTitle.'»' ); ?> на канале <?php echo $channelTitle ?>
 	<?php else : ?>
 	Результаты поиска программы
 	<?php endif; ?>

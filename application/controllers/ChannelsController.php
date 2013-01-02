@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.9 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.10 2013-01-02 05:07:49 developer Exp $
  *
  */
 class ChannelsController extends Zend_Controller_Action
@@ -103,7 +103,7 @@ class ChannelsController extends Zend_Controller_Action
 		 * Channels categories
 		 * ######################################################
 		*/
-		if ($cache->enabled){
+		if ($this->cache->enabled){
 			$f = "/Channels";
 			$hash  = $this->cache->getHash("channelscategories");
 			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
@@ -124,7 +124,7 @@ class ChannelsController extends Zend_Controller_Action
 		 */
 		$top = $this->_helper->getHelper('Top');
 		$amt = Zend_Registry::get('site_config')->topprograms->channellist->get('amount');
-		if ($cache->enabled){
+		if ($this->cache->enabled){
 			$f = '/Listings/Programs';
 			$hash = Xmltv_Cache::getHash('top'.$amt);
 			if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
@@ -207,7 +207,7 @@ class ChannelsController extends Zend_Controller_Action
 			$top = $this->_helper->getHelper('Top');
 			$amt = Zend_Registry::get('site_config')->topprograms->channellist->get('amount');
 			//var_dump($top);
-			if ($cache->enabled){
+			if ($this->cache->enabled){
 				$f = '/Listings/Programs';
 				$hash = Xmltv_Cache::getHash('top'.$amt);
 				if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
@@ -226,7 +226,7 @@ class ChannelsController extends Zend_Controller_Action
 			 * Channels categories
 			 * ######################################################
 			*/
-			if ($cache->enabled){
+			if ($this->cache->enabled){
 				$f = "/Channels";
 				$hash  = $this->cache->getHash("channelscategories");
 				if (!$cats = $this->cache->load($hash, 'Core', $f)) {
@@ -297,7 +297,7 @@ class ChannelsController extends Zend_Controller_Action
 		    $start = new Zend_Date($s->toString('U'), 'U');
 		    $end   = new Zend_Date($e->toString('U'), 'U');
 		    if ($this->cache->enabled){
-		        $hash = Xmltv_Cache::getHash('channel_'.$channel->ch_alias.'_week');
+		        $hash = Xmltv_Cache::getHash('channel_'.$channel->alias.'_week');
 		        $f = '/Channels';
 		        if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
 		            $schedule = $channelsModel->getWeekSchedule($channel, $start, $end);

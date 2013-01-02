@@ -41,8 +41,10 @@ $(document).ready(function(){
 			data: $('form#parse_programs').serialize()+'&format=html',
 			dataType: 'html',
 			type: 'post',
+			cache: false,
 			beforeSend:function(jqXHR, settings){
 				Progress.hide(100, function(){ Progress.html('<h3>Парсинг программ из XML</h3>').fadeIn(); });
+				/*
 				var startParsing = new Date();
 				startTime = startParsing.getTime();
 				pollParsing = setInterval( function(){
@@ -81,14 +83,15 @@ $(document).ready(function(){
 						}
 					});
 				}, "15000");
+				*/
 			},
 			success: function(response, textStatus, jqXHR){
 				Progress.fadeOut(100, function(){ Progress.html('<h3>Завершено!</h3>'+response).fadeIn(); });
-				window.clearInterval(pollParsing);
+				//window.clearInterval(pollParsing);
 				return true;
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				window.clearInterval(pollParsing);
+				//window.clearInterval(pollParsing);
 				Errors.hide(100, function(){ Errors.html('<p>'+errorThrown+'</p>').fadeIn(); });
 				return false;
 			}

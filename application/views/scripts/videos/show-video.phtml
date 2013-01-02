@@ -1,7 +1,32 @@
 <?php
-$this->headTitle( sprintf("Онлайн-видео: %s", str_replace("\n", ' ', $this->main_video->getVideoTitle())));
-$this->headMeta()->setName( 'description', $this->truncateString( str_replace( "\n", ' ', $this->main_video->getVideoDescription()), 12, 'words'));
-$this->headMeta()->setName( 'keywords', Xmltv_String::strtolower( implode(',', $this->main_video->getVideoTags()) ));
+/**
+ * 
+ */
+
+//var_dump($this->main_video->getVideoTitle());
+//die(__FILE__.': '.__LINE__);
+
+if (isset($this->main_video)){
+    
+    $videoTitle = (string)$this->main_video->getVideoTitle();
+    if ($videoTitle) {
+    	$this->headTitle( sprintf("%s :: онлайн на rutvgid.ru", str_replace("\n", ' ', $videoTitle)));
+    }
+    
+    $videoDesc = $this->main_video->getVideoDescription();
+    if ($videoDesc) {
+    	$this->headMeta()->setName( 'description', $this->truncateString( str_replace( "\n", ' ', $videoDesc), 12, 'words'));
+    }
+    
+    $vidId = $this->main_video->getVideoId();
+    
+} else {
+    $this->headMeta()->setName( 'description', "Not found!" );
+    $this->headMeta()->setName( 'robots', 'noindex,follow' );
+}
+
+
+
 $this->headScript()->appendFile("/js/swfobject/swfobject.js");
 $this->headScript()->appendScript("$(document).ready(function() {
 	var descP = $('.video.thumbnails .span4 p.desc');
@@ -10,6 +35,8 @@ $this->headScript()->appendScript("$(document).ready(function() {
 	$('#fulldesc').click( function(e){ descP.css({ height:descHeight }); $(this).hide(500); });
 	
 });");
+
+//die(__FILE__.': '.__LINE__);
 
 /*
  * banners
@@ -60,21 +87,21 @@ $banner = $ads[$idx];
 				<img src="http://rutvgid.ru/<?php echo $banner['image'] ?>" alt="<?php echo $banner['title'] ?>" />
 			</a>
 		</div>
-		<p class="desc"><?php echo strip_tags( $this->main_video->getVideoDescription() ) ?></p>
+		<p class="desc"><?php echo strip_tags( $videoDesc ) ?></p>
 	</div>
 	*/ ?>
 
 	<div class="video main">
 	
-			<h1><?php echo $this->main_video->getVideoTitle() ?></h1>
-			<p class="desc"><?php echo strip_tags( $this->main_video->getVideoDescription() ) ?></p>
+			<h1><?php echo $videoTitle ?></h1>
 			<div class="player-wrap">
 				<div id="player">Для просмотра этого видео нужна поддержка Flash player 8+ и JavaScript в вашем браузере.</div>
 			</div>
+			<p class="desc"><?php echo strip_tags( $videoDesc ) ?></p>
 			<?php 
 			$this->inlineScript()->appendScript('var params = { allowScriptAccess: "always", allowfullscreen:"true" };
 			    var attrs = { id: "mytplayer" };
-			    swfobject.embedSWF("http://www.youtube.com/v/'.$this->main_video->getVideoId().'?enablejsapi=1&playerapiid=ytplayer&version=3&allowfullscreen=true",
+			    swfobject.embedSWF("http://www.youtube.com/v/'.$vidId.'?enablejsapi=1&playerapiid=ytplayer&version=3&allowfullscreen=true",
 			    	"player",
 			    	"460",
 			    	"258",
@@ -83,41 +110,7 @@ $banner = $ads[$idx];
 			    	null,
 			    	params,
 			    	attrs);');
-			echo $this->inlineScript();
 			?>
-			
-			<?php 
-			/*
-			$tags = $this->main_video->getVideoTags();
-			
-			if (count($tags)) {
-			    ?>
-			    <div class="taglist title">
-					Темы этого видео
-				</div>
-			    <ul class="taglist">
-			    <?php 
-				$i=0;
-				do {
-					$t = trim($tags[$i]);
-					if (!empty($t)) {
-						$t = $this->safeTag($t);
-						?>
-					<li class="btn btn-mini">
-						<a href="/видео/тема/<?php echo $this->safeTag($tags[$i]); ?>?p=<?php echo base64_encode($tags[$i]) ?>" title="Видео про <?php echo $this->escape($tags[$i]); ?>" target="_blank"><?php echo $tags[$i] ?></a>
-					</li>
-						<?php 
-					}
-					unset($tags[$i]);
-					$i++;
-				} while (count($tags)>0);
-				?>
-				</ul>
-				<?php 
-			 } */ ?>
-			
-	
-	
 	</div>
 	
 	<div class="related">
@@ -125,7 +118,8 @@ $banner = $ads[$idx];
 	//$grid_columns = 1;
 	//$col_width_pct = floor(100/$grid_columns)-1;
 	//$amount=(int)Zend_Registry::get('site_config')->videos->related->get('amount');
-	foreach ($this->related_videos as $v) {
+	if ($this->related_videos){
+		foreach ($this->related_videos as $v) {
 		
 		$current = $v;
 		
@@ -133,7 +127,7 @@ $banner = $ads[$idx];
 		continue;
 		
 		?>
-		<div class="videocell">
+		<div class="video">
 			
 			<?php 
 			$title = $current->getVideoTitle();
@@ -145,7 +139,7 @@ $banner = $ads[$idx];
 				<a href="<?php echo $this->url( array('alias'=>$alias, 'id'=>$vid), 'default_videos_show-video' )  ?>" title="Смотреть онлайн <?php echo $title ?>" target="_blank"><?php echo $title ?></a></h2>
 			</h3>
 		
-			<div class="videothumb">
+			<div class="image">
 				
 				<?php 
 				try {
@@ -172,7 +166,7 @@ $banner = $ads[$idx];
 				
 				<p class="viewcount">Посмотрели: <?php echo number_format( (int)$current->getVideoViewCount(), 0 ) ?></p>
 				
-				<p class="cat">
+				<p class="category">
 					<?php 
 					$catEn = $current->getVideoCategory();
 					$catRu = Xmltv_Youtube::getCatRu($catEn); 
@@ -182,7 +176,12 @@ $banner = $ads[$idx];
 					<?php 
 					} else {
 						?>
-					Категория: <a href="/каналы/<?php echo Xmltv_String::strtolower( $catRu ) ?>" target="_blank" title="<?php $catRu ?> каналы телепрограмма"><?php echo $catRu; ?></a>
+						Категория: 
+						<a href="<?php echo $this->url( array('category'=>Xmltv_String::strtolower( $catRu )), 'default_channels_category'); ?>"
+						target="_blank"
+						title="<?php $catRu ?> каналы телепрограмма">
+						<?php echo $catRu; ?>
+					</a>
 						<?php 
 					}?>
 					 
@@ -195,7 +194,7 @@ $banner = $ads[$idx];
 				
 			</div>
 				
-			<div class="videoinfo">
+			<div class="description">
 				
 				
 				
@@ -203,7 +202,7 @@ $banner = $ads[$idx];
 				$desc = $this->truncateString( $current->getVideoDescription(), 35, 'words' );
 				if (!empty($desc)) {
 					?>
-				<p class="desc">
+				<p>
 					<?php echo $desc ?>
 				</p>
 					<?php 
@@ -241,7 +240,8 @@ $banner = $ads[$idx];
 			
 		</div>
 		<?php 
-		} ?>
+		}
+	} ?>
 		
 	</div>
 	

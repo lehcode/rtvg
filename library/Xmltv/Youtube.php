@@ -12,6 +12,8 @@ class Xmltv_Youtube {
 	private $_language='ru';
 	protected $client;
 	
+	const YT_404_RESPONSE = "Expected response code 200, got 404";
+	
 	/**
 	 * 
 	 * Constructor
@@ -46,7 +48,21 @@ class Xmltv_Youtube {
 		if (isset($config['language']) && !empty($config['language']))
 			$this->_language = (string)$config['language'];	
 		
-		$this->client = new Zend_Gdata_YouTube();
+		try {
+			$curl['adapter']      = new Zend_Http_Client_Adapter_Curl();
+			$curl['maxredirects'] = 0;
+			$t = (int)Zend_Registry::get('site_config')->curl->get('timeout');
+			if ($t>0){
+				$curl['timeout']=$t;
+				$curl['useragent']=@$_SERVER['HTTP_USER_AGENT']; //notice suppressed for phpunit
+			}
+			$c = new Zend_Http_Client(null, $curl);
+			$this->client = new Zend_Gdata_YouTube();
+			
+		} catch (Exception $e) {
+			throw new Zend_Exception( $e->getMessage(), $e->getCode(), $e );
+		}
+		
 		$this->client->setMajorProtocolVersion(2);
 				
 	}
@@ -54,7 +70,7 @@ class Xmltv_Youtube {
 	/**
 	 * Fetch single video by it's Yyoutube ID
 	 * 
-	 * @param  string $vid    //Youtube video ID
+	 * @param  string $vid	//Youtube video ID
 	 * @throws Zend_Exception
 	 */
 	public function fetchVideo($vid=null){
@@ -64,8 +80,8 @@ class Xmltv_Youtube {
 		
 		try {
 			$result = $this->client->getVideoEntry($vid);	
-		} catch (Zend_Gdata_App_Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		} catch (Exception $e) {
+		    return false;
 		}
 		
 		return $result;
@@ -75,7 +91,7 @@ class Xmltv_Youtube {
 	/**
 	 * Fetch related videos
 	 * 
-	 * @param  string $vid    //Youtube video ID
+	 * @param  string $vid	//Youtube video ID
 	 * @throws Exception
 	 */
 	public function fetchRelated($vid=null){
@@ -101,13 +117,15 @@ class Xmltv_Youtube {
 	 * @param  array $config
 	 * @throws Exception
 	 */
-	public function fetchVideos($data=array()){
+	public function fetchVideos($query_string=null){
 		
 		//var_dump(func_get_args());
 		//die(__FILE__.': '.__LINE__);
 		
-		if (count($data)<1)
+		if (!$query_string)
 			throw new Zend_Exception("Не задан параметр поиска видео");
+		if (is_array($query_string))
+		    $query_string = implode($this->_operator, $query_string);
 		
 		/*
 		 * Zend_Gdata_YouTube_VideoQuery
@@ -121,32 +139,23 @@ class Xmltv_Youtube {
 		if ($this->_startIndex>1)
 			$query->setStartIndex($this->_startIndex);
 		
-		foreach ($data as $k=>$word) {
-			if ( Xmltv_String::strlen($word)==1 || empty($word) ) {
-				unset($data[$k]);
-			} elseif ( is_numeric($word) ) {
-				unset($data[$k]);
-			} else {
-				$data[$k] = trim( Xmltv_String::strtolower( $data[$k] ));
-			}
+		if (APPLICATION_ENV=='development'){
+			//var_dump($query_string);
 		}
 		
-		$qs = rtrim( implode($this->_operator, $data), ' .' );
-		if (is_string($qs)){
-			if (APPLICATION_ENV=='development') {
-				//var_dump(is_array($qs));
-				//var_dump($qs);
-				//var_dump($query->getQueryUrl());
-			}
-			$query->setVideoQuery($qs);
-		} else {
-			return false;
-		}
+		$q = trim( $query_string );
+		if ((bool)$q===false){
+		    return false;
+		} 
 		
 		try {
+			$query->setVideoQuery($q);
+			if (APPLICATION_ENV=='development'){
+				//var_dump($query->getQueryUrl(2));
+			}
 			$videos = $this->client->getVideoFeed($query->getQueryUrl(2));
 		} catch (Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode());
+			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
 		
 		//var_dump($videos);
@@ -194,10 +203,10 @@ class Xmltv_Youtube {
 		if (!$title)
 		throw new Zend_Exception("Не указан один или более параметров для ".__METHOD__, 500);
 		
-		$trim       = new Zend_Filter_StringTrim(' -');
+		$trim	   = new Zend_Filter_StringTrim(' -');
 		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
-		$regex      = new Zend_Filter_PregReplace(array("match"=>'/["\'.,:;-\?\{\}\[\]\!`\/\(\)]+/', 'replace'=>' '));
-		$tolower    = new Zend_Filter_StringToLower();
+		$regex	  = new Zend_Filter_PregReplace(array("match"=>'/["\'.,:;-\?\{\}\[\]\!`\/\(\)]+/', 'replace'=>' '));
+		$tolower	= new Zend_Filter_StringToLower();
 		$doubledash = new Zend_Filter_PregReplace(array("match"=>'/[-]+/', 'replace'=>'-'));
 		//$cyrlatin   = new Zend_Filter_PregReplace(array("match"=>'/[^\p{Latin}\p{Cyrillic}\p{N} -]+/ui', 'replace'=>''));
 		
@@ -290,23 +299,20 @@ class Xmltv_Youtube {
 	public static function videoAlias($title=null){
 	
 		if (!$title)
-			throw new Zend_Exception("Не указан один или более параметров для ".__METHOD__, 500);
+			throw new Zend_Exception('Не указан $title для '.__METHOD__, 500);
 	
-		$trim       = new Zend_Filter_StringTrim(' -');
+		$trim	    = new Zend_Filter_StringTrim(array(' ', '-'));
 		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
-		$regex      = new Zend_Filter_PregReplace(array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)]+/ui', 'replace'=>' '));
-		$tolower    = new Zend_Filter_StringToLower();
-		$doubledash = new Zend_Filter_PregReplace(array("match"=>'/[-]+/', 'replace'=>'-'));
-		//$cyrlatin   = new Zend_Filter_PregReplace(array("match"=>'/[^\p{Latin}\p{Cyrillic}\p{N} -]+/ui', 'replace'=>''));
-	
-		$result = $tolower->filter( $trim->filter( $doubledash->filter( $separator->filter( $regex->filter($title)))));
-	
-		//if (preg_match('/[^\p{Latin}\p{Cyrillic}\p{N} -]+/ui', $result))
-		//$result = $cyrlatin->filter($result);
-	
+		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)#]+/ui', 'replace'=>' '));
+		$tolower	= new Zend_Filter_StringToLower();
+		$doubledash = new Zend_Filter_PregReplace( array("match"=>'/[-]+/', 'replace'=>'-'));
+		$whitespace = new Zend_Filter_PregReplace( array("match"=>'/\s+/', 'replace'=>' '));
+		$result = $tolower->filter( $trim->filter( $whitespace->filter( $doubledash->filter( $separator->filter( $cleanup->filter( $title))))));
 		return $result;
 	
 	}
+	
+	
 	
 	
 }

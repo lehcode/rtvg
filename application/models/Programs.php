@@ -83,17 +83,24 @@ class Xmltv_Model_Programs
 	
 	/**
 	 * 
+	 * Расписание программ на день для определенного канала
+	 * 
 	 * @param Zend_Date $date
 	 * @param int $ch_id
 	 */
 	public function getProgramsForDay(Zend_Date $date=null, $ch_id=null){
 		
-	   if ($date->isToday()){
+	    $categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+	    $cats = $categoriesTable->fetchAll(); 
+	    
+		if ($date->isToday()){
 			try {
-				$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'));
+				$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'), $cats);
 			} catch (Zend_Db_Table_Exception $e) {
 				throw new Zend_Exception($e->getMessage(), $e->getCode());
 			}
+			//var_dump(count($rows));
+			//die(__FILE__.': '.__LINE__);
 			if (!count($rows))
 				return null;
 			
@@ -104,13 +111,13 @@ class Xmltv_Model_Programs
 			
 			if ($date->compare($maxAgo)==-1){ //More than 2 weeks
 				try {
-					$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'), true);
+					$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'), $cats, true);
 				} catch (Zend_Db_Table_Exception $e) {
 					throw new Zend_Exception($e->getMessage(), $e->getCode());
 				}
 			} else { //Less or equal than 2 weeks
 				try {
-					$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'));
+					$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'), $cats);
 				} catch (Zend_Db_Table_Exception $e) {
 					throw new Zend_Exception($e->getMessage(), $e->getCode());
 				}
@@ -129,7 +136,7 @@ class Xmltv_Model_Programs
 			foreach ($rows as $k=>$prog) {
 				
 				$prog_start = new Zend_Date($prog->start);
-				$prog_end = new Zend_Date($prog->end);
+				$prog_end   = new Zend_Date($prog->end);
 				$rows[$k]->now_showing = false;
 				
 				$compare_start = $prog_start->compare(Zend_Date::now());
@@ -145,11 +152,23 @@ class Xmltv_Model_Programs
 			return;
 		}
 		
+		//var_dump($rows);
+		//die(__FILE__.': '.__LINE__);
+		
 		return $rows;
 		
 	}
 
 
+	/**
+	 * Телепередача в указанный день на канале
+	 * 
+	 * @param  string $prog_alias
+	 * @param  string $channel_alias
+	 * @param  Zend_Date $date
+	 * @throws Zend_Exception
+	 * @return array
+	 */
 	public function getProgramForDay ($prog_alias=null, $channel_alias=null, Zend_Date $date) {
 		
 		//var_dump(func_get_args());
@@ -160,9 +179,9 @@ class Xmltv_Model_Programs
 			throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
 		
 		$result = $this->_table->fetchProgramThisDay($prog_alias, $channel_alias, $date);
-		$actors		 = array();
-		$directors	  = array();
-		$serializer	 = new Zend_Serializer_Adapter_Json();
+		$actors		    = array();
+		$directors	    = array();
+		$serializer	    = new Zend_Serializer_Adapter_Json();
 		$actorsTable	= new Xmltv_Model_DbTable_Actors();
 		$directorsTable = new Xmltv_Model_DbTable_Directors();
 		
@@ -196,7 +215,8 @@ class Xmltv_Model_Programs
 	
 	/**
 	 * 
-	 * Enter description here ...
+	 * Подобные программы на этой неделе
+	 * 
 	 * @param string $program_alias
 	 * @param Zend_Date $date
 	 */
@@ -204,20 +224,8 @@ class Xmltv_Model_Programs
 		
 		if (!$program_alias)
 			throw new Zend_Exception("Empty program alias!", 500);
-		/*
-		if (strstr($program_alias, '-'))
-			$w = explode('-', $program_alias);
-		else 
-			$w[]=$program_alias;
 		
-		foreach ($w as $k=>$e){
-		    if (Xmltv_String::strlen($e)<=4){
-		        unset($w[$k]);
-		    }
-		}
-		*/
 		$result = $this->_table->fetchSimilarProgramsThisWeek($program_alias, $start, $end);
-		
 		foreach ($result as $item){
 			$item->start = new Zend_Date($item->start, 'yyyy-MM-dd HH:mm:ss');
 			$item->end   = new Zend_Date($item->end, 'yyyy-MM-dd HH:mm:ss');

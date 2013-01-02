@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.10 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: Channels.php,v 1.11 2013-01-02 05:07:50 developer Exp $
  */
 class Xmltv_Model_Channels
 {
@@ -100,7 +100,7 @@ class Xmltv_Model_Channels
 	public function getByAlias($alias=null){
 		
 		$select = $this->_db->select()
-			->from( array('ch'=>$this->_table->getName()), array('ch'=>'*', 'ch_alias'=>'LOWER(`ch`.`alias`)'))
+			->from( array('ch'=>$this->_table->getName()), array('ch'=>'*', 'alias'=>'LOWER(`ch`.`alias`)'))
 			->where( "`ch`.`alias` LIKE '$alias'")
 			->where( "`ch`.`published`='1'")
 			->joinLeft( array('cat'=>$this->_tbl_pfx.'channels_categories'), '`ch`.`category`=`cat`.`id`', array(
@@ -118,7 +118,7 @@ class Xmltv_Model_Channels
 		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
 		
-				if ($result){
+		if ($result){
 			$result->featured  = (bool)$result->featured;
 			$result->published = (bool)$result->published;
 			$result->parse     = (bool)$result->parse;

@@ -1,13 +1,14 @@
 <?php
 class Xmltv_Model_Videos
 {
-	public $debug = false;
+	
+    protected $cache;
 	
 	const ERR_MISSING_PARAMS="Пропущен енобходимый параметр!";
 	
 	public function __construct(){
-		$siteConfig = Zend_Registry::get('site_config')->site;
-		$this->debug = (bool)$siteConfig->get('debug', false);
+		
+	    $this->cache = new Xmltv_Cache();
 	}
 	
 	/**
@@ -17,42 +18,48 @@ class Xmltv_Model_Videos
 	 */
 	public function parseYtEntry(Zend_Gdata_YouTube_VideoEntry $entry){
 		
-		$ok = self::okToOutput($entry);
-		//var_dump($ok);
-		if ($ok) {
-			$v = new stdClass();
-			$v->title   = $entry->getVideoTitle();
-			$v->alias   = Xmltv_Youtube::videoAlias( $v->title );
-			$v->desc    = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
-			$v->yt_id   = $entry->getVideoId();
-			$v->rtvg_id = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
-			$v->views   = (int)$entry->getVideoViewCount();
-			//$v->tags  = $entry->getVideoTags();
-			
-			$config = Zend_Registry::get('site_config')->videos->sidebar->right;
-			$thumbs = $entry->getVideoThumbnails();
-			$i=0;
-			$v->thumbs = array();
-			foreach($thumbs as $th) {
-				//var_dump($th);
-				if ( $th['width']==$config->get('thumb_width', 120)) {
-					if (preg_match('/.+[\d]+\.jpg$/', $th['url'])) {
-						$v->thumbs[$i]->time   = new Zend_Date($th['time'], 'HH:mm:ss.S');
-						$v->thumbs[$i]->height = (int)$th['height'];
-						$v->thumbs[$i]->width  = (int)$th['width'];
-						$v->thumbs[$i]->url    = $th['url'];
-						$i++;
-					}
+		
+		if (!self::okToOutput($entry)){
+			if (APPLICATION_ENV=='development'){
+		    	//var_dump('---Wrong entry: "'.$entry->getVideoTitle().'"');
+			}
+			return false;
+		}
+		
+		$v = new stdClass();
+		$v->title   = $entry->getVideoTitle();
+		$v->alias   = Xmltv_Youtube::videoAlias( $v->title );
+		$v->desc	= $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
+		$v->yt_id   = $entry->getVideoId();
+		$v->rtvg_id = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
+		$v->views   = (int)$entry->getVideoViewCount();
+		
+		$config = Zend_Registry::get('site_config')->videos->sidebar->right;
+		$thumbs = $entry->getVideoThumbnails();
+		$i=0;
+		$v->thumbs = array();
+		foreach($thumbs as $th) {
+			//var_dump($th);
+			if ( $th['width']==$config->get('thumb_width', 120)) {
+				if (preg_match('/.+[\d]+\.jpg$/', $th['url'])) {
+					$v->thumbs[$i] = new stdClass();
+					$v->thumbs[$i]->time   = new Zend_Date($th['time'], 'HH:mm:ss.S');
+					$v->thumbs[$i]->height = (int)$th['height'];
+					$v->thumbs[$i]->width  = (int)$th['width'];
+					$v->thumbs[$i]->url	= $th['url'];
+					$i++;
+					
 				}
 			}
-			
-			$d = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
-			$v->published = $d->addHour(3);
-			$d = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
-			$v->duration = $d;
-			
-			return $v;
 		}
+		//die(__FILE__.': '.__LINE__);
+		
+		$d = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
+		$v->published = $d->addHour(3);
+		$d = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
+		$v->duration = $d;
+		
+		return $v;
 		
 	}
 	
@@ -64,37 +71,21 @@ class Xmltv_Model_Videos
 	 */
 	public static function okToOutput( Zend_Gdata_YouTube_VideoEntry $entry){
 		
-	    /*
-		$string = $entry->getVideoDescription();
-		//var_dump($string);
-		if (!empty($string)) {
-			if (self::isPorn($string)) {
-				//var_dump($string);
-				//die(__FILE__.': '.__LINE__);
-				return false;
-			}
-		}
-		*/
-	    
 		$string = $entry->getVideoTitle();
-		//var_dump($string);
-		if (!empty($string)) {
-			if (self::isPorn($string)) {
+		if (self::isPorn($string)) {
+			if (APPLICATION_ENV=='development'){
 				//var_dump($string);
-				//die(__FILE__.': '.__LINE__);
-				return false;
 			}
-			if (!self::isRussian($string)) {
-				//var_dump($string);
-				//die(__FILE__.': '.__LINE__);
-				return false;
-			}
-		}
-		
-		//var_dump($string);
-		if (!preg_match('/^[\p{L}\d\s\+\.,:;"\'\?\!-]+$/ui', $string)){
 			return false;
 		}
+		
+		if (!self::isRussian($string)) {
+			if (APPLICATION_ENV=='development'){
+				//var_dump($string);
+			}
+			return false;
+		}
+		
 		
 		return true;
 		
@@ -108,23 +99,40 @@ class Xmltv_Model_Videos
 	 */
 	public static function isPorn($string=null){
 		
-	    $regex = array(
-	    	'\sанал.*',
-	    	'\sвиагр.*',
-	    	'\sпорн.*',
-	    	'\sэрот.+',
-	    	'\sпроститу.+',
-	    	'\sсекс\s',
-	    	'\sлесб.+',
-	    	'\sporn.+',
-	    	'\ssex\s',
-	    	'\sprostitut',
-	    	'\swhore',
-	    	'\sblowj',
-	    );
-		if ( preg_match('/('.implode('|', $regex).')/mui', $string, $m)) {
-			//var_dump($m);
-			return true;
+		$regex = array(
+			'/\sанал.*/ui',
+			'/\sанал.*/ui',
+			'/\sвиагр.*/ui',
+			'/\sзооф.*/ui',
+			'/\sмалолет.*/ui',
+			'/\sпорн.*/ui',
+			'/\sэрот.+/ui',
+			'/\sпроститу.+/ui',
+			'/\sсекс\s/ui',
+			'/\sлесб.+/ui',
+			'/\sporn.+/ui',
+			'/\ssex\s/ui',
+			'/\sprostitut/ui',
+			'/\swhore/ui',
+			'/\sblowj/ui',
+			'/\sпорн(о|уха|графия)?/ui',
+			'/\sseks/ui',
+			'/\sпроститу[тц]/ui',
+			'/\sэроти[кч]/ui',
+			'/\sсиськ/ui',
+			'/\sдойк/ui',
+			'/\sбдсм/ui',
+			'/\sxxx/ui',
+			'/\sporn/ui',
+		);
+		
+		foreach ($regex as $r){
+			if ( preg_match($r, $string, $m)) {
+				if (APPLICATION_ENV=='development'){
+					//var_dump($m);
+				}
+				return true;
+			}
 		}
 		
 		return false;
@@ -196,20 +204,45 @@ class Xmltv_Model_Videos
 	 * Create Youtube query part from program title
 	 * @param string $title
 	 */
-	public function programToQuery($title=null){
-		
-		if (!$title)
-			return false;
-		
-		$t = explode(' ', $title );
-		$words = array();
-		$q = array();
-		foreach ($t as $k=>$w) {
-			$t[$k] = Xmltv_String::strtolower($this->escape(trim($w)));
-			if ( Xmltv_String::strlen( $t[$k] ) > 3 && !is_numeric($t[$k]) )
-				$q[] = $t[$k];
+	public static function programToQuery($title=null){
+	    //var_dump($title);
+	    //die(__FILE__.': '.__LINE__);
+	    /*
+	    $reault=array();
+		if (strstr($title, '|')){
+		    //die(__FILE__.': '.__LINE__);
+		    $parts = explode('|', $title);
+		    foreach ($parts as $pk=>$w){
+		        $t = explode(' ', trim($w) );
+		        foreach ($t as $k=>$ww) {
+		            $t[$k] = Xmltv_String::strtolower( trim($ww));
+					if ( Xmltv_String::strlen( $t[$k] ) <= 3 || is_numeric($t[$k]) ) {
+					    unset($t[$k]);
+					} else {
+					    $parts[$pk][$k] = preg_replace('/[^\w]+/uim', ' ', $t[$k]);
+					}					
+				}
+			}
+			$result = implode('|', $parts);
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+			return $result;
+			
+		} elseif (strstr($title, '.')) {
+		    die(__FILE__.': '.__LINE__);
+		    $parts = explode('. ', $title);
+		    foreach ($parts as $pk=>$w){
+		        $parts[$pk] = Xmltv_String::strtolower( trim($w));
+		        if ( Xmltv_String::strlen( $parts[$pk] ) > 3 && !is_numeric($parts[$pk]) )
+		        	$q[] = trim(preg_replace('/[^\w]+/uim', ' ', $parts[$pk]));
+		        $parts[$pk] = implode(' ', $q);
+		    }
+		    return trim(implode(' ', $parts));
+		    
+		} else {
+		    return trim(preg_replace('/[^\w]+/mui', ' ', $title));
 		}
-		return implode(' ', $q);
+		*/
 		
 	}
 	
@@ -221,28 +254,150 @@ class Xmltv_Model_Videos
 	 * @throws Zend_Exception
 	 * @return Zend_Gdata_YouTube_VideoFeed
 	 */
-	public function fetchYt($channel=null, $program=null, $config=array()){
+	public function fetchYt($string=null, $config=array()){
 		
-	    if(APPLICATION_ENV=='development'){
-	    	var_dump(func_get_args());
-	    }
-	    
-		if (preg_match('/[\p{Latin}]+/', $channel) && !preg_match('/[\p{Cyrillic}]+/', $channel)) {
-			$config['language']='en';
-		} else {
-		    $config['language']='ru';
+		$yt = new Xmltv_Youtube($config);
+		$s = self::programToQuery($string);
+		return $yt->fetchVideos($s); 
+		
+	}
+	
+	/**
+	 * Related videos
+	 *
+	 * @param array  $list
+	 * @param string $ch_id
+	 * @param string $date
+	 * @param int	 $start
+	 * @param string $safe
+	 */
+	public function getRelatedVideos($list, $channel='', $date){
+		
+		if (!$date){
+			$date = Zend_Date::now()->toString("yyyy-MM-dd");
+		}
+		
+		$vc = Zend_Registry::get('site_config')->videos->listing;
+		$ytConfig['max_results'] = (int)$vc->get('max_results');
+		$ytConfig['order'] = $vc->get('order');
+		$ytConfig['start_index'] = (int)$vc->get('start_index')>=1 ? (int)$vc->get('start_index') : 1 ;
+		$ytConfig['safe_search'] = $vc->get('safe_search');
+		$ytConfig['language']    = 'ru';
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($ytConfig);
+		}
+		
+		$e = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
+		foreach ($list as $li){
+		    if ($e){
+		    	
+			    $t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
+			    $t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
+			    
+			    // Setup and create folder if needed
+			    $f = '/Youtube/Related/'.$li->ch_id;
+			    if (!is_dir(ROOT_PATH.'/cache'.$f)){
+			    	mkdir(ROOT_PATH.'/cache'.$f, 0777, true);
+			    }
+		    	
+			    $hash = Xmltv_Cache::getHash('related_'.$li->hash);
+			    if (($result[$li->hash] = $this->cache->load($hash, 'Core', $f))===false) {
+		    	    $result[$li->hash] = $this->_fetchYtRelated(new Xmltv_Model_Videos(), $ytConfig, Xmltv_String::strtolower($li->title));
+		        	$this->cache->save($result[$li->hash], $hash, 'Core', $f);
+		        }
+		    } else {
+		        $result[$li->hash] = $this->_fetchYtRelated(new Xmltv_Model_Videos(), $ytConfig, Xmltv_String::strtolower( $li->title ));
+	        }
+	        
+		} 
+		
+		foreach ($result as $hash=>$arr){
+			$result[$hash]=$arr[0];
+		}
+				
+		return $result;
+		
+	}
+	
+	/**
+	 *
+	 * Related videos
+	 *
+	 * @param string $ch_title
+	 * @param int $start
+	 * @param string $safe
+	 */
+	public function getSidebarVideos($ch_title=null){
+	
+		$vc  = Zend_Registry::get('site_config')->videos->sidebar->right;
+		$max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
+		$ytConfig = array(
+				'order'=>$vc->get('order'),
+				'max_results'=>(int)$vc->get('max_results'),
+				'start_index'=>$vc->get('start_index'),
+				'safe_search'=>$vc->get('safe_search'),
+				'language'=>'ru',
+		);
+	
+		if (APPLICATION_ENV=='development'){
+			//var_dump($ytConfig);
 		}
 	
-		$yt = new Xmltv_Youtube($config);
-		$query = array($channel, $program);
-		/**
-		 * @var Zend_Gdata_YouTube_VideoFeed
-		 */
-		$result = $yt->fetchVideos($query);
+		$result = array();
+		
+		$e = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
+		if ($e===true){
+			$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
+			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
+			$f = '/Youtube/SidebarRight';
+			$hash = Xmltv_Cache::getHash('related_'.$ch_title);
+			if ( ($result = $this->cache->load( $hash, 'Core', $f))===false) {
+			    $result = $this->_fetchYtRelated( new Xmltv_Model_Videos(), $ytConfig, $ch_title);
+				$this->cache->save( $result, $hash, 'Core', $f);
+			}
+		} else {
+			$result = $this->_fetchYtRelated(new Xmltv_Model_Videos(), $ytConfig, $ch_title);
+		}
+		return $result;
+	
+	}
+	
+	/**
+	 * Fetch related Youtube videos
+	 *
+	 * @param Xmltv_Model_Videos $model
+	 * @param unknown_type $li
+	 * @param unknown_type $channel
+	 * @throws Zend_Exception
+	 * @return multitype:unknown
+	 */
+	private function _fetchYtRelated(Xmltv_Model_Videos $model, $config=array(), $search=''){
+			
+		if (APPLICATION_ENV=='development'){
+			//var_dump($search);
+		}
+		$result = array();
+		try {
+			if (Xmltv_String::strlen($search)>3){
+				$yt = new Xmltv_Youtube($config);
+				$vids = $yt->fetchVideos( preg_replace('/[^\w]+/ui', ' ', $search) );
+				if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
+					foreach ($vids as $v){
+						if ( is_object( $i=$model->parseYtEntry($v))){
+							$result[]=$i;
+						}
+					}
+				}
+			}
+		} catch (Exception $e) {
+			throw new Zend_Exception($e->getMessage(), $e->getCode());
+		}
+
 		//var_dump($result);
 		//die(__FILE__.': '.__LINE__);
-		return $result; 
 		
+		return $result;
 	}
 	
 }

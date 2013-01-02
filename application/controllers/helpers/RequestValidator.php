@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/RequestValidator.php,v $
- * @version $Id: RequestValidator.php,v 1.8 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.9 2013-01-02 05:07:49 developer Exp $
  */
 class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -63,7 +63,7 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    );
 		
 		if (isset($_GET['XDEBUG_PROFILE'])){
-			$validators['XDEBUG_PROFILE'] = array(new Zend_Validate_Regex( '/^[01]$/u' ));
+			$validators['XDEBUG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
 		}
 	    
 	    switch ($module){
@@ -124,7 +124,6 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			    
 	    			    switch ($action) {
 	    			        case 'program-day':
-	    			            die(__FILE__.': '.__LINE__);
 	    			            $validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
 	    			            if ($this->getRequest()->getParam('date')) {
 	    			            	$d = $this->getRequest()->getParam('date');
@@ -189,7 +188,8 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    	 * Administrator interface
 	    	 */
 	    	case 'admin':
-	    		switch ($controller){
+	    	    //var_dump( $this->getRequest()->getParams() );
+	    	    switch ($controller){
 	    			case 'archive':
 	    				switch ($action){
 	    					case 'store';
@@ -205,19 +205,33 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    				break;
 	    				
 	    			case 'import':
+	    			    
+	    			    //var_dump($action);
+	    			    //die(__FILE__.': '.__LINE__);
+	    			    
 						switch ($action){
 							case 'remote':
+							    if ($this->getRequest()->getParam('site')) {
+							    	$validators['site'] = array( new Zend_Validate_Alnum());
+							    }
+							    if ($this->getRequest()->getParam('format')) {
+							    	$validators['format'] = array( new Zend_Validate_Regex('/^(html|json)$/'));
+							    }
+							    
+							    //var_dump($validators);
+							    //die(__FILE__.': '.__LINE__);
+							    	
 							    break;
 							case 'xml-parse-channels':
 							case 'xml-parse-programs':
-							    $validators['xml_file'] = array( new Zend_Validate_Regex('/^.+\/\d{8}-\d{8}\.xml$/'));
+							    if ($this->getRequest()->getParam('xml_file')) {
+							    	$validators['xml_file'] = array( new Zend_Validate_File_Exists( $this->getRequest()->getParam('xml_file')));
+							    }
 								break;
 						}
 						
-	    				//var_dump(func_get_args());
-	    				//die(__FILE__.': '.__LINE__);
-	    				
 	    				break;
+	    				
 	    			default: return false;
 	    		}
 	    		break;

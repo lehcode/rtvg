@@ -5,9 +5,12 @@
  * @author  toshihir
  * @package rutvgid
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.14 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: ImportController.php,v 1.15 2013-01-02 05:07:50 developer Exp $
  *
  */
+
+//ini_set( 'error_reporting', 30711 );
+//ini_set( 'display_errors', 1 );
 
 class Admin_ImportController extends Zend_Controller_Action
 {
@@ -26,11 +29,27 @@ class Admin_ImportController extends Zend_Controller_Action
 	private $_xmlFolder;
 	
 	/**
+	 *
+	 * Validator
+	 * @var Xmltv_Controller_Action_Helper_RequestValidator
+	 */
+	protected $validator;
+	/**
+	 *
+	 * Input filtering plugin
+	 * @var Zend_Filter_Input
+	 */
+	protected $input;
+	
+	const ERR_INVALID_INPUT = 'Неверные данные!';
+	const DEFAULT_ICON = 'default.gif';
+	
+	/**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
 	 */
 	public function init() {
-		
+	   
 		$this->_helper->layout->setLayout('admin');
 		$ajaxContext = $this->_helper->getHelper('AjaxContext');
 		$ajaxContext->addActionContext('xml-parse-channels', 'html')
@@ -42,6 +61,7 @@ class Admin_ImportController extends Zend_Controller_Action
 		$this->site_config = Zend_Registry::get('site_config');
 		$this->_validator  = $this->_helper->getHelper('RequestValidator');
 		$this->_xmlFolder  = ROOT_PATH.'/uploads/parse/';
+		$this->validator = $this->_helper->getHelper('requestValidator');
 		
 	}
 
@@ -86,20 +106,29 @@ class Admin_ImportController extends Zend_Controller_Action
 		ini_set('max_execution_time', 0);
 		ini_set('max_input_time', -1);
 		
-		$input = $this->_validator->direct( array('isValidRequest', 'vars'=>$this->_getAllParams()) );
-		//var_dump($input->isValid());
+		//var_dump($this->_getAllParams());
+		//var_dump($xml_file);
+		//var_dump($this->requestParamsValid());
 		//die(__FILE__.': '.__LINE__);
-		if ($input->isValid()){
+		
+		if ($this->requestParamsValid()){
+		    
 			/*
 			 * Check if XML file exists
 			 */
 			if (!$xml_file) {
 				$xml_file = Xmltv_Filesystem_File::getName($this->_getParam('xml_file'));
-				$path	 = Xmltv_Filesystem_File::getPath($this->_getParam('xml_file'));
+				$path	  = Xmltv_Filesystem_File::getPath($this->_getParam('xml_file'));
 			} else {
+			    //var_dump(Xmltv_Filesystem_File::getName($xml_file));
+			    //var_dump(ROOT_PATH.$this->_parseFolder);
+			    //die(__FILE__.': '.__LINE__);
 				$xml_file = Xmltv_Filesystem_File::getName($xml_file);
-				$path	 = ROOT_PATH.$this->_parseFolder;			
+				$path	 = ROOT_PATH.$this->_parseFolder;
 			}
+			
+			//var_dump(is_file($xml_file = $path.$xml_file));
+			//die(__FILE__.': '.__LINE__);
 			
 			if (!is_file($xml_file = $path.$xml_file)){
 				throw new Zend_Exception("XML file not found!");
@@ -111,41 +140,116 @@ class Admin_ImportController extends Zend_Controller_Action
 			$xml->preserveWhiteSpace = false;
 			$xml->formatOutput = true;
 			if (!$xml->load($xml_file)){
-				throw new Exception("Cannot load XML!");
+				throw new Zend_Exception("Cannot load XML from ".$xml_file.'!');
 			}
 			
 			$channelsTable   = new Admin_Model_DbTable_Channels();
 			$newChannels	 = array();
 			$updatedChannels = array();
+			
+			//var_dump($xml->getElementsByTagName('channel')->length);
+			//die(__FILE__.': '.__LINE__);
+			
 			foreach ($xml->getElementsByTagName('channel') as $item){
+			    
 				$info = array();
 				$info['ch_id'] = (int)$item->getAttribute('id');
 				$name = $item->getElementsByTagName('display-name');
-				$info['language'] = $name->item(0)->getAttribute('lang');
-				$info['title']	= $name->item(0)->nodeValue;
-				$info['icon']	 = 'default-icon.gif';
+				$info['lang']  = $name->item(0)->getAttribute('lang');
+				
+				// Title
+				$info['title'] = $name->item(0)->nodeValue;
+				if ( Xmltv_String::stristr( Xmltv_String::strtolower( $info['title']), 'канал')){
+					$info['title'] = Xmltv_String::str_ireplace( array( 'канал. ', 'канал.', 'канал ', 'канал'), '', $info['title']);
+				}
+				$info['title'] = trim( $info['title']);
+				
+				if ((bool)$item->getElementsByTagName( 'icon')->item(0)!==false) {
+					$iconOriginal = $item->getElementsByTagName( 'icon')->item(0)->getAttribute('src');
+					$icon = $iconOriginal;
+					$icon = Xmltv_String::substr_replace( $icon, '', 0, Xmltv_String::strrpos($icon, '/')+1);
+					$icon = Xmltv_String::substr_replace( $icon, '.png', Xmltv_String::strrpos($icon, '.'));
+					$info['icon'] = $icon;
+				} else {
+					$info['icon'] = 'default.png';
+				}
+				
+				//var_dump($info);
+				//die(__FILE__.': '.__LINE__);
+				
 				//Generate channel alias
-				$toDash = new Xmltv_Filter_SeparatorToDash();
+				$toDash        = new Xmltv_Filter_SeparatorToDash();
 				$info['alias'] = $toDash->filter($info['title']);
-				$plusToPlus	= new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
+				$plusToPlus	   = new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
 				$info['alias'] = $plusToPlus->filter($info['alias']);
 				$info['alias'] = str_replace('--', '-', trim($info ['alias'], ' -'));
-				//Check for existing channel
-				$present = $channelsTable->fetchRow(array("`alias`='".$info['alias']."'"))->toArray();
-				if (!$present) {
+				
+				//var_dump( $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'")));
+				//die(__FILE__.': '.__LINE__);
+				
+				if ( !$present = $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'"))) {
+				    
+				    die(__FILE__.': '.__LINE__);
 					//Save if new
 					try {
-						$channelsTable->insert($info);
-					} catch (Zend_Db_Table_Exception $e) {
-						throw new Zend_Exception($e->getMessage(), $e->getCode());
+					    $channelsTable->insert($info);
+						$newChannels[] = $info;
+					} catch (Exception $e) {
+						if ($e->getCode()!=1062) {
+						    die($e->getMessage());
+						}
 					}
-					$newChannels[]=$info;
+					$allChannels[]=$info; //for debugging
 					
+				} else {
+				    
+				    $pngFile    = ROOT_PATH.'/public/images/channel_logo/'.$info['icon'];
+				    $bigPngFile = ROOT_PATH.'/public/images/channel_logo/100/'.$info['icon'];
+				    
+				    if ( !file_exists($pngFile) || !file_exists($bigPngFile)){
+				        
+					    $gifIcon = Xmltv_String::substr_replace($iconOriginal, '', 0, Xmltv_String::strrpos($iconOriginal, '/')+1);
+					    $gifFile = ROOT_PATH.'/tmp/'.$gifIcon;
+					    $curl    = new Zend_Http_Client_Adapter_Curl();
+						$curl->setCurlOption( CURLOPT_HEADER, false);
+						$curl->setCurlOption( CURLOPT_RETURNTRANSFER, 1);
+						$curl->setCurlOption( CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+						$curl->setCurlOption( CURLOPT_HTTPHEADER, array('Content-type: image/gif'));
+						$client = new Zend_Http_Client( $iconOriginal);
+						$client->setAdapter($curl);
+						
+						if (!file_exists($bigPngFile)){
+						    file_put_contents($gifFile, $client->request("GET")->getBody());
+							file_put_contents($bigPngFile, $this->_helper->getHelper('imageToPng')->imageToPng($gifFile, array(
+								'tmp_folder'=>ROOT_PATH.'/tmp',
+								'max_size'=>100)));
+						}
+				
+						if (!file_exists($pngFile)){
+						    file_put_contents($gifFile, $client->request("GET")->getBody());
+							file_put_contents($pngFile, $this->_helper->getHelper('imageToPng')->imageToPng($gifFile, array(
+								'tmp_folder'=>ROOT_PATH.'/tmp',
+								'max_size'=>45)));
+						}
+						
+						//var_dump($info);
+						$channelsTable->update($info, "`ch_id`='".$info['ch_id']."'");
+						
+						unlink($gifFile);
+						//$newIcons[]=$info;
+						$allChannels[]=$info;
+							
+						
+				    }
 				}
 			}
 			
-			$response['added']   = $newChannels;
-			//$response['updated'] = $updatedChannels;
+			//var_dump( $allChannels);
+			//var_dump( $newChannels);
+			//var_dump( $newIcons);
+			//die(__FILE__.': '.__LINE__);
+			
+			$response['added'] = $newChannels;
 			$this->view->assign('response', $response);
 			
 		}
@@ -191,15 +295,18 @@ class Admin_ImportController extends Zend_Controller_Action
 		
 		$programs   = $xml->getElementsByTagName('programme');
 		$model	  = new Admin_Model_Programs();
-		$i=0;//debug
+		$i=0; //for debug
 		foreach ($programs as $node){
 			
-			$info = array();
+			$prog  = array();
+			$desc  = array();
+			$props = array();
 			
 			//Process program title and detect some properties
 			$title = $node->getElementsByTagName('title')
 				->item(0)->nodeValue;
 			$titles = $model->makeTitles($title);
+			//var_dump($title);
 			$prog['title'] = $titles['title'];
 			$prog['sub_title'] = $titles['sub_title'];
 			if (isset($titles['rating'])){
@@ -220,14 +327,15 @@ class Admin_ImportController extends Zend_Controller_Action
 			
 			//Parse description
 			$d = $node->getElementsByTagName('desc')->item(0)->nodeValue;
+			//var_dump($d);
 			$parseDesc = $model->parseDescription($d);
 			if (isset($parseDesc['title'])){
 				$prog['title'] .= ' '.$parseDesc['title'];
 			}
-			if (isset($parseDesc['actors'])){
+			if (isset($parseDesc['actors']) && !empty($parseDesc['actors'])){
 				$props['actors'] = $parseDesc['actors'];
 			}
-			if (isset($parseDesc['directors'])){
+			if (isset($parseDesc['directors']) && !empty($parseDesc['directors'])){
 				$props['directors'] = $parseDesc['directors'];
 			}
 			if (isset($parseDesc['rating'])){
@@ -253,7 +361,7 @@ class Admin_ImportController extends Zend_Controller_Action
 			//	$info['studio'] = $desc['studio'];
 			//}
 			if (isset($parseDesc['episode'])){
-				$props['episode_num'] = $parseDesc['episode'];
+				$props['episode_num'] = (int)$parseDesc['episode'];
 			}
 			if (isset($parseDesc['country'])){
 				$props['country'] = $parseDesc['country'];
@@ -296,6 +404,7 @@ class Admin_ImportController extends Zend_Controller_Action
 				
 			}
 			
+			
 			$e = explode('. ', $prog['title']);
 			if (count($e)>2){
 				$prog['title'] = trim($e[0]).'. '.trim($e[1]).'.';
@@ -306,61 +415,49 @@ class Admin_ImportController extends Zend_Controller_Action
 				else
 					$prog['sub_title'] = implode('. ', $e);
 			}
-			$prog['alias'] = $desc['alias'] = $model->makeAlias($prog['title']);
 			
-			// Fix wrong age rating
-			if (isset($prog['rating']) && !($model->extractAgeRating($title) || $model->extractAgeRating($d))){
-			    $prog['rating']=0;
-			}
+			$prog['alias'] = $desc['alias'] = $props['alias'] = $model->makeAlias($prog['title']);
 			
-			/*
-			if ($i<50){
+			
+			
+			//debug breakpoint
+			/* if ($i<50){
 				var_dump($prog);
 				var_dump($props);
 				var_dump($desc);
 			} else {
 				die(__FILE__.': '.__LINE__);
-			}
-			*/
+			} */
 			
-			//if ($i>5) {
-				
-				//try {
-					$model->saveProgram($prog);
-					if ($desc['intro'] && Xmltv_String::strlen($desc['intro']))
-						$model->saveDescription($desc);
-					if (count($props)) {
-						
-						if (isset($props['actors']) && is_array($props['actors'])) {
-							$props['actors'] = implode(',', $props['actors']);
-						} 
-						if (isset($props['directors']) && is_array($props['directors'])) {
-							$props['directors'] = implode(',', $props['directors']);
-						}
-						$model->saveProps($props);
-					}
-					
-				//} catch (Exception $e) {
-				//	throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-				//}
-				
+			// Fix wrong age rating
+			$model->saveProgram($prog);
+			if ($desc['intro'] && Xmltv_String::strlen($desc['intro']))
+				$model->saveDescription($desc);
+			if ($props) {
+			    
+				//var_dump($props);
 				//die(__FILE__.': '.__LINE__);
-			//}
-			
-			
+				
+				if (isset($props['actors']) && is_array($props['actors'])) {
+					$props['actors'] = implode(',', $props['actors']);
+				} 
+				if (isset($props['directors']) && is_array($props['directors'])) {
+					$props['directors'] = implode(',', $props['directors']);
+				}
+				$model->saveProps($props);
+			}
+			//die(__FILE__.': '.__LINE__);
 			
 			$i++;
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		die(__FILE__.': '.__LINE__);
-		
+			
+		}		
 		
 		$response['success'] = true;
-		$this->view->assign('response', $response);
-		unlink($xml_file);
+		$this->view->assign( 'response', $response );
+		system( 'mv '.$xml_file.' '.$xml_file.'.processed' );
+		unlink( $xml_file );
 			
-		//}
+		
 	}
 	
 	
@@ -607,8 +704,10 @@ class Admin_ImportController extends Zend_Controller_Action
 		switch ($site){
 			case 'teleguide':
 				
-				$xmlFile = $this->_xmlFolder.'current.xml';
-				if (!file_exists($xmlFile)) {
+				$gzFile  = $this->_xmlFolder.'current.xml.gz';
+				$xmlFile = Xmltv_String::substr_replace( $gzFile, '', Xmltv_String::strlen($gzFile)-3);
+				if ( !file_exists($gzFile) && !file_exists($xmlFile)) {
+					
 					$curl = new Zend_Http_Client_Adapter_Curl();
 					$curl->setCurlOption(CURLOPT_HEADER, false);
 					$curl->setCurlOption(CURLOPT_RETURNTRANSFER, 1);
@@ -616,14 +715,28 @@ class Admin_ImportController extends Zend_Controller_Action
 					$curl->setCurlOption(CURLOPT_HTTPHEADER, array('Content-type: application/gzip'));
 					$client = new Zend_Http_Client($this->_teleguideUrl);
 					$client->setAdapter($curl);
-					file_put_contents($xmlFile, $client->request("GET")->getBody());
-				}
+					file_put_contents($gzFile, $client->request("GET")->getBody());
+					system("gzip -d $gzFile");
+					
+				} 
+				if(file_exists($gzFile) && !file_exists($xmlFile)) {
+					system("gzip -d $gzFile");
+				} 
+				
+				if (!file_exists($xmlFile))
+					throw new Exception("Error downloading XML from $site!");
+				
+				
+				//var_dump($xmlFile);
+				//die(__FILE__.': '.__LINE__);
 				
 				$this->xmlParseChannelsAction($xmlFile);
 				$this->xmlParseProgramsAction($xmlFile);
 				//die(__FILE__.': '.__LINE__);
 				
-				unlink($xmlFile);
+				
+				//unlink($xmlFile);
+				system("mv $xmlFile $xmlFile.last");
 				
 				break;
 				
@@ -636,7 +749,38 @@ class Admin_ImportController extends Zend_Controller_Action
 		
 	}
 	
-   
+	/**
+	 * Validate nad filter request parameters
+	 *
+	 * @throws Zend_Exception
+	 * @throws Zend_Controller_Action_Exception
+	 * @return boolean
+	 */
+	protected function requestParamsValid(){
+	
+		// Validation routines
+		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
+		//var_dump($this->input->isValid('site'));
+		//var_dump($this->input->isValid('format'));
+		//die(__FILE__.': '.__LINE__);
+		if ($this->input===false) {
+		    if (APPLICATION_ENV=='development') {
+				var_dump($this->_getAllParams());
+				die(__FILE__.': '.__LINE__);
+		    }
+		} else {
+		    
+			foreach ($this->_getAllParams() as $k=>$v){
+				if ($this->input->isValid($k)!==true) {
+					echo("Invalid ".$k.'!');
+				}
+			}
+			//die(__FILE__.': '.__LINE__);
+			return true;
+	
+		}
+	
+	}
 	
 }
 

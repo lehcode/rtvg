@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.9 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.10 2013-01-02 05:07:49 developer Exp $
  *
  */
 
@@ -28,7 +28,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	public $debug = false;
 
 	function run() {
-
+		
+		if (APPLICATION_ENV=='development')
+			Zend_Session::$_unitTestEnabled = true;
+		
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
 		
@@ -62,12 +65,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		 */
 		$router = new Xmltv_Plugin_Router( APPLICATION_ENV );
 		$fc = Zend_Controller_Front::getInstance()
-			->setParam( 'useDefaultControllerAlways', false )
+			->setParam( 'useDefaultControllerAlways', true )
 			->setParam( 'bootstrap', $this )
 			->registerPlugin( $router )
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
-			->returnResponse(true);
+			->returnResponse( true );
 		
 		/*
 		 * http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
@@ -76,20 +79,22 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		if( APPLICATION_ENV != 'development' ) {
 			$fc->throwExceptions( false ); //Enable ErrorController and logging
 		} else {
-		    $fc->throwExceptions( true ); //Disable ErrorController and logging
+			$fc->throwExceptions( true ); //Disable ErrorController and logging
 		}
 		
 		
 		$router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());		
 		
-		
 		try {
 			$response = $fc->dispatch();
-			
-			if( $response->isException() ) {
-				$exception = $response->getException();
+			if( $response && $response->isException() ) {
 				
+				$exceptions = $response->getException();
+				foreach ($exceptions as $e){
+					var_dump($e);
+				}
+				die(__FILE__.': '.__LINE__);
 				//var_dump($response);
 				//var_dump($exception);
 				//die(__FILE__.': '.__LINE__);
@@ -115,25 +120,29 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		} catch (Zend_Exception $e) {
 			if( APPLICATION_ENV == 'development' ) {
 				echo $e->getMessage();
+				echo $e->getCode();
 				Zend_Debug::dump($e->getTrace());
 			} else {
-			    
-			    /*
+				
+				
 				$mail = new Zend_Mail();
 				$mail->setBodyText( $e->getTraceAsString() );
 				$mail->setFrom('robot@rutvgid.ru', 'Robot');
 				$mail->addTo('egeshi@gmail.com', 'Admin');
 				$mail->setSubject($e->getMessage());
-				$mail->send();
-				*/
-			    if( APPLICATION_ENV == 'testing' ){
-			        //die(__FILE__.': '.__LINE__);
-			        $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/testing.log' ));
-			        $log->debug( $e->getMessage() . PHP_EOL . print_r( $e->getTraceAsString(), true ) );
-			    } else {
-			        $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
-			        $log->debug( $e->getMessage() . PHP_EOL . print_r( $e->getTraceAsString(), true ) );
-			    }
+				if (APPLICATION_ENV=='testing') {
+					$t = new Zend_Mail_Transport_File(array('path'=>ROOT_PATH.'/log/mail'));
+				}
+				$mail->send($t);
+				
+				
+				if( APPLICATION_ENV!='production' ){
+					$log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/testing.log' ));
+					$log->debug( $e->getMessage() . PHP_EOL . print_r( $e->getTraceAsString(), true ) );
+				} else {
+					$log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
+					$log->debug( $e->getMessage() . PHP_EOL . print_r( $e->getTraceAsString(), true ) );
+				}
 				
 				
 			}

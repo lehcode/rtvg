@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.18 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: layout.phtml,v 1.19 2013-01-02 05:07:49 developer Exp $
  *
  */
 
@@ -51,10 +51,10 @@ $this->headScript()
 	->appendFile('http://yandex.st/share/share.js' )
 	->appendFile('http://userapi.com/js/api/openapi.js?50' )
 	//->appendFile('https://www.google.com/jsapi' )
-	->appendScript( 'VK.init({ apiId: 2963750, onlyWidgets: true}); 
+	->appendScript( 'VK.init({ apiId: 2963750, onlyWidgets: true});
 	jQuery(document).ready(function(){ 
 		$("#footer .counter_logo").css({ display: "none" }); 
-		if  ($(".da_adp_links")) { $(".da_adp_links").css({ display: "none" }); }
+		if  ($("#col_r .da_adp_links")) { $("#col_r .da_adp_links").css({ display: "none" }); }
 	});');
 
 
@@ -104,6 +104,9 @@ if ($this->current_program) $sidebarConf['program'] = $this->current_program;
 $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', $sidebarConf ) );
 //die(__FILE__.': '.__LINE__);
 
+//$this->headStyle()
+//	->appendStyle("");
+
 ?>
 
 <?php echo $this->doctype(); ?>
@@ -121,13 +124,16 @@ echo $this->headStyle(), PHP_EOL;
 <?php 
 if (!$this->is_frontpage) {
 	$this->inlineScript()
-		->appendFile("http://www.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
+		->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
+		->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
 	
 	if (APPLICATION_ENV!='development') {
+	    /*
 		$this->inlineScript()
-			->appendFile("http://www.adcash.com/script/java.php?option=rotateur&rotateur=102755") //adcash rollin
+			//->appendFile("http://www.adcash.com/script/java.php?option=rotateur&rotateur=102755") //adcash rollin
 			->appendFile("http://rotation-media.net/codes/21010/40198_rutvgid.ru.js")  //mediarich adspot
 			->appendFile("http://rotationmessage.net/codes/21010/40198_rutvgid.ru.js"); //mediarich vk message
+		*/
 	}
 }
 
@@ -136,7 +142,7 @@ if (!$this->is_frontpage) {
 
 <script>
 (function() {
-	var cx = '006142482445578005725:vkbnaloj-g8';
+	var cx = ' 	006526203727824860247:vdzpxf_4n5a';
 	var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
 	gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//www.google.com/cse/cse.js?cx=' + cx;
 	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
@@ -145,7 +151,7 @@ if (!$this->is_frontpage) {
 
 <?php if (APPLICATION_ENV!='development') {
     ?>
-<script language='javascript' type='text/javascript' src='http://ppp.rutvgid.ru/80j4ch2sa3g5s46cexqrro13ejeo0t3p'></script>
+<script language='javascript' type='text/javascript' src='http://micro.rutvgid.ru/80j4ch2sa3g5s46cexqrro13ejeo0t3p'></script>
 
 <script type="text/javascript">
 
@@ -167,13 +173,15 @@ if (!$this->is_frontpage) {
 </head>
 <body>
 	
+	<div id=nlx></div>
+	
 	<?php if (!$this->is_frontpage): ?>
 	<div class="row-fluid" id="header">
 		<?php echo $this->placeholder('header'); ?>
 	</div>
 	<?php endif; ?>
 	
-	<div class="row-fluid content<?php echo isset($this->pageclass) && !empty($this->pageclass) ? ' '.$this->pageclass : '' ; ?>">
+	<div id="content" class="row-fluid content<?php echo isset($this->pageclass) && !empty($this->pageclass) ? ' '.$this->pageclass : '' ; ?>">
 		
 		<?php 
 		if ($this->is_frontpage) { 
@@ -239,8 +247,6 @@ if (!$this->is_frontpage) {
 	</div>
 
 
-<?php echo $this->inlineScript(); ?>
-
 <?php 
 if (APPLICATION_ENV=='production'){
 	?>
@@ -265,11 +271,17 @@ if (APPLICATION_ENV=='production'){
 })(document, window, "yandex_metrika_callbacks");
 </script>
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
+<div id=ncode><script type="text/javascript">
+id = 17971; document.write('<sc'+'ript type="text/javascript" src="http://a.contextbar.ru/n.js?rnd='+Math.round(Math.random()*100000)+'"></sc'+'ript>');
+</script></div>
+<script type="text/javascript">document.getElementById('nlx').appendChild(document.getElementById('ncode'));</script>
 	<?php 
 }
 
 ?>
- 
+
 <?php echo $this->inlineScript(); ?>
+ 
 </body>
 </html>

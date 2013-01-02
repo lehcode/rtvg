@@ -5,7 +5,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Stats.php,v $
- * @version $Id: Stats.php,v 1.3 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: Stats.php,v 1.4 2013-01-02 05:07:50 developer Exp $
  *
  */
 class Xmltv_Plugin_Stats extends Zend_Controller_Plugin_Abstract 
@@ -49,8 +49,7 @@ class Xmltv_Plugin_Stats extends Zend_Controller_Plugin_Abstract
 	protected function _setHttpInfo(){
 		
 		$info  = array(
-			'referrer'=> isset($_SERVER['HTTP_REFERER']) && !empty($_SERVER['HTTP_REFERER']) ?  $_SERVER['HTTP_REFERER'] : '',
-			'query'=> parse_url($_SERVER['HTTP_REFERER'], PHP_URL_QUERY),
+			'referer'=> isset($_SERVER['HTTP_REFERER']) && !empty($_SERVER['HTTP_REFERER']) ?  $_SERVER['HTTP_REFERER'] : '',
 			'request_uri'=> isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '',
 			'redirect_url'=> isset($_SERVER['REDIRECT_URL']) && !empty($_SERVER['REDIRECT_URL']) ?  $_SERVER['REDIRECT_URL'] : '',
 			'user_agent'=> isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']) ?  $_SERVER['HTTP_USER_AGENT'] : '',
@@ -60,6 +59,11 @@ class Xmltv_Plugin_Stats extends Zend_Controller_Plugin_Abstract
 			'request_time'=> isset($_SERVER['REQUEST_TIME']) && !empty($_SERVER['REQUEST_TIME']) ?  $_SERVER['REQUEST_TIME'] : '',
 			'request_time_float'=> isset($_SERVER['REQUEST_TIME_FLOAT']) && !empty($_SERVER['REQUEST_TIME_FLOAT']) ?  $_SERVER['REQUEST_TIME_FLOAT'] : '',
 		);
+		
+		if (isset($info['referer'])){
+		    $info['query'] = parse_url($info['referer'], PHP_URL_QUERY);
+		}
+		
 		//var_dump($info);
 		//die(__FILE__.': '.__LINE__);
 		

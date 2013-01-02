@@ -34,7 +34,7 @@ class Xmltv_Parser_Curl
 		if (isset($url) && !empty($url)) {
 			curl_setopt($this->_session, CURLOPT_URL, $url);
 		}
-		$this->_userAgent = $_SERVER['HTTP_USER_AGENT'];
+		$this->_userAgent =@ $_SERVER['HTTP_USER_AGENT'];
 		curl_setopt($this->_session, CURLOPT_USERAGENT, $this->_userAgent);
 		
 	}

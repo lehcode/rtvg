@@ -18,11 +18,18 @@
 @normalFont: 1em;
 @smallFont: (@normalFont - 0.16em);
 @tinyFont: (@normalFont - 0.3em);
+@bgColor: #EFEFEF;
+@red: #E06D1B;
+@orange: #FAA732;
+@white: #f6f6f6;
 
 
-
+body{
+	background-color: @bgColor;
+}
 body > * {
 	font-family: @baseFont;
+	
 }
 
 [class*="span"] {
@@ -46,7 +53,7 @@ body > * {
 	margin-bottom: .5em;
 }
 .boldRounded{
-	border: 6px solid @brightBlue;
+	border: 6px solid @white;
     border-radius: 16px 16px 16px 16px;
     font-family: @openSansCondBold;
     padding: 0.5em 0.3em;
@@ -60,7 +67,7 @@ body > * {
 		margin-bottom: 5px;
 		
 		div.navbar-inner {
-			background: #fff;
+			background: @bgColor;
 			border: 0;
 		    border-bottom: 4px dotted #DEDEDE;
 		    border-radius: 0;
@@ -85,8 +92,8 @@ body > * {
 	}
 	
 	div.brand {
-		h1 {
-			border-bottom: 1px dashed #DEDEDE;
+		h1, p {
+			/*border-bottom: 1px dashed #DEDEDE;*/
 			font-size: 1.8em;
 			line-height: 1.3em;
 			margin-bottom: .5em;
@@ -133,8 +140,11 @@ ul#fpnav {
 	
 }
 	
-.ad468x60 {
-	margin: 24px 8px;
+.ad468 {
+	margin: 24px auto;
+	width: 468px;
+	height: 60px;
+	border: 1px solid @veryDarkGray;
 }
 
 /*
@@ -143,7 +153,7 @@ ul#fpnav {
 .sidebar-module{
 	margin-bottom: 36px;
 	h3, h4{
-		border-top: 1px dashed #DEDEDE;
+		/*border-top: 1px dashed #DEDEDE;*/
     	font-weight: bold;
     	padding: 6px 0 4px 12px;
 		font-size: 1em;
@@ -159,6 +169,7 @@ ul#fpnav {
  * Left sidebar
  */	
 #col_l {
+	
 	div.module {
 		.sidebar-module;
 		li {
@@ -176,6 +187,7 @@ ul#fpnav {
 #col_r {
 	
 	div.module {
+		margin-bottom: 1em;
 		h3, h4 {
 			font-size: 1em;
 		}
@@ -192,18 +204,37 @@ ul#fpnav {
 		overflow:hidden;
 		
 		h4 {
+			border: none;
+			border-radius: 0;
 			cursor: pointer;
-			font-size: 0.6em;
+			font-size: 0.65em;
 		    font-weight: bold;
 		    line-height: 1.4em;
-		    margin-bottom: 6px;
 		    padding: 0.7em 0.5em 0.5em 1em;
 		    text-align: left;
+			text-transform: uppercase;
+			color: #F7F7F7;
+			margin-bottom: 1em;
+		}
+		
+		h4.ui-state-default{
+			background:none;
+			background-color: @red;
+			margin-bottom: 0.3em;
+		}
+		h4.ui-state-active{
+			background:none;
+			background-color: @red;
+			margin-bottom: 0;
 		}
 		
 		div.info {
 			border: 0;
+			border-radius: 0;
 			padding: .5em;
+			background:none;
+			background-color: @black;
+			color: #999;
 			&:after{
 				content:"";	
 				clear:both;
@@ -214,6 +245,7 @@ ul#fpnav {
 				font-size: x-small;
 				font-weight: bold;
 				min-height: 4em;
+				color: @veryLightGray;
 			}
 			img  {
 				float: left;
@@ -227,16 +259,19 @@ ul#fpnav {
 			}
 			div.duration{
 				font-size: xx-small;
-				color: #999;
 			}
 			a.btn{
 				color: #fff;
-				background-color: #FAA732;
+				background-color: @orange;
 			    background-image: none;
 			    border-color: rgba(0, 0, 0, 0.25);
-			    color: #FFFFFF;
-			    text-shadow: 0;
+			    color: #fff;
+			    text-shadow: none;
 			}
+		}
+		
+		div.ui-accordion-content-active {
+			margin-bottom: .3em;
 		}
 	}
 	
@@ -249,6 +284,8 @@ ul#fpnav {
  * Channels categories list
  */
 ul#channels_categories {
+	-webkit-box-shadow:  0px 0px 8px 2px rgba(125, 125, 125, 0.3);
+    box-shadow:  0px 0px 8px 2px rgba(125, 125, 125, 0.3);
 	background-color: @yellow;
 	border-radius: 4px 4px 4px 4px;
 	behavior: url("/css/PIE.htc");
@@ -290,13 +327,17 @@ ul#channels_categories {
 	display:none;
 	
 	div.wrap{
-		border-bottom: 6px dotted #fff;
+		background-color: @white;
+		border-radius: 12px;
 	    height: 8em;
-	    padding: 1em 1em 2em;
+	    margin: 0 0 1.5em;
+	    padding: 0.5em;
+		-webkit-box-shadow:  0px 0px 2px 2px rgba(150, 150, 150, 0.15);
+        box-shadow:  0px 0px 2px 2px rgba(150, 150, 150, 0.15);
 		&:first-child {
 			a {
-				background-color: @darkYellow;
-				color: #FFFFFF;
+				background-color: @yellow;
+				color: @black;
 			}
 		}
 		&:last-child {
@@ -305,11 +346,15 @@ ul#channels_categories {
 		}
 		
 		img{
-			border: 1px solid @black;
+			border: 1px solid @veryDarkGray;
+		    border-radius: 8px 8px 8px 8px;
+		    overflow: hidden;
 		}
 		
 		p { 
+			
 			a {
+				border-radius: 8px;
 				color: @black;
 			    display: block;
 			    font-family: @universCondensedMediumItalic;
@@ -317,10 +362,11 @@ ul#channels_categories {
 			    padding: 0.5em;
 				behavior:url("/css/PIE.htc");
 				width: 93%;
+				/*border: 1px solid @darkGray;*/
 				&:hover {
-					background-color: #E06D1B;
+					background-color: @red;
 					color: #FFFFFF;
-					text-decoration:none;
+					text-decoration: none;
 					animation: directadvert-link 0.5s;
 					-moz-animation: directadvert-link 0.5s; /* Firefox */
 					-webkit-animation: directadvert-link 0.5s; /* Safari and Chrome */
@@ -330,6 +376,7 @@ ul#channels_categories {
 					margin-right: 0.5em;
 					float: left;
 					width: 90px;
+					overflow: hidden;
 					/*padding: 0 0.5em 0.5em;*/
 				}
 			}
@@ -357,7 +404,12 @@ input {
 
 
 
-
+#content{
+	/*border-top: 1px dashed @darkGray;*/
+	padding: 0 0.5em;
+	margin-top: 1em;
+	border-radius: 0;
+}
 
 
 
@@ -381,13 +433,18 @@ li.lastcol:after {
 .channel-title(@line-height: 1em){
 	.large-font(@line-height);
 	cursor: pointer;
+	background: none;
+    border-color: @veryLightGray;
+    border-image: none;
+    border-radius: 0;
+    border-style: none none dotted;
+    border-width: 0 0 3px;
 }
 
 #maincontent.allchannels {
 	
 }
 
-#maincontent.allchannels,
 #maincontent.category {
 	h3 {
 		.channel-title(2.6em);
@@ -396,7 +453,13 @@ li.lastcol:after {
 
 
 #channels {
-	
+	h3{
+		.channel-title(2.6em);
+		img{
+			-webkit-box-shadow:  0px 0px 1px 2px rgba(0, 0, 0, 0.05);
+			box-shadow:  0px 0px 1px 2px rgba(0, 0, 0, 0.05);
+		}
+	}
 	div.channeldesc{
 		background: none;
 		border:0 ;
@@ -407,20 +470,14 @@ li.lastcol:after {
 		}
 	}
 	
-	h3.channeltitle{
-		background: none;
-	    border-color: @veryLightGray;
-	    border-image: none;
-	    border-radius: 0;
-	    border-style: none none dotted;
-	    border-width: 0 0 3px;
+	p{
+		font-size: @smallFont;
 	}
 	
 }
 
 #fastsearch-wrap {
 	
-	border-bottom: 1px dashed #e7e7e7;
 	padding: 0 0 12px;
 	width: 63%;
 	float: left;
@@ -445,20 +502,23 @@ li.lastcol:after {
 	}
 }
 
-
+.programTitle{
+	background-color: @white;
+	border: 6px solid @yellow;
+	padding: 0.5em 0.3em;
+	font-family: @openSansCondBold;
+	border-radius: 16px;
+	behavior:url('/css/PIE.htc');
+}
 #maincontent{
 	
-	border-left: 1px dashed #DEDEDE;
+	
 	/*border-right: 1px dashed #DEDEDE;*/
     min-height: 640px;
     padding: 0 2%;
 		
 	h1 {
-		border: 6px solid @lightBlue;
-		padding: 0.5em 0.3em;
-		font-family: @openSansCondBold;
-		border-radius: 16px;
-		behavior:url('/css/PIE.htc');
+		.programTitle;
 	}
 	
 	h2 {
@@ -479,10 +539,8 @@ li.lastcol:after {
 	    padding: 1em 0.1em;
 		
 		div.program-times {
-			width: 50%;
-			margin: 0 auto;
+			width: 36%;
 			&:after { .clear-all; }
-		
 			div.time {
 				color: #B2B2B2;
 				font-size: 1.6em;
@@ -499,13 +557,77 @@ li.lastcol:after {
 				text-align: right;
 			}
 		}
+		div.category{
+			margin: 2em 0;
+			a{
+				&:after{ .clear-all; }
+			}
+			
+		}
 	}
 	
 	p.weekdate {
 		font-size: @smallFont;
 	}
 	
+	ul.dl {
+		list-style: none;
+		margin: 0;
+		img{
+			display: block;
+			float:left;
+			margin-right: 1em;
+		}
+		a {
+			display: block;
+		    font-size: 0.8em;
+		    margin: 0 0 1.1em;
+		}
+		
+	}
+	
+	div.videos{
+		div.main{
+			div.player-wrap {
+				background: url("../images/icons/128x128-loading.gif") no-repeat scroll 180px 73px @white;
+				border: 2px solid @darkGray;
+				border-radius: 6px;
+				-webkit-border-radius: 6px;
+				margin-bottom: 1em;
+			    height: 258px;
+			    width: 460px;
+			}
+			p {
+				font-size: @smallFont;
+				line-height: 1.4em;
+			}
+		}
+		div.related{
+			div.video{
+				div.image{
+					float:left;
+					margin-right: .6em;
+					margin-bottom: .4em;
+				}
+				div.description{
+					p{
+						
+					}
+					
+				}
+			}
+			h3{
+				.programTitle;
+				a {
+					color: @darkGray;
+				}
+			}
+		}
+	}
+	
 }
+
+
 
 
 			
@@ -536,12 +658,37 @@ ul#daynav {
 	-webkit-animation: carousel-control 1s; /* Safari and Chrome */
 	-o-animation: carousel-control 1s; /* Opera */
 }
-#programslist {
-	margin: 24px 0 0;
-	overflow: hidden;
+
+#slides-nav {
 	
+	height: 1.6em;
+	&:after{ .clear-all; }
+
+	a {
+		position: absolute;
+	    behavior: url("/css/PIE.htc");
+	}
+	
+	a.right {
+	    font-size: 2.2em;
+	    line-height: 1.3em;
+	    right: 0;
+	    top: 4%;
+	    width: 5em;
+	}
+	
+}
+
+
+#programslist {
+	
+	margin: 1em 0;
+	overflow: hidden;
+
+	
+
 	#programs-carousel{
-		
+
 		div.carousel-inner {
 			min-height: 100px;
 		}
@@ -572,10 +719,17 @@ ul#daynav {
 		}
 		
 		p.video-desc {
-			padding: 2%;
-			font-size: 0.9em;
-		    line-height: 1.4em;
-		    padding: 2%;
+			font-size: 0.85em;
+		    line-height: 1.3em;
+		}
+		
+		ul.persons{
+			margin-left: 0;
+			li{
+				border-radius: 3px 3px 3px 3px;
+				float: left;
+				margin: 0 0.2em 0.2em 0;
+			}
 		}
 		
 		p.rating{
@@ -617,42 +771,16 @@ ul#daynav {
 					color: @black;
 				}
 			}
+			
 		}
 		
-		div.active {
-			padding: 1em 0;
+		div.programdiv.active{
 			background-color: @veryLightGray;
 		}
 		
 	}
 	
-	div#slides-nav{
-		a.carousel-control {
-		    background-color: @lightBlue;
-		    border: 0;
-		    color: #FFFFFF;
-		    font-size: 3em;
-		    font-weight: bold;
-		    height: 1.3em;
-		    line-height: 1em;
-		    margin-top: 0;
-		    opacity: 1;
-		    padding: 2px 0;
-		    text-shadow: none;
-		    top: 2%;
-		    width: 2em;
-		    behavior: url("/css/PIE.htc");
-		}
-		
-		a.carousel-control.right {
-		    right: 0;
-			&:hover{  }
-		}
-		a.carousel-control.left {
-		    left: 0;
-			&:hover{  }
-		}
-	}
+	
 	
 }
 
@@ -701,9 +829,7 @@ ul#daynav {
 			#neighbor_days a {
 				
 			}
-		#slides-nav {
-			
-		}	
+		
 		a#allchannels {
 			font-size: 18px;
 		    padding: 9px 0;
@@ -765,8 +891,8 @@ ul#daynav {
 			}
 		
 		#maincontent .timezone-wrap {
-			border-top: 1px dashed #ccc;
-			border-bottom: 1px dashed #e7e7e7;
+			/*border-top: 1px dashed #ccc;
+			border-bottom: 1px dashed #e7e7e7;*/
 			display: block;
 		    float: right;
 		    width: 36%;
@@ -868,12 +994,4 @@ button#fulldesc {
 
 	
 	
-ul.dl{
-	list-style: none;
-	margin: 0;
-	a {
-		display: inline-block;
-	    font-size: 0.88em;
-	    margin: 0.5em 0 1.1em
-	}
-}
+

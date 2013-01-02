@@ -8,7 +8,7 @@ $(document).ready(function(){
 	}
 	
 	$('#programslist').carousel('cycle').carousel('pause');
-	$('a#slideshow_onoff').click(function(){
+	$('a#carousel_onoff').click(function(){
 		$(this).fadeOut(1000);
 		$('#programslist').fadeOut( 1000, function(){
 			if ($(this).hasClass('carousel')) {
@@ -25,6 +25,7 @@ $(document).ready(function(){
 				$('#programslist p').each(function(){ $(this).hide(); });
 				$(this).show(300, function(){ scrollScreen('#programs-carousel .active'); });
 				$('#programslist .program-video').remove();
+				$('#programslist .category').remove();
 			} else {
 				$(this).addClass('carousel');
 				$('#programs-carousel').addClass('carousel-inner');

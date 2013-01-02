@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/Top.php,v $
- * @version $Id: Top.php,v 1.2 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: Top.php,v 1.3 2013-01-02 05:07:49 developer Exp $
  */
 
 class Xmltv_Controller_Action_Helper_Top extends Zend_Controller_Action_Helper_Abstract
@@ -37,7 +37,7 @@ class Xmltv_Controller_Action_Helper_Top extends Zend_Controller_Action_Helper_A
 	public function direct($method=null, $params=array()) {
 	
 	    if (APPLICATION_ENV=='development'){
-	    	var_dump(func_get_args());
+	    	//var_dump(func_get_args());
 	    }
 	    
 	    if ($method) {

@@ -4,14 +4,14 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-right.phtml,v 1.2 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: sidebar-right.phtml,v 1.3 2013-01-02 05:07:50 developer Exp $
  *
  */
 ?>
-
-<gcse:searchbox></gcse:searchbox>
-
-<script type="text/javascript" src="http://www.adcash.com/script/java.php?option=rotateur&rotateur=106375"></script>
+<div class="module">
+	<h4>Поиск по сайту</h4>
+	<gcse:searchbox></gcse:searchbox>
+</div>
 
 <?php
 //var_dump($this->videos);
@@ -79,7 +79,7 @@ if (count($this->videos)>0 && $this->videos!==true) {
 					<?php 
 					$desc = $this->truncateString( $video->desc, 30, 'words') ; 
 					if (stristr($desc, $this->channel->title)) {
-						$href = '<a href="'.$this->url(array('channel'=>$this->channel->ch_alias), 'default_listings_day-listing').'" target="_blank" title="Программа канала '.$this->channel->title.'">'.$this->channel->title.'</a>';
+						$href = '<a href="'.$this->url(array('channel'=>$this->channel->alias), 'default_listings_day-listing').'" target="_blank" title="Программа канала '.$this->channel->title.'">'.$this->channel->title.'</a>';
 						$desc = str_ireplace($this->channel->title, $href, $desc);
 					}
 					echo $desc;
@@ -108,11 +108,33 @@ if (@!in_array($this->channel->category, $this->kids_channels)) {
 	$this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').css({ display: 'block' }); });");
 ?>
 <div class="module" id="rumor-ads">
-	<h4 class="mediumheading">Желтая пресса</h4>
+	<?php /*<h4 class="mediumheading">Желтая пресса</h4>*/ ?>
 	<div class="content" id="DIV_DA_85753"></div>
 </div>
 <?php 
 } ?>
 
+<div class="module" style="width: 240px; margin: 0 auto;">
+	<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,28,0" width="240" height="400">
+	<param name="movie" value="http://invest-system.net/banners/invest2_240x400.swf" />
+	<param name="flashvars" value="isLink=http://invest-system.net/partner/113132">
+	<param name="quality" value="high" />
+	<param name="wmode" value="transparent"/>
+	<embed src="http://invest-system.net/banners/invest2_240x400.swf" wmode="transparent" quality="high" flashvars="isLink=http://invest-system.net/partner/113132" wmode="transparent" pluginspage="http://adobe.com/shockwave/download/download.cgi?P1_Prod_Version=ShockwaveFlash" type="application/x-shockwave-flash" width="240" height="400">
+	</embed>
+	</object>
+</div>
 
-
+<div class="module">
+<?php /*
+if (APPLICATION_ENV!='development') { ?>
+<div class="module">
+	<h5 class="mediumheading">Телепрограмма vkontakte</h5>
+	<div id="vk_groups"></div>
+	<?php 
+	$this->inlineScript()->appendScript('VK.Widgets.Group("vk_groups", {mode: 1, width: "350", height: "290"}, 27716041);');
+	?>
+</div>
+<?php 
+} */ ?>
+</div>
