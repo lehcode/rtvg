@@ -5,7 +5,7 @@
  * @author  toshihir
  * @package rutvgid
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.15 2013-01-02 05:07:50 developer Exp $
+ * @version $Id: ImportController.php,v 1.16 2013-01-02 16:58:27 developer Exp $
  *
  */
 
@@ -189,7 +189,7 @@ class Admin_ImportController extends Zend_Controller_Action
 				
 				if ( !$present = $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'"))) {
 				    
-				    die(__FILE__.': '.__LINE__);
+				    //die(__FILE__.': '.__LINE__);
 					//Save if new
 					try {
 					    $channelsTable->insert($info);
@@ -231,12 +231,10 @@ class Admin_ImportController extends Zend_Controller_Action
 								'tmp_folder'=>ROOT_PATH.'/tmp',
 								'max_size'=>45)));
 						}
-						
 						//var_dump($info);
 						$channelsTable->update($info, "`ch_id`='".$info['ch_id']."'");
 						
 						unlink($gifFile);
-						//$newIcons[]=$info;
 						$allChannels[]=$info;
 							
 						
@@ -326,48 +324,43 @@ class Admin_ImportController extends Zend_Controller_Action
 			}
 			
 			//Parse description
-			$d = $node->getElementsByTagName('desc')->item(0)->nodeValue;
-			//var_dump($d);
-			$parseDesc = $model->parseDescription($d);
-			if (isset($parseDesc['title'])){
-				$prog['title'] .= ' '.$parseDesc['title'];
+			if (@$node->getElementsByTagName('desc')->item(0)){
+				$d = $node->getElementsByTagName('desc')->item(0)->nodeValue;
+				//var_dump($d);
+				$parseDesc = $model->parseDescription($d);
+				if (isset($parseDesc['title'])){
+					$prog['title'] .= ' '.$parseDesc['title'];
+				}
+				if (isset($parseDesc['actors']) && !empty($parseDesc['actors'])){
+					$props['actors'] = $parseDesc['actors'];
+				}
+				if (isset($parseDesc['directors']) && !empty($parseDesc['directors'])){
+					$props['directors'] = $parseDesc['directors'];
+				}
+				if (isset($parseDesc['rating'])){
+					$prog['rating'] = $parseDesc['rating'];
+				}
+				if (isset($parseDesc['writer'])){
+					$props['writers'] = $parseDesc['writer'];
+				}
+				
+				if (isset($parseDesc['category'])){
+					$prog['category'] = $parseDesc['category'];
+				}
+				if (isset($parseDesc['country'])){
+					$props['country'] = $parseDesc['country'];
+				}
+				if (isset($parseDesc['year'])){
+					$props['date'] = $parseDesc['year'];
+				}
+				if (isset($parseDesc['episode'])){
+					$props['episode_num'] = (int)$parseDesc['episode'];
+				}
+				if (isset($parseDesc['country'])){
+					$props['country'] = $parseDesc['country'];
+				}
+				$desc['intro'] = $parseDesc['text'];
 			}
-			if (isset($parseDesc['actors']) && !empty($parseDesc['actors'])){
-				$props['actors'] = $parseDesc['actors'];
-			}
-			if (isset($parseDesc['directors']) && !empty($parseDesc['directors'])){
-				$props['directors'] = $parseDesc['directors'];
-			}
-			if (isset($parseDesc['rating'])){
-				$prog['rating'] = $parseDesc['rating'];
-			}
-			if (isset($parseDesc['writer'])){
-				$props['writers'] = $parseDesc['writer'];
-			}
-			
-			if (isset($parseDesc['category'])){
-				$prog['category'] = $parseDesc['category'];
-			}
-			if (isset($parseDesc['country'])){
-				$props['country'] = $parseDesc['country'];
-			}
-			if (isset($parseDesc['year'])){
-				$props['date'] = $parseDesc['year'];
-			}
-			//if (isset($desc['genres'])){
-			//	$info['genres'] = $desc['genres'];
-			//}
-			//if (isset($desc['studio'])){
-			//	$info['studio'] = $desc['studio'];
-			//}
-			if (isset($parseDesc['episode'])){
-				$props['episode_num'] = (int)$parseDesc['episode'];
-			}
-			if (isset($parseDesc['country'])){
-				$props['country'] = $parseDesc['country'];
-			}
-			$desc['intro'] = $parseDesc['text'];
-			
 			//Channel
 			$prog['ch_id'] = (int)$node->getAttribute('channel');
 			

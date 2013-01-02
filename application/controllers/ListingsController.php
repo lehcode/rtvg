@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.14 2013-01-02 05:07:49 developer Exp $
+ * @version $Id: ListingsController.php,v 1.15 2013-01-02 16:58:27 developer Exp $
  *
  */
 class ListingsController extends Zend_Controller_Action
@@ -424,10 +424,12 @@ class ListingsController extends Zend_Controller_Action
 			
 			
 			$currentProgram = $programsModel->getByAlias( $this->input->getEscaped('alias'), $channel->ch_id, $listingDate );
-			//var_dump($currentProgram);
+			
+			var_dump($currentProgram);
 			//var_dump($channel->alias);
 			//var_dump($listingDate);
-			//die(__FILE__.': '.__LINE__);
+			die(__FILE__.': '.__LINE__);
+			
 			$list = $programsModel->getProgramForDay( $currentProgram->alias, $channel->alias, $listingDate );
 			
 			//var_dump($list);
@@ -660,13 +662,6 @@ class ListingsController extends Zend_Controller_Action
 			$weekDays  = $this->_helper->getHelper('weekDays');
 			$weekStart = $weekDays->getStart( $listingDate );
 			$weekEnd   = $weekDays->getEnd( $listingDate );
-			//var_dump($weekStart->toString());
-			//var_dump($weekEnd->toString());
-			//die(__FILE__.': '.__LINE__);
-			
-			//var_dump($this->_getAllParams());
-			//var_dump($this->input->getEscaped('alias'));
-			//die(__FILE__.': '.__LINE__);
 			
 			$list = $programsModel->getProgramThisWeek( $this->input->getEscaped('alias'), $channel->ch_id, $weekStart, $weekEnd );
 			if (!count($list)) {
@@ -674,22 +669,10 @@ class ListingsController extends Zend_Controller_Action
 				$similar = $programsModel->getSimilarProgramsThisWeek( $this->input->getEscaped('alias'), $weekStart, $weekEnd );
 			} 
 			$similar = $programsModel->getSimilarProgramsThisWeek( $this->input->getEscaped('alias'), $weekStart, $weekEnd );
-			//var_dump($list);
-			//var_dump($similar);
-			//die(__FILE__.': '.__LINE__);
-				
-			//$program->start = new Zend_Date($program->start, 'YYYY-MM-dd HH:mm:ss');
-			//$program->end   = new Zend_Date($program->end, 'YYYY-MM-dd HH:mm:ss');
-				
-			//var_dump($currentProgram);
-			//die(__FILE__.': '.__LINE__);
 			
 			if ($currentProgram) {
 				$programsModel->addHit( $currentProgram );
-			}
-			
-			//var_dump(ini_get('error_reporting'));
-			
+			}			
 			
 			$channelsModel->addHit( $channel->ch_id );
 			
@@ -700,9 +683,12 @@ class ListingsController extends Zend_Controller_Action
 			$this->view->assign( 'program', $currentProgram );
 			$this->view->assign( 'channel', $channel );
 			$this->view->assign( 'pageclass', 'program-week' );
-			$this->view->assign('hide_sidebar', 'left');
 			
-			//die(__FILE__.': '.__LINE__);
+			/*
+			 * Данные для модуля категорий каналов
+			*/
+			$this->view->assign('channels_cats', $this->getChannelsCategories());
+			
 		}
 		
 	}

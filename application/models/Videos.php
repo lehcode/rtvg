@@ -1,4 +1,12 @@
 <?php
+/**
+ * Videos function
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: Videos.php,v 1.7 2013-01-02 16:58:27 developer Exp $
+ *
+ */
 class Xmltv_Model_Videos
 {
 	
@@ -100,30 +108,28 @@ class Xmltv_Model_Videos
 	public static function isPorn($string=null){
 		
 		$regex = array(
-			'/\sанал.*/ui',
-			'/\sанал.*/ui',
+			'/\s*[^к]анал(\s+|ь)/ui',
+			'/^[^к]анал(\s+|ь)/ui',
 			'/\sвиагр.*/ui',
-			'/\sзооф.*/ui',
-			'/\sмалолет.*/ui',
-			'/\sпорн.*/ui',
-			'/\sэрот.+/ui',
-			'/\sпроститу.+/ui',
-			'/\sсекс\s/ui',
-			'/\sлесб.+/ui',
-			'/\sporn.+/ui',
-			'/\ssex\s/ui',
-			'/\sprostitut/ui',
-			'/\swhore/ui',
-			'/\sblowj/ui',
-			'/\sпорн(о|уха|графия)?/ui',
-			'/\sseks/ui',
-			'/\sпроститу[тц]/ui',
-			'/\sэроти[кч]/ui',
-			'/\sсиськ/ui',
-			'/\sдойк/ui',
-			'/\sбдсм/ui',
-			'/\sxxx/ui',
-			'/\sporn/ui',
+			'/\s*зооф.*/ui',
+			'/\s*малолет.*/ui',
+			'/\s*порн.*/ui',
+			'/\s*эрот.+/ui',
+			'/\s*секс\s/ui',
+			'/\s*лесб.+/ui',
+			'/\s*porn.+/ui',
+			'/\s*sex\s/ui',
+			'/\s*prostitut/ui',
+			'/\s*whore/ui',
+			'/\s*blowj/ui',
+			'/\s*порн(о|уха|графия)?/ui',
+			'/\s*seks/ui',
+			'/\s*проститу[тц]/ui',
+			'/\s*сиськ/ui',
+			'/\s*дойк/ui',
+			'/\s*бдсм/ui',
+			'/\s*xxx/ui',
+			'/\s*porn/ui',
 		);
 		
 		foreach ($regex as $r){
@@ -313,7 +319,9 @@ class Xmltv_Model_Videos
 		} 
 		
 		foreach ($result as $hash=>$arr){
-			$result[$hash]=$arr[0];
+		    if (isset($arr[0])){
+				$result[$hash]=$arr[0];
+		    }
 		}
 				
 		return $result;

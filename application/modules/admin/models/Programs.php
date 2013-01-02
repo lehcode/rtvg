@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.20 2013-01-02 05:07:50 developer Exp $
+ * @version $Id: Programs.php,v 1.21 2013-01-02 16:58:27 developer Exp $
  */
 
 class Admin_Model_Programs 
@@ -214,20 +214,16 @@ class Admin_Model_Programs
 	 * @return int
 	 */
 	public function extractAgeRating($string){
-		
+	    
 		if ($string){
-			
-			//var_dump($string);
-			
+		    
+			$r=0;
 			if (preg_match($this->_ageRatingRegex, $string, $m))
 				$r = (int)$m[1];
 			elseif (preg_match($this->_lAgeRatingRegex, $string, $m))
 				$r = (int)$m[1];
 			
-			//var_dump($r);
-			
-			if ($r>0)
-				return $r; 
+			return $r;
 			
 		}
 		
@@ -685,16 +681,10 @@ class Admin_Model_Programs
 			}
 		}
 		
-		$result['title'] = str_replace('...', '…', $result['title']);
-		//$result['title'] = str_replace('"', '', $result['title']);
-		$f = new Zend_Filter_StringTrim(array('charlist'=>',!?:;- \/\''));
-		$result['title'] = $f->filter($result['title']);
-		$result['sub_title'] = trim($result['sub_title']);
-		
 		if (preg_match('/^([\p{Cyrillic}\s]+)\s+and\s+([\p{Cyrillic}\s]+)$/ui', $result['title'], $m)){
 			$result['title'] = trim($m[1]);
 			$result['sub_title'] = Xmltv_String::ucfirst(trim($m[2]));
-				
+		
 		}
 		
 		//"Кто хочет стать миллионером?" с Дмитрием Дибровым
@@ -713,10 +703,13 @@ class Admin_Model_Programs
 			$result['title'] = Xmltv_String::str_ireplace('+', 'плюс', $result['title']);
 		}
 		
-		//var_dump($result);
-		//die(__FILE__.': '.__LINE__);
+		$result['title'] = str_replace('...', '…', $result['title']);
+		$f = new Zend_Filter_StringTrim(array('charlist'=>',!?:;- \/\''));
+		$result['title'] = $f->filter($result['title']);
+		$result['sub_title'] = trim($result['sub_title']);
 		
 		return $result;
+		
 	}
 	
 	/**
@@ -888,8 +881,6 @@ class Admin_Model_Programs
 			
 			$result = array();
 			
-			//var_dump($desc);
-			
 			//Проверка возрастного рейтинга в названии
 			if ($r = $this->extractAgeRating($desc)) {
 				$result['rating'] = $r;
@@ -898,13 +889,6 @@ class Admin_Model_Programs
 			
 			//var_dump($result);
 			//die(__FILE__.': '.__LINE__);
-			
-			$regex = '/^([\d]+)-я\sсерия$/ui'; //6-я серия (12+)
-			if (preg_match($regex, $result['title'], $m)){
-				$result['episode'] = (int)$m[1];
-				$result['text'] = '';
-				return $result;
-			}
 			
 			$movies = array(
 				'фантастико-приключенческий фильм',
@@ -1768,9 +1752,18 @@ class Admin_Model_Programs
 	    if (!empty($data) && is_array($data)) {
 	        $search = $data['hash'];
 	        if (!$this->programsTable->fetchRow( "`hash`='".$data['hash']."'")){
-	            $hash = $this->programsTable->insert( $data);
+	            try {
+	                $hash = $this->programsTable->insert( $data);
+	            } catch (Zend_Db_Table_Exception $e) {
+	            }
+	            
 	        }
-	        return $this->programsTable->fetchRow( "`hash`='$hash'");
+	        
+	        try {
+	        	$result=$this->programsTable->fetchRow( "`hash`='$hash'");
+	        } catch (Zend_Db_Table_Exception $e) {
+	        }
+	        return $result;
 	    } else {
 	        return $search;
 	    }
@@ -1811,9 +1804,21 @@ class Admin_Model_Programs
 	    if (!empty($data) && is_array($data)) {
 	    	$search = $data['hash'];
 	    	if (!$this->programsPropsTable->fetchRow( "`hash`='".$data['hash']."'")){
-	    		$hash = $this->programsPropsTable->insert( $data);
+	    	    try {
+	    	        $hash = $this->programsPropsTable->insert( $data);
+	    	    } catch (Zend_Db_Table_Exception $e) {
+	    	        if ($e->getCode()!=1062)
+	    	        	throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+	    	    }
+	    		
 	    	}
-	    	return $this->programsPropsTable->fetchRow( "`hash`='$hash'");
+	    	try {
+	    		$result = $this->programsPropsTable->fetchRow( "`hash`='$hash'");
+	    	} catch (Zend_Db_Table_Exception $e) {
+	    	    if ($e->getCode()!=1062)
+	    	    	throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+	    	}
+	    	return $result;
 	    } else {
 	    	return $search;
 	    }

@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: list.phtml,v 1.12 2013-01-02 05:07:50 developer Exp $
+ * @version $Id: list.phtml,v 1.13 2013-01-02 16:58:27 developer Exp $
  *
  */
 
@@ -13,7 +13,7 @@ if (!$this->category) {
 	$this->headTitle( 'Программа всех каналов телевидения на сегодня и текущую неделю.' );
 	$this->headMeta()->setName('title', 'Телепрограмма всех каналов');
 } else {
-    $this->headTitle( $this->category['title'].': телепрограмма на сегодня и текущую неделю.' );
+    $this->headTitle( $this->category['title'].' телеканалы: передачи сегодня и на текущей неделе.' );
     $this->headMeta()->setName('title', 'Телепрограмма '.$this->category['title'].' каналов');
 }
 

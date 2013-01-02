@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.13 2013-01-02 05:07:50 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.14 2013-01-02 16:58:27 developer Exp $
  *
  */
 
@@ -94,6 +94,9 @@ if ($this->is_today) {
 	<?php /*<script type="text/javascript" src="http://www.adcash.com/script/java.php?option=rotateur&rotateur=106375"></script>*/ ?>
 	<script type="text/javascript" src="http://c.am11.ru/code/bn/js.php?u=13073&f=5"></script>
 </div>
+
+<a class="btn btn-info" id="carousel_onoff" href="#" title="Отобразить расписание в виде списка и перейти к текущей передаче">Показать расписание списком</a>
+
 
 <?php 
 if (!empty($this->programs)) {
@@ -317,8 +320,7 @@ if (!empty($this->programs)) {
 </div>
 
 
-<a class="btn btn-info" id="carousel_onoff" href="#" title="Отобразить расписание в виде списка и перейти к текущей передаче">Показать расписание списком</a>
-<br />
+
 
 <?php
 /*

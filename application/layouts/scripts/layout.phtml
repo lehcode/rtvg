@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.19 2013-01-02 05:07:49 developer Exp $
+ * @version $Id: layout.phtml,v 1.20 2013-01-02 16:58:27 developer Exp $
  *
  */
 
@@ -173,8 +173,6 @@ if (!$this->is_frontpage) {
 </head>
 <body>
 	
-	<div id=nlx></div>
-	
 	<?php if (!$this->is_frontpage): ?>
 	<div class="row-fluid" id="header">
 		<?php echo $this->placeholder('header'); ?>
@@ -271,14 +269,8 @@ if (APPLICATION_ENV=='production'){
 })(document, window, "yandex_metrika_callbacks");
 </script>
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-
-<div id=ncode><script type="text/javascript">
-id = 17971; document.write('<sc'+'ript type="text/javascript" src="http://a.contextbar.ru/n.js?rnd='+Math.round(Math.random()*100000)+'"></sc'+'ript>');
-</script></div>
-<script type="text/javascript">document.getElementById('nlx').appendChild(document.getElementById('ncode'));</script>
 	<?php 
 }
-
 ?>
 
 <?php echo $this->inlineScript(); ?>

@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.6 2013-01-02 05:07:50 developer Exp $
+ * @version $Id: Router.php,v 1.7 2013-01-02 16:58:27 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -78,15 +78,14 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 		array(
 			'module'=>'default',
 			'controller'=>'persons',
-			'action'=>'actors')) );
+			'action'=>'actors')));
 			
 		$this->_router->addRoute( 'default_channels_category', 
 		new Zend_Controller_Router_Route( 'каналы/:category',
 		array(
 			'module'=>'default',
 			'controller'=>'channels',
-			'action'=>'category'), array(
-				'category'=>'[\w-]+')) );
+			'action'=>'category')));
 			
 			
 		$this->_router->addRoute( 'default_listings_program-week', 
@@ -98,7 +97,26 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 						'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
 						'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+',
 				)) );
+
+		$this->_router->addRoute( 'default_listings_program-day',
+		new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/сегодня',
+		array(
+			'module'=>'default',
+			'controller'=>'listings',
+			'action'=>'program-day'), array(
+				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
+				'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+')));
 			
+		
+		$this->_router->addRoute( 'default_listings_program-date',
+		new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/:date',
+			array(
+				'module'=>'default',
+				'controller'=>'listings',
+				'action'=>'program-day'), array(
+					'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
+					'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+',
+					'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)')));
 			
 		$this->_router->addRoute( 'default_listings_day-listing', 
 		new Zend_Controller_Router_Route( 'телепрограмма/:channel', 
@@ -107,6 +125,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'controller'=>'listings',
 			'action'=>'day-listing'), array(
 				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+')));
+		
 		
 		$this->_router->addRoute( 'default_listings_day-date', 
 		new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', 
@@ -118,27 +137,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
 			'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)')) );
 			
-		$this->_router->addRoute( 'default_listings_program-day', 
-		new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/сегодня', 
-		array(
-			'module'=>'default',
-			'controller'=>'listings',
-			'action'=>'program-day'), array(
-				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-				'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+')));
-			
 		
-		$this->_router->addRoute( 'default_listings_program-date', 
-		new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/:date', 
-		array(
-			'module'=>'default',
-			'controller'=>'listings',
-			'action'=>'program-day'), array(
-				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-				'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-				'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)')));
-			
-			
 		$this->_router->addRoute( 'default_videos_show-video',
 		new Zend_Controller_Router_Route( 'видео/онлайн/:alias/:id', 
 		array(
@@ -259,6 +258,12 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				//$request->setControllerName( 'index' );
 			break;
 			case 'default':
+			    
+			    if ($request->getParam('XDEBUG_PROFILE')){
+			        var_dump($request->getParams());
+			        die(__FILE__.': '.__LINE__);
+			    }
+			    
 				/*
 				if( $request->getControllerName() == 'articles' && $request->getActionName()=='article') {
 					$params = $request->getParams();

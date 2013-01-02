@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/RequestValidator.php,v $
- * @version $Id: RequestValidator.php,v 1.9 2013-01-02 05:07:49 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.10 2013-01-02 16:58:27 developer Exp $
  */
 class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -80,7 +80,7 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			case 'channels':
 	    				switch ($action) {
 							case 'list':
-								die(__FILE__.': '.__LINE__);
+								
 								break;
 								
 							case 'typeahead':

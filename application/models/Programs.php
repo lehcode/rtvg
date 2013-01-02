@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * Programs listings functionality
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: Programs.php,v 1.12 2013-01-02 16:58:27 developer Exp $
+ *
+ */
 class Xmltv_Model_Programs
 {
 	

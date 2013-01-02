@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.10 2013-01-02 05:07:49 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.11 2013-01-02 16:58:27 developer Exp $
  *
  */
 class ChannelsController extends Zend_Controller_Action
@@ -82,62 +82,68 @@ class ChannelsController extends Zend_Controller_Action
 	 * All channels list
 	 */
 	public function listAction () {
-		
-		$channelsModel = new Xmltv_Model_Channels();
-		$this->view->assign('pageclass', 'allchannels');
-		if ($this->cache->enabled){
-			$hash = Xmltv_Cache::getHash('published_channels');
-			if (!$rows = $this->cache->load($hash, 'Core', $this->cacheRoot)) {
-				$rows = $channelsModel->getPublished();
-				$this->cache->save($rows, $hash, 'Core', $this->cacheRoot);
+	    
+	   //var_dump($this->requestParamsValid());
+	    //die(__LINE__);
+	    
+	    if ($this->requestParamsValid()) {
+	        
+			$channelsModel = new Xmltv_Model_Channels();
+			$this->view->assign('pageclass', 'allchannels');
+			if ($this->cache->enabled){
+				$hash = Xmltv_Cache::getHash('published_channels');
+				if (!$rows = $this->cache->load($hash, 'Core', $this->cacheRoot)) {
+					$rows = $channelsModel->getPublished();
+					$this->cache->save($rows, $hash, 'Core', $this->cacheRoot);
+				}
+			} else {
+			    $rows = $channelsModel->getPublished();
 			}
-		} else {
-		    $rows = $channelsModel->getPublished();
-		}
-		//var_dump($rows);
-		//die(__FILE__.': '.__LINE__);
-		$this->view->assign('channels', $rows);
-		
-		/*
-		 * ######################################################
-		 * Channels categories
-		 * ######################################################
-		*/
-		if ($this->cache->enabled){
-			$f = "/Channels";
-			$hash  = $this->cache->getHash("channelscategories");
-			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
+			//var_dump($rows);
+			//die(__FILE__.': '.__LINE__);
+			$this->view->assign('channels', $rows);
+			
+			/*
+			 * ######################################################
+			 * Channels categories
+			 * ######################################################
+			*/
+			if ($this->cache->enabled){
+				$f = "/Channels";
+				$hash  = $this->cache->getHash("channelscategories");
+				if (!$cats = $this->cache->load($hash, 'Core', $f)) {
+					$cats = $channelsModel->channelsCategories();
+					$this->cache->save($cats, $hash, 'Core', $f);
+				}
+			} else 	{
 				$cats = $channelsModel->channelsCategories();
-				$this->cache->save($cats, $hash, 'Core', $f);
 			}
-		} else {
-			$cats = $channelsModel->channelsCategories();
-		}
-		//var_dump($cats);
-		//die(__FILE__.': '.__LINE__);
-		$this->view->assign('channels_cats', $cats);
-		
-		/*
-		 * ######################################################
-		 * Top programs for left sidebar
-		 * ######################################################
-		 */
-		$top = $this->_helper->getHelper('Top');
-		$amt = Zend_Registry::get('site_config')->topprograms->channellist->get('amount');
-		if ($this->cache->enabled){
-			$f = '/Listings/Programs';
-			$hash = Xmltv_Cache::getHash('top'.$amt);
-			if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
+			//var_dump($cats);
+			//die(__FILE__.': '.__LINE__);
+			$this->view->assign('channels_cats', $cats);
+			
+			/*
+			 * ######################################################
+			 * Top programs for left sidebar
+			 * ######################################################
+			 */
+			$top = $this->_helper->getHelper('Top');
+			$amt = Zend_Registry::get('site_config')->topprograms->channellist->get('amount');
+			if ($this->cache->enabled){
+				$f = '/Listings/Programs';
+				$hash = Xmltv_Cache::getHash('top'.$amt);
+				if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
+					$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
+					$this->cache->save($topPrograms, $hash, 'Core', $f);
+				}
+			} else {
 				$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
-				$this->cache->save($topPrograms, $hash, 'Core', $f);
 			}
-		} else {
-			$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
-		}
-		//var_dump($top);
-		//var_dump($topPrograms);
-		//die(__FILE__.': '.__LINE__);
-		$this->view->assign('top_programs', $topPrograms);
+			//var_dump($top);
+			//var_dump($topPrograms);
+			//die(__FILE__.': '.__LINE__);
+			$this->view->assign('top_programs', $topPrograms);	
+	    }
 		
 	}
 	
@@ -376,6 +382,40 @@ class ChannelsController extends Zend_Controller_Action
 		}
 		
 		  
+	}
+	
+	/**
+	 * Validate nad filter request parameters
+	 *
+	 * @throws Zend_Exception
+	 * @throws Zend_Controller_Action_Exception
+	 * @return boolean
+	 */
+	protected function requestParamsValid(){
+	
+		// Validation routines
+		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
+		if ($this->input===false) {
+			if (APPLICATION_ENV=='development'){
+				var_dump($this->_getAllParams());
+				die(__FILE__.': '.__LINE__);
+			} elseif(APPLICATION_ENV!='production'){
+				throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
+			}
+			$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
+	
+		} else {
+	
+			foreach ($this->_getAllParams() as $k=>$v){
+				if (!$this->input->isValid($k)) {
+					throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
+				}
+			}
+	
+			return true;
+	
+		}
+	
 	}
 	
 }
