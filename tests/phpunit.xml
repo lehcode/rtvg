@@ -1,0 +1,27 @@
+<phpunit bootstrap="./bootstrap.php"
+	colors="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="false"
+	stopOnFailure="true"
+	syntaxCheck="true">
+	<testsuite name="Application Test Suite">
+		<directory>./application</directory>
+	</testsuite>
+	<testsuite name="Library Test Suite">
+		<directory>./library</directory>
+	</testsuite>
+	
+	<filter>
+		<!-- If Zend Framework is inside your project's library, uncomment this filter -->
+		<!-- -->
+		<whitelist>
+			<directory suffix=".php">../../library/Zend</directory>
+		</whitelist>
+		
+	</filter>
+	
+	<listeners>
+		<listener class="Lagged_Test_PHPUnit_ControllerTestCase_Listener" file="Lagged/Test/PHPUnit/ControllerTestCase/Listener.php" />
+	</listeners>
+	
+</phpunit>
