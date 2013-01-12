@@ -4,21 +4,21 @@ class Xmltv_Model_DbTable_ProgramsCategories extends Zend_Db_Table_Abstract
 {
 
     protected $_name = 'programs_categories';
+    protected static $pfx='';
 
     /**
      * Constructor
-     * @param unknown_type $config
+     * @param array $config
      */
     public function __construct ($config = array()) {
     
-    	parent::__construct(array('name'=>$this->_name));
-    
     	if (isset($config['tbl_prefix'])) {
-    		$pfx = $config['tbl_prefix'];
+    		self::$pfx = $config['tbl_prefix'];
     	} else {
-    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
+    		self::$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
     	}
-    	$this->setName($pfx.$this->_name);
+    	$this->setName( self::$pfx.$this->_name);
+    	parent::__construct( array('name'=>$this->getName()));
     
     }
     

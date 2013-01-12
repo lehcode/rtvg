@@ -1,28 +1,31 @@
 <?php
-class SitemapController extends Zend_Controller_Action
+/**
+ * Frontend Sitemap controller
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: SitemapController.php,v 1.4 2013-01-12 09:06:22 developer Exp $
+ *
+ */
+class SitemapController extends Xmltv_Controller_Action
 {
-	public function __call ($method, $arguments) {
-
-		header( 'HTTP/1.0 404 Not Found' );
-		$this->_helper->layout->setLayout( 'error' );
-		$this->view->render();
-	}
 	
-	public function init () {
-		$this->_request->setParam('format', 'xml');
+    public function init () {
+        
+        parent::init();
+        $this->_request->setParam('format', 'xml');
 		$contextSwitch = $this->_helper->getHelper('contextSwitch');
         $contextSwitch->addActionContext('sitemap', 'xml')->initContext();
+        $this->_helper->layout->disableLayout();
+        
 	}
 	
 	public function sitemapAction(){
 		
-		$this->_helper->layout->disableLayout();
-		
-		$channels = new Xmltv_Model_Channels();
-		$published = $channels->getPublished();
+		$channelsModel  = new Xmltv_Model_Channels();
+		$published = $channelsModel->getPublished();
 		$aliases = array();
-		$d = new Zend_Date( null, null, 'ru' ) ; 
-		$week_start = $this->_helper->weekDays(array('method'=>'getStart', 'data'=>array('date'=>$d) ));
+		$week_start = $this->_helper->getHelper('weekDays')->getStart( Zend_Date::now());
 		$week_start = $week_start->toString('YYYY-MM-dd');
 		
 		foreach ($published as $i) {
@@ -32,10 +35,6 @@ class SitemapController extends Zend_Controller_Action
 		$this->view->assign( 'channel_aliases', $aliases );
 		$this->view->assign( 'week_start', $week_start );
 		
-	}
-	
-	private function _channelsSitemap(){
-	
 	}
 	
 }

@@ -25,17 +25,16 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    
 	    $urlParams = $this->urlizeOptions( array(
 			'module'=>'default',
-			'controller'=>'listings',
-			'action'=>'index',
+			'controller'=>'error',
+			'action'=>'error',
 		));
 		$url = $this->url( $urlParams );
 		$this->dispatch($url);
 		
-		/*
-	     * http://www.phpunit.de/manual/current/en/incomplete-and-skipped-tests.html
-	     */
-	    $this->markTestIncomplete( __FUNCTION__.self::MARK_INCOMPLETE );
-		
+		// assertions
+		$this->assertModule( $urlParams['module'] );
+		$this->assertController( $urlParams['controller'] );
+		$this->assertAction( $urlParams['action'] );
 		
 	}
 	
@@ -46,8 +45,6 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    	'module'=>'default',
 	    	'controller'=>'listings',
 	    	'action'=>'day-date',
-	    	//'channel'=>$channel['alias'],
-	    	//'date'=>$now->toString('dd-MM-yyyy'),
 	    ));
 	    $url = $this->url( $urlParams );
 	    $this->dispatch($url);
@@ -63,20 +60,29 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	public function testDayListingAction(){
 		
 	    require_once APPLICATION_PATH.'/../tests/library/rtvg_channels.php';
-	    $now = Zend_Date::now();
+	    $max = 2;
+	    $keys = array();
+	    do{
+	        $k = rand(0, count($rtvg_channels)-1);
+	        if (!in_array($k, $keys))
+	        	$keys[] = rand(0, count($rtvg_channels)-1);
+	    } while( count($keys)<$max );
 	    
-	    foreach ($rtvg_channels as $channel){
+	    $today = Zend_Date::now()->toString('dd-MM-yyyy');
+	    $siteConfig = Zend_Registry::get('site_config');
+	    foreach ($keys as $key){
 	        
+	        $channel = $rtvg_channels[$key];
 			$urlParams  = $this->urlizeOptions( array(
-					'module'=>'default',
-					'controller'=>'listings',
-					'action'=>'day-listing',
-					'channel'=>$channel['alias'],
-		    		//'date'=>$now->toString('dd-MM-yyyy')
+				'module'=>'default',
+				'controller'=>'listings',
+				'action'=>'day-listing',
+			));
+			$this->request->setQuery(array(
+				'channel' => $channel['alias'],
+				'date' => $today,
 			));
 			$url = $this->url( $urlParams );
-			
-			$this->request->setQuery(array('channel'=>$channel['alias']));
 			$this->dispatch($url);
 			
 			// assertions
@@ -85,8 +91,8 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 			$this->assertAction( $urlParams['action'] );
 			$this->assertNotRedirect();
 			
-			$this->assertQueryCountMin("div#col_l .module", 2 );
-			$this->assertQueryCountMin("div#col_r .module", 1 );
+			$this->assertQueryCountMin("ul#channels_categories li", 23 );
+			$this->assertQueryCountMin("ul#program-top li", (int)$siteConfig->topprograms->channellist->get('amount') );
 			$this->assertQueryContentContains( "#maincontent h1", $channel['title']);
 			//$this->assertQueryCount("div#programs-carousel", 1, self::ERR_MISSING.$channel['title'] );
 			//$this->assertQueryCountMin("div#programs-carousel .programcontainer", 1, self::ERR_MISSING.$channel['title'] );
@@ -98,11 +104,11 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	public function testProgramWeekAction(){
 		
 	    $urlParams  = $this->urlizeOptions( array(
-	    		'module'=>'default',
-	    		'controller'=>'listings',
-	    		'action'=>'program-week',
-	    		//'channel'=>'discovery-science',
-	    		//'alias'=>'техноигрушки',
+	    	'module'=>'default',
+	    	'controller'=>'listings',
+	    	'action'=>'program-week',
+	    	'channel'=>'discovery-science',
+	    	'alias'=>'техноигрушки',
 	    ));
 	    $url = $this->url( $urlParams );
 	    $this->dispatch($url);
@@ -117,16 +123,30 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	
 	public function testProgramDayAction(){
 		
-	    $urlParams  = $this->urlizeOptions( array(
-	    		'module'=>'default',
-	    		'controller'=>'listings',
-	    		'action'=>'program-day',
-	    		//'channel'=>'discovery-science',
-	    		//'alias'=>'техноигрушки',
+	    $urlParams = $this->urlizeOptions( array(
+	    	'module'=>'default',
+	    	'controller'=>'listings',
+	    	'action'=>'program-day',
+	    ));
+	    /*
+	    $maxChannels=3;
+	    $maxPrograms=5;
+	    $channelsModel = new Xmltv_Model_Channels();
+	    $channels = $channelsModel->allChannels();
+	    $this->request->setQuery(array(
+	    		'channel' => 'discovery-science',
+	    		'date' => 'техноигрушки',
 	    ));
 	    $url = $this->url( $urlParams );
 	    $this->dispatch($url);
-	    
+	    */
+	    // assertions
+	    /*
+	    $this->assertModule( $urlParams['module'] );
+	    $this->assertController( $urlParams['controller'] );
+	    $this->assertAction( $urlParams['action'] );
+	    $this->assertNotRedirect();
+	    */
 	     /*
 	     * http://www.phpunit.de/manual/current/en/incomplete-and-skipped-tests.html
 	     */

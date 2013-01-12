@@ -4,30 +4,13 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.12 2013-01-02 16:58:27 developer Exp $
+ * @version $Id: Programs.php,v 1.13 2013-01-12 09:06:22 developer Exp $
  *
  */
-class Xmltv_Model_Programs
+class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 {
 	
-	private $_table;
-	private $_descriptions_table;
-	private $_props_table;
-	/**
-	 * Database adapter
-	 * @var Zend_Db_Adapter_Mysqli
-	 */
-	protected $archiveDb;
-	/**
-	 * Application config
-	 * @var Zend_Config_Ini
-	 */
-	protected $appConfig;
-	/**
-	 * Site config
-	 * @var Zend_Config_Ini
-	 */
-	protected $siteConfig;
+	protected $weekDays;
 	
 	const ERR_MISSING_PARAMS="Пропущены необходимые параметры!";
 	
@@ -37,44 +20,105 @@ class Xmltv_Model_Programs
 	 */
 	public function __construct($config=array()){
 		
-		if (isset($config['app_config']) && is_a($config['app_config'], 'Zend_Config_Ini')){
-			$this->appConfig = $config['app_config'];
-		} else {
-			$this->appConfig = Zend_Registry::get('app_config');
-		}
-		if (isset($config['site_config']) && is_a($config['site_config'], 'Zend_Config_Ini')){
-			$this->siteConfig = $config['site_config'];
-		} else {
-			$this->siteConfig = Zend_Registry::get('site_config');
-		}
-		
-		$this->_table = new Xmltv_Model_DbTable_Programs();
-		$this->_descriptions_table = new Xmltv_Model_DbTable_ProgramsDescriptions();
-		$this->_properties_table = new Xmltv_Model_DbTable_ProgramsProps();
-		
-		$this->archiveDb = new Zend_Db_Adapter_Mysqli( $this->appConfig->get('resources')->multidb->get('archive') );
-		
+	    $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
+        parent::__construct($config);
+        
+	    $this->table    = new Xmltv_Model_DbTable_Programs();
+	    $this->weekDays = $config['week_days'];
+			
 	}
 	
-	public function getByAlias($alias='', $channel_id=null, $date){
+	/**
+	 * Поиск передачи по ее псевдониму и номеру канала,
+	 * начиная с указанных даты/времени до конца дня
+	 * 
+	 * @param  string    $alias
+	 * @param  int       $channel_id
+	 * @param  Zend_Date $date
+	 * @throws Zend_Exception
+	 */
+	
+	public function getSingle($alias='', $channel_id=null, Zend_Date $date){
 		
 	    if (!$alias || !$channel_id)
 	        throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
 	    
+	    $progStart = new Zend_Date( $date->toString() );
+	    //var_dump($progStart->toString());
+	    //die(__FILE__.': '.__LINE__);
 	    $where = array(
-			"`alias` LIKE '%$alias%'",
-			"`start` >= '".$date->toString('YYYY-MM-dd 00:00:00')."'"
+			"prog.alias LIKE '%$alias%'",
+			"prog.start >= '".$date->toString('YYYY-MM-dd 00:00:00')."'",
+			"prog.start < '".$date->toString('YYYY-MM-dd 23:59:59')."'",
 		);
 		
-		if ($channel_id)
-			$where[] = "`ch_id`='".$channel_id."'";
+		if ($channel_id){
+			$where[] = "prog.ch_id='".$channel_id."'";
+		}
 		
-		//var_dump($where);
-		//die(__FILE__.': '.__LINE__);
+		$where = count($where) ? implode(' AND ', $where) : '' ;
+		$select = $this->db->select()
+			->from(array('prog'=>$this->table->getName()), '*')
+			->where($where)
+			->order('start DESC');
 		
-		return $this->_table->fetchRow($where, 'start DESC');
+		if (APPLICATION_ENV=='development' || $_GET['XDEBUG_PROFILE']) {
+			var_dump($select->assemble());
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		$result = $result = $this->db->fetchRow($select);
+		if (!$result)
+		return array();
+		else
+		return $result;
 		
 	}
+	
+	/**
+	 * Поиск передачи по ее псевдониму и номеру канала,
+	 * начиная с указанных даты/времени до конца дня
+	 * 
+	 * @param  string    $alias
+	 * @param  int       $channel_id
+	 * @param  Zend_Date $date
+	 * @throws Zend_Exception
+	 */
+	
+	public function getProgramThisDay($alias='', $channel_id=null, Zend_Date $date){
+		
+	    if (!$alias || !$channel_id)
+	        throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
+	    
+	    $progStart = new Zend_Date( $date->toString() );
+	    //var_dump($progStart->toString());
+	    //die(__FILE__.': '.__LINE__);
+	    $where = array(
+			"prog.alias LIKE '%$alias%'",
+			"prog.start >= '".$date->toString('YYYY-MM-dd hh:MM:00')."'",
+			"prog.end < '".$date->toString('YYYY-MM-dd 23:59:59')."'",
+		);
+		
+		if ($channel_id){
+			$where[] = "prog.ch_id='".$channel_id."'";
+		}
+		
+		$where = count($where) ? implode(' AND ', $where) : '' ;
+		$select = $this->db->select()
+			->from(array('prog'=>$this->table->getName()), '*')
+			->where($where)
+			->order('start DESC');
+		
+		if (APPLICATION_ENV=='development' || $_GET['XDEBUG_PROFILE']) {
+			var_dump($select->assemble());
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		$result = $result = $this->db->fetchAll($select);
+		return $result[0];
+		
+	}
+	
 	
 	public function getCategoryForPeriod(Zend_Date $start=null, Zend_Date $end=null, $type=0){
 	
@@ -83,8 +127,8 @@ class Xmltv_Model_Programs
 		if (!is_a($end, 'Zend_Date')) {
 			$end = new Zend_Date(null, null,'ru');
 		}
-		exit();
-		//die(__FILE__.': '.__LINE__);
+		//exit();
+		die(__FILE__.': '.__LINE__);
 			
 	}
 	
@@ -96,39 +140,27 @@ class Xmltv_Model_Programs
 	 * @param int $ch_id
 	 */
 	public function getProgramsForDay(Zend_Date $date=null, $ch_id=null){
-		
-	    $categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
-	    $cats = $categoriesTable->fetchAll(); 
 	    
-		if ($date->isToday()){
-			try {
-				$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'), $cats);
-			} catch (Zend_Db_Table_Exception $e) {
-				throw new Zend_Exception($e->getMessage(), $e->getCode());
-			}
-			//var_dump(count($rows));
-			//die(__FILE__.': '.__LINE__);
-			if (!count($rows))
+	    $table = new Xmltv_Model_DbTable_ProgramsCategories();
+	    $cats = $table->fetchAll();
+	    
+	    if ($date->isToday()){
+			
+	        $rows = $this->table->fetchDayItems( $ch_id, $date->toString('yyyy-MM-dd'), $cats);
+	        if (!count($rows))
 				return null;
 			
 		} else {
-			
-			$l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
+		    
+		    $l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
 			$maxAgo = new Zend_Date( Zend_Date::now()->subDay($l)->toString('U'), 'U' ) ;
 			
-			if ($date->compare($maxAgo)==-1){ //More than 2 weeks
-				try {
-					$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'), $cats, true);
-				} catch (Zend_Db_Table_Exception $e) {
-					throw new Zend_Exception($e->getMessage(), $e->getCode());
-				}
-			} else { //Less or equal than 2 weeks
-				try {
-					$rows = $this->_table->fetchDayItems($ch_id, $date->toString('yyyy-MM-dd'), $cats);
-				} catch (Zend_Db_Table_Exception $e) {
-					throw new Zend_Exception($e->getMessage(), $e->getCode());
-				}
+			if ($date->compare($maxAgo)==-1){ //More than x days
+				$rows = $this->table->fetchDayItems( $ch_id, $date->toString('yyyy-MM-dd'), $cats, true);
+			} else { //Less or equal than x days
+				$rows = $this->table->fetchDayItems( $ch_id, $date->toString('yyyy-MM-dd'), $cats);
 			}
+			
 			if (!count($rows))
 				return null;
 			
@@ -140,6 +172,7 @@ class Xmltv_Model_Programs
 		$list = array();
 		$channel_desc=false;
 		if (count($rows)>0) {
+		    $video = false;
 			foreach ($rows as $k=>$prog) {
 				
 				$prog_start = new Zend_Date($prog->start);
@@ -149,9 +182,13 @@ class Xmltv_Model_Programs
 				$compare_start = $prog_start->compare(Zend_Date::now());
 				$compare_end   = $prog_end->compare(Zend_Date::now());
 				
-				if (($compare_start==-1 || $compare_start==0) && ($compare_end==1 || $compare_end==0))
-				$rows[$k]->now_showing = true;
+				if (($compare_start==-1 || $compare_start==0) && ($compare_end==1 || $compare_end==0)){
+					$rows[$k]->now_showing = true;
+					$rows[$k]->fetch_video = true;
+					$video = true;
+				}
 				
+				$rows[$k]->fetch_video = $video;
 				$rows[$k]->start_timestamp = $prog_start->toString(Zend_Date::TIMESTAMP);
 				
 			}
@@ -185,7 +222,7 @@ class Xmltv_Model_Programs
 		if(  !$prog_alias ||  !$channel_alias )
 			throw new Zend_Exception("ERROR: Пропущен один или более параметров для".__METHOD__, 500);
 		
-		$result = $this->_table->fetchProgramThisDay($prog_alias, $channel_alias, $date);
+		$result = $this->table->fetchProgramThisDay($prog_alias, $channel_alias, $date);
 		$actors		    = array();
 		$directors	    = array();
 		$serializer	    = new Zend_Serializer_Adapter_Json();
@@ -230,9 +267,9 @@ class Xmltv_Model_Programs
 	public function getSimilarProgramsThisWeek($program_alias=null, Zend_Date $start, Zend_Date $end){
 		
 		if (!$program_alias)
-			throw new Zend_Exception("Empty program alias!", 500);
+			throw new Zend_Exception( parent::ERR_WRONG_PARAMS.__METHOD__, 500);
 		
-		$result = $this->_table->fetchSimilarProgramsThisWeek($program_alias, $start, $end);
+		$result = $this->table->fetchSimilarProgramsThisWeek($program_alias, $start, $end);
 		foreach ($result as $item){
 			$item->start = new Zend_Date($item->start, 'yyyy-MM-dd HH:mm:ss');
 			$item->end   = new Zend_Date($item->end, 'yyyy-MM-dd HH:mm:ss');
@@ -247,7 +284,7 @@ class Xmltv_Model_Programs
 		if( !$prog_alias || !$channel_id || !$start || !$end )
 			return false;
 		
-		$result = $this->_table->fetchProgramThisWeek($prog_alias, $channel_id, $start, $end);
+		$result = $this->table->fetchProgramThisWeek($prog_alias, $channel_id, $start, $end);
 		
 		$actors		    = array();
 		$directors	    = array();
@@ -300,11 +337,11 @@ class Xmltv_Model_Programs
 			$cache = new Xmltv_Cache();
 			$hash = $cache->getHash(__METHOD__);
 			if (!$r = $cache->load($hash, 'Function')){
-				$r = $this->_table->getPremieres($start, $end);
+				$r = $this->table->getPremieres($start, $end);
 				$cache->save($r, $hash, 'Function');
 			} 
 		} else {
-			$r = $this->_table->getPremieres($start, $end);
+			$r = $this->table->getPremieres($start, $end);
 		}
 		
 		//var_dump($r);
@@ -319,22 +356,28 @@ class Xmltv_Model_Programs
 	}
 	
 	public function getItemsCount(){
-		return $this->_table->getCount();
+		return $this->table->getCount();
 	}
 
+	/**
+	 * Новый просмотр программы для рейтинга
+	 * 
+	 * @param unknown_type $program
+	 * @throws Zend_Exception
+	 */
 	public function addHit($program=null){
 		
-		if (!is_object($program))
-			throw new Zend_Exception(__METHOD__.': '.__LINE__." - Неверный формат!");
-		
-		try {
+		if (is_array($program)) {
 			$table = new Xmltv_Model_DbTable_ProgramsRatings();
-			$table->addHit($program->hash, $program->ch_id);
-		} catch (Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+			$table->addHit($program['hash'], $program['ch_id']);
+			return true;
+		} elseif (is_object($program)){
+		    $table = new Xmltv_Model_DbTable_ProgramsRatings();
+		    $table->addHit($program->hash, $program->ch_id);
+		    return true;
 		}
 		
-		return true;
+		return false;
 		
 	}
 	
@@ -365,6 +408,12 @@ class Xmltv_Model_Programs
 		
 		return $result;
 		
+	}
+	
+	public function categoryWeek( $category=null, Zend_Date $start, Zend_Date $end){
+		
+	    die(__FILE__.": ".__LINE__);
+	    
 	}
 	
 }

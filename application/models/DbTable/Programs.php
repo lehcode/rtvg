@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.11 2013-01-02 05:07:50 developer Exp $
+ * @version $Id: Programs.php,v 1.12 2013-01-12 09:06:22 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
@@ -36,7 +36,13 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 	 */
 	public function fetchSimilarProgramsThisWeek($program_alias=array(), Zend_Date $start, Zend_Date $end){
 		
-		$select = $this->_db->select()
+	    $parts = explode('-', $program_alias);
+	    foreach ($parts as $a){
+	        $pieces[]=" `prog`.`alias` LIKE '%$a%'";
+	    }
+	    $like = implode(' OR ', $pieces);
+	    
+	    $select = $this->_db->select()
 			->from(array( 'prog'=>$this->_pfx.'programs'), '*')
 			->joinLeft(array( 'prop'=>$this->_pfx.'programs_props' ), "`prog`.`hash`=`prop`.`hash`", array('actors', 'directors', 'premiere', 'live'))
 			->joinLeft(array('desc'=>$this->_pfx.'programs_descriptions' ), "`prog`.`hash`=`desc`.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
@@ -46,23 +52,18 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 				'channel_icon'=>'ch.icon'));
 		
 		$select
-			->where( "`prog`.`alias` LIKE '%$program_alias%'" )
-			->where( "`prog`.`start` > '".$start->toString('yyyy-MM-dd 00:00:00')."'" )
+			->where( $like )
+			->where( "`prog`.`start` > '".$start->toString('yyyy-MM-dd HH:mm:00')."'" )
 			->where( "`prog`.`start` < '".$end->toString('yyyy-MM-dd 23:59:59')."'" )
 			->where( "`ch`.`published` = '1'" )
-			->order('prog.start DESC');	
-			
-		//var_dump($select->assemble());
-		//die(__FILE__.': '.__LINE__);
+			->order( array("prog.start DESC", "prog.ch_id ASC"));	
+
+		if (APPLICATION_ENV=='development'){
+			var_dump($select->assemble());
+			//die(__FILE__.': '.__LINE__);
+		}
 			
 		$result = $this->_db->fetchAll($select);
-		
-		if (count($result)){
-			foreach ($result as $a){
-				$a->channel_alias = Xmltv_String::strtolower($a->channel_alias);
-			}
-		}
-		
 		return $result;
 		
 	}
@@ -107,7 +108,7 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 	public function fetchDayItems($channel_id=null, $date=null, $categories=null, $archived=false) {
 		
 		if (!$channel_id || !$date || !$categories)
-			throw new Zend_Exception(self::ERR_PARAMETER_MISSING, 500);
+			throw new Zend_Exception(__METHOD__.' '.self::ERR_PARAMETER_MISSING, 500);
 		
 		$progsTable	   = $this->_name;
 		$descsTable	   = new Xmltv_Model_DbTable_ProgramsDescriptions();
@@ -119,9 +120,6 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		 */
 		if ($archived===true) {
 			$this->_db = Zend_Registry::get('db_archive');
-			$pfx = Zend_Registry::get('app_config')->resources->multidb->archive->tbl_prefix;
-			$progsTable = $pfx.'programs';
-			$descsTable = $pfx.'programs_descriptions';
 		}
 		
 		/**

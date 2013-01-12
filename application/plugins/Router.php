@@ -6,16 +6,27 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.7 2013-01-02 16:58:27 developer Exp $
+ * @version $Id: Router.php,v 1.8 2013-01-12 09:06:22 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 {
-	protected $_env = 'development';
+	protected $_env = 'production';
 	protected $_request;
 	protected $_router;
 	
+	/**
+	 * Constructor
+	 *
+	 * @param  string $env Execution environment
+	 * @return void
+	 */
 	public function __construct ($env='production') {
+		$this->setEnv( $env );
+	}
+
+
+	public function setEnv ($env='production') {
 		$this->_env = $env;
 	}
 	
@@ -154,6 +165,13 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'controller'=>'error',
 			'action'=>'missing-page')));
 			
+		$this->_router->addRoute( 'default_error_invalid-input', 
+		new Zend_Controller_Router_Route( 'неверные-данные',
+		array(
+			'module'=>'default',
+			'controller'=>'error',
+			'action'=>'invalid-input')));
+			
 		$this->_router->addRoute( 'sitemap', 
 		new Zend_Controller_Router_Route( 'sitemap.xml',
 		array(
@@ -161,11 +179,11 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'controller'=>'sitemap',
 			'action'=>'sitemap')));
 			
-		$this->_router->addRoute( 'search-channel', 
-		new Zend_Controller_Router_Route( 'телепрограмма/поиск/канал', 
+		$this->_router->addRoute( 'default_search_search', 
+		new Zend_Controller_Router_Route( 'телепрограмма/поиск', 
 		array(
 			'module'=>'default',
-			'controller'=>'listings',
+			'controller'=>'search',
 			'action'=>'search')));
 
 		$this->_router->addRoute( 'default_programs_premieres-week', 
@@ -196,45 +214,68 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'controller'=>'torrents',
 			'action'=>'finder')));
 		
-		$this->_router->addRoute( 'deault_programs_category', 
-		new Zend_Controller_Router_Route( 'передачи/:alias/:timespan', 
+		$this->_router->addRoute( 'deault_listings_category', 
+		new Zend_Controller_Router_Route( 'передачи/:category/:timespan', 
 		array(
 			'module'=>'default',
-			'controller'=>'programs',
+			'controller'=>'listings',
 			'action'=>'category')));
 		
 		/*
 		 * admin routes
 		 */
-		$route = new Zend_Controller_Router_Route(
-			'admin/import/listings/:site',
-			array('module'=>'admin', 'controller'=>'import',  'action'=>'remote'), array('site'=>'teleguide') );
-		$this->_router->addRoute( 'admin_import_remote', $route );
-			
-			$route = new Zend_Controller_Router_Route(
-			'admin/movies/grab/:site',
-			 array('module'=>'admin', 'controller'=>'movies', 'action'=>'grab'));
-			$this->_router->addRoute( 'admin/movies/grab', $route );
-			
-			$this->_router->addRoute( 'admin/login', 
-			new Zend_Controller_Router_Route_Static( 'admin', 
-			array('module'=>'admin', 'controller'=>'index', 'action'=>'login') ) );
-			
-			$this->_router->addRoute( 'admin', 
-			new Zend_Controller_Router_Route_Static( 'admin/index', array('module'=>'admin', 'controller'=>'index') ) );
-			
-			$this->_router->addRoute( 'admin/tasks', 
-			new Zend_Controller_Router_Route_Static( 'admin/index', array('module'=>'admin', 'controller'=>'index') ) );
-			
-			$this->_router->addRoute( 'admin_import_parse-programs', 
-			new Zend_Controller_Router_Route_Static( 'admin/import/xml-parse-programs', 
-			array('module'=>'admin', 'controller'=>'import', 'action'=>'xml-parse-programs') ) );
-			
-			//var_dump($this->_router);
-			
-			return $this->_router;
 		
+		$this->_router->addRoute( 'admin_import_remote', 
+		new Zend_Controller_Router_Route( 'admin/import/listings/:site',
+		array(
+			'module'=>'admin',
+			'controller'=>'import',
+			'action'=>'remote'),
+		array('site'=>'teleguide')));
+
+		$this->_router->addRoute( 'admin_import_parse-programs',
+		new Zend_Controller_Router_Route_Static( 'admin/import/xml-parse-programs',
+		array(
+			'module'=>'admin',
+			'controller'=>'import',
+			'action'=>'xml-parse-programs')));
 		
+		$this->_router->addRoute( 'admin_programs_delete-programs',
+		new Zend_Controller_Router_Route( 'admin/programs/delete-programs/format/html',
+		array(
+			'module'=>'admin',
+			'controller'=>'programs',
+			'action'=>'delete-programs'),
+		array(
+			'delete_start'=>'/\d{2}-\d{2}-\d{4}/',
+		)));
+		
+		/*
+		$this->_router->addRoute( 'admin/movies/grab', 
+		new Zend_Controller_Router_Route( 'admin/movies/grab/:site',
+		array(
+			'module'=>'admin',
+			'controller'=>'movies',
+			'action'=>'grab')));
+			
+		$this->_router->addRoute( 'admin/login', 
+		new Zend_Controller_Router_Route_Static( 'admin', 
+		array(
+			'module'=>'admin',
+			'controller'=>'index',
+			'action'=>'login')));
+			
+		$this->_router->addRoute( 'admin', 
+		new Zend_Controller_Router_Route_Static( 'admin/index',
+		array(
+			'module'=>'admin',
+			'controller'=>'index')));
+			
+		
+		*/
+		
+			
+		return $this->_router;
 	
 	}
 	
@@ -260,8 +301,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			case 'default':
 			    
 			    if ($request->getParam('XDEBUG_PROFILE')){
-			        var_dump($request->getParams());
-			        die(__FILE__.': '.__LINE__);
+			        //Zend_Debug::dump($request->getParams());
+			        //die(__FILE__.': '.__LINE__);
 			    }
 			    
 				/*

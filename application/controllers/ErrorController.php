@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ErrorController.php,v 1.3 2012-08-03 00:16:56 developer Exp $
+ * @version $Id: ErrorController.php,v 1.4 2013-01-12 09:06:22 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -16,11 +16,7 @@ class ErrorController extends Zend_Controller_Action
 			->initContext();
 	}
 	
-	public function indexAction(){
-		$this->_forward('error');
-	}
-	
-    public function errorAction()
+	public function errorAction()
     {
         $errors = $this->_getParam('error_handler');
         
@@ -46,20 +42,51 @@ class ErrorController extends Zend_Controller_Action
                 break;
         }
         
-        // Log exception, if logger available
-        if ($log = $this->getLog()) {
-            $log->log($this->view->message, $priority, $errors->exception);
-            $log->log('Параметры запроса', $priority, $errors->request->getParams());
+        //Log exception, if logger available
+        $logger = $this->getLog();
+        if ($logger) {
+            $logger->log($this->view->message, $priority, $errors->exception);
+            $logger->log('Параметры запроса', $priority, $errors->request->getParams());
         }
         
-        // conditionally display exceptions
+        $senderEmail='dev@egeshi.com';
+        $mail = new Zend_Mail();
+        $mail->setBodyText( "Ошибка:\n".$errors->exception."\n\nПараметры запроса:\n".implode(', ', $errors->request->getParams()) );
+        $mail->setFrom( $senderEmail, 'Rutvgid Error');
+        $mail->addTo( 'bugs@egeshi.com', 'Bugs');
+        $mail->setSubject( "Ошибка!");
+        
+        if (APPLICATION_ENV=='production') {
+            $t = new Zend_Mail_Transport_Smtp('mail.egeshi.com', array(
+            	'auth' => 'login',
+            	'ssl' => 'ssl',
+            	'port' => 465,
+            	'username' => $senderEmail,
+            	'password' => '@Li=EnS#5+grGv3zBRS5ux%b'
+            ));
+        } else {
+            $t = new Zend_Mail_Transport_File(array('path'=>ROOT_PATH.'/log/mail'));
+        }
+        //Send
+		$sent = true;
+		try {
+		    $mail->send( $t);
+		} catch (Exception $e) {
+		    $logger->log( $e->getMessage(), Zend_log::CRIT );
+		}
+ 
+		// conditionally display exceptions
         if ($this->getInvokeArg('displayExceptions') == true) {
             $this->view->exception = $errors->exception;
         }
         
-        $this->view->request   = $errors->request;
+        $this->view->request = $errors->request;
     }
 
+    /**
+     * 
+     * @return Zend_Log
+     */
     public function getLog()
     {
     	if (!$bootstrap = $this->getInvokeArg('bootstrap'))
@@ -68,8 +95,13 @@ class ErrorController extends Zend_Controller_Action
         if (!$bootstrap->hasResource('Log')) {
             return false;
         }
+        /**
+         * 
+         * @var Zend_Log
+         */
         $log = $bootstrap->getResource('Log');
         return $log;
+        
     }
     
     public function ajaxErrorAction(){
@@ -77,6 +109,9 @@ class ErrorController extends Zend_Controller_Action
     }
     
     public function missingPageAction(){
+    	
+    }
+    public function invalidInputAction(){
     	
     }
 

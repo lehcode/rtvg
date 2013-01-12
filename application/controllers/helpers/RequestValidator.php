@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/RequestValidator.php,v $
- * @version $Id: RequestValidator.php,v 1.10 2013-01-02 16:58:27 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.11 2013-01-12 09:06:22 developer Exp $
  */
 class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -25,7 +25,7 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
     	$this->pluginLoader = new Zend_Loader_PluginLoader();
     }
     
-    const ALIAS_REGEX='/^[\p{Cyrillic}\p{Latin}\d-]+/u';
+    const ALIAS_REGEX='/^[\p{Cyrillic}\p{Latin}\d-]+$/ui';
     
     /**
      * 
@@ -34,11 +34,11 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
      * @param string $controller
      * @param string $action
      */
-    public function isValidRequest($module=null, $controller=null, $action=null) {
+    public function isValidRequest($params=null, $options=null) {
     	
-    	if (APPLICATION_ENV=='development'){
-    	    //var_dump(func_get_args());
-			var_dump( $this->getRequest()->getParams() );
+        
+    	if (APPLICATION_ENV=='development' && !$this->getRequest()->isXmlHttpRequest()){
+    	    var_dump( $this->getRequest()->getParams() );
     	}
 		
 		$filters = array( 
@@ -65,6 +65,10 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 		if (isset($_GET['XDEBUG_PROFILE'])){
 			$validators['XDEBUG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
 		}
+		
+	    $module     = $params['module'];
+	    $controller = $params['controller'];
+	    $action     = $params['action'];
 	    
 	    switch ($module){
 	    	/*
@@ -74,17 +78,28 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    	default:
 	    		
 	    		switch ($controller){
+	    			
+	    			case 'search':
+	    			    //die(__FILE__.': '.__LINE__);
+	    			    $validators['searchinput'] = array( new Zend_Validate_Regex( '/^[\s\p{Cyrillic}\p{Latin}\d-]+$/u' ));
+	    			    $validators['submit']      = array( new Zend_Validate_Regex( '/^>$/'));
+	    			    $validators['type']        = array( new Zend_Validate_Regex( '/^(channel)$/u' ));
+	    			    break;
+	    		    
 	    			/**
 	    			 * Channels controler actions
 	    			 */
-	    			case 'channels':
+	    		    case 'channels':
 	    				switch ($action) {
 							case 'list':
 								
 								break;
 								
 							case 'typeahead':
-								$validators['format']=array( new Zend_Validate_Regex('/^html|json$/'));
+								$validators['format'] = array( new Zend_Validate_Regex('/^html|json$/'));
+								if ($this->getRequest()->getParam('c')) {
+									$validators['c'] = array( new Zend_Validate_Regex('/^.+$/'));
+								}
 								break;
 								
 							case 'category':
@@ -123,7 +138,17 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			    $validators['channel'] = array(new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
 	    			    
 	    			    switch ($action) {
+	    			        
+	    			    	case 'category':
+	    			    	    foreach ($options['vars']['programsCategories'] as $c){
+	    			    	        $cats[]=$c->alias;
+	    			    	    }
+	    			    	    $validators['category'] = array( new Zend_Validate_Regex( '/^('.implode('|', $cats).')$/u' ));
+	    			    	    $validators['timespan'] = array( new Zend_Validate_Regex( '/^(сегодня|неделя)$/u' ));
+	    			    	    break;
+	    			        
 	    			        case 'program-day':
+	    			            
 	    			            $validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
 	    			            if ($this->getRequest()->getParam('date')) {
 	    			            	$d = $this->getRequest()->getParam('date');
@@ -131,9 +156,12 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 		    			            	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-yyyy', 'locale'=>'ru')), 'presence'=>'required');
 		    			            } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
 		    			            	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
+		    			            } else{
+		    			                $validators['date'] = array( new Zend_Validate_Regex( '/^(сегодня|неделя)$/u' ));
 		    			            }
 	    			            }
 	    			            break;
+	    			            
 	    			    	case 'program-week':
 	    			    	    $validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
 	    			    	    if ($this->getRequest()->getParam('date')) {
@@ -159,11 +187,13 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 							    		$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-yyyy', 'locale'=>'ru')), 'presence'=>'required');
 							    	if (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d))
 							    		$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
-							    	$validators['tz'] = array( new Zend_Validate_Regex( '/^-?[0-9]{1,2}$/u' ));
+
 							    }
+							    
 							    if ($this->getRequest()->getParam('tz')){
 							        $validators['tz'] = array( new Zend_Validate_Regex( '/^-?[0-9]{1,2}$/u' ));
 							    }
+							    
 								break;
 								
 							default:
@@ -177,9 +207,12 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			/*
 	    			 * default controller
 	    			 */
-	    			default:
 	    			case'frontpage':
-	    				break;
+	    			    	break;
+	    			    	
+	    			default:
+	    			    return false;
+	    			
 	    		}
 	    		
 	    		break;
@@ -231,9 +264,32 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 						}
 						
 	    				break;
-	    				
-	    			default: return false;
+
+	    			case 'programs':
+	    			    switch ($action) {
+	    			        
+	    			        case 'delete-programs':
+	    			            $validators['delete_start']   = array( new Zend_Validate_Regex( '/^[\d]{2}\.[\d]{2}\.[\d]{4}$/'));
+	    			            $validators['delete_end']     = array( new Zend_Validate_Regex( '/^[\d]{2}\.[\d]{2}\.[\d]{4}$/'));
+	    			            $validators['deleteprograms'] = array( new Zend_Validate_Regex( '/^(0|1)$/'));
+	    			            $validators['deleteinfo']     = array( new Zend_Validate_Regex( '/^(0|1)$/'));
+	    			            $validators['format']         = array( new Zend_Validate_Regex( '/^(html|json)$/'));
+	    			            $validators['submit']         = array( new Zend_Validate_Regex( '/^Старт$/u'));
+	    			            //var_dump($validators);
+	    			            //die(__FILE__.': '.__LINE__);
+	    			        	break;
+	    			        
+	    			        case 'processing':
+	    			            $input = new Zend_Filter_Input($filters, $validators, $this->getRequest()->getParams());
+	    			    		return $input;
+	    			    		break;
+	    			    		
+	    			        default: 
+	    			            return false;
+	    			    }
+	    			
 	    		}
+	    		
 	    		break;
 	    }
 	    		
@@ -242,7 +298,7 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 		$input = new Zend_Filter_Input($filters, $validators, $this->getRequest()->getParams());
     	
 		//var_dump($validators);
-		//var_dump($input);
+		//var_dump($input->isValid('delete_start'));
 		//die(__FILE__.': '.__LINE__);
 		
 		return $input;
@@ -255,12 +311,24 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
     public function direct($params=array()) {
     
         //var_dump($params);
+        //var_dump( strtolower($params[0])=='isvalidrequest');
+        //var_dump( isset($params['vars']) && !empty($params['vars']) && is_array($params['vars']));
         //var_dump(strtolower($params[0])=='isvalidrequest');
         //die(__FILE__.': '.__LINE__);
         
     	if (strtolower($params[0])=='isvalidrequest') {
     		if (isset($params['vars']) && !empty($params['vars']) && is_array($params['vars'])){
-    			return $this->isValidRequest($params['vars']['module'], $params['vars']['controller'], $params['vars']['action']);
+    		    $o = array();
+    		    $p  = array();
+    		    $p['module']     = $params['vars']['module'];
+    		    $p['controller'] = $params['vars']['controller'];
+    		    $p['action']     = $params['vars']['action'];
+    		    unset($params['module']);
+    		    unset($params['controller']);
+    		    unset($params['action']);
+    		    $options = $params;
+    		    $params = $p;
+    		    return $this->isValidRequest($params, $options);
     		}
     	}
     	return false;

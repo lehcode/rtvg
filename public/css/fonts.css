@@ -4,10 +4,12 @@
     font-family: "OpenSans Condensed Bold";
     src: url("../fonts/opnsancb.ttf") format("truetype");
 }
+/*
 @font-face {
     font-family: "Univers Bold";
     src: url("../fonts/universb.ttf") format("truetype");
 }
+*/
 @font-face {
     font-family: "Univers Condensed Bold";
     src: url("../fonts/universcb.ttf") format("truetype");
@@ -16,6 +18,7 @@
     font-family: "Univers Condensed Medium Italic";
     src: url("../fonts/universcmi.ttf") format("truetype");
 }
+/*
 @font-face {
     font-family: "Grotic";
     src: url("../fonts/GROTIC.TTF") format("truetype");
@@ -32,3 +35,4 @@
     font-family: "OfficinaSerif";
     src: url("../fonts/osr65__c.ttf") format("truetype");
 }
+*/

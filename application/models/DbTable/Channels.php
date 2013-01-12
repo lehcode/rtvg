@@ -3,7 +3,7 @@
  * Database table for channels info
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.11 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: Channels.php,v 1.12 2013-01-12 09:06:22 developer Exp $
  */
 
 class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
@@ -21,13 +21,14 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     	if (isset($config['tbl_prefix'])) {
     		$pfx = (string)$config['tbl_prefix'];
     	} else {
-    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix', 'rtvg_');
+    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
     	}
     	$this->_pfx = $pfx;
     	$this->setName($this->_pfx.$this->_name);
 		
     }
     
+    /* 
     public function getTypeaheadItems(){
     	
     	try {
@@ -39,6 +40,7 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     	return $result;
     	
     }
+     */
     
     public function getFeatured($order=null, $total=20, $by_hits=true){
     	

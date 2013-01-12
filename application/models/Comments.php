@@ -245,9 +245,11 @@ class Xmltv_Model_Comments
 	    Zend_Feed_Reader::useHttpConditionalGet();
 	    
 	    $url = 'http://blogs.yandex.ru/search.rss?text='.urlencode($query).'&ft=all';
+	    
 	    if (APPLICATION_ENV=='development'){
-	    	var_dump($url);
+	    	//var_dump($url);
 	    }
+	    
 	    $result = Zend_Feed_Reader::import($url);
 	    return $result;
 		

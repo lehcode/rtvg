@@ -5,14 +5,20 @@
 	background-color: #eee;
 	padding: 1em;
 	opacity: 0.95;
-	width: 18em;
-	-webkit-box-shadow: 2px 2px 11px rgba(50, 50, 50, 0.25);
-	-moz-box-shadow:    2px 2px 11px rgba(50, 50, 50, 0.25);
-	-o-box-shadow:    2px 2px 11px rgba(50, 50, 50, 0.25);
-	box-shadow:         2px 2px 11px rgba(50, 50, 50, 0.25);
+	width: 24em;
+	-webkit-box-shadow: 2px 2px 11px rgba(0, 0, 0, 0.05);
+	-moz-box-shadow: 2px 2px 11px rgba(0, 0, 0, 0.05);
+	-o-box-shadow: 2px 2px 11px rgba(0, 0, 0, 0.05);
+	box-shadow: 2px 2px 11px rgba(0, 0, 0, 0.05);
 }
-#tooltip h3, #tooltip div { margin: 0; }
+
+#tooltip h3,
+#tooltip div {
+	margin: 0;
+}
+
 #tooltip h3 {
 	font-size: 0.86em;
 	line-height: 1.24em;
+	font-weight: normal;
 }

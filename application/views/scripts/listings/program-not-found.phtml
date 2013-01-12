@@ -1,0 +1,14 @@
+<?php 
+//$this->headMeta()->setName('robots', 'noindex,follow');
+$channelTitle = $this->escape($this->channel->title);
+$channelAlias = $this->escape($this->channel->alias);
+$this->headTitle( $channelTitle );
+?>
+<h1><?php echo $channelTitle ?></h1>
+<p>Короткая ссылка на расписание этой передачи на канале <a href="<?php echo $this->url( array(
+	'channel'=>$channelAlias), 'default_channels_channel-week') ?>"
+	target="_blank">
+	<?php echo $channelTitle ?></a><br />
+<a href="<?php echo $this->short_link ?>" class="label label-important" rel="nofollow"><?php echo $this->short_link ?></a></p>
+<p>Эта передача не будет повторяться до конца недели ни на одном из телеканалов.<br />
+Попробуйте зайти на следующей неделе.</p>

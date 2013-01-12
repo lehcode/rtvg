@@ -5,68 +5,45 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.11 2013-01-02 16:58:27 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.12 2013-01-12 09:06:22 developer Exp $
  *
  */
-class ChannelsController extends Zend_Controller_Action
+class ChannelsController extends Xmltv_Controller_Action
 {
-
-	/**
-	 * 
-	 * Validator
-	 * @var Xmltv_Controller_Action_Helper_RequestValidator
-	 */
-	protected $validator;
-	
-	/**
-	 * 
-	 * Input filtering plugin
-	 * @var Zend_Filter_Input
-	 */
-	protected $input;
-	
-	/**
-	 * Caching object
-	 * @var Xmltv_Cache
-	 */
-	protected $cache;
-	/**
-	 * Root folder for cache
-	 * @var string
-	 */
-	protected $cacheRoot;
-	
-	
-	
-	/**
-	 * (non-PHPdoc)
-	 * @see Zend_Controller_Action::__call()
-	 */
-	public function __call ($method, $arguments) {
-		if (APPLICATION_ENV!='development'){
-			header('HTTP/1.0 404 Not Found');
-			$this->_helper->layout->setLayout( 'error' );
-			$this->view->render();
-		}
-	}
+    
+    protected $cacheRoot = '/Channels';
 	
 	/**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
 	 */
 	public function init () {
+	    
+		parent::init();
 		
-		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
-		$ajaxContext->addActionContext( 'typeahead', 'json' )
-			->initContext();
-			
-		$this->cacheRoot = '/Channels';
-		$this->cache = new Xmltv_Cache( array('location'=>$this->cacheRoot) );
-		//var_dump($this->cache);
-		//die();
-		$this->view->setScriptPath(APPLICATION_PATH.'/views/scripts/');
-		$this->validator = $this->_helper->getHelper('requestValidator');
-		
+	    /**
+	     * Change layout for AJAX requests
+	     */
+	    if ($this->getRequest()->isXmlHttpRequest()) {
+	        
+	        $this->contextSwitch
+	        	->addActionContext('typeahead', 'json')
+	        	->initContext();
+	   	}
+	    
+		$this->validator = $this->_helper->getHelper( 'requestValidator');
+		$this->_initCache();
+	}
+	
+	/**
+	 * Initialize caching
+	 */
+	private function _initCache(){
+	    
+	    $this->cacheRoot = '/Channels';
+	    $this->cache = new Xmltv_Cache( array('location'=>$this->cacheRoot) );
+	    $this->cache->lifetime = (int)Zend_Registry::get('site_config')->cache->system->get('lifetime');
+	    
 	}
 	
 
@@ -152,10 +129,30 @@ class ChannelsController extends Zend_Controller_Action
 	 */
 	public function typeaheadAction () {
 		
-		$response=array();
-		$channels = new Xmltv_Model_Channels();
-		$response = $channels->getTypeaheadItems();
-		$this->view->assign('response', $response);
+	    if ($this->requestParamsValid()) {
+	        
+	        $channelsCategories = new Xmltv_Model_DbTable_ChannelsCategories();
+	        if ($this->_getParam('c')) {
+	        	$category = $channelsCategories->fetchRow("`alias` LIKE '".$this->input->getEscaped('c')."'")->toArray();
+	        }
+	        
+	        $channelsModel = new Xmltv_Model_Channels();
+	        $hash = Xmltv_Cache::getHash( 'typeahead_all' );
+	        if ($this->cache->enabled) {
+	            if (($items = $this->cache->load( $hash, 'Core', $this->cacheRoot))===false){
+	                $items = $channelsModel->getTypeaheadItems( $category['id']);
+	                $this->cache->save($items, $hash, 'Core', $this->cacheRoot);
+	            }
+	        } else {
+	            $items = $channelsModel->getTypeaheadItems( $category['id']);
+	        }
+	        
+	        foreach ($items as $k=>$part){
+	            $result[]['title'] = $part['title'];
+	        }
+	        
+	        $this->view->assign('result', $result);
+	    }
 		
 	}
 	
@@ -326,62 +323,60 @@ class ChannelsController extends Zend_Controller_Action
 	 */
 	public function newCommentsAction(){
 		 
-		//var_dump($this->_getAllParams());
-		//die(__FILE__.': '.__LINE__);
-		
-		/**
-		 *
-		 * Filter request vaiables
-		 * @var Zend_Filter_Input
-		 */
-		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
-		if ($this->input===false) {
-			if (APPLICATION_ENV=='development'){
-				var_dump($this->_getAllParams());
-				die(__FILE__.': '.__LINE__);
-			} elseif(APPLICATION_ENV!='production'){
-				throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
-			}
-			$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
-		
-		} else {
-		
-			foreach ($this->_getAllParams() as $k=>$v){
-				if (!$this->input->isValid($k)) {
-					throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
+		$this->_helper->layout->disableLayout();
+	    
+	    if ($this->requestParamsValid()){
+	        
+	        foreach ($this->_getAllParams() as $k=>$v){
+	        	if (!$this->input->isValid($k)) {
+	        		throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
+	        	}
+	        }
+	        	
+	        // Channel properties
+	        $channelsModel = new Xmltv_Model_Channels();
+	    	$channelAlias = $this->input->getEscaped('channel');
+			if ($this->cache->enabled){
+				$f = '/Channels';
+				$hash = $this->cache->getHash('channel_'.$channelAlias);
+				if (($channel = $this->cache->load($hash, 'Core', $f))===false) {
+					$channel = $channelsModel->getByAlias($channelAlias);
+					$this->cache->save($channel, $hash, 'Core', $f);
 				}
+			} else {
+			    $channel = $channelsModel->getByAlias($channelAlias);
 			}
-			
-			// Channel properties
-			$channelsModel = new Xmltv_Model_Channels();
-			$channel = $channelsModel->getByAlias( $this->input->getEscaped('channel') );
-			$this->view->assign('channel', $channel);
-			
-			//Attach model
-			$model = new Xmltv_Model_Comments();
-			
-			//Fetch and parse feed
-			try {
-			    $feedData = $model->getYandexRss( array( ' телеканал "'.$channel->title.'"', $currentProgram->title ) );
-			} catch (Zend_Feed_Exception $e) {
-			    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-			}
-			//var_dump($feedData);
-			if ($new = $model->parseYandexFeed( $feedData, 164 )){
-				if (count($new)>0){
-				    $model->saveComments($new, $channel->alias, 'channel');
-				    $this->view->assign('items', $new);
-				}
-			}
-			
-			$this->_helper->layout->disableLayout();
-			
-			//var_dump($new);
-			//die(__FILE__.': '.__LINE__);
-			
-		}
-		
-		  
+	        $this->view->assign('channel', $channel);
+	        
+	        //Attach comments model
+	        $commentsModel = new Xmltv_Model_Comments();
+	        	
+	        //Fetch and parse feed
+	        if ($this->cache->enabled){
+	            $f = '/Feeds/Yandex';
+	            $hash = $this->cache->getHash('YandexRss_'.$channelAlias);
+	            if (($feedData = $this->cache->load($hash, 'Core', $f))===false) {
+	            	$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel->title.'"', $currentProgram->title ) );
+	            	$this->cache->save($feedData, $hash, 'Core', $f);
+	            }
+	        } else {
+	            $feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel->title.'"', $currentProgram->title ) );
+	        }
+	        
+	        //var_dump($feedData);
+	        //die(__FILE__.': '.__LINE__);
+	        
+	        if ($new = $commentsModel->parseYandexFeed( $feedData, 164 )){
+	        	if (count($new)>0){
+	        		$commentsModel->saveComments($new, $channel->alias, 'channel');
+	        		$this->view->assign('items', $new);
+	        	}
+	        }
+	        
+	        var_dump($new);
+	        die(__FILE__.': '.__LINE__);
+	    }
+	     
 	}
 	
 	/**

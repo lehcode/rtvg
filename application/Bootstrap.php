@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.10 2013-01-02 05:07:49 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.11 2013-01-12 09:06:22 developer Exp $
  *
  */
 
@@ -29,7 +29,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	function run() {
 		
-		if (APPLICATION_ENV=='development')
+		if (APPLICATION_ENV=='testing')
 			Zend_Session::$_unitTestEnabled = true;
 		
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
@@ -38,12 +38,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		date_default_timezone_set( Zend_Registry::get('site_config')->site->get( 'timezone', 'Europe/Moscow' ) );
 		
 		$db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
-		$db->setFetchMode(Zend_DB::FETCH_OBJ);
+		$db->setFetchMode( Zend_DB::FETCH_OBJ);
 		Zend_Registry::set('db_local', $db);
 		
-		$db = $this->bootstrap('multidb')->getResource('multidb')->getDb('archive');
-		$db->setFetchMode(Zend_DB::FETCH_OBJ);
-		Zend_Registry::set('db_archive', $db);
+		$db = $this->bootstrap( 'multidb')->getResource('multidb')->getDb('archive');
+		$db->setFetchMode( Zend_DB::FETCH_OBJ);
+		Zend_Registry::set( 'db_archive', $db);
 
 		Zend_Layout::startMvc();
 		
@@ -70,93 +70,48 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->registerPlugin( $router )
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
-			->returnResponse( true );
+			->registerPlugin( new Xmltv_Plugin_Antibot( APPLICATION_ENV ) )
+			->returnResponse( true )
+			->throwExceptions( false );
 		
 		/*
 		 * http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
 		 */
 		
-		if( APPLICATION_ENV != 'development' ) {
-			$fc->throwExceptions( false ); //Enable ErrorController and logging
-		} else {
-			$fc->throwExceptions( true ); //Disable ErrorController and logging
-		}
-		
-		
 		$router->setRouter($fc->getRouter());
-		$fc->setRouter($router->getRouter());		
-		
+		$fc->setRouter($router->getRouter());
+		$log = $this->bootstrap()->getResource('Log');
 		try {
-			$response = $fc->dispatch();
-			if( $response && $response->isException() ) {
-				
-				$exceptions = $response->getException();
-				foreach ($exceptions as $e){
-					var_dump($e);
-				}
-				die(__FILE__.': '.__LINE__);
-				//var_dump($response);
-				//var_dump($exception);
-				//die(__FILE__.': '.__LINE__);
-				
-				/*
-				$mail = new Zend_Mail();
-				$mail->setBodyText( $exception->getTraceAsString() );
-				$mail->setFrom('robot@rutvgid.ru', 'Robot');
-				$mail->addTo('egeshi@gmail.com', 'Admin');
-				$mail->setSubject($exception->getMessage());
-				$mail->send();
-				*/
-				
-				//var_dump($exception);
-				//die(__FILE__.': '.__LINE__);
-				
-				//$log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
-				//$log->debug( $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
-				
-			
-			}
-			
-		} catch (Zend_Exception $e) {
-			if( APPLICATION_ENV == 'development' ) {
-				echo $e->getMessage();
-				echo $e->getCode();
-				Zend_Debug::dump($e->getTrace());
-			} else {
-				
-				
-				$mail = new Zend_Mail();
-				$mail->setBodyText( $e->getTraceAsString() );
-				$mail->setFrom('robot@rutvgid.ru', 'Robot');
-				$mail->addTo('egeshi@gmail.com', 'Admin');
-				$mail->setSubject($e->getMessage());
-				if (APPLICATION_ENV=='testing') {
-					$t = new Zend_Mail_Transport_File(array('path'=>ROOT_PATH.'/log/mail'));
-				}
-				$mail->send($t);
-				
-				
-				if( APPLICATION_ENV!='production' ){
-					$log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/testing.log' ));
-					$log->debug( $e->getMessage() . PHP_EOL . print_r( $e->getTraceAsString(), true ) );
-				} else {
-					$log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
-					$log->debug( $e->getMessage() . PHP_EOL . print_r( $e->getTraceAsString(), true ) );
-				}
-				
-				
-			}
-			
+		    
+		    $response = $fc->dispatch();
+		    if( $response && $response->isException() ) {
+		    	
+		    	$exceptions = $response->getException();
+		    	foreach ($exceptions as $e){
+		    		$log->log( $e->getMessage(), Zend_Log::CRIT, $e->getTraceAsString() );
+		    		/* if (APPLICATION_ENV=='development'){
+		    			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		    		} */
+		    	}
+		    }
+		} catch (Exception $e) {
+		    
+		    if( APPLICATION_ENV == 'development' ) {
+		    	echo $e->getMessage();
+		    	Zend_Debug::dump($e->getTrace());
+		    	die("Response exception!");
+		    } else {
+		        $log->log( $e->getMessage(), Zend_Log::CRIT, $e->getTraceAsString() );
+		    }
 		}
-		
 		
 		if (isset($response)) {
-			$response->sendHeaders();
+		    $response->sendHeaders();
 			$response->outputBody();
 		}
-		
 				
 	}
+	
 	
 	/**
 	 * 
@@ -170,20 +125,25 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 	}
 	
+	
 	/**
-	 * 
+	 * @return Zend_Log
 	 */
 	protected function _initLog(){
-		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
-		$front = $this->bootstrap( "frontController" )->frontController;
-		try {
-			$log = new Zend_Log( new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-		} catch (Exception $e) {
-			echo $e->getMessage();
+		
+	    if (APPLICATION_ENV=='testing'){
+	        $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/testing.log' ));
+		} else {
+		    $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
 		}
+		return $log;
+		
 	}
 	
-
+	/**
+	 * 
+	 * @return Zend_Application_Module_Autoloader
+	 */
 	protected function _initAutoloader () {
 
 		$front = $this->bootstrap( "frontController" )->frontController;
@@ -196,14 +156,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				'basePath'=>$front->getModuleDirectory( $module )) 
 			);
 		}
+		return $moduleloader;
 	}
 
 
+	/**
+	 * Load jQuery libraries
+	 */
 	protected function _initJquery () {
 
 		$this->bootstrap( 'view' );
 		$view = $this->getResource( 'view' );
 		$view->addHelperPath( "ZendX/JQuery/View/Helper", "ZendX_JQuery_View_Helper" );
+		$view->headLink()->prependStylesheet( 'http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css');
 	}
 	
 	/**

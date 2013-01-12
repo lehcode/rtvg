@@ -1,52 +1,76 @@
 <?php
+/**
+ *
+ * Programs model for Admin module
+ *
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @package rutvgid
+ * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/controllers/ProgramsController.php,v $
+ * @version $Id: ProgramsController.php,v 1.5 2013-01-12 09:06:22 developer Exp $
+ */
 
-class Admin_ProgramsController extends Zend_Controller_Action
+class Admin_ProgramsController extends Xmltv_Controller_Action
 {
 
-    public function init()
-    {
+    /**
+     * (non-PHPdoc)
+     * @see Zend_Controller_Action::init()
+     */
+    public function init() {
+        
+        parent::init();
+        
         $this->_helper->layout->setLayout('admin');
         
 		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
-		$ajaxContext->addActionContext( 'premieres-search', 'html' )
-			->addActionContext( 'delete-programs', 'html' )
-			->addActionContext( 'programs-delete-progress', 'html' )
+		$ajaxContext->addActionContext( 'delete-programs', 'json' )
 			->initContext();
 			
     }
 
-    public function indexAction()
-    {
+    /**
+     * Redirect
+     */
+    public function indexAction() {
+        
         $this->_forward('list');
     }
     
+    /**
+     * Processing frontend
+     */
     public function processingAction(){
-		
-	}
+        
+    }
+    
+    
+    /**
+     * 
+     */
+    public function deleteProgramsAction(){
 	
-	public function deleteProgramsAction(){
-	
-		$requestVars = $this->_getAllParams();
-		//var_dump($requestVars);
-		if ($this->_parseRequestValid($this->_getParam('action'))===true){
-			
-			ini_set('max_execution_time', 0);
-			
-			$start = new Zend_Date($this->_getParam('delete_start'), 'dd.MM.yyyy');
-			$end   = new Zend_Date($this->_getParam('delete_end'), 'dd.MM.yyyy');
-			
-			$programs = new Admin_Model_Programs();
-			
-			if ((bool)$this->_getParam('deleteinfo', false)===true) {
-				$programs->deletePrograms($start, $end, true);
-			} else {
-				$programs->deletePrograms($start, $end);
-			}
-			
-			echo "<h3>Готово!</h3>";
-			exit();
-		}
-		exit();
+        if (parent::requestParamsValid()){
+            
+            ini_set('max_execution_time', 0);
+            	
+            $start = new Zend_Date($this->_getParam('delete_start'), 'dd.MM.yyyy'); 
+            $start = $start->toString('yyyy-MM-dd 00:00:00');
+            $end   = new Zend_Date($this->_getParam('delete_end'), 'dd.MM.yyyy'); 
+            $end   = $end->toString('yyyy-MM-dd 00:00:00');
+            $programs = new Admin_Model_Programs();
+
+            if ( (bool)$this->input->getEscaped('deleteinfo')===true) {
+            	$programs->deletePrograms($start, $end, true);
+            } else {
+            	$programs->deletePrograms($start, $end);
+            }
+
+            echo "<h3>Готово!</h3>";
+            die();
+            
+        }
+        
+        die();
 	}
     
     public function cleanDescriptionsAction(){
@@ -79,6 +103,11 @@ class Admin_ProgramsController extends Zend_Controller_Action
     	
     }
 
+    /**
+     * @deprecated
+     * @param  string $action
+     * @return boolean
+     */
 	private function _parseRequestValid($action=null){
 		
 		if (!$action)
@@ -108,14 +137,9 @@ class Admin_ProgramsController extends Zend_Controller_Action
 
  	public function programsDeleteProgressAction(){
  		
- 		
  		$model = new Admin_Model_Programs();
- 		
  		var_dump($this->_getAllParams());
- 		
- 		
- 		
-    	//echo "Completed";
+ 		//echo "Completed";
     	exit();
     }
 

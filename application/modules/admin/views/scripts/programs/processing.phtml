@@ -124,37 +124,86 @@ $css = "#premiere_search button:before, #premiere_search button:after { clear: b
 		</div>
 		*/ ?>
 		
+		<?php 
+		/*
+		$this->headScript()->appendScript("$(document).ready( function($){
+			$('#delete_start_btn').click( function(event){
+			event.preventDefault();
+			$.ajax({
+				url: '".$this->baseUrl( 'admin/programs/delete-programs/format/html')."',
+				data: $('#delete_programs').serialize(),
+				dataType: 'html',
+				beforeSend: function(){
+					$('#result').css({ 'background':'lightYellow' }).html(\"<h3>Происходит удаление программ</h3>\");
+					$('#result').after('<div id=\"progress\"></div>');
+				},
+				success: function(response){
+					$('#result').css({ \"background-color\":\"lightGreen\" }).html(response);
+					//window.clearInterval(polling);
+					$('#progress').hide();
+				},
+				error: function(XHR, textStatus, errorThrown){
+					$('#result').css({ \"background-color\":\"lightRed\" }).html(errorThrown);
+					//window.clearInterval(polling);
+				}
+			});
+			//return false;
+		});
+		});
+		 
+		");
+		*/
+		?>
+		
 		<div class="tab-pane" id="pane-delete-programs">
 			<h3>Удаление программ</h3>
 			<div>
 				<?php 
 				$cleanupForm = new ZendX_JQuery_Form();
-				$cleanupForm->setAction ( '' )
+				$cleanupForm->setAction ( $this->baseUrl('admin/programs/delete-programs/format/html'))
 					->setMethod ( 'post' )
 					->addAttribs ( array (
 						'id' => 'delete_programs' ) );
+				$cleanupForm->setDecorators(array(
+					'FormElements',
+					'Form', array(),
+				));
 					
 				$cleanPrograms = new Zend_Form_Element_Checkbox( 'delete-programs' );
 				$cleanPrograms->setLabel( 'Удалить программы' )
 					->setRequired()
 					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-programs'));
+				$decorators = array(
+					array('ViewHelper'),
+					array('Errors'),
+					array('Label', array( 'tag' => null )));
+				$cleanPrograms->setDecorators($decorators);
 				
 				$cleanData = new Zend_Form_Element_Checkbox( 'delete-info' );
 				$cleanData->setLabel( 'Удалить свойства программ?' )
 					->setRequired()
 					->setAttribs(array('class'=>'checkbox', 'id'=>'delete-info'));
+				$decorators = array(
+						array('ViewHelper'),
+						array('Errors'),
+						array('Label', array( 'tag' => null )));
+				$cleanData->setDecorators($decorators);
 				
-				$button->setLabel( 'Старт' )->setAttribs(array( 'id'=>'delete_start_btn', 'class'=>'btn btn-primary' ));
+				$submit = new Zend_Form_Element_Submit('submit');
+				$submit->setLabel('Старт')
+					->setAttrib( 'class', 'btn btn-primary')
+					->setAttrib( 'id', 'delete_start_btn')
+					->setDecorators( $decorators)
+					->removeDecorator( 'HtmlTag', 'Label');
 				
 				$dateStart = new ZendX_JQuery_Form_Element_DatePicker( 'delete_start');
 				$dateStart->setLabel('Начальная дата');
 				$dateEnd = new ZendX_JQuery_Form_Element_DatePicker( 'delete_end');
 				$dateEnd->setLabel('Финальная дата');
-
-							
-					
-				$cleanupForm->addElements ( array($dateStart, $dateEnd, $cleanPrograms, $cleanData, $button) );
+				
+				$cleanupForm->addElements ( array($dateStart, $dateEnd, $cleanPrograms, $cleanData, $submit) );
 				echo $cleanupForm;
+				
 				?>
 			</div>
 		</div>

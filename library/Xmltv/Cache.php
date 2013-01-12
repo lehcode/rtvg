@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Cache.php,v 1.4 2012-12-27 17:00:43 developer Exp $
+ * @version $Id: Cache.php,v 1.5 2013-01-12 09:06:22 developer Exp $
  *
  */
 class Xmltv_Cache {
@@ -24,7 +24,7 @@ class Xmltv_Cache {
 	 * Sub-folder for data, relative to /cache
 	 * @var string
 	 */
-	private $_location='/cache';
+	private $_location='cache';
 	/**
 	 * Cache lifetime
 	 * @var int
@@ -40,7 +40,7 @@ class Xmltv_Cache {
 	    $this->_lifetime = isset($config['lifetime']) && !empty($config['lifetime']) ? 
 			(int)$config['lifetime'] : 86400;
 		$this->_location = isset($config['location']) && !empty($config['location']) ? 
-			ROOT_PATH.'/'.$this->_location.(string)$config['location'] : ROOT_PATH.'/cache' ;
+			ROOT_PATH.'/'.$this->_location.(string)$config['location'] : ROOT_PATH.'/'.$this->_location ;
 		$this->enabled  = (bool)Zend_Registry::get('site_config')->cache->system->get('enabled', false);
 		$this->_cache  = Zend_Cache::factory( 'Core', 'File', array(  
 			'lifetime' => $this->_lifetime,
@@ -125,7 +125,7 @@ class Xmltv_Cache {
 			throw new Zend_Cache_Exception("Не указан кэш-идентификатор", 500);
 		
 		if (!$sub_folder) 
-			throw new Zend_Cache_Exception("Не указана папка кэша", 500);
+			$sub_folder = $this->_location;
 		
 		if ($frontend!='Core') {
 			
@@ -142,8 +142,8 @@ class Xmltv_Cache {
 				'lifetime' => $this->_lifetime,
 				'automatic_serialization' => true ),
 				array( 'cache_dir' => $this->_location ) );
-			} catch (Exception $e) {
-				throw new Zend_Cache_Exception($e->getMessage(), $e->getCode(), $e);
+			} catch (Zend_Cache_Exception $e) {
+				throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 			}
 			
 			

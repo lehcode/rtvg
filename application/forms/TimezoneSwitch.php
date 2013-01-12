@@ -1,4 +1,12 @@
 <?php
+/**
+ * Изменяет часовой пояс при просмотре программы
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: TimezoneSwitch.php,v 1.2 2013-01-12 09:06:22 developer Exp $
+ *
+ */
 class Xmltv_Form_TimezoneSwitch extends Zend_Form
 {
 	
@@ -90,7 +98,7 @@ class Xmltv_Form_TimezoneSwitch extends Zend_Form
 				'FormElements',
 				'Form', array(
 					array('data'=>'HtmlTag'),
-					array('tag'=>'div', 'class'=>'timezone-wrap')
+					array('tag'=>'div', 'class'=>'timeswitch')
 				),
 			));
 					

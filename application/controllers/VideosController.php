@@ -4,64 +4,23 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.8 2013-01-02 05:07:49 developer Exp $
+ * @version $Id: VideosController.php,v 1.9 2013-01-12 09:06:22 developer Exp $
  *
  */
-class VideosController extends Zend_Controller_Action
+class VideosController extends Xmltv_Controller_Action
 {
 	
-	/**
-	 *
-	 * Validator
-	 * @var Xmltv_Controller_Action_Helper_RequestValidator
-	 */
-	protected $validator;
-	/**
-	 *
-	 * Input filtering plugin
-	 * @var Zend_Filter_Input
-	 */
-	protected $input;
-	
-	/**
-	 * Caching object
-	 * @var Xmltv_Cache
-	 */
-	protected $cache;
-	
-	/**
-	 * (non-PHPdoc)
-	 * @see Zend_Controller_Action::__call()
-	 */
-	public function __call ($method, $arguments) {
-		if (APPLICATION_ENV=='production') {
-			header( 'HTTP/1.0 404 Not Found' );
-			$this->_helper->layout->setLayout( 'error' );
-			$this->view->render();
-		}
-	}
-	
-	/**
-	 * (non-PHPdoc)
-	 * @see Zend_Controller_Action::init()
-	 */
-	public function init () {
-		
-		$this->view->setScriptPath( APPLICATION_PATH . '/views/scripts/' );
-		$this->validator = $this->_helper->getHelper('requestValidator');
-		$this->cache     = new Xmltv_Cache();
-	}
 	
 	/**
 	 * Index page
 	 * Redirect to video page
 	 */
 	public function indexAction () {
-	    
-	    if ($this->requestParamsValid()){
+		
+		if ($this->requestParamsValid()){
 			$this->_forward( 'show-video' );
-	    }
-	    
+		}
+		
 	}
 	
 	/**
@@ -71,22 +30,61 @@ class VideosController extends Zend_Controller_Action
 	 */
 	public function showVideoAction(){
 		
-		if ($this->requestParamsValid()){
+	    //var_dump($this->requestParamsValid());
+	    //die(__FILE__.': '.__LINE__);
+	    
+	   if ($this->requestParamsValid()){
 			
-			$youtube = new Xmltv_Youtube();
-			$videos  = new Xmltv_Model_Videos();
-			if ($video = $youtube->fetchVideo( Xmltv_Youtube::decodeRtvgId( $this->input->getEscaped('id')))){
-				$this->view->assign( 'main_video', $video );
-				//var_dump($video);
+			$this->view->assign( 'pageclass', 'show-video' );
+			$conf = Zend_Registry::get('site_config')->videos->video;
+			$ytConfig=array(
+				'max_results' => (int)$conf->get('max_results'),
+				'safe_search' => $conf->get('safe_search'),
+				'start_index' => (int)$conf->get('start_index'),
+			);
+			//var_dump($ytConfig);
+			$youtube	  = new Xmltv_Youtube($ytConfig);
+			$videosModel  = new Xmltv_Model_Videos();
+			$rtvgId = $this->input->getEscaped('id');
+			
+			if ($rtvgId) {
+				$ytId   = Xmltv_Youtube::decodeRtvgId( $rtvgId );
+				if ($this->cache->enabled){
+					$hash = Xmltv_Cache::getHash( $ytId);
+					$f = '/Youtube/Main';
+					if(($video = $this->cache->load($hash, 'Core', $f))===false){
+						$video = $youtube->fetchVideo( $ytId );
+						$this->cache->save($video, $hash, 'Core', $f);
+					}
+				} else {
+					$video = $youtube->fetchVideo( $ytId);
+				}
+				
+				if ( is_a( $video, 'Zend_Gdata_YouTube_VideoEntry')){
+					if (Xmltv_Model_Videos::isPorn( $video->getVideoTitle())) {
+						$this->_redirect('/', array('exit'=>true));
+					}
+					$this->view->assign( 'main_video', $video );
 					
-				$related = $youtube->fetchRelated( $video->getVideoId() );
-				$this->view->assign( 'related_videos', $related );
-				//var_dump($related->count());
-				
-				$this->view->assign( 'pageclass', 'show-video' );
-				//$this->view->assign( 'hide_sidebar', 'left' );
-				
+					if ($this->cache->enabled){
+						$hash = Xmltv_Cache::getHash( $ytId.'_related');
+						$f = '/Youtube/Main/Related';
+						if(($related = $this->cache->load($hash, 'Core', $f))===false){
+							$related = $youtube->fetchRelated( $ytId );
+							$this->cache->save($related, $hash, 'Core', $f);
+						}
+					} else {
+						$related = $youtube->fetchRelated( $ytId );
+					}
+					$this->view->assign( 'related_videos', $related );
+					
+				}
+			} else {
+				$this->view->assign( 'main_video', null );
+				$this->view->assign( 'related_videos', null );
 			}
+			//var_dump($video);
+			//var_dump($related->count());
 			
 			
 			/*
@@ -96,7 +94,7 @@ class VideosController extends Zend_Controller_Action
 			*/
 			$amt = (int)Zend_Registry::get('site_config')->topprograms->channellist->get('amount');
 			$top = $this->_helper->getHelper('Top');
-			if ($this->cache->enabled){
+			if ($this->cache->enabled && (parent::$nocache !== true)){
 				$f = '/Listings/Programs';
 				$hash = Xmltv_Cache::getHash('top'.$amt);
 				if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
@@ -111,44 +109,15 @@ class VideosController extends Zend_Controller_Action
 			//die(__FILE__.': '.__LINE__);
 			$this->view->assign('top_programs', $topPrograms);
 			
-			/*
-			 * ######################################################
-			* Related videos
-			* (1)Right sidebar videos
-			* ######################################################
-			*/
-			$vc = Zend_Registry::get('site_config')->videos->sidebar->right;
-			$max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
-			$ytConfig = array(
-					'order'=>$vc->get('order', 'relevance'),
-					'max_results'=>(int)$vc->get('max_results', $max),
-					//'operator'=>$vc->get('operator', '|'),
-					//'start_index'=>$vc->get('start_index', 1),
-					//'safe_search'=>$vc->get('safe_search', 'none'),
-					'language'=>'ru',
-			);
-			 
-			if ($this->cache->enabled){
-				$hash = Xmltv_Cache::getHash('sidebar_'.$channel->ch_id);
-				$f = '/Youtube/SidebarRight';
-				if (($videos = $this->cache->load($hash, 'Core', $f))===false) {
-					$videos = $this->_fetchSidebarVideos( 'тв '.$channel->title, null, $ytConfig);
-					$this->cache->save($videos, $hash, 'Core', $f);
-				}
-			} else {
-				$videos = $this->_fetchSidebarVideos( 'тв '.$channel->title, null, $ytConfig);
-			}
-			//var_dump($videos);
-			//die(__FILE__.': '.__LINE__);
-			$this->view->assign('sidebar_videos', $videos);
-			
 		}
 		
 		
 		
 	}
 	
-	
+	/**
+	 * @deprecated
+	 */
 	public function showVideoCompatAction(){
 		
 		if ($this->requestParamsValid()) {  
@@ -182,40 +151,6 @@ class VideosController extends Zend_Controller_Action
 			exit("Неверные данные");
 		}
 				
-	}
-	
-	/**
-	 * Validate nad filter request parameters
-	 *
-	 * @throws Zend_Exception
-	 * @throws Zend_Controller_Action_Exception
-	 * @return boolean
-	 */
-	protected function requestParamsValid(){
-		 
-		// Validation routines
-		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
-		if ($this->input===false) {
-			if (APPLICATION_ENV=='development'){
-				var_dump($this->_getAllParams());
-				die(__FILE__.': '.__LINE__);
-			} elseif(APPLICATION_ENV!='production'){
-				throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
-			}
-			$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
-			 
-		} else {
-			 
-			foreach ($this->_getAllParams() as $k=>$v){
-				if (!$this->input->isValid($k)) {
-					throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
-				}
-			}
-		  
-			return true;
-		  
-		}
-		 
 	}
 	
 	

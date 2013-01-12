@@ -1,4 +1,13 @@
 <?php
+/**
+ * Login form
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: Login.php,v 1.2 2013-01-12 09:06:22 developer Exp $
+ * @todo login form
+ *
+ */
 class Xmltv_Form_Login extends Zend_Form
 {
 	

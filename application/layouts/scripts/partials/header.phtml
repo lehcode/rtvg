@@ -1,14 +1,22 @@
 <?php
 /**
- * 
+ * Чердак страницы
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: header.phtml,v 1.5 2013-01-12 09:06:22 developer Exp $
+ *
  */
+
+
+$this->inlineScript()
+	->appendScript('VK.Widgets.Like("vk_like", {type: "button", verb: 1, height: 18});');
+$form = new Xmltv_Form_Login();
 ?>
-<?php
-//var_dump($this->pageclass);
-?>
-<div class="navbar span12">
-	<div class="navbar-inner">
-		<div class="container">
+
+<div class="row">
+	<div class="navbar span6">
+		<div class="navbar-inner">
 			<ul class="nav">
 				<li><a href="<?php echo $this->url(array(), 'default_channels_list') ?>">Каналы</a></li>
 				<li><a href="<?php echo $this->url(array(), 'default_series_week') ?>">Сериалы</a></li>
@@ -16,10 +24,6 @@
 				<li><a href="<?php echo $this->url(array(), 'default_persons_actors') ?>">Актеры</a></li>
 				<li><a href="<?php echo $this->url(array(), 'default_rumors_recent') ?>">Новости</a></li>
 				<li class="divider-vertical"></li>
-				<li>
-					<div id="vk_like"></div>
-					<script type="text/javascript">VK.Widgets.Like("vk_like", {type: "mini", height: 24});</script>
-				</li>
 				<?php /*
 				<li>
 					<a href="javascript:void(0);" id="vklogin" class="vklogin" title="Нажмите чтобы войти через vkontakte"><img src="/images/forms/vklogin.png" alt="Войти vkontakte" /></a>
@@ -28,24 +32,54 @@
 			</ul>
 		</div>
 	</div>
-	<?php 
-	//$form = new Xmltv_Form_Login(array('form_class'=>'vhodwrap pull-left')); echo $form;
-	//$this->view->headStyle()->appendStyle($formCss)
-	//	->appendStyle($vkcss); 
-	?>
+	
+	<div class="span3">
+		<div id="vk_like"></div>
+	</div>
+	
+	<?php /*
+	<div class="span3">
+		<?php //echo $form; ?>
+	</div> */ ?>
+	
 </div>
 
+
+<?php 
+if (Zend_Controller_Front::getInstance()->getRequest()->getControllerName()=='listings') {
+?>
+<div class="span12">
+	<div class="class728x90">
+		<script type="text/javascript">
+			<!--
+			google_ad_client = "ca-pub-1744616629400880";
+			/* rutvgid 728x90 */
+			google_ad_slot = "1129010590";
+			google_ad_width = 728;
+			google_ad_height = 90;
+			//-->
+		</script>
+		<script type="text/javascript"
+		src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+		</script>
+	</div>
+</div>
+<?php 
+} else {
+    ?>
 <div class="brand span12">
 	<?php $tag = 'p'; if ($this->pageclass=='allchannels') $tag='h1'; ?>
 	<<?php echo $tag ?>>Rutvgid.ru :: <a href="<?php echo $this->url(array(), 'default_frontpage_index'); ?>" title="Телепрограмма на все телеканалы">Программа передач телеканалов России, Украины и СНГ.</a><br />
 	Онлайн-видео на любой вкус</<?php echo $tag ?>>
 </div>
+    <?php 
+}
+?>
 
-<div>
-	<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
+<div class="span12" id="gcse-results">
+	<gcse:searchresults></gcse:searchresults> 
 </div>
 
-<div class="span12" style="height:0; min-height: 0;">
-	<!-- Place this tag where you want the search results to render -->
-	<gcse:searchresults></gcse:searchresults> 
+<div class="span12">
+	<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
 </div>

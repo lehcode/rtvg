@@ -1,4 +1,12 @@
 <?php
+/**
+ * Upload form for admin backend
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: UploadForm.php,v 1.2 2013-01-12 09:06:22 developer Exp $
+ *
+ */
 class Xmltv_Form_UploadForm extends Zend_Form
 {
     public function __construct($options = null)

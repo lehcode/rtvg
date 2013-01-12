@@ -4,22 +4,20 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.20 2013-01-02 16:58:27 developer Exp $
+ * @version $Id: layout.phtml,v 1.21 2013-01-12 09:06:22 developer Exp $
  *
  */
 
 $this->headMeta()
 	->prependHttpEquiv('Content-Type', 'text/html;charset=utf-8');
 
-//$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/base.less')), 'APPEND');
 $this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND');
 $this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/animations.css')), 'APPEND');
 $this->headLink()
 	->prependStylesheet( $this->baseUrl('css/base.css'))
-	->prependStylesheet( 'http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css')
-	->appendStylesheet($this->baseUrl('css/fonts.css'))
+	->appendStylesheet( $this->baseUrl('css/fonts.css'))
 	->prependStylesheet( $this->baseUrl('css/animations.css'))
-	->appendStylesheet($this->baseUrl('js/tip/jquery.tooltip.css'));
+	->appendStylesheet( $this->baseUrl('js/tip/jquery.tooltip.css'));
 
 /*
  * Check browser
@@ -49,9 +47,11 @@ $this->headScript()
 	//->prependFile($this->baseUrl('js/forms/vklogin.js'))
 	->prependFile($this->baseUrl('js/bootstrap.js'))
 	->appendFile('http://yandex.st/share/share.js' )
-	->appendFile('http://userapi.com/js/api/openapi.js?50' )
-	//->appendFile('https://www.google.com/jsapi' )
-	->appendScript( 'VK.init({ apiId: 2963750, onlyWidgets: true});
+	->appendFile('//vk.com/js/api/openapi.js?75' );
+
+$this->inlineScript()
+	->appendScript( 'VK.init({apiId: 2963750, onlyWidgets: true});
+	VK.Widgets.Group("vk_groups", {mode: 0, width: "350", height: "290" }, 27716041);
 	jQuery(document).ready(function(){ 
 		$("#footer .counter_logo").css({ display: "none" }); 
 		if  ($("#col_r .da_adp_links")) { $("#col_r .da_adp_links").css({ display: "none" }); }

@@ -86,38 +86,45 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 		return (int)$result[0]->amount;
     }
 
-    public function deleteProgramsWithInfo(Zend_Date $start, Zend_Date $end){
+    public function deleteProgramsLinked($start=null, $end=null){
     	
-    	$props = new Admin_Model_DbTable_ProgramsProps();
-    	$descs = new Admin_Model_DbTable_ProgramsDescriptions();
-    	$ratings = new Zend_Db_Table(array('name'=>'rtvg_programs_ratings'));
-    	
-    	//var_dump($ratings->fetchAll());
-    	//die(__FILE__.': '.__LINE__);
-    	
-    	$programs = $this->fetchAll(array(
-    		"`start`>='".$start->toString('yyyy-MM-dd')." 00:00:00'",
-			"`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'"
-    	));
-    	foreach ($programs as $item) {
-    		
-    		if ($f = $descs->find($item['hash']))
-    		$descs->delete("`hash`='".$item['hash']."'");
-    		
-    		if ($p = $props->find($item['hash']))
-    		$props->delete("`hash`='".$item['hash']."'");
-    		
-    		if ($r = $ratings->find($item['alias']))
-    		$ratings->delete("`alias`='".$item['alias']."'");
-    		
-    		$this->delete("`hash`='".$item['hash']."'" );
-    		
-    		//var_dump($d->toArray());
-    		//die(__FILE__.': '.__LINE__);
-    		
-    	}
-    	
-    	//die(__FILE__.': '.__LINE__);
+        if ($start && $end) {
+            
+	    	$propsTable   = new Admin_Model_DbTable_ProgramsProps();
+	    	$descsTable   = new Admin_Model_DbTable_ProgramsDescriptions();
+	    	$ratingsTable = new Admin_Model_DbTable_ProgramsRatings();
+	    	$select = $this->_db->select()
+	    		->from(array('prog'=>$this->getName()), array('hash', 'alias'))
+	    		->where("`prog`.`start`>='$start' AND `prog`.`start` < '$end'");
+	    	
+	    	
+	    	//var_dump($select->assemble());
+	    	
+	    	$result = $this->_db->fetchAll($select);
+	    	
+	    	//var_dump($result);
+	    	//die(__FILE__.': '.__LINE__);
+	    	
+	    	foreach ($result as $item) {
+	    		
+	    		if ($descsTable->find($item->hash))
+	    			$descsTable->delete("`hash`='".$item->hash."'");
+	    		
+	    		if ($propsTable->find($item->hash))
+	    			$propsTable->delete("`hash`='".$item->hash."'");
+	    		
+	    		if ($ratingsTable->find($item->hash))
+	    			$ratingsTable->delete("`hash`='".$item->hash."'");
+	    		
+	    		$this->delete("`hash`='".$item->hash."'" );
+	    		
+	    		//var_dump($d->toArray());
+	    		//die(__FILE__.': '.__LINE__);
+	    		
+	    	}
+	    	
+	    	//die(__FILE__.': '.__LINE__);
+        }
     	
     }
     

@@ -5,7 +5,7 @@
  * @author  toshihir
  * @package rutvgid
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.16 2013-01-02 16:58:27 developer Exp $
+ * @version $Id: ImportController.php,v 1.17 2013-01-12 09:06:22 developer Exp $
  *
  */
 
@@ -24,7 +24,6 @@ class Admin_ImportController extends Zend_Controller_Action
 	 * Validator
 	 * @var Xmltv_Controller_Action_Helper_RequestValidator
 	 */
-	private $_validator;
 	private $_teleguideUrl='http://www.teleguide.info/download/new3/xmltv.xml.gz';
 	private $_xmlFolder;
 	
@@ -59,7 +58,6 @@ class Admin_ImportController extends Zend_Controller_Action
 		
 		$this->app_config  = Zend_Registry::get('app_config');
 		$this->site_config = Zend_Registry::get('site_config');
-		$this->_validator  = $this->_helper->getHelper('RequestValidator');
 		$this->_xmlFolder  = ROOT_PATH.'/uploads/parse/';
 		$this->validator = $this->_helper->getHelper('requestValidator');
 		
@@ -303,7 +301,7 @@ class Admin_ImportController extends Zend_Controller_Action
 			//Process program title and detect some properties
 			$title = $node->getElementsByTagName('title')
 				->item(0)->nodeValue;
-			$titles = $model->makeTitles($title);
+			$titles = $model->makeTitles( trim( $title, '. '));
 			//var_dump($title);
 			$prog['title'] = $titles['title'];
 			$prog['sub_title'] = $titles['sub_title'];
@@ -361,6 +359,7 @@ class Admin_ImportController extends Zend_Controller_Action
 				}
 				$desc['intro'] = $parseDesc['text'];
 			}
+			//die(__FILE__.': '.__LINE__);
 			//Channel
 			$prog['ch_id'] = (int)$node->getAttribute('channel');
 			
@@ -388,11 +387,12 @@ class Admin_ImportController extends Zend_Controller_Action
 				300006=>'религия',
 				300037=>'музыка',
 			);
+			
 			if (!isset($prog['category']) && $category) {
 				if (array_key_exists($prog['ch_id'], $fixCats)){
-					$prog['category'] = $model->getProgramCategory($fixCats[$prog['ch_id']]);
+					$prog['category'] = $model->getProgramCategory( $fixCats[$prog['ch_id']]);
 				} else {
-					$prog['category'] = $model->getProgramCategory($category, $desc['intro']);
+					$prog['category'] = $model->getProgramCategory( $category, $desc['intro']);
 				}
 				
 			}
@@ -411,16 +411,14 @@ class Admin_ImportController extends Zend_Controller_Action
 			
 			$prog['alias'] = $desc['alias'] = $props['alias'] = $model->makeAlias($prog['title']);
 			
-			
-			
 			//debug breakpoint
-			/* if ($i<50){
-				var_dump($prog);
-				var_dump($props);
-				var_dump($desc);
-			} else {
-				die(__FILE__.': '.__LINE__);
-			} */
+			 //if ($i<50){
+			//	var_dump($prog);
+			//	var_dump($props);
+			//	var_dump($desc);
+			//} else {
+			//	die(__FILE__.': '.__LINE__);
+			//} 
 			
 			// Fix wrong age rating
 			$model->saveProgram($prog);
@@ -440,7 +438,7 @@ class Admin_ImportController extends Zend_Controller_Action
 				$model->saveProps($props);
 			}
 			//die(__FILE__.': '.__LINE__);
-			
+			//die(__FILE__.': '.__LINE__);
 			$i++;
 			
 		}		
@@ -448,7 +446,6 @@ class Admin_ImportController extends Zend_Controller_Action
 		$response['success'] = true;
 		$this->view->assign( 'response', $response );
 		system( 'mv '.$xml_file.' '.$xml_file.'.processed' );
-		unlink( $xml_file );
 			
 		
 	}

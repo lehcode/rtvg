@@ -1,10 +1,11 @@
 <?php
 /**
  * 
- * Helper class
+ * Week date calculations functions
+ * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: WeekDays.php,v 1.6 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: WeekDays.php,v 1.7 2013-01-12 09:06:22 developer Exp $
  *
  */
 class Xmltv_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {

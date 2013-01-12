@@ -1,23 +1,32 @@
 SetEnv APPLICATION_ENV development
 
-php_value memory_limit 256M
+#php_value error_reporting 0
+#php_flag display_errors off
 #php_value error_reporting 30711
 #php_flag display_errors on
+#php_value memory_limit 256M
+
+#AuthUserFile /home/web/.htpasswd
+#AuthName "Administration"
+#AuthType Basic
+#require user egeshi
 
 <ifModule mod_expires.c>
 ExpiresActive On
 ExpiresDefault A86400
 ExpiresByType image/x-icon A2592000
 ExpiresByType application/x-javascript A2592000
+ExpiresByType stylesheet/less A2592000
+ExpiresByType stylesheet/css A2592000
 ExpiresByType text/css A2592000
 ExpiresByType image/gif A604800
 ExpiresByType image/png A604800
 ExpiresByType image/jpeg A604800
-ExpiresByType text/plain A604800
+#ExpiresByType text/plain A604800
 ExpiresByType application/x-shockwave-flash A604800
 ExpiresByType video/x-flv A604800
 ExpiresByType application/pdf A604800
-ExpiresByType text/html A900
+#ExpiresByType text/html A900
 </ifModule>
 
 RewriteEngine On
@@ -26,13 +35,18 @@ RewriteBase /
 
 #RewriteCond %{HTTP_HOST} !^rutvgid\.ru [NC]
 #RewriteCond %{SERVER_PORT} 80
-#RewriteRule ^(.*)$ http://rutvgid.ru/$1 [R,QSA,L]
+#RewriteRule ^(.*)$ http://rutvgid.ru/$1 [R=301,QSA,L]
 
-RewriteRule ^каналы/новости$ /каналы/информационные [R=301,L]
-RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]
-RewriteRule ^телепрограмма/лад-беларусь(.*)$ /телепрограмма/беларусь-2$1 [R=301,L]
-RewriteRule ^телепрограмма/jetix(.*)$ /телепрограмма [R=301,L]
+#RewriteCond %{HTTP_USER_AGENT} bingbot [NC,OR]
+#RewriteCond %{HTTP_USER_AGENT} msnbot [NC,OR]
+#RewriteCond %{HTTP_USER_AGENT} AhrefsBot [NC,OR]
+#RewriteCond %{HTTP_USER_AGENT} bingbot [NC,OR]
+RewriteCond %{HTTP_USER_AGENT} Baiduspider [NC]
+RewriteCond %{REQUEST_URI} телепрограмма [NC]
+RewriteRule ^(.*)$ http://rutvgid.ru/ [R=301,QSA,L]
 
+
+RewriteCond %{REQUEST_URI} -$ [OR,NC]
 RewriteCond %{REQUEST_URI} ^.+3D$ [OR,NC]
 RewriteCond %{QUERY_STRING} id=.+3D$ [OR,NC]
 RewriteCond %{QUERY_STRING} date [OR,NC]
@@ -41,10 +55,22 @@ RewriteCond %{QUERY_STRING} start [OR,NC]
 RewriteCond %{QUERY_STRING} layout
 RewriteRule .* /телепрограмма? [R=301,l]
 
+RewriteRule ^каналы/новости$ /каналы/информационные [R=301,L]
+RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]
+RewriteRule ^телепрограмма/лад-беларусь(.*)$ /телепрограмма/беларусь-2$1 [R=301,L]
+RewriteRule ^телепрограмма/jetix(.*)$ /телепрограмма [R=301,L]
+RewriteRule ^телепрограмма/первый-канал-снг(.*)$ /телепрограмма/первый-канал$1 [R=301,L]
+
+
 RewriteCond %{REQUEST_FILENAME} -s [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^.*$ - [NC,L]
 RewriteRule ^.*$ index.php [NC,L]
+
+
+
+
+
 
 

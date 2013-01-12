@@ -1,4 +1,12 @@
 <?php
+/**
+ * Frontend videos controller
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: FastChannelSearchForm.php,v 1.5 2013-01-12 09:06:22 developer Exp $
+ * @deprecated
+ */
 class Xmltv_Form_FastChannelSearchForm extends Zend_Form
 {
 	

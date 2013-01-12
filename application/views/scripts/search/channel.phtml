@@ -1,0 +1,59 @@
+<?php
+//META title
+$this->headMeta()
+	->setName('title', sprintf ('Поиск'))
+	->setName('robots', 'noindex,follow' );
+
+//Browser window title
+$this->headTitle( 'Результаты поиска' );
+
+
+//var_dump($this->results);
+?>
+
+<div class="top-position">
+	<div class="module">
+		<?php 
+		$tip = "Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.";
+		if ($this->category) {
+		  $tip .=" Если канала нет в категории <i>".$this->category['title']."</i>, наберите его название или часть названия и нажмите Перейти.";  
+		} 
+		?>
+		<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
+		<?php echo new Xmltv_Form_TypeaheadForm(); ?>
+	</div>
+</div>
+
+<h1>Поиск по каналам</h1>
+
+<?php 
+foreach ($this->result as $r){
+    //var_dump($r);
+    ?>
+    <h3 class="channeltitle">
+    	<img src="<?php echo $this->baseUrl("images/channel_logo/".$r['icon']) ?>" />
+    	<a href="<?php echo $this->url( array('channel'=>$r['alias']), 'default_listings_day-listing') ?>">
+    		<?php echo $r['title']; ?>
+    	</a>
+    </h3>
+    
+    <p style="font-size: .9em;">
+    	<?php echo $this->truncateString(strip_tags($r['desc_intro']).' '.strip_tags($r['desc_body']), 30, 'words') ; ?>
+    	<a href="javascript:;">Больше про этот телеканал&hellip;</a>
+    </p>
+    
+    <p>
+    	
+    	<img src="<?php echo $this->baseUrl("images/categories/channels/".$r['category_icon']) ?>" />
+    	<a href="<?php echo $this->url( array('category'=>$r['category_alias']), 'default_channels_category' ) ?>">
+    		<?php printf('%s каналы', $r['category_title']) ?>
+    	</a>
+    	
+    	<?php if (!empty($r['url'])) : ?>
+    	<a href="<?php echo $r['url'] ?>" title="<?php printf( 'Официальный сайт канала %s', $r['title']) ?>"></a>
+    	<?php endif; ?>
+    	
+    </p>
+    <?php 
+}
+?>

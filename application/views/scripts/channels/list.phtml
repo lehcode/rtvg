@@ -5,96 +5,94 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: list.phtml,v 1.13 2013-01-02 16:58:27 developer Exp $
+ * @version $Id: list.phtml,v 1.14 2013-01-12 09:06:22 developer Exp $
  *
  */
 
-if (!$this->category) {
+$categoryTitle = null;
+$categoryAlias = null;
+
+if (isset($this->category) && $this->category!==null) {
+	$categoryTitle = $this->escape( $this->category['title'] );
+	$categoryAlias = $this->escape( $this->category['alias'] );
+	$this->headTitle( $this->category['title'].' телеканалы: передачи сегодня и на текущей неделе.' );
+	$this->headMeta()->setName('title', 'Телепрограмма '.$this->category['title'].' каналов');
+} else {
 	$this->headTitle( 'Программа всех каналов телевидения на сегодня и текущую неделю.' );
 	$this->headMeta()->setName('title', 'Телепрограмма всех каналов');
-} else {
-    $this->headTitle( $this->category['title'].' телеканалы: передачи сегодня и на текущей неделе.' );
-    $this->headMeta()->setName('title', 'Телепрограмма '.$this->category['title'].' каналов');
 }
 
+
+APPLICATION_ENV=='production' ? 
+	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.min.js')) : 
+	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.js'));
 
 /**
  * Load scripts
  */
 $this->headScript()
-	->prependScript("$(function(){
-		$('#fastsearch-wrap a').tooltip({
-			showURL: false
-		});});")
-	->prependFile( $this->baseUrl('js/channellist.js'));
+	->appendScript("$(function() { $('#fastsearch-wrap img').tooltip({ showURL: false });
+	$.getJSON( '/channels/typeahead/format/json/c/".$categoryAlias."', function(response) {
+		var typeahead_items = new Array();
+		$.each(response, function(key, val) { 
+			$.each(val, function(name, channel){  typeahead_items.push(channel.title); }); 
+		});
+		$('input[name=searchinput]').typeahead({ source:typeahead_items });
+		$('input[name=searchinput]').blur(function(){ 
+			if ($(this).val() != '') {
+				$('ul.typeahead li').click(function(){
+					$('.channeltitle').each(function(){
+						var r = new RegExp($('ul.typeahead li.active').attr('data-value'), 'i');
+						if (currentTitle = $(this).html().match(r)) {
+							$(\"html:not(:animated),body:not(:animated)\").animate({ scrollTop: $(this).offset().top }, 1000);
+							return false;
+						}
+					});
+				});
+			}
+		});
+		
+	});
+	$( '#channels' ).accordion({ autoHeight:false, navigation:true, clearStyle:true, icons: false });
 	
-
-$this->headStyle()
-	->appendStyle('p.channeltitle { margin: 0 0 12px; }
-	#fastsearch-wrap { width: 100%; float: none; }');
-
-
-if (APPLICATION_ENV=='development') {
-	$this->headScript()->appendFile( $this->baseUrl('js/tip/jquery.tooltip.js'));
-} else {
-	$this->headScript()->appendFile( $this->baseUrl('js/tip/jquery.tooltip.min.js'));
-}
+});");
 
 ?>
 
-
-<?php 
-/*
-if (!$this->category) {
-	?>
-<div id="fastsearch-wrap">
-	<label for="channel_filter" class="mediumheading">Быстрый переход</label>
-	<input type="text" name="fast_search" data-provide="typeahead" />
-	<a href="#" title="Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.">
-		<img src="/images/icons/tip-12x12.gif" />
-	</a>
-</div>
-	<?php 
-} else {
-	?>
+ 
 <div id="fastsearch-wrap">
 	<?php 
-	$form = new Xmltv_Form_FastChannelSearchForm(); 
+	$tip = "Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.";
+	if ($this->category) {
+	  $tip .=" Если канала нет в категории <i>".$categoryTitle."</i>, наберите его название или часть названия и нажмите Перейти.";  
+	} 
+	?>
+	<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
+	<?php 
+	$form = new Xmltv_Form_TypeaheadForm(); 
 	echo $form; 
 	?>
-	<a href="#" title="Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу. Если этого не произошло, значит канал находится в другом разделе. Просто нажмите кнопку Перейти.">
-		<img src="/images/icons/tip-12x12.gif" />
-	</a>
 </div>
-	<?php 
-} 
-*/ ?>
+
 
 	
-<?php if (isset($this->category) && $this->category!==null): ?>
-<?php //var_dump($this->category) ?>
-<h2>
-	<?php /*img src="<?php echo $this->baseUrl('images/categories/channels/'.$this->escape( $this->category['image']) ); ?>" />*/ ?>
-	<?php echo $this->category['title']; ?> каналы
-</h2>
-<?php endif; ?>
+<?php 
+if ( isset($this->category) && $this->category!==null) {
+	//img src="$this->baseUrl('images/categories/channels/'.$this->escape( $this->category['image']) ); " />
+	echo '<h2>'.$categoryTitle.' каналы'.'</h2>';
+	printf('<p class="label label-info">Телеканалы в категории «%s»: %d</p>', $categoryTitle, count($this->channels)) ;
+} else {
+	echo '<h2>Все каналы</h2>';
+	printf('<p class="label label-info">Всего %d</p>', count($this->channels)) ;
+} ?>
 
-<?php if (isset($this->category) && $this->category!==null): ?>
-<p class="label label-info">
-	<?php echo count($this->channels); ?> телеканала в категории <?php echo $this->escape( '«'.$this->category['title'].'»' ) ?>
-</p>
-<?php else: ?>
-<p class="label label-info">
-	Всего <?php echo count($this->channels); ?>
-</p>
-<?php endif; ?>
 
 
 <div id="channels">
 
 	<?php
 	foreach ($this->channels as $channel) { 
-		$id    = $channel['ch_id'];
+		$id	= $channel['ch_id'];
 		$title = $channel['title'];
 		$alias = $channel['alias'];
 		$icon  = $channel['icon'];
@@ -109,10 +107,10 @@ if (!$this->category) {
 	</h3>
 	
 	<div class="channeldesc">
-		<a class="label label-important" 
+		<a class="label" 
 			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_listings_day-listing'); ?>" 
 			title="<?php printf('Телепрограмма канала %s на сегодня', $title) ?>">
-			Программа на сегодня
+			<?php printf('Передачи %s сегодня', $channel['title']) ?>
 		</a>
 		<a class="label label-info" 
 			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_channels_channel-week'); ?>" 
