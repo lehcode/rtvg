@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.22 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Programs.php,v 1.23 2013-01-19 10:11:13 developer Exp $
  */
 
 class Admin_Model_Programs 
@@ -1269,7 +1269,7 @@ class Admin_Model_Programs
 	    		if ( array_key_exists( $key, $this->countriesList)){
 	    			$result['country'][] = $this->countriesList[$key];
 	    		} else {
-	    			if (APPLICATION_ENV=='development' || isset($_GET['XDEBUG_PROFILE'])){
+	    			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
 	    				var_dump($country);
 	    				die(__FILE__.': '.__LINE__);
 	    			}
@@ -1282,7 +1282,7 @@ class Admin_Model_Programs
 	    	if ( array_key_exists( $country, $this->countriesList)){
 	    		return $this->countriesList[$country];
 	    	} else {
-	    		if (APPLICATION_ENV=='development' || isset($_GET['XDEBUG_PROFILE'])){
+	    		if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
 	    			var_dump($country);
 	    			die(__FILE__.': '.__LINE__);
 	    		}

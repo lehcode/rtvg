@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-right.phtml,v 1.4 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: sidebar-right.phtml,v 1.5 2013-01-19 10:11:13 developer Exp $
  *
  */
 ?>
@@ -106,16 +106,30 @@ if (count($this->videos)>0 && $this->videos!==true) {
 
 
 <?php 
-if (@!in_array($this->channel->category, $this->kids_channels)) {
-	$this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').css({ display: 'block' }); });");
+
+$this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').css({ display: 'block' }); });");
 ?>
 <div class="module" id="rumor-ads">
-	<?php /*<h4 class="mediumheading">Желтая пресса</h4>*/ ?>
+	<h4 class="mediumheading">Желтая пресса</h4>
 	<div class="content" id="DIV_DA_85753"></div>
 </div>
-<?php 
-} ?>
 
+
+<?php 
+/*
+$this->headScript()
+	->appendFile( $this->baseUrl('js/tmedia.js'));
+$this->inlineScript()
+	->appendScript("$(document).ready(function(){ $('#tmedia').css({ display: 'block' }); });"); 
+?>
+<div class="module" id="tmedia">
+	<script type="text/javascript">
+	var tm_adsblock=6873;
+	var tm_site_id=5630;
+	</script>
+	<script type="text/javascript" src="http://tm.rutvgid.ru/main.html"></script>
+</div>
+*/ ?>
 
 
 <div class="module">
@@ -124,7 +138,7 @@ if (@!in_array($this->channel->category, $this->kids_channels)) {
 </div>
 
 
-
+<?php /*
 <div class="module" style="width: 240px; margin: 0 auto;">
 	<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,28,0" width="240" height="400">
 	<param name="movie" value="http://invest-system.net/banners/invest2_240x400.swf" />
@@ -135,6 +149,4 @@ if (@!in_array($this->channel->category, $this->kids_channels)) {
 	</embed>
 	</object>
 </div>
-
-
-
+*/ ?>

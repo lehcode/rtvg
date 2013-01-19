@@ -1,7 +1,15 @@
 <?php 
 class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     
+    /**
+     * Table name
+     * @var string
+     */
     protected $_name = '';
+    /**
+     * Table prefix
+     * @var string
+     */
     protected $_pfx = '';
     
     const FETCH_MODE = Zend_Db::FETCH_OBJ;
@@ -37,6 +45,21 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      */
     public function setName($string=null) {
     	$this->_name = $string;
+    }
+    
+    /**
+     * Debug select statement
+     * @param Zend_Db_Table_Select $select
+     */
+    protected function debugSelect( Zend_Db_Table_Select $select, $method=__METHOD__){
+        
+        echo '<b>'.$method.'</b><br />';
+        try {
+           echo '<pre>'.$select->assemble().'</pre>';
+        } catch (Zend_Db_Table_Select_Exception $e) {
+            throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+        }
+        
     }
     
 }

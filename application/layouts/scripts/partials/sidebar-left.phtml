@@ -4,51 +4,24 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-left.phtml,v 1.4 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: sidebar-left.phtml,v 1.5 2013-01-19 10:11:13 developer Exp $
  *
  */
 ?>
 
+<?php /*
 <div class="module" style="width: 100px; margin: 0 auto;">
 	<script type="text/javascript">
 		document.write("<scr"+"ipt type='text/javascript' src='http://elephant.fotostrana.ru/get?adv_id=43583&ref_id=819849633&format=js&gid=1&place=100x100_tz&cache="+Math.random()+"'></scr"+"ipt>"); 
 	</script>
 </div>
+*/ ?>
 
 <?php /*
 <div class="module">
 	<iframe srec="http://www.ad.admitad.com/shuffle/db5838b6b8/"></iframe>
 </div>
 */ ?>
-
-<?php
-/*
- * Channels categories block
- */ 
-if (isset($this->cats)) {
-    ?>
-<div class="module">
-	<h4>Каналы</h4>
-	<ul id="channels_categories" class="nav nav-list">
-	<?php 
-	foreach ($this->cats as $c) {
-		$catAlias = $this->escape( $c['alias'] );
-		$catTitle = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
-		?>
-		<li>
-			<a href="<?php echo $this->url(array('category'=>$catAlias), 'default_channels_category' ) ?>" title="<?php echo $catTitle ?> телеканалы">
-				<img class="icon" src="/images/categories/channels/<?php echo $this->escape( $c['image'] ) ?>" />
-				<?php echo $catTitle ?>
-			</a>
-		</li>		
-		<?php 
-	}
-	?>
-	</ul>
-</div>	
-	<?php 
-}
-?>
 
 
 <?php 
@@ -71,7 +44,10 @@ if (isset($this->top_programs)) {
 				'channel'=>$p['channel_alias'],
 				'alias'=>$p['prog_alias'],
 			), 'default_listings_program-week'); ?>"
-			title="<?php echo $p['prog_title'] ?> на канале <?php echo $p['channel_title'] ?> этой неделе "><?php echo $this->truncateString( $p['prog_title'], 3, 'words') ?></a>
+			title="<?php $this->escape( sprintf("«%s» на канале %s на этой неделе", $p['prog_title'], $p['channel_title'])) ?>"
+			target="_blank">
+				<?php echo $this->truncateString( $p['prog_title'], 3, 'words') ?>
+			</a>
 		</li>
 			<?php 
 		}
@@ -81,3 +57,39 @@ if (isset($this->top_programs)) {
 	<?php 
 }
 ?>
+
+
+
+<?php
+/*
+ * Channels categories block
+ */ 
+if (isset($this->cats)) {
+    ?>
+<div class="module">
+	<h4>Каналы</h4>
+	<ul id="channels_categories" class="nav nav-list">
+	<?php 
+	foreach ($this->cats as $c) {
+		$catAlias = $this->escape( $c['alias'] );
+		$catTitle = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
+		?>
+		<li>
+			<a href="<?php echo $this->url(array('category'=>$catAlias), 'default_channels_category' ) ?>" 
+				title="<?php printf ("%s телеканалы", $catTitle) ?>"
+				target="_blank">
+				<img src="/images/categories/channels/<?php echo $this->escape( $c['image'] ) ?>" 
+					class="icon" />
+				<?php echo $catTitle ?>
+			</a>
+		</li>		
+		<?php 
+	}
+	?>
+	</ul>
+</div>	
+	<?php 
+}
+?>
+
+

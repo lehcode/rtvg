@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.15 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.16 2013-01-19 10:11:14 developer Exp $
  *
  */
 
@@ -16,7 +16,7 @@ $this->headScript()
 	->appendFile($this->baseUrl()."/js/listing-day.js")
 	->appendScript("$('.top-position img').tooltip({ showURL: false });
 	$('.carousel').carousel('pause');
-	$(document).ready(function($){
+	$(document).ready(function(){
 		$.ajax({ url: '/channels/new-comments/channel/".$this->escape($this->channel->alias)."/format/html',
 			dataType: 'html', success: function(html){ $(html).insertAfter($('#comments h3')); }
 		});

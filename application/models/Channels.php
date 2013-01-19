@@ -2,14 +2,14 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.12 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Channels.php,v 1.13 2013-01-19 10:11:13 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
 
     public function __construct($config=array()){
         
-        $config['db']= Zend_Registry::get('app_config')->resources->multidb->local;
+        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
         parent::__construct($config);
         
         $this->table = new Xmltv_Model_DbTable_Channels();
@@ -22,7 +22,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function getPublished(){
 		
-		$rows = $this->table->fetchAll("`published`='1'", 'title ASC');
+	    $rows = $this->channelsTable->fetchAll("`published`='1'", 'title ASC');
 		$view = new Zend_View();
 		foreach ($rows as $row) {
 			$row->icon = $view->baseUrl('images/channel_logo/'.$row->icon);
@@ -63,10 +63,12 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'category_alias'=>'LOWER(`cat`.`alias`)',
 				'category_image'=>'cat.image')
 			);
-		
-		//var_dump($select->assemble());
-		//var_dump($this->db);
-		//die(__FILE__.': '.__LINE__);
+	    
+	    // Breakpoint
+	    if (APPLICATION_ENV=='development'){
+	        $this->debugSelect($select, __METHOD__);
+	        //die(__FILE__.': '.__LINE__);
+	    }
 		
 		$result = $this->db->fetchRow( $select, null, Zend_Db::FETCH_OBJ );
 		if ($result){
@@ -76,8 +78,11 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 			$result->adult     = (bool)$result->adult;
 		}
 		
-		//var_dump($result);
-		//die(__FILE__.': '.__LINE__);	
+		// Breakpoint
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);	
+		}
 
 		return $result;
 		

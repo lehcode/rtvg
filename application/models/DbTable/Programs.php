@@ -3,68 +3,22 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.12 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Programs.php,v 1.13 2013-01-19 10:11:13 developer Exp $
  *
  */
-class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
+class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 {
 
 	protected $_name = 'programs';
-	protected $_pfx = '';
 
-	const FETCH_MODE = Zend_Db::FETCH_OBJ;
-	const ERR_PARAMETER_MISSING = "Пропущен параметр!";
-
+	/**
+	 * Constructor
+	 * 
+	 * @param array $config
+	 */
 	public function __construct ($config = array()) {
 
 		parent::__construct(array('name'=>$this->_name));
-		
-		if (isset($config['tbl_prefix'])) {
-			$this->_pfx = (string)$config['tbl_prefix'];
-		} else {
-			$this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
-		} 
-		$this->setName($this->_pfx.$this->_name);
-		
-	}
-
-	/**
-	 * 
-	 * Enter description here ...
-	 * @param  array $program_alias
-	 * @throws Zend_Exception
-	 */
-	public function fetchSimilarProgramsThisWeek($program_alias=array(), Zend_Date $start, Zend_Date $end){
-		
-	    $parts = explode('-', $program_alias);
-	    foreach ($parts as $a){
-	        $pieces[]=" `prog`.`alias` LIKE '%$a%'";
-	    }
-	    $like = implode(' OR ', $pieces);
-	    
-	    $select = $this->_db->select()
-			->from(array( 'prog'=>$this->_pfx.'programs'), '*')
-			->joinLeft(array( 'prop'=>$this->_pfx.'programs_props' ), "`prog`.`hash`=`prop`.`hash`", array('actors', 'directors', 'premiere', 'live'))
-			->joinLeft(array('desc'=>$this->_pfx.'programs_descriptions' ), "`prog`.`hash`=`desc`.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
-			->joinLeft(array('ch'=>$this->_pfx.'channels' ), "`prog`.`ch_id`=`ch`.`ch_id`", array(
-				'channel_title'=>'title',
-				'channel_alias'=>'LOWER(`ch`.`alias`)',
-				'channel_icon'=>'ch.icon'));
-		
-		$select
-			->where( $like )
-			->where( "`prog`.`start` > '".$start->toString('yyyy-MM-dd HH:mm:00')."'" )
-			->where( "`prog`.`start` < '".$end->toString('yyyy-MM-dd 23:59:59')."'" )
-			->where( "`ch`.`published` = '1'" )
-			->order( array("prog.start DESC", "prog.ch_id ASC"));	
-
-		if (APPLICATION_ENV=='development'){
-			var_dump($select->assemble());
-			//die(__FILE__.': '.__LINE__);
-		}
-			
-		$result = $this->_db->fetchAll($select);
-		return $result;
 		
 	}
 	
@@ -223,51 +177,7 @@ class Xmltv_Model_DbTable_Programs extends Zend_Db_Table_Abstract
 		
 	}
 	
-	public function fetchProgramThisWeek($program_alias=null, $channel_id=null, Zend_Date $start, Zend_Date $end){
-		
-		/**
-		 * @var Zend_Db_Select
-		 */
-		$select = $this->_db->select()
-			->from(array( 'prog'=>'rtvg_programs'), '*')
-			->joinLeft( array( 'prop'=>$this->_pfx.'programs_props' ), "`prog`.`hash`=`prop`.`hash`", array('actors', 'directors', 'premiere', 'live'))
-			->joinLeft( array( 'desc'=>$this->_pfx.'programs_descriptions' ), "`prog`.`hash`=`desc`.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
-			->joinLeft( array('ch'=>$this->_pfx.'channels' ), "`prog`.`ch_id`=`ch`.`ch_id`", array('channel_title'=>'title', 'channel_alias'=>'LOWER(`ch`.`alias`)'))
-			->where( "`prog`.`alias` LIKE '$program_alias'")
-			->where( "`prog`.`start` >= '".$start->toString('yyyy-MM-dd 00:00:00')."'")
-			->where( "`prog`.`start` < '".$end->toString('yyyy-MM-dd 00:00:00')."'")
-			->where( "`prog`.`ch_id` = '$channel_id'")
-			->order( "prog.start DESC" );
-		
-		//var_dump($select->assemble());
-		//die(__FILE__.': '.__LINE__);	
-			
-		try {
-			$result = $this->_db->fetchAll($select);
-		} catch (Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-		}
-		
-		
-		
-		
-		return $result;
-		
-	}
 	
-	/**
-	 * @return string
-	 */
-	public function getName() {
-		return $this->_name;
-	}
-
-	/**
-	 * @param string $string
-	 */
-	public function setName($string=null) {
-		$this->_name = $string;
-	}
 
 }
 

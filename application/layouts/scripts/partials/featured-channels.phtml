@@ -4,16 +4,32 @@
  * Featured channels block partial script
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: featured-channels.phtml,v 1.2 2012-12-27 17:04:37 developer Exp $
+ * @version $Id: featured-channels.phtml,v 1.3 2013-01-19 10:11:13 developer Exp $
  */
-$config = new Zend_Config_Ini(APPLICATION_PATH . '/configs/site.ini', APPLICATION_ENV);
-$config = $config->featured->channels;
-$order  = $config->get('order', 'ch_id')=='ch_id' ? 'ch_id' : 'title' ;
-$cols   = (int)$config->get('cols', 4);
-$total  = (int)$config->get('amount', 20);
-$colW   = floor((100-$cols)/$cols);
-$table  = new Xmltv_Model_DbTable_Channels();
-$list   = $table->getFeatured($order, $total);
+
+$conf  = Zend_Registry::get('site_config');
+$order = $conf->featured->channels->get('order', 'ch_id')=='ch_id' ? 'ch_id' : 'title' ;
+$cols  = (int)$conf->featured->channels->get('cols', 4);
+$total = (int)$conf->featured->channels->get('amount', 20);
+$colW  = floor((100-$cols)/$cols);
+
+$table = new Xmltv_Model_DbTable_Channels();
+/**
+ * 
+ * @var Zend_Cache_Core
+ */
+$cache = new Xmltv_Cache();
+if ((bool)Zend_Registry::get('site_config')->cache->system->get('enabled')===true){
+    $hash = Xmltv_Cache::getHash('featuredchannels');
+    $f = '/Channels';
+    if (($list = $cache->load($hash, 'Core', $f))===false) {
+        $list = $table->getFeatured($order, $total);
+        $cache->save($list, $hash, 'Core', $f);
+    }
+} else {
+    $list   = $table->getFeatured($order, $total);
+}
+
 $css = "ul#featured_channels { }
 ul#featured_channels li { list-style:none; display: block; float: left; width: ".$colW."%; }";
 

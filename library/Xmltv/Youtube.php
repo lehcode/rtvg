@@ -11,13 +11,11 @@ class Xmltv_Youtube {
 	//private $_debug=false;
 	private $_uniqueToken='';
 	private $_order='relevance_lang_ru';
-	protected $maxResults=5;
+	protected $maxResults;
 	private $_startIndex=1;
 	private $_cacheSubfolder='';
 	private $_operator='+';
 	private $_language='ru';
-	
-	protected $userAgent='';
 	
 	/**
 	 * HTTP client adatapter
@@ -44,8 +42,8 @@ class Xmltv_Youtube {
 	public function __construct($config=array()){
 		
 	    //
-	    if (APPLICATION_ENV=='development' || isset($_GET['XDEBUG_PROFILE'])) {
-	    	var_dump($config);
+	    if (APPLICATION_ENV=='development') {
+	    	//var_dump($config);
 	    }
 	    
 		if (isset($config['safe_search']) && !empty($config['safe_search']))
@@ -117,15 +115,20 @@ class Xmltv_Youtube {
 	 * @param  string $vid	//Youtube video ID
 	 * @throws Zend_Exception
 	 */
-	public function fetchVideo($vid=null){
+	public function fetchVideo($yt_id=null){
 		
-		if (!$vid)
-			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		if (!$yt_id)
+			throw new Zend_Exception("Не указан ID видео для ".__METHOD__, 500);
 		
 		try {
-			$result = $this->client->getVideoEntry($vid);	
-		} catch (Exception $e) {
-		    return false;
+			$result = $this->client->getVideoEntry($yt_id);	
+		} catch (Zend_Gdata_App_Exception $e) {
+		    if (is_a($e, 'ServiceForbiddenException') ){
+		        throw new Zend_Exception($e->getMessage(), 404);
+		    } else {
+		        if (is_a($e, 'ResourceNotFoundException'))
+		        	throw new Zend_Exception($e->getMessage(), 404);
+		    }
 		}
 		
 		return $result;
@@ -142,14 +145,15 @@ class Xmltv_Youtube {
 		
 		if (!$vid)
 			throw new Exception("Не задан параметр поиска видео");
-			
+		
+		$vids = array();
 		try {
-			$result = $this->client->getRelatedVideoFeed($vid);
+			$vids = $this->client->getRelatedVideoFeed($vid);
 		} catch (Zend_Gdata_App_Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+			return null;
 		}
 		
-		return $result;
+		return $vids;
 	
 	}
 	
@@ -180,27 +184,27 @@ class Xmltv_Youtube {
 		$query->setSafeSearch($this->_safeSearch);
 		$query->setParam( 'lang', $this->_language );
 		
-		if ($this->_startIndex>1)
+		if ($this->_startIndex>1) {
 			$query->setStartIndex($this->_startIndex);
+		}
 		
 		$q = trim( $query_string );
 		if ((bool)$q===false){
 			return false;
 		}
 		
-		
 		$query->setVideoQuery($q);
 		
 		if (APPLICATION_ENV=='development'){
-			var_dump( $query->getQueryUrl(2));
-			var_dump(urldecode( $query->getQueryUrl(2)));
+			//var_dump( $query->getQueryUrl(2));
+			//var_dump(urldecode( $query->getQueryUrl(2)));
 		}
 		
-		//die(__FILE__.': '.__LINE__);
-		$videos = $this->client->getVideoFeed( $query->getQueryUrl(2) );
-		
-		//var_dump($videos);
-		//die(__FILE__.': '.__LINE__);
+		try {
+		    $videos = $this->client->getVideoFeed( $query->getQueryUrl(2) );
+		} catch (Zend_Gdata_App_Exception $e) {
+		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		}
 		
 		return $videos;
 			
@@ -356,6 +360,7 @@ class Xmltv_Youtube {
 	/**
 	 * @param string $userAgent
 	 */
+	/*
 	public function setUserAgent($userAgent) {
 		
 	    if ($userAgent) {
@@ -364,7 +369,7 @@ class Xmltv_Youtube {
 	    }
 	    
 	}
-
+	*/
 	
 	public function setProxy($config=array()){
 		

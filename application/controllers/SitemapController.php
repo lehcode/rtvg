@@ -4,12 +4,15 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: SitemapController.php,v 1.4 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: SitemapController.php,v 1.5 2013-01-19 10:11:13 developer Exp $
  *
  */
 class SitemapController extends Xmltv_Controller_Action
 {
-	
+	/**
+	 * (non-PHPdoc)
+	 * @see Xmltv_Controller_Action::init()
+	 */
     public function init () {
         
         parent::init();
@@ -20,6 +23,9 @@ class SitemapController extends Xmltv_Controller_Action
         
 	}
 	
+	/**
+	 * Generate sitemap
+	 */
 	public function sitemapAction(){
 		
 		$channelsModel  = new Xmltv_Model_Channels();

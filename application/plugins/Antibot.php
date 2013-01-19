@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Antibot.php,v $
- * @version $Id: Antibot.php,v 1.1 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Antibot.php,v 1.2 2013-01-19 10:11:14 developer Exp $
  */
 
 class Xmltv_Plugin_Antibot extends Zend_Controller_Plugin_Abstract
@@ -28,7 +28,7 @@ class Xmltv_Plugin_Antibot extends Zend_Controller_Plugin_Abstract
 	 */
 	public function __construct ($env='production') {
 		$this->setEnv( $env );
-		$this->userAgent = $_SERVER['HTTP_USER_AGENT'];
+		$this->userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Mozilla/5.0 (Windows NT 5.1; rv:18.0) Gecko/20100101 Firefox/18.0' ;
 	}
 
 

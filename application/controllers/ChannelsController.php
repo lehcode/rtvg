@@ -5,12 +5,16 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.12 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.13 2013-01-19 10:11:13 developer Exp $
  *
  */
 class ChannelsController extends Xmltv_Controller_Action
 {
     
+    /**
+     * Cache root for this controller
+     * @var string
+     */
     protected $cacheRoot = '/Channels';
 	
 	/**
@@ -373,8 +377,10 @@ class ChannelsController extends Xmltv_Controller_Action
 	        	}
 	        }
 	        
-	        var_dump($new);
-	        die(__FILE__.': '.__LINE__);
+	        if (APPLICATION_ENV=='development'){
+	        	var_dump($new);
+	        	die(__FILE__.': '.__LINE__);
+	        }
 	    }
 	     
 	}

@@ -1,4 +1,12 @@
 <?php
+/**
+ * Модель содержит методы для работы с RSS
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: Feeds.php,v 1.2 2013-01-19 10:11:13 developer Exp $
+ *
+ */
 class Xmltv_Model_Feeds
 {
 	

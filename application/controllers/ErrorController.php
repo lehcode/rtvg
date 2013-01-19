@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ErrorController.php,v 1.4 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: ErrorController.php,v 1.5 2013-01-19 10:11:13 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -46,7 +46,7 @@ class ErrorController extends Zend_Controller_Action
         $logger = $this->getLog();
         if ($logger) {
             $logger->log($this->view->message, $priority, $errors->exception);
-            $logger->log('Параметры запроса', $priority, $errors->request->getParams());
+            $logger->log('Параметры запроса:'.Zend_Debug::dump( $errors->request->getParams()), $priority);
         }
         
         $senderEmail='dev@egeshi.com';
@@ -62,7 +62,7 @@ class ErrorController extends Zend_Controller_Action
             	'ssl' => 'ssl',
             	'port' => 465,
             	'username' => $senderEmail,
-            	'password' => '@Li=EnS#5+grGv3zBRS5ux%b'
+            	'password' => '3k2mzE9bE2iheEMi9RqcVu5t'
             ));
         } else {
             $t = new Zend_Mail_Transport_File(array('path'=>ROOT_PATH.'/log/mail'));

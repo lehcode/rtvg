@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.13 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: Init.php,v 1.14 2013-01-19 10:11:14 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -41,6 +41,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		$this->_initConfig();
 		$this->_initActionHelpers();
 		$this->_initAutoloader();
+		$this->_initUserAgent();
 	
 	}
 
@@ -165,6 +166,39 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		//$autoloader = Zend_Loader_Autoloader::getInstance();
 		//$autoloader->pushAutoloader(array('ezcBase', 'autoload'), 'ezc');
 		
+	}
+	
+	protected function _initUserAgent(){
+		
+	    $nocacheAgents=array(
+    		'yandex',
+    		'Googlebot',
+    		'ahrefs',
+    		'mail.ru',
+    		'rambler',
+    		'baidu',
+	    );
+	    $nocache=false;
+	    $ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '' ;
+	    Zend_Registry::set('user_agent', false);
+	    if (!empty($ua)){
+		    foreach ($nocacheAgents as $a){
+		        if (stristr($ua, $a)){
+		            $nocache = true;
+		    	}
+		    }
+	    }
+	    
+	    if ($nocache===false){
+	        Zend_Registry::set('user_agent', $ua);
+	    } else {
+	        Zend_Registry::set('user_agent', false);
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	        //var_dump(Zend_Registry::get('user_agent'));
+	    }
+	    
 	}
 	
 

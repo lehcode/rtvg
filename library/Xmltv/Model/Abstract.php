@@ -10,17 +10,44 @@ abstract class Xmltv_Model_Abstract
     protected $dbConf;
     protected static $tblPfx='';
     
+    /**
+     * Programs properties
+     * @var Xmltv_Model_DbTable_ProgramsProps
+     */
+    protected $propertiesTable;
+    /**
+     * Programs descriptions
+     * @var Xmltv_Model_DbTable_ProgramsDescriptions
+     */
+    protected $descriptionsTable;
+    /**
+     *
+     * @var Xmltv_Model_DbTable_ProgramsCategories
+     */
+    protected $categoriesTable;
+    /**
+     *
+     * @var Xmltv_Model_DbTable_ChannelsCategories
+     */
+    protected $channelsCategoriesTable;
+    /**
+     * Channels
+     * @var Xmltv_Model_DbTable_Channels
+     */
+    protected $channelsTable;
+    
     const ERR_WRONG_PARAMS = "Неверные параметры для ";
+    const ERR_NO_DB = "Не указана база данных в ";
     
 	/**
-	 * 
-	 * Constructor
-	 * @param array $config
-	 */
+     * Model constructor
+     * 
+     * @param array $config
+     */
 	public function __construct($config=array()){
 
 	    if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config'))
-	        throw new Zend_Exception( self::ERR_WRONG_PARAMS.__METHOD__, 500);
+	        throw new Zend_Exception( self::ERR_NO_DB.__METHOD__, 500);
 	    
 		// Init cache	
 		$this->cache = new Xmltv_Cache(array('location'=>'/Listings'));
@@ -34,6 +61,8 @@ abstract class Xmltv_Model_Abstract
 		if( !empty($pfx)) {
 		    $this->tblPfx = $this->dbConf->get('tbl_prefix'); 
 		}
+		
+		$this->_initTables();
 				
 		
 	}
@@ -51,6 +80,31 @@ abstract class Xmltv_Model_Abstract
 	public function getDb() {
 
 		return $this->db;
+	}
+	
+	private function _initTables(){
+		
+	    $this->descriptionsTable       = new Xmltv_Model_DbTable_ProgramsDescriptions();
+	    $this->propertiesTable         = new Xmltv_Model_DbTable_ProgramsProps();
+	    $this->categoriesTable         = new Xmltv_Model_DbTable_ProgramsCategories();
+	    $this->channelsTable           = new Xmltv_Model_DbTable_Channels();
+	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+	    
+	}
+	
+	/**
+	 * Debug select statement
+	 * @param Zend_Db_Select $select
+	 */
+	protected function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
+	    
+	    echo '<b>'.$method.'</b><br />';
+		try {
+            echo '<pre>'.$select->assemble().'</pre>';
+        } catch (Zend_Db_Select_Exception $e) {
+            throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+        }
+	    
 	}
 
  

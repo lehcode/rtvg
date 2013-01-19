@@ -1,19 +1,19 @@
 <?php
+/**
+ * Core action controller for frontend
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: Action.php,v 1.3 2013-01-19 10:11:14 developer Exp $
+ *
+ */
 class Xmltv_Controller_Action extends Zend_Controller_Action
 {
     
     protected static $bitlyLogin = 'rtvg';
     protected static $bitlyKey = 'R_b37d5df77e496428b9403e236e672fdf';
     protected static $userAgent='';
-    protected static $nocacheAgents=array(
-    	'yandex',
-    	'google',
-    	'ahrefs',
-    	'mail.ru',
-    	'rambler',
-    	'baidu',
-    );
-    protected static $nocache=false;
+    protected static $videoCache=false;
     protected $weekDays;
     
     /**
@@ -65,15 +65,30 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
         }
         
         $this->validator = $this->_helper->getHelper('requestValidator');
-        $this->cache = new Xmltv_Cache();
         
-        foreach ( self::$nocacheAgents as $a){
-            if (stristr( self::$userAgent, $a)){
-                self::$nocache = true;
-            }
+        
+        if (Zend_Registry::get('user_agent')!==false){
+            self::$userAgent = Zend_Registry::get('user_agent');
+            self::$videoCache = true;
+        } else {
+            self::$userAgent = 'PHP/5.3';
+            self::$videoCache = false;
+        }
+        
+        //var_dump(self::$userAgent);
+        //var_dump(self::$videoCache);
+        //die(__FILE__.': '.__LINE__);
+        
+        if (isset($_GET['RTVG_PROFILE'])) {
+        	var_dump(self::$nocache);
+        	var_dump(self::$userAgent);
         }
         
         $this->weekDays = $this->_helper->getHelper('WeekDays');
+        $this->cache = new Xmltv_Cache();
+        
+        //var_dump($this->_getAllParams());
+        //die(__FILE__.': '.__LINE__);
         
     }
     
@@ -141,7 +156,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	 */
 	protected function torrentsShortLinks(DOMNodeList $links){
 	    
-		$tinyurl     = new Zend_Service_ShortUrl_BitLy( self::$bitlyLogin, self::$bitlyKey );
+		
 		$maxTorrents = (int)Zend_Registry::get('site_config')->channels->torrents->get('amount');
 		$i=0;
 		$result = array();
@@ -149,7 +164,13 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 			foreach ($links as $link){
 				if ($i<=$maxTorrents) {
 					$result[$i] = new stdClass();
-					$result[$i]->url   = trim($tinyurl->shorten( $links->item($i)->getAttribute('href') ));
+					try {
+					    $tinyurl = new Zend_Service_ShortUrl_BitLy( self::$bitlyLogin, self::$bitlyKey );
+					    $result[$i]->url   = trim($tinyurl->shorten( $links->item($i)->getAttribute('href') ));
+					} catch (Zend_Service_ShortUrl_Exception $e) {
+					    die($e->getMessage());
+					}
+					
 					$result[$i]->title = Xmltv_String::substr( $links->item($i)->nodeValue, 0, Xmltv_String::strrpos( $links->item($i)->nodeValue, ' ' ) );
 					$i++;
 				}
@@ -161,7 +182,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	/**
 	 * @return string $bitlyLogin
 	 */
-	public function getBitlyLogin() {
+	protected function getBitlyLogin() {
 
 		return $this->bitlyLogin;
 	}
@@ -169,7 +190,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	/**
 	 * @return string $bitlyKey
 	 */
-	public function getBitlyKey() {
+	protected function getBitlyKey() {
 
 		return $this->bitlyKey;
 	}
@@ -202,6 +223,130 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		return $link;
 	
 	}
-
 	
+	/**
+	 * 
+	 * @param Zend_Date $date
+	 * @return boolean
+	 */
+	protected function checkDate(Zend_Date $date){
+		
+	    $l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
+	    $this->view->assign( 'history_length', $l);
+	    $maxAgo = new Zend_Date( Zend_Date::now()->subDay($l)->toString('U'), 'U' ) ;
+	    if ($date->compare($maxAgo)==-1){ //More than x days
+	    	return false;
+	    }
+	    return true;
+	}
+
+	/**
+	 * Current channel
+	 * @return Ambigous <stdClass, mixed>
+	 */
+	public function channelInfo(){
+		
+	    $channelAlias = $this->input->getEscaped('channel');
+	    $model = new Xmltv_Model_Channels();
+	    if ($this->cache->enabled){
+	    	$f = '/Channels';
+	    	$hash = $this->cache->getHash('channel_'.$channelAlias);
+	    	if (($channel = $this->cache->load($hash, 'Core', $f))===false) {
+	    		$channel = $model->getByAlias($channelAlias);
+	    		$this->cache->save($channel, $hash, 'Core', $f);
+	    	}
+	    } else {
+	    	$channel = $model->getByAlias($channelAlias);
+	    }
+	    
+	    return $channel;
+	    
+	}
+	
+	/**
+	 * Current date from request variable
+	 */
+	public function listingDate(){
+		
+	    if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $this->input->getEscaped('date'))) {
+	    	return new Zend_Date( new Zend_Date( $this->input->getEscaped('date'), 'dd-MM-yyyy' ), 'dd-MM-yyyy' );
+	    } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $this->input->getEscaped('date'))) {
+	    	return new Zend_Date( new Zend_Date( $this->input->getEscaped('date'), 'yyyy-MM-dd' ), 'yyyy-MM-dd' );
+	    } else {
+	    	return new Zend_Date();
+	    }
+	    
+	}
+	
+	/**
+	 * Top programs for left sidebar
+	 *
+	 * @param int $amt
+	 * @return unknown
+	 */
+	protected function getTopPrograms($amt=20){
+	
+		$top = $this->_helper->getHelper('Top');
+		if ($this->cache->enabled){
+			$f = '/Listings/Programs';
+			$hash = Xmltv_Cache::getHash('top'.$amt);
+			if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
+				$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
+				$this->cache->save($topPrograms, $hash, 'Core', $f);
+			}
+		} else {
+			$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
+		}
+		return $topPrograms;
+	
+	}
+	
+	/**
+	 * Programs categories
+	 */
+	protected function getProgramsCategories(){
+	
+		$table = new Xmltv_Model_DbTable_ProgramsCategories();
+		if ($this->cache->enabled){
+			$f = "/Channels";
+			$hash  = Xmltv_Cache::getHash("ProgramsCategories");
+			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
+				$cats = $table->fetchAll();
+				$this->cache->save($cats, $hash, 'Core', $f);
+			}
+		} else {
+			$cats = $table->fetchAll();
+		}
+		return $cats;
+	
+	}
+	
+	
+	
+	/**
+	 * Channels categories
+	 */
+	protected function getChannelsCategories(){
+	
+		$model = new Xmltv_Model_Channels();
+		if ($this->cache->enabled){
+			$f = "/Channels";
+			$hash  = Xmltv_Cache::getHash("ChannelsCategories");
+			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
+				$cats = $model->channelsCategories();
+				$this->cache->save($cats, $hash, 'Core', $f);
+			}
+		} else {
+			$cats = $model->channelsCategories();
+		}
+		return $cats;
+	
+	}
+	
+	private function _initCache(){
+		
+	    $this->cache = new Xmltv_Cache();
+	    $this->cache->lifetime = (int)Zend_Registry::get('site_config')->cache->system->get('lifetime');
+	    
+	}
 }

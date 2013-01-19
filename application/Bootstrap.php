@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.11 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.12 2013-01-19 10:11:13 developer Exp $
  *
  */
 
@@ -45,7 +45,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$db->setFetchMode( Zend_DB::FETCH_OBJ);
 		Zend_Registry::set( 'db_archive', $db);
 
-		Zend_Layout::startMvc();
+		//Zend_Layout::startMvc();
 		
 		/*
 		 * Caching
@@ -71,8 +71,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Antibot( APPLICATION_ENV ) )
-			->returnResponse( true )
+			->returnResponse( false )
 			->throwExceptions( false );
+		
+		if (APPLICATION_ENV=='production'){
+		    $fc->returnResponse( true )
+		    	->throwExceptions( false );
+		}
 		
 		/*
 		 * http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
@@ -85,7 +90,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		    
 		    $response = $fc->dispatch();
 		    if( $response && $response->isException() ) {
-		    	
+		    	//die(__FILE__.': '.__LIN);
 		    	$exceptions = $response->getException();
 		    	foreach ($exceptions as $e){
 		    		$log->log( $e->getMessage(), Zend_Log::CRIT, $e->getTraceAsString() );

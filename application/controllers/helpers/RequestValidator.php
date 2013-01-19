@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/RequestValidator.php,v $
- * @version $Id: RequestValidator.php,v 1.11 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.12 2013-01-19 10:11:13 developer Exp $
  */
 class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -25,7 +25,7 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
     	$this->pluginLoader = new Zend_Loader_PluginLoader();
     }
     
-    const ALIAS_REGEX='/^[\p{Cyrillic}\p{Latin}\d-]+$/ui';
+    const ALIAS_REGEX='/^[\p{Cyrillic}\p{Latin}\d_-]+$/ui';
     
     /**
      * 
@@ -37,8 +37,9 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
     public function isValidRequest($params=null, $options=null) {
     	
         
-    	if (APPLICATION_ENV=='development' && !$this->getRequest()->isXmlHttpRequest()){
+    	if (APPLICATION_ENV=='development'){
     	    var_dump( $this->getRequest()->getParams() );
+    	    //die(__FILE__.': '.__LINE__);
     	}
 		
 		$filters = array( 
@@ -62,6 +63,9 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    	)
 	    );
 		
+		if (isset($_GET['RTVG_PROFILE'])){
+			$validators['RTVG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
+		}
 		if (isset($_GET['XDEBUG_PROFILE'])){
 			$validators['XDEBUG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
 		}

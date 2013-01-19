@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: TorrentsController.php,v 1.3 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: TorrentsController.php,v 1.4 2013-01-19 10:11:13 developer Exp $
  *
  */
 class TorrentsController extends Xmltv_Controller_Action
@@ -29,7 +29,7 @@ class TorrentsController extends Xmltv_Controller_Action
 				$curl->setOption(CURLOPT_CONNECTTIMEOUT, 5);
 				$curl->setOption(CURLOPT_TIMEOUT, 5);
 				$curl->setUrl($url);
-				$curl->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+				//$curl->setUserAgent($_SERVER['HTTP_USER_AGENT']);
 				$torrents = array();
 				parent::getCache()->setLifetime(86400);
 				$hash = Xmltv_Cache::getHash($url);

@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.8 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Router.php,v 1.9 2013-01-19 10:11:14 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -300,7 +300,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			break;
 			case 'default':
 			    
-			    if ($request->getParam('XDEBUG_PROFILE')){
+			    if ($request->getParam('RTVG_PROFILE')){
 			        //Zend_Debug::dump($request->getParams());
 			        //die(__FILE__.': '.__LINE__);
 			    }

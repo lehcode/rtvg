@@ -3,7 +3,7 @@
  * Week listing script for channel
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: channel-week.phtml,v 1.5 2013-01-02 05:07:50 developer Exp $
+ * @version $Id: channel-week.phtml,v 1.6 2013-01-19 10:11:14 developer Exp $
  */
 $this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на неделю c %s по %s ', $this->channel->title, $this->week_start->toString('EEEE, d MMMM'), $this->week_end->toString('EEEE, dd MMMM')));
 $this->headTitle( sprintf ('Программа телеканала «%s» на неделю с %s по %s', $this->channel->title, $this->week_start->toString('dd MMMM'), $this->week_end->toString('dd MMMM yyyy')));
@@ -14,13 +14,7 @@ $css = '.nav-tabs > li > a { font-size: 0.8em; padding: 9px 6px; font-weight: bo
 #programslist { border: none; }';
 $this->headStyle()->appendStyle($css);
 $channelAlias = $this->channel->alias;
-//$today = new Zend_Date();
 
-//var_dump($this->days);
-var_dump($this->week_start->toString());
-var_dump($this->week_end->toString());
-//var_dump($this->days);
-//die(__FILE__.': '.__LINE__);
 ?>
 
 <h1>

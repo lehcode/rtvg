@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.21 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: layout.phtml,v 1.22 2013-01-19 10:11:13 developer Exp $
  *
  */
 
@@ -12,11 +12,8 @@ $this->headMeta()
 	->prependHttpEquiv('Content-Type', 'text/html;charset=utf-8');
 
 $this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND');
-$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/animations.css')), 'APPEND');
 $this->headLink()
 	->prependStylesheet( $this->baseUrl('css/base.css'))
-	->appendStylesheet( $this->baseUrl('css/fonts.css'))
-	->prependStylesheet( $this->baseUrl('css/animations.css'))
 	->appendStylesheet( $this->baseUrl('js/tip/jquery.tooltip.css'));
 
 /*
@@ -44,7 +41,6 @@ $this->jQuery()->enable() //enable jquery ;
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
 	->prependFile($this->baseUrl($this->baseUrl('js/less.min.js')))
-	//->prependFile($this->baseUrl('js/forms/vklogin.js'))
 	->prependFile($this->baseUrl('js/bootstrap.js'))
 	->appendFile('http://yandex.st/share/share.js' )
 	->appendFile('//vk.com/js/api/openapi.js?75' );
@@ -82,7 +78,7 @@ if ($this->hide_sidebar=='right'){
 $this->placeholder('maincontent')->set( $this->layout()->content );
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
-//$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array()) );
+$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array()) );
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'top_programs'=>$this->top_programs,
 	'cats'=>$this->channels_cats,
@@ -122,24 +118,22 @@ echo $this->headStyle(), PHP_EOL;
 ?>
 
 <?php 
-if (!$this->is_frontpage) {
-	$this->inlineScript()
-		->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
-		->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
-	
-	if (APPLICATION_ENV!='development') {
-	    /*
+if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot')) {
+	if (!$this->is_frontpage) {
 		$this->inlineScript()
-			//->appendFile("http://www.adcash.com/script/java.php?option=rotateur&rotateur=102755") //adcash rollin
-			->appendFile("http://rotation-media.net/codes/21010/40198_rutvgid.ru.js")  //mediarich adspot
-			->appendFile("http://rotationmessage.net/codes/21010/40198_rutvgid.ru.js"); //mediarich vk message
-		*/
+			->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
+			->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
+		
+		if (APPLICATION_ENV!='development') {
+		    /*
+			$this->inlineScript()
+				//->appendFile("http://www.adcash.com/script/java.php?option=rotateur&rotateur=102755") //adcash rollin
+				->appendFile("http://rotation-media.net/codes/21010/40198_rutvgid.ru.js")  //mediarich adspot
+				->appendFile("http://rotationmessage.net/codes/21010/40198_rutvgid.ru.js"); //mediarich vk message
+			*/
+		}
 	}
-}
-
-?>
-
-
+	?>
 <script>
 (function() {
 	var cx = ' 	006526203727824860247:vdzpxf_4n5a';
@@ -148,11 +142,6 @@ if (!$this->is_frontpage) {
 	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
 })();
 </script>
-
-<?php if (APPLICATION_ENV!='development') {
-    ?>
-<script language='javascript' type='text/javascript' src='http://micro.rutvgid.ru/80j4ch2sa3g5s46cexqrro13ejeo0t3p'></script>
-
 <script type="text/javascript">
 
   var _gaq = _gaq || [];
@@ -166,6 +155,21 @@ if (!$this->is_frontpage) {
   })();
 
 </script>
+	<?php 
+}
+
+?>
+
+
+<?php if (APPLICATION_ENV!='development') {
+    /*
+<script type="text/javascript" charset="windows-1251" src="http://mr.rutvgid.ru/c/21010/40198_rutvgid.ru.js"></script>
+<script type="text/javascript" charset="windows-1251" src="http://vm.rutvgid.ru/c/21010/40198_rutvgid.ru.js"></script>
+	*/ 
+    if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot')): ?>
+<script language='javascript' type='text/javascript' src='http://micro.rutvgid.ru/80j4ch2sa3g5s46cexqrro13ejeo0t3p'></script>
+	<?php endif; ?>
+
     <?php 
 } ?>
 
@@ -236,9 +240,13 @@ if (!$this->is_frontpage) {
 		
 	</div>
 	
+	<?php 
+	$fChannels = $this->placeholder('featured_channels');
+	if (!empty($fChannels)) : ?>
 	<div id="featuredchannels" class="row-fluid">
 		<?php echo $this->placeholder('featured_channels'); ?>
 	</div>
+	<?php endif; ?>
 	
 	<div class="row-fluid" id="footer">
 		<?php echo $this->placeholder('footer'); ?>

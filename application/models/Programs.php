@@ -4,13 +4,14 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.13 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Programs.php,v 1.14 2013-01-19 10:11:13 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 {
 	
 	protected $weekDays;
+	protected static $videoCache=false;
 	
 	const ERR_MISSING_PARAMS="Пропущены необходимые параметры!";
 	
@@ -23,8 +24,12 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
         parent::__construct($config);
         
-	    $this->table    = new Xmltv_Model_DbTable_Programs();
-	    $this->weekDays = $config['week_days'];
+        if (isset($config['video_cache']) && is_bool($config['video_cache'])){
+            self::$videoCache = $config['video_cache'];
+        }
+        
+	    $this->table = new Xmltv_Model_DbTable_Programs();
+	    $this->weekDays = isset($config['week_days']) ? $config['week_days'] : null ;
 			
 	}
 	
@@ -44,16 +49,14 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	        throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
 	    
 	    $progStart = new Zend_Date( $date->toString() );
-	    //var_dump($progStart->toString());
-	    //die(__FILE__.': '.__LINE__);
 	    $where = array(
-			"prog.alias LIKE '%$alias%'",
-			"prog.start >= '".$date->toString('YYYY-MM-dd 00:00:00')."'",
-			"prog.start < '".$date->toString('YYYY-MM-dd 23:59:59')."'",
+			"`prog`.`alias` LIKE '%$alias%'",
+			"`prog`.`start` >= '".$date->toString('YYYY-MM-dd 00:00:00')."'",
+			"`prog`.`start` < '".$date->toString('YYYY-MM-dd 23:59:59')."'",
 		);
 		
 		if ($channel_id){
-			$where[] = "prog.ch_id='".$channel_id."'";
+			$where[] = "`prog`.`ch_id`='".$channel_id."'";
 		}
 		
 		$where = count($where) ? implode(' AND ', $where) : '' ;
@@ -62,8 +65,8 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 			->where($where)
 			->order('start DESC');
 		
-		if (APPLICATION_ENV=='development' || $_GET['XDEBUG_PROFILE']) {
-			var_dump($select->assemble());
+		if (APPLICATION_ENV=='development') {
+			parent::debugSelect($select, __METHOD__);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
@@ -109,7 +112,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 			->where($where)
 			->order('start DESC');
 		
-		if (APPLICATION_ENV=='development' || $_GET['XDEBUG_PROFILE']) {
+		if (APPLICATION_ENV=='development') {
 			var_dump($select->assemble());
 			//die(__FILE__.': '.__LINE__);
 		}
@@ -264,15 +267,79 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 * @param string $program_alias
 	 * @param Zend_Date $date
 	 */
-	public function getSimilarProgramsThisWeek($program_alias=null, Zend_Date $start, Zend_Date $end){
+	public function getSimilarProgramsThisWeek($program_alias=null, Zend_Date $start, Zend_Date $end, $orig_channel=null){
 		
-		if (!$program_alias)
+		if (!$program_alias || !$orig_channel)
 			throw new Zend_Exception( parent::ERR_WRONG_PARAMS.__METHOD__, 500);
 		
-		$result = $this->table->fetchSimilarProgramsThisWeek($program_alias, $start, $end);
-		foreach ($result as $item){
-			$item->start = new Zend_Date($item->start, 'yyyy-MM-dd HH:mm:ss');
-			$item->end   = new Zend_Date($item->end, 'yyyy-MM-dd HH:mm:ss');
+		$parts = explode('-', $program_alias);
+	    foreach ($parts as $a){
+	        if (Xmltv_String::strlen($a)>3){
+	            $regex = ".*".$a."[ ]?.*";
+	        	$pieces[]=" `prog`.`alias` REGEXP('$regex')";
+	        }
+	    }
+	    $like = implode(' OR ', $pieces);
+	    
+	    $select = $this->db->select()
+			->from(array( 'prog'=>$this->table->getName()), '*')
+			->joinLeft( array('ch'=>$this->channelsTable->getName() ), "`prog`.`ch_id`=`ch`.`ch_id`", array(
+				'channel_title'=>'title',
+				'channel_alias'=>'LOWER(`ch`.`alias`)',
+				'channel_icon'=>'ch.icon'))
+	    	->joinLeft( array('cat'=>$this->categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array(
+	    		'category_title'=>'title',
+	    		'category_title_single'=>'title_single',
+	    		'category_alias'=>'LOWER(`cat`.`alias`)' ));
+		
+		$select
+			->where( $like )
+			->where( "`prog`.`start` > '".$start->toString('yyyy-MM-dd')." 00:00:00'" )
+			->where( "`prog`.`start` < '".$end->toString('yyyy-MM-dd')." 23:59:00'" )
+			->where( "`ch`.`published`='1' AND `prog`.`ch_id`!='$orig_channel'" )
+			->order( array("prog.start DESC", "prog.ch_id ASC"));	
+
+		if (APPLICATION_ENV=='development'){
+			parent::debugSelect($select, __METHOD__);
+			//die(__FILE__.': '.__LINE__);
+		}
+			
+		$result = $this->db->fetchAll($select);
+		
+		if ($result){
+		    $propsTable    = new Xmltv_Model_DbTable_ProgramsProps();
+		    $descsTable    = new Xmltv_Model_DbTable_ProgramsDescriptions();
+		    foreach ($result as $k=>$r){
+		        $select = $this->db->select()
+		        	->from(array('props'=>$propsTable->getName()))
+		        	->where("`hash`='".$r['hash']."'");
+		        
+		        if ($newResult = $this->db->fetchRow($select)){
+		            $result[$k]['actors']    = $newResult['actors'];
+		            $result[$k]['directors'] = $newResult['directors'];
+		            $result[$k]['premiere']  = (bool)$newResult['premiere'];
+		            $result[$k]['live']      = (bool)$newResult['live'];
+		        }
+		        
+		        $select = $this->db->select()
+		        ->from(array('props'=>$descsTable->getName()))
+		        ->where("`hash`='".$r['hash']."'");
+		        if ($newResult = $this->db->fetchRow($select)){
+		            $result[$k]['desc_intro'] = $newResult['intro'];
+		            $result[$k]['desc_body']  = $newResult['body'];
+		        }
+		        
+		    }
+		}
+		
+		foreach ($result as $k=>$item){
+			$result[$k]['start'] = new Zend_Date( $item->start, 'yyyy-MM-dd HH:mm:ss');
+			$result[$k]['end']   = new Zend_Date( $item->end, 'yyyy-MM-dd HH:mm:ss');
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
 		return $result;
@@ -284,7 +351,48 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		if( !$prog_alias || !$channel_id || !$start || !$end )
 			return false;
 		
-		$result = $this->table->fetchProgramThisWeek($prog_alias, $channel_id, $start, $end);
+		/**
+		 * @var Zend_Db_Select
+		 */
+		$select = $this->db->select()
+			->from(array( 'prog'=>'rtvg_programs'), '*')
+			->joinLeft( array( 'prop'=>$this->propertiesTable->getName() ), "`prog`.`hash`=`prop`.`hash`", array(
+				'actors',
+				'directors',
+				'premiere',
+				'live'
+			))->joinLeft( array( 'desc'=>$this->descriptionsTable->getName() ), "`prog`.`hash`=`desc`.`hash`", array(
+				'desc_intro'=>'intro',
+				'desc_body'=>'body'
+			))->joinLeft( array('ch'=>$this->channelsTable->getName() ), "`prog`.`ch_id`=`ch`.`ch_id`", array(
+				'channel_title'=>'title',
+				'channel_alias'=>'LOWER(`ch`.`alias`)'
+			))->joinLeft( array('cat'=>$this->categoriesTable->getName() ), "`prog`.`category`=`cat`.`id`", array(
+				'category_title'=>'title',
+				'category_title_single'=>'title_single',
+				'category_alias'=>'LOWER(`cat`.`alias`)'
+			))
+			->where( "`prog`.`alias` LIKE '$prog_alias'")
+			->where( "`prog`.`start` >= '".$start->toString('yyyy-MM-dd 00:00:00')."'")
+			->where( "`prog`.`start` < '".$end->toString('yyyy-MM-dd 23:59:00')."'")
+			->where( "`prog`.`ch_id` = '$channel_id'")
+			->order( "prog.start DESC" );
+		
+		if (APPLICATION_ENV=='development'){
+			parent::debugSelect($select, __METHOD__);
+			//die(__FILE__.': '.__LINE__);	
+		}
+			
+		try {
+			$result = $this->db->fetchAll($select);
+		} catch (Zend_Db_Adapter_Mysqli_Exception $e) {
+			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
 		
 		$actors		    = array();
 		$directors	    = array();
@@ -411,8 +519,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	}
 	
 	public function categoryWeek( $category=null, Zend_Date $start, Zend_Date $end){
-		
-	    die(__FILE__.": ".__LINE__);
+		die();
 	    
 	}
 	

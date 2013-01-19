@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: SearchController.php,v 1.1 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: SearchController.php,v 1.2 2013-01-19 10:11:13 developer Exp $
  *
  */
 class SearchController extends Xmltv_Controller_Action
@@ -22,6 +22,8 @@ class SearchController extends Xmltv_Controller_Action
      */
     public function init () {
     	
+        parent::init();
+        
     	$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
     	$ajaxContext->addActionContext( 'typeahead', 'json' )
     		->initContext();
@@ -30,14 +32,7 @@ class SearchController extends Xmltv_Controller_Action
     	$this->_initCache();
     	$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
     	$this->initView();
-    }
-    
-    /**
-     * Initialize caching
-     */
-    private function _initCache(){
-    	$this->cache = new Xmltv_Cache();
-    	$this->cache->lifetime = (int)Zend_Registry::get('site_config')->cache->system->get('lifetime');
+    	
     	$this->cache->setLocation($this->cacheRoot);
     }
     

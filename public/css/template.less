@@ -1,3 +1,23 @@
+@keyframes carousel-control { from { background: #FAA732; } to { background: #E06D1B; } }
+@-moz-keyframes carousel-control { from {background: #FAA732;} to {background: #E06D1B;} }
+@-webkit-keyframes carousel-control { from {background: #FAA732;} to {background: #E06D1B;} }
+@-o-keyframes carousel-control { from {background: #FAA732;} to {background: #E06D1B;} }
+
+@keyframes directadvert-link { from { background: white; } to { background: #E06D1B; } }
+@-moz-keyframes directadvert-link { from {background: white;} to {background: #E06D1B;} }
+@-webkit-keyframes directadvert-link { from {background: white;} to {background: #E06D1B;} }
+@-o-keyframes directadvert-link { from {background: white;} to {background: #E06D1B;} }
+
+@font-face {
+    font-family: "OpenSans Condensed Bold";
+    src: url("../fonts/opnsancb.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Univers Condensed Medium Italic";
+    src: url("../fonts/universcmi.ttf") format("truetype");
+}
+
 @black: #2B2B2B;
 @red: #E06D1B;
 @orange: #FAA732;
@@ -455,6 +475,14 @@ li.lastcol:after {
 	
 }
 
+#maincontent.program-week{
+	
+	p{
+		line-height: 2em;
+	}
+	
+}
+
 #maincontent.day-listing {
 	h1{
 		&:before { .clearAll; }
@@ -675,7 +703,8 @@ ul#channels_categories {
 /*
  * Желтая пресса
  */	
-#rumor-ads {
+
+#rumor-ads, #tmedia {
 	
 	display:none;
 	
@@ -737,7 +766,8 @@ ul#channels_categories {
 	}
 }
 
-	
+
+
 
 
 
@@ -865,6 +895,8 @@ ul#daynav {
 	}
 	
 }
+
+
 
 
 #programslist {
