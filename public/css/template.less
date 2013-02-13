@@ -225,11 +225,11 @@ li.lastcol:after {
 		margin-left: 0;
 		
 		h1, p {
-			border-bottom: 1px dashed #DEDEDE;
-			font-size: 1.8em;
+			/*border-bottom: 1px dashed #DEDEDE; */
+			font-size: 14px;
 			line-height: 1.3em;
-			margin-bottom: .5em;
-			font-family: @openSansCondBold;
+			margin-bottom: 0;
+			/*font-family: @openSansCondBold;*/
 			color: @lightGray;
 			
 			a {
@@ -301,9 +301,9 @@ li.lastcol:after {
 		
 			div.player-wrap {
 				background: url("../images/icons/128x128-loading.gif") no-repeat scroll 180px 73px @white;
-				border: 2px solid @darkGray;
+				border: 6px solid @gray;
 				border-radius: 6px;
-				-webkit-border-radius: 6px;
+				-webkit-border-radius: 12px;
 				margin-bottom: 1em;
 			    height: 258px;
 			    width: 460px;
@@ -326,6 +326,10 @@ li.lastcol:after {
 					a.imagelink{
 						display:inline-block;
 						margin-botton: 1em;
+						border: 6px solid #DDDDDD;
+					    border-radius: 12px 12px 12px 12px;
+					    display: inline-block;
+					    overflow: hidden;
 					}
 					p.viewcount,
 					p.category,
@@ -506,7 +510,6 @@ ul#fpnav {
 	margin:24px 0 0;
 	&:after{ .clearAll }
 	li { 
-		height: 96px;
 	    list-style: none outside none;
 	    margin: 0 12px 16px 0;
 	    text-align: center;
@@ -518,12 +521,8 @@ ul#fpnav {
 		    -o-radius: 6px;
 		    behavior: url("/css/PIE.htc");
 		    display: block;
-		    font-size: 24px;
-		    height: 96px;
-		    line-height: 96px;
-			&:hover{ 
-				text-decoration: none;
-			}
+		    font-size: 1em;
+		    line-height: 2em;
 		}
 	}
 	
@@ -701,7 +700,7 @@ ul#channels_categories {
 	
 
 /*
- * Желтая пресса
+ * пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
  */	
 
 #rumor-ads, #tmedia {
@@ -787,6 +786,72 @@ ul#channels_categories {
 	padding: 0 0.5em;
 	margin-top: 1em;
 	border-radius: 0;
+}
+
+#content.frontpage {
+	#listing{
+		h3.title{
+			.mainHeading(8px);
+			padding: 0 0 0 0.3em;
+			margin: 0 0 0.1em;
+			&:hover{
+				background-color: #DDDDDD;
+				a{
+					text-decoration: none;
+				}	
+			}
+			
+		}
+		div.progs {
+			background-color: #EFEFEF;
+			margin: 0 0 1.2em;
+			width: 100%;
+			div.item {
+				-webkit-box-shadow:  0px 0px 6px 1px rgba(128, 128, 128, 0.15);
+			    -o-box-shadow:  0px 0px 6px 1px rgba(128, 128, 128, 0.15);
+			    box-shadow:  0px 0px 6px 1px rgba(128, 128, 128, 0.15);
+				margin: 0.25em;
+				border-radius: 8px 8px 8px 8px;
+				background-color: #EFEFEF;
+			    float: left;
+				overflow:hidden;
+				height: 14em;
+				font-size: 10px;
+				&:hover{
+					background-color: #DDDDDD;
+				}
+				div.time{
+					font-size: 1.4em;
+				    font-weight: bold;
+				    padding: 0.4em 0.6em;
+				}
+				div.info{
+					padding: 0 0 0 10px;
+					h4{
+						margin: 0;
+						font-size: 12px;
+					}
+				}
+				a{
+					
+				}
+				
+			}
+			&:before{ .clearAll; }
+			&:after{ .clearAll; }
+			div.item:first-child{
+				background-color: #fff;
+				height: 16em;
+				&:hover{
+					background-color: #DDDDDD;
+				}
+			}
+			div.item:last-child{ 
+				height: 10em;
+				border-right: 0;
+			}
+		}
+	}
 }
 
 

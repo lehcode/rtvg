@@ -92,7 +92,7 @@ $(document).ready(function(){
 			},
 			error: function(jqXHR, textStatus, errorThrown){
 				//window.clearInterval(pollParsing);
-				Errors.hide(100, function(){ Errors.html('<p>'+errorThrown+'</p>').fadeIn(); });
+				Errors.hide(100, function(){ Errors.html('<p>'+jqXHR.responseText+'</p>').fadeIn(); });
 				return false;
 			}
 		});
