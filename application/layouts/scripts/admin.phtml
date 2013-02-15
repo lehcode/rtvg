@@ -4,18 +4,19 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: admin.phtml,v 1.5 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: admin.phtml,v 1.6 2013-02-15 00:44:02 developer Exp $
  *
  */
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
 $this->headScript()->setAllowArbitraryAttributes(true);
 $this->jQuery()
 	->enable()
-	//->setCdnSsl(true) // if need to load from ssl location
 	->setVersion('1.7.1')
 	->setUiVersion('1.8.18')
 	->addStylesheet('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css')
 	->uiEnable();
+
+$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND');
 
 $request    = Zend_Controller_Front::getInstance()->getRequest();
 $controller = $request->getControllerName();
@@ -29,10 +30,10 @@ echo $this->headMeta();
 echo $this->headTitle();
 echo $this->jQuery();
 echo $this->headScript()
-	->prependFile($this->baseUrl().'/js/bootstrap.min.js');
+	->prependFile($this->baseUrl().'/js/bootstrap.min.js')
+	->prependFile($this->baseUrl($this->baseUrl('js/less.min.js')));
 echo $this->headLink()
-	->prependStylesheet($this->baseUrl().'/css/template.css')
-	->prependStylesheet($this->baseUrl().'/css/bootstrap.css');
+	->prependStylesheet($this->baseUrl().'/css/base.css');
 echo $this->headStyle();
 ?>
 </head>
@@ -41,9 +42,16 @@ echo $this->headStyle();
 	<div id="nav">
 		<?php echo $mainNav; ?>
 	</div>
+	<h4>
+		APPLICATION_ENV: <?php echo APPLICATION_ENV ?><br />
+		memory_limit: <?php echo ini_get('memory_limit') ?><br />
+		error_reporting: <?php echo ini_get('error_reporting') ?><br />
+		display_errors: <?php echo ini_get('display_errors') ?><br />
+	</h4>
 	<div class="span12">
 		<?php echo $this->layout()->content; ?>
 	</div>
+	
 </div>
 <?php echo $this->inlineScript(); ?>
 </body>

@@ -3,7 +3,7 @@
  * Database table for channels info
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.4 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: Channels.php,v 1.5 2013-02-15 00:44:02 developer Exp $
  */
 class Admin_Model_DbTable_Channels extends Xmltv_Model_DbTable_Channels
 {
@@ -13,16 +13,16 @@ class Admin_Model_DbTable_Channels extends Xmltv_Model_DbTable_Channels
      * @param int $id
      * @param string $key
      */
-    public function fetchChannel($id=null, $key='ch_id') {
+    public function fetchChannel($value=null, $key='id') {
     	
-    	if (!$id)
+    	if (!$value)
     		return;
     	
-    	$id = (int)$id;
+    	$value = (int)$value;
     	try{
-    		$row = $this->fetchRow("`$key`='$id'");
-    	} catch(Zend_Exception $e) {
-    		throw new Zend_Exception($e->getMessage(), $e->getCode());
+    		$row = $this->fetchRow("`$key`='$value'");
+    	} catch(Zend_Db_Table_Exception $e) {
+    		throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
     	}
     	
     	return $row;
@@ -37,8 +37,8 @@ class Admin_Model_DbTable_Channels extends Xmltv_Model_DbTable_Channels
     	
     	try{
     		$rows = $this->fetchAll("`published`='1'");
-    	} catch(Zend_Exception $e) {
-    		throw new Zend_Exception($e->getMessage(), $e->getCode());
+    	} catch(Zend_Db_Table_Exception $e) {
+    		throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
     	}
     	return $rows;
     	

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-left.phtml,v 1.5 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: sidebar-left.phtml,v 1.6 2013-02-15 00:44:02 developer Exp $
  *
  */
 ?>
@@ -17,11 +17,8 @@
 </div>
 */ ?>
 
-<?php /*
-<div class="module">
-	<iframe srec="http://www.ad.admitad.com/shuffle/db5838b6b8/"></iframe>
-</div>
-*/ ?>
+
+
 
 
 <?php 
@@ -34,22 +31,19 @@ if (isset($this->top_programs)) {
 	<h4>Популярные программы на этой неделе</h4>
 	<ul id="program-top">
 		<?php 
-		foreach ($this->top_programs as $p){
+		foreach ($this->top_programs as $k=>$p){
 		    //var_dump($p);
 		    //die(__FILE__.': '.__LINE__);
-			?>
+		    ?>
 		<li>
-			<img src="<?php echo $p['channel_icon'] ?>" width="16" />
-			<a href="<?php echo $this->url(array(
-				'channel'=>$p['channel_alias'],
-				'alias'=>$p['prog_alias'],
-			), 'default_listings_program-week'); ?>"
-			title="<?php $this->escape( sprintf("«%s» на канале %s на этой неделе", $p['prog_title'], $p['channel_title'])) ?>"
-			target="_blank">
-				<?php echo $this->truncateString( $p['prog_title'], 3, 'words') ?>
+			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$p['channel_icon'] ) ?>" width="16" />
+			<a href="<?php echo $this->url( array('channel'=>$p['channel_alias'], 'alias'=>$p['prog_alias']), 'default_listings_program-week'); ?>"
+				title="<?php echo $this->escape( sprintf("«%s» на канале %s на этой неделе", $p['prog_title'], $p['channel_title'])) ?>"
+				target="_blank"><?php echo $this->truncateString( $p['prog_title'], 3, 'words') ?>
 			</a>
 		</li>
 			<?php 
+			
 		}
 		?>
 	</ul>
@@ -78,7 +72,7 @@ if (isset($this->cats)) {
 			<a href="<?php echo $this->url(array('category'=>$catAlias), 'default_channels_category' ) ?>" 
 				title="<?php printf ("%s телеканалы", $catTitle) ?>"
 				target="_blank">
-				<img src="/images/categories/channels/<?php echo $this->escape( $c['image'] ) ?>" 
+				<img src="<?php echo $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] )); ?>" 
 					class="icon" />
 				<?php echo $catTitle ?>
 			</a>

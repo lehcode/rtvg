@@ -4,22 +4,22 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.16 2013-01-19 10:11:14 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.17 2013-02-15 00:44:03 developer Exp $
  *
  */
 
-$channelTitle = $this->escape($this->channel->title);
-$channelAlias = $this->escape($this->channel->alias);
+$channelTitle = $this->escape($this->channel['title']);
+$channelAlias = $this->escape($this->channel['alias']);
 
 
 $this->headScript()
 	->appendFile($this->baseUrl()."/js/listing-day.js")
 	->appendScript("$('.top-position img').tooltip({ showURL: false });
 	$('.carousel').carousel('pause');
-	$(document).ready(function(){
-		$.ajax({ url: '/channels/new-comments/channel/".$this->escape($this->channel->alias)."/format/html',
-			dataType: 'html', success: function(html){ $(html).insertAfter($('#comments h3')); }
-		});
+	//$(document).ready(function(){
+	//	$.ajax({ url: '/channels/new-comments/channel/".$channelAlias."/format/html',
+	//		dataType: 'html', success: function(html){ $(html).insertAfter($('#comments h3')); }
+	//	});
 	});
 ");
 
@@ -70,7 +70,7 @@ if ($this->is_today) {
 		} 
 		?>
 		<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
-		<?php echo new Xmltv_Form_TypeaheadForm(); ?>
+		<?php echo $this->typeahead_form; ?>
 	</div>
 	<div class="module" style="width: 30%; float: right;">
 		<?php echo new Xmltv_Form_TimezoneSwitch(array('label_class'=>'smallheading', 'time_shift'=>$this->timeshift)); ?>
@@ -91,12 +91,6 @@ if ($this->is_today) {
 <?php endif; ?>
 
 
-<div class="module ad468">
-	<?php /*<script type="text/javascript" src="http://www.adcash.com/script/java.php?option=rotateur&rotateur=106375"></script>*/ ?>
-	<script type="text/javascript" src="http://c.am11.ru/code/bn/js.php?u=13073&f=5"></script>
-</div>
-
-
 <?php
 /*
  * Programs list
@@ -110,22 +104,24 @@ if (!empty($this->programs)) {
 	<div class="carousel-inner" id="programs-carousel">
 	<?php 
 	foreach ($this->programs as $k=>$prog) {
-		
-		//var_dump($prog);
-		if ($this->is_today) {
-			$active = $prog->now_showing===true ? ' active' : '' ;
+	    
+	    if ($this->is_today) {
+			$active = $prog['now_showing']===true ? ' active' : '' ;
 		} else {
 			$active = $k==0 ? ' active' : '' ;
 		}
+		
+		//var_dump($prog);
+		//die(__FILE__.': '.__LINE__);
 		?>
 	<div class="item<?php echo $active; ?> programcontainer">
 		
 		<div class="program-times">
 			<div class="time start">
-				<span class="label label-important"><?php echo $prog->start->toString('HH:mm') ?></span>
+				<span class="label label-important"><?php echo $prog['start']->toString('HH:mm') ?></span>
 			</div>
 			<div class="time end">
-				<span class="label label-important"><?php echo $prog->end->toString('HH:mm') ?></span>
+				<span class="label label-important"><?php echo $prog['end']->toString('HH:mm') ?></span>
 			</div>
 		</div>
 		
@@ -135,54 +131,54 @@ if (!empty($this->programs)) {
 		</p>
 		<?php endif; ?>
 		
-		<?php if ($prog->live): ?>
+		<?php if (isset($prog['live']) && $prog['live']): ?>
 		<img src="<?php echo $this->baseUrl('images/icons/live.png'); ?>" />
 		<?php endif; ?>
 		
 		<div class="programtitle">
 			<h3>
 				<a href="<?php echo $this->url( array(
-					'channel'=>$this->channel->alias,
-					'alias'=>$prog->alias), 'default_listings_program-week' ); ?>"
-					title="Расписание <?php echo $prog->title ?> на неделю"
+					'channel'=>$channelAlias,
+					'alias'=>$prog['alias']), 'default_listings_program-week' ); ?>"
+					title="Расписание <?php echo $prog['title'] ?> на неделю"
 					target="_blank">
-					<?php echo $prog->title; ?>
+					<?php echo $prog['title']; ?>
 				</a>
 			</h3>
 			
-			<?php if (!empty($prog->sub_title)) : ?>
+			<?php if (isset($prog['sub_title']) && !empty($prog['sub_title'])) : ?>
 			<p class="subtitle"><?php echo $prog->sub_title ?></p>
 			<?php endif; ?>
 			
 		</div>
 		
 		
-		<?php if (isset($prog->category_title) && !empty($prog->category_title)): ?>
+		<?php if (isset($prog['category_title']) && !empty($prog['category_title'])): ?>
 		<div class="category">
 			<a href="<?php echo $this->url( array(
-				'category'=>$prog->category_alias,
+				'category'=>$prog['category_alias'],
 				'timespan'=>'неделя'), 'deault_listings_category'); ?>" title="Передачи на неделе">
-				<?php echo $prog->category_title; ?> на этой неделе
+				<?php echo $prog['category_title']; ?> на этой неделе
 			</a>
 			<a href="<?php echo $this->url( array(
-				'category'=>$prog->category_alias,
+				'category'=>$prog['category_alias'],
 				'timespan'=>'сегодня'), 'deault_listings_category'); ?>" title="Передачи сегодня">
-				<?php echo $prog->category_title; ?> сегодня
+				<?php echo $prog['category_title']; ?> сегодня
 			</a>
 		</div>
 		<?php endif; ?>
 		
 		
-		<?php if (isset($prog->rating) && $prog->rating>0) : ?>
+		<?php if (isset($prog['rating']) && $prog['rating']>0) : ?>
 		<p class="rating">Возрастной рейтинг: 
-			<span class="label label-warning"><?php echo $prog->rating ?>+</span>
+			<span class="label label-warning"><?php echo $prog['rating'] ?>+</span>
 		</p>
 		<?php endif; ?>
 		
 		<?php /*
 		<p>
-			<a class="btn btn-mini btn-primary" title="Скачать <?php echo $prog->title ?>" href="<?php echo $this->url(array(), 'default_torrents_finder') ?>?s=<?php echo urlencode(strrev(base64_encode($prog->title))); ?>">
-				Скачать <?php echo $prog->title ?>
+			<a class="btn btn-mini btn-primary" title="Скачать <?php echo $prog['title'] ?>" href="<?php echo $this->url(array(), 'default_torrents_finder') ?>?s=<?php echo urlencode(strrev(base64_encode($prog['title']))); ?>">
+				Скачать <?php echo $prog['title'] ?>
 			</a>
 		</p>
 		*/ ?>
@@ -192,21 +188,22 @@ if (!empty($this->programs)) {
 		/*
 		 * Описание программы
 		 */
-		if (!empty($prog->desc_intro)) { 
+		if ( isset($prog['desc_intro']) && !empty($prog['desc_intro'])) { 
 			?>
 		<p class="video-desc">
-			<?php echo $this->truncateString( $prog->desc_intro, 100, 'words' ) ?>
+			<?php echo $this->truncateString( $prog['desc_intro'], 100, 'words' ) ?>
 		</p>
 			<?php
-		}
+		} ?>
 		
-		if (!empty($prog->desc_body)) { 
+		<?php 
+		if (!empty($prog['desc_body'])) {
 			?>
 		<p class="desc body">
-			<?php echo $this->truncateString( $prog->desc_body, 100, 'words' ) ?>
+			<?php echo $this->truncateString( $prog['desc_body'], 100, 'words' ) ?>
 		</p>
 			<?php 
-		} 
+		}
 		?>
 		
 		
@@ -215,10 +212,9 @@ if (!empty($this->programs)) {
 		 * Видео
 		 */
 		if ( count($this->listing_videos)) {
-			if ( array_key_exists( $prog->hash, $this->listing_videos) && !empty($this->listing_videos[$prog->hash])){
+			if ( array_key_exists( $prog['hash'], $this->listing_videos) && !empty($this->listing_videos[$prog['hash']])){
 				
-				$vid = $this->listing_videos[$prog->hash];
-				
+				$vid = $this->listing_videos[$prog['hash']];
 				?>
 				
 				<div class="program-video">
@@ -226,7 +222,7 @@ if (!empty($this->programs)) {
 				$videoTitle = $this->escape( $vid->title );
 				$videoAlias = $this->escape( $vid->alias );
 				$videoDesc  = $this->escape( $vid->desc );
-				$videoId	= $vid->rtvg_id;
+				$videoId	= $this->escape( $vid->rtvg_id );
 				$videoUrl = $this->url(array('alias'=>$videoAlias, 'id'=>$videoId), 'default_videos_show-video');
 				?>
 				
@@ -276,10 +272,10 @@ if (!empty($this->programs)) {
 		}
 		?>
 		
-		<?php if (isset($prog->actors) && !empty($prog->directors)): ?>
+		<?php /* if (isset($prog['actors']) && !empty($prog['actors'])): ?>
 		<p>В ролях:
 			<ul class="persons btn-group">
-				<?php foreach ($prog->actors as $p): ?>
+				<?php foreach ($prog['actors'] as $p): ?>
 				<li class="btn btn-mini">
 					<?php echo $p['complete_name'] ?>
 				</li>
@@ -288,17 +284,17 @@ if (!empty($this->programs)) {
 		</p>
 		<?php endif; ?>
 		
-		<?php if (isset($prog->directors) && !empty($prog->directors)): ?>
+		<?php if (isset($prog['directors']) && !empty($prog['directors'])): ?>
 		<p>Режиссер:
 			<ul class="persons btn-group">
-				<?php foreach ($prog->directors as $p): ?>
+				<?php foreach ($prog['directors'] as $p): ?>
 				<li class="btn btn-mini">
 					<?php echo $p['complete_name'] ?>
 				</li>
 				<?php endforeach; ?>
 			</ul>
 		</p>
-		<?php endif;  ?>
+		<?php endif; */  ?>
 		
 	</div>
 	
@@ -337,14 +333,14 @@ if (!empty($this->programs)) {
 ?>
 <?php if (!$this->is_today) : ?>
 <p>
-	<a href="<?php echo $this->url(array('channel'=>$this->channel->alias), 'default_listings_day-listing'); ?>"
+	<a href="<?php echo $this->url(array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>"
 		title="<?php printf('Перейти к расписанию программ канала %s на сегодня', $channelTitle); ?>">
 		<em><?php printf ('Программа передач "%s" на сегодня', $channelTitle) ?></em>
 	</a>
 </p>
 <?php endif; ?>
 <p>
-	<a href="<?php echo $this->url(array('channel'=>$this->channel->alias), 'default_channels_channel-week'); ?>"
+	<a href="<?php echo $this->url(array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>"
 		title="<?php printf('Перейти к расписанию программ канала %s на неделю', $channelTitle); ?>">
 		<em><?php printf ('Программа передач "%s" на всю неделю', $channelTitle) ?></em>
 	</a>
@@ -364,9 +360,9 @@ if (!empty($this->programs)) {
 		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
 		$d->subDay(1);
 		?>
-		<a href="<?php echo $this->url(array('channel'=>$this->channel->alias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
+		<a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
 			class="btn"
-			title="Программа <?php echo $this->channel->title ?> на <?php echo $d->toString('dd-MM-yyyy') ?>">Вчера</a>
+			title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-yyyy') ?>">Вчера</a>
 	</li>
 	<li>
 		<a href="<?php echo $this->url(array(), 'default_channels_list') ?>" class="btn" title="Все телеканалы">Все каналы</a>
@@ -376,9 +372,9 @@ if (!empty($this->programs)) {
 		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
 		$d->addDay(1);
 		?>
-		<a href="<?php echo $this->url(array( 'channel'=>$this->channel->alias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
+		<a href="<?php echo $this->url(array( 'channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
 			class="btn"
-			title="Программа <?php echo $this->channel->title ?> на <?php echo $d->toString('dd-MM-yyyy') ?>">Завтра</a>
+			title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-yyyy') ?>">Завтра</a>
 	</li>
 	
 </ul>
@@ -447,7 +443,7 @@ if (!empty($this->comments)) { ?>
 		<div class="summary"><?php echo $comment['title'] ?></div>
 		<?php else: ?>
 		<div class="summary">
-			<span property="v:itemreviewed"><?php echo $this->escape( $this->channel->title ); ?></span>
+			<span property="v:itemreviewed"><?php echo $this->escape( $channelTitle ); ?></span>
 		</div>
 		<?php endif; ?>
 		
@@ -472,7 +468,7 @@ if (!empty($this->comments)) { ?>
 		
 		<div class="description">
 			<span property="v:description">
-				<?php echo str_ireplace($this->channel->title, '<em>'.$this->channel->title.'</em>', $comment['intro']) ?>
+				<?php echo str_ireplace($channelTitle, '<em>'.$channelTitle.'</em>', $comment['intro']) ?>
 			</span>
 		</div>
 		

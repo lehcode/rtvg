@@ -42,7 +42,7 @@ class Xmltv_Model_DbTable_ChannelsRatings extends Zend_Db_Table_Abstract
 			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
     	
 		if (!$row = $this->find($channel_id)->current())
-			$row = $this->createRow(array('ch_id'=>$channel_id), true);
+			$row = $this->createRow(array('id'=>$channel_id), true);
 		
 		//var_dump($channel_id);
 		//var_dump($row);

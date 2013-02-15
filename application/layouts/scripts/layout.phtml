@@ -4,9 +4,12 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.22 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: layout.phtml,v 1.23 2013-02-15 00:44:02 developer Exp $
  *
  */
+
+$pageClass   = isset($this->pageclass) && !empty($this->pageclass) ? ' '.(string)$this->pageclass : '' ;
+$isFrontpage = trim($pageClass)=='frontpage' ? true  : false ;
 
 $this->headMeta()
 	->prependHttpEquiv('Content-Type', 'text/html;charset=utf-8');
@@ -48,6 +51,7 @@ $this->headScript()
 $this->inlineScript()
 	->appendScript( 'VK.init({apiId: 2963750, onlyWidgets: true});
 	VK.Widgets.Group("vk_groups", {mode: 0, width: "350", height: "290" }, 27716041);
+	$("a[class^=\'mg_ad\']").remove(); 
 	jQuery(document).ready(function(){ 
 		$("#footer .counter_logo").css({ display: "none" }); 
 		if  ($("#col_r .da_adp_links")) { $("#col_r .da_adp_links").css({ display: "none" }); }
@@ -74,16 +78,15 @@ if ($this->hide_sidebar=='right'){
 }
 
 
-	
 $this->placeholder('maincontent')->set( $this->layout()->content );
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
-$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array()) );
+$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array('list'=>$this->featured)) );
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'top_programs'=>$this->top_programs,
 	'cats'=>$this->channels_cats,
 	'channel'=>$this->channel )));
-if ($this->is_frontpage) {
+if ($isFrontpage) {
 	$this->placeholder('frontpage_menu')->set( $this->partial('partials/frontpage-menu.phtml', array()) );
 }
 
@@ -98,10 +101,11 @@ $sidebarConf = array(
 if ($this->channel) $sidebarConf['channel'] = $this->channel;
 if ($this->current_program) $sidebarConf['program'] = $this->current_program;
 $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', $sidebarConf ) );
-//die(__FILE__.': '.__LINE__);
 
-//$this->headStyle()
-//	->appendStyle("");
+$this->headStyle()
+	->appendStyle("");
+
+
 
 ?>
 
@@ -118,83 +122,60 @@ echo $this->headStyle(), PHP_EOL;
 ?>
 
 <?php 
-if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot')) {
-	if (!$this->is_frontpage) {
-		$this->inlineScript()
-			->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
-			->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
-		
-		if (APPLICATION_ENV!='development') {
-		    /*
-			$this->inlineScript()
-				//->appendFile("http://www.adcash.com/script/java.php?option=rotateur&rotateur=102755") //adcash rollin
-				->appendFile("http://rotation-media.net/codes/21010/40198_rutvgid.ru.js")  //mediarich adspot
-				->appendFile("http://rotationmessage.net/codes/21010/40198_rutvgid.ru.js"); //mediarich vk message
-			*/
-		}
-	}
+if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot') && !$isFrontpage) {
+    
+	$this->inlineScript()
+		->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
+		->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
+	
 	?>
-<script>
-(function() {
-	var cx = ' 	006526203727824860247:vdzpxf_4n5a';
-	var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
-	gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//www.google.com/cse/cse.js?cx=' + cx;
-	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-})();
-</script>
-<script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-778789-8']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
+	<script type="text/javascript">
+	
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-778789-8']);
+	  _gaq.push(['_trackPageview']);
+	
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+	
+	</script>
+	<script>
+	(function() {
+		var cx = ' 	006526203727824860247:vdzpxf_4n5a';
+		var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
+		gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//www.google.com/cse/cse.js?cx=' + cx;
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
+	})();
+	</script>
 	<?php 
 }
 
 ?>
 
-
-<?php if (APPLICATION_ENV!='development') {
-    /*
-<script type="text/javascript" charset="windows-1251" src="http://mr.rutvgid.ru/c/21010/40198_rutvgid.ru.js"></script>
-<script type="text/javascript" charset="windows-1251" src="http://vm.rutvgid.ru/c/21010/40198_rutvgid.ru.js"></script>
-	*/ 
-    if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot')): ?>
-<script language='javascript' type='text/javascript' src='http://micro.rutvgid.ru/80j4ch2sa3g5s46cexqrro13ejeo0t3p'></script>
-	<?php endif; ?>
-
-    <?php 
-} ?>
-
-
 </head>
+
 <body>
 	
-	<?php if (!$this->is_frontpage): ?>
+	<?php if (!$isFrontpage): ?>
 	<div class="row-fluid" id="header">
 		<?php echo $this->placeholder('header'); ?>
 	</div>
 	<?php endif; ?>
 	
-	<div id="content" class="row-fluid content<?php echo isset($this->pageclass) && !empty($this->pageclass) ? ' '.$this->pageclass : '' ; ?>">
+	<div id="content" class="row-fluid<?php echo $pageClass; ?>">
 		
 		<?php 
-		if ($this->is_frontpage) { 
+		
+		if ($isFrontpage) {
 			?>
 		<div class="span12" id="maincontent">
-			<?php echo $this->placeholder('frontpage_menu'); ?>
-			<?php /*
-			<div class="span12" id="premieres">
-				<?php echo $premieres; ?>
-			</div>
-			*/ ?>
+			<?php 
+			echo $this->placeholder('frontpage_menu'); 
+			echo $this->placeholder('maincontent'); 
+			?>
 		</div>
 			<?php 
 		} else {
@@ -206,7 +187,7 @@ if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot'))
 		</div>
 		<?php endif; ?>
 		
-		<div class="span<?php echo $this->maincontent_width.' '.$this->pageclass ?>" id="maincontent">
+		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
 			
 			<?php 
 			if (count($this->messages)) {
@@ -218,13 +199,10 @@ if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot'))
 				}
 			} else {
 				if (APPLICATION_ENV=='production') {
-					?>
-					<div id="DIV_DA_85979"></div><?php //directadvert rollin left ?>
-					<?php 
+				    echo '<div id="DIV_DA_85979"></div>'; //directadvert rollin left
 				}
 			}
 			echo $this->placeholder('maincontent');
-			
 			?>
 			
 		</div>
@@ -241,12 +219,18 @@ if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot'))
 	</div>
 	
 	<?php 
-	$fChannels = $this->placeholder('featured_channels');
-	if (!empty($fChannels)) : ?>
-	<div id="featuredchannels" class="row-fluid">
-		<?php echo $this->placeholder('featured_channels'); ?>
-	</div>
-	<?php endif; ?>
+	/*
+	 * Featured channels links
+	 */
+	if (!$isFrontpage){
+		$fChannels = $this->placeholder('featured_channels');
+		if (!empty($fChannels)) { ?>
+		<div id="featuredchannels" class="row-fluid">
+			<?php echo $fChannels; ?>
+		</div>
+		<?php 
+		} 
+	} ?>
 	
 	<div class="row-fluid" id="footer">
 		<?php echo $this->placeholder('footer'); ?>
@@ -256,32 +240,46 @@ if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot'))
 <?php 
 if (APPLICATION_ENV=='production'){
 	?>
-<script type="text/javascript">
-(function (d, w, c) {
-    (w[c] = w[c] || []).push(function() {
-        try {
-            w.yaCounter16053280 = new Ya.Metrika({id:16053280, enableAll: true, webvisor:true});
-        } catch(e) {}
-    });
-    
-    var n = d.getElementsByTagName("script")[0],
-        s = d.createElement("script"),
-        f = function () { n.parentNode.insertBefore(s, n); };
-    s.type = "text/javascript";
-    s.async = true;
-    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
-
-    if (w.opera == "[object Opera]") {
-        d.addEventListener("DOMContentLoaded", f);
-    } else { f(); }
-})(document, window, "yandex_metrika_callbacks");
-</script>
-<noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+	
+	<script type="text/javascript">
+	(function (d, w, c) {
+	    (w[c] = w[c] || []).push(function() {
+	        try {
+	            w.yaCounter16053280 = new Ya.Metrika({id:16053280, enableAll: true, webvisor:true});
+	        } catch(e) {}
+	    });
+	    
+	    var n = d.getElementsByTagName("script")[0],
+	        s = d.createElement("script"),
+	        f = function () { n.parentNode.insertBefore(s, n); };
+	    s.type = "text/javascript";
+	    s.async = true;
+	    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+	
+	    if (w.opera == "[object Opera]") {
+	        d.addEventListener("DOMContentLoaded", f);
+	    } else { f(); }
+	})(document, window, "yandex_metrika_callbacks");
+	</script>
+	<noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 	<?php 
 }
 ?>
 
 <?php echo $this->inlineScript(); ?>
- 
+
+<?php 
+/*
+ * Marketgid code
+ */
+
+?>
+<?php /*<script type="text/javascript">
+var MarketGidDate = new Date();
+document.write('<scr'+'ipt type="text/javascript" '
++'src="http://jsc.dt00.net/r/u/rutvgid.ru.35536.js?t='+MarketGidDate.getYear()+MarketGidDate.getMonth()+MarketGidDate.getDay()+MarketGidDate.getHours() + '" charset="utf-8" ></scr'+'ipt>');
+</script>
+*/ ?>
+
 </body>
 </html>

@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: similar-week.phtml,v 1.1 2013-01-19 10:11:14 developer Exp $
+ * @version $Id: similar-week.phtml,v 1.2 2013-02-15 00:44:03 developer Exp $
  *
  */
 ?>
@@ -16,7 +16,7 @@ $this->headTitle( $this->escape( 'Похожие программы на это�
 ?>
 
 <h1>Похожие программы на этой неделе</h1>
-
+<p>
 <?php 
 if (isset($this->similar)) {
     foreach ($this->similar as $single) {
@@ -26,7 +26,7 @@ if (isset($this->similar)) {
         $programUrl = $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U");
 		?>
 		
-		<p>
+		
 			<img src="<?php echo $channelIcon ?>" 
 				alt="<?php echo $single->channel_title ?>" />
 			
@@ -42,8 +42,9 @@ if (isset($this->similar)) {
 				$single['channel_title'] );
 			?>
 			 
-		</p>
+		<br />
 		<?php 
     }
 }
 ?>
+</p>

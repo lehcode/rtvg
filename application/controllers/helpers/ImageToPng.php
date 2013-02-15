@@ -6,7 +6,7 @@
  * @author  Acuminate http://stackoverflow.com/users/2482/acuminate
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/ImageToPng.php,v $
- * @version $Id: ImageToPng.php,v 1.1 2013-01-02 05:11:45 developer Exp $
+ * @version $Id: ImageToPng.php,v 1.2 2013-02-15 00:44:02 developer Exp $
  */
 class Xmltv_Controller_Action_Helper_ImageToPng extends Zend_Controller_Action_Helper_Abstract
 {
@@ -52,6 +52,7 @@ class Xmltv_Controller_Action_Helper_ImageToPng extends Zend_Controller_Action_H
      * @return string
      */
 	function imageToPng($srcFile, $params=array()) {
+	    
 	    
 	    if (!empty($params))
 	        $this->setParams($params);

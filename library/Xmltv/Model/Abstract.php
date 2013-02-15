@@ -31,6 +31,11 @@ abstract class Xmltv_Model_Abstract
      */
     protected $channelsCategoriesTable;
     /**
+     *
+     * @var Xmltv_Model_DbTable_ChannelsRatings
+     */
+    protected $channelsRatingsTable;
+    /**
      * Channels
      * @var Xmltv_Model_DbTable_Channels
      */
@@ -59,7 +64,7 @@ abstract class Xmltv_Model_Abstract
 		// Set table prefix
 		$pfx = $this->dbConf->get('tbl_prefix');
 		if( !empty($pfx)) {
-		    $this->tblPfx = $this->dbConf->get('tbl_prefix'); 
+		    self::$tblPfx = $this->dbConf->get('tbl_prefix'); 
 		}
 		
 		$this->_initTables();
@@ -88,7 +93,8 @@ abstract class Xmltv_Model_Abstract
 	    $this->propertiesTable         = new Xmltv_Model_DbTable_ProgramsProps();
 	    $this->categoriesTable         = new Xmltv_Model_DbTable_ProgramsCategories();
 	    $this->channelsTable           = new Xmltv_Model_DbTable_Channels();
-	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
+	    $this->channelsRatingsTable    = new Xmltv_Model_DbTable_ChannelsRatings();
 	    
 	}
 	
@@ -100,7 +106,7 @@ abstract class Xmltv_Model_Abstract
 	    
 	    echo '<b>'.$method.'</b><br />';
 		try {
-            echo '<pre>'.$select->assemble().'</pre>';
+            Zend_Debug::dump($select->assemble());
         } catch (Zend_Db_Select_Exception $e) {
             throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
         }

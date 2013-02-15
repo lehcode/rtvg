@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Action.php,v 1.3 2013-01-19 10:11:14 developer Exp $
+ * @version $Id: Action.php,v 1.4 2013-02-15 00:44:24 developer Exp $
  *
  */
 class Xmltv_Controller_Action extends Zend_Controller_Action
@@ -15,6 +15,21 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
     protected static $userAgent='';
     protected static $videoCache=false;
     protected $weekDays;
+    protected $profile=false;
+    
+    const FEATURED_CHANNELS_AMT=20;
+    
+    /**
+     * Channels model
+     * @var Xmltv_Model_Channels
+     */
+    protected $channelsModel;
+    
+    /**
+     * Channels model
+     * @var Xmltv_Model_Programs
+     */
+    protected $programsModel;
     
     /**
      *
@@ -48,6 +63,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
     
     const ERR_INVALID_INPUT = 'Неверные данные для ';
     const ERR_MISSING_CHANNEL_INFO = "Не указаны данные канала для ";
+    const ERR_MISSING_CONTROLLER   = "Не указан контроллер для ";
     
     
     
@@ -66,29 +82,25 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
         
         $this->validator = $this->_helper->getHelper('requestValidator');
         
-        
+        self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
         if (Zend_Registry::get('user_agent')!==false){
             self::$userAgent = Zend_Registry::get('user_agent');
-            self::$videoCache = true;
+            if ( self::$videoCache===true) {
+            	self::$videoCache = true;
+            }
         } else {
             self::$userAgent = 'PHP/5.3';
             self::$videoCache = false;
         }
         
-        //var_dump(self::$userAgent);
-        //var_dump(self::$videoCache);
-        //die(__FILE__.': '.__LINE__);
-        
-        if (isset($_GET['RTVG_PROFILE'])) {
-        	var_dump(self::$nocache);
-        	var_dump(self::$userAgent);
+        if ((bool)Zend_Registry::get('site_config')->site->get('profile')===true){
+        	$this->profile = true;
         }
         
         $this->weekDays = $this->_helper->getHelper('WeekDays');
         $this->cache = new Xmltv_Cache();
-        
-        //var_dump($this->_getAllParams());
-        //die(__FILE__.': '.__LINE__);
+        $this->channelsModel = new Xmltv_Model_Channels();
+        $this->programsModel = new Xmltv_Model_Programs();
         
     }
     
@@ -259,6 +271,11 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	    	$channel = $model->getByAlias($channelAlias);
 	    }
 	    
+	    if (APPLICATION_ENV=='development'){
+	    	//var_dump($channel);
+	    	//die(__FILE__.': '.__LINE__);
+	    }
+	    
 	    return $channel;
 	    
 	}
@@ -285,19 +302,21 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	 * @return unknown
 	 */
 	protected function getTopPrograms($amt=20){
-	
-		$top = $this->_helper->getHelper('Top');
+		
+	    $top   = $this->_helper->getHelper('Top');
+		$table = new Xmltv_Model_DbTable_ProgramsRatings();
+		$this->cache->setLifetime(1800);
 		if ($this->cache->enabled){
 			$f = '/Listings/Programs';
 			$hash = Xmltv_Cache::getHash('top'.$amt);
-			if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
-				$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
-				$this->cache->save($topPrograms, $hash, 'Core', $f);
+			if (!$result = $this->cache->load($hash, 'Core', $f)) {
+				$result = $table->fetchTopPrograms( $amt );
+				$this->cache->save($result, $hash, 'Core', $f);
 			}
 		} else {
-			$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
+			$result = $table->fetchTopPrograms( $amt );
 		}
-		return $topPrograms;
+		return $result;
 	
 	}
 	
@@ -343,10 +362,66 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	
 	}
 	
-	private function _initCache(){
+	protected function _initCache(){
 		
 	    $this->cache = new Xmltv_Cache();
 	    $this->cache->lifetime = (int)Zend_Registry::get('site_config')->cache->system->get('lifetime');
+	    
+	}
+	
+	/**
+	 * Top channels programs listing
+	 * 
+	 * @param  int $amt
+	 * @return array
+	 */
+	protected function getTopChannels($amt=10){
+		
+	    if (!$amt || !is_numeric($amt)){
+	    	$a = (int)Zend_Registry::get('site_config')->top->channels->get('amount');
+	    	$amt = $a>0 ? $a : self::FEATURED_CHANNELS_AMT;
+	    }
+	    
+		if ($this->cache->enabled){
+			$hash = Xmltv_Cache::getHash('featuredchannels');
+			$f = '/Channels';
+			if (($result = $this->cache->load($hash, 'Core', $f))===false) {
+				$result = $this->channelsModel->topChannels($amt);
+				$this->cache->save($result, $hash, 'Core', $f);
+			}
+		} else {
+		    $result = $this->channelsModel->topChannels($amt);
+		}
+		
+		return $result;
+		
+	}
+	
+	/**
+	 * Featured channels
+	 * 
+	 * @param  int $amt
+	 * @return array
+	 */
+	protected function getFeaturedChannels($amt=null){
+		
+	    if (!$amt || !is_numeric($amt)){
+	        $a = (int)Zend_Registry::get('site_config')->featured->channels->get('amount');
+	        $amt = $a>0 ? $a : self::FEATURED_CHANNELS_AMT;
+	    }
+	    
+	    if ($this->cache->enabled){
+	    	$hash = Xmltv_Cache::getHash('featuredchannels_'.(int)$amt);
+	    	$f = '/Channels';
+	    	if (($result = $this->cache->load($hash, 'Core', $f))===false) {
+	    		$result = $this->channelsModel->featuredChannels($amt);
+	    		$this->cache->save($result, $hash, 'Core', $f);
+	    	}
+	    } else {
+	    	$result = $this->channelsModel->featuredChannels($amt);
+	    }
+	    
+	    return $result;
 	    
 	}
 }

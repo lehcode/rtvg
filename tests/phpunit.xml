@@ -2,7 +2,7 @@
 	colors="true"
 	verbose="true"
 	convertErrorsToExceptions="true"
-	convertNoticesToExceptions="false"
+	convertNoticesToExceptions="true"
 	stopOnFailure="true"
 	syntaxCheck="true">
 	<testsuite name="Application Test Suite">

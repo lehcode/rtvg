@@ -19,7 +19,7 @@ $this->headScript()
 				$('#result').css({ \"background-color\":\"lightGreen\" }).html(response);
 			},
 			error: function(XHR, textStatus, errorThrown){
-				$('#result').css({ \"background-color\":\"lightRed\" }).html(errorThrown);
+				$('#result').css({ \"background-color\":\"lightRed\" }).html(XHR.responseText);
 			}
 		});
 	});

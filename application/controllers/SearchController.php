@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: SearchController.php,v 1.2 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: SearchController.php,v 1.3 2013-02-15 00:44:02 developer Exp $
  *
  */
 class SearchController extends Xmltv_Controller_Action
@@ -29,7 +29,7 @@ class SearchController extends Xmltv_Controller_Action
     		->initContext();
     
     	$this->validator = $this->_helper->getHelper( 'RequestValidator');
-    	$this->_initCache();
+    	parent::_initCache();
     	$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
     	$this->initView();
     	

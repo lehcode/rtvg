@@ -3,89 +3,85 @@
  * Database table for channels info
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.12 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Channels.php,v 1.13 2013-02-15 00:44:02 developer Exp $
  */
 
-class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
+class Xmltv_Model_DbTable_Channels extends Xmltv_Db_Table_Abstract
 {
 
     protected $_name = 'channels';
-    protected $_pfx;
+    protected $channelsRatingsTable;
+    protected $channelsCategoriesTable;
 	
 	const FETCH_MODE = Zend_Db::FETCH_OBJ;
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param array $config
+	 */
     public function __construct($config=array()) {
     	
     	parent::__construct(array('name'=>$this->_name));
-		
-    	if (isset($config['tbl_prefix'])) {
-    		$pfx = (string)$config['tbl_prefix'];
-    	} else {
-    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
-    	}
-    	$this->_pfx = $pfx;
-    	$this->setName($this->_pfx.$this->_name);
-		
+		$this->channelsRatingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
+		$this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
     }
     
-    /* 
-    public function getTypeaheadItems(){
-    	
-    	try {
-    		$select = $this->_db->select()->from($this->_name, array( 'title' ));
-    		$result = $this->_db->query($select)->fetchAll(self::FETCH_MODE);
-    	} catch (Exception $e) {
-    		echo $e->getMessage();
-    	}
-    	return $result;
-    	
-    }
+    /**
+     * Load featired channels list
+     * 
+     * @param  string $order
+     * @param  int    $total
+     * @param  bool   $by_hits
+     * @throws Zend_Exception
+     * @return mixed
      */
-    
-    public function getFeatured($order=null, $total=20, $by_hits=true){
+    public function featuredChannels($total=20, $order='id', $by_hits=true){
     	
-    	if (!$order)
-    		$order='ch_id';
-    	
-    	//$this->_initProfiler();
-    	
-    	try {
-    		$select = $this->_db->select()
-    		->from( array( 'channel'=>$this->_name ), '*' )
-    		->joinLeft( array( 'rating'=>'rtvg_channels_ratings'), "channel.`ch_id`=rating.`ch_id`");
-	    	$select->where( "channel.`featured`='1'" )->limit($total);
-	    	
-	    	if (!$by_hits)
+    	$select = $this->_db->select()
+    		->from( array( 'ch'=>$this->getName() ), array( 'id', 'title', 'alias'=>'LOWER(`ch`.`alias`)') )
+    		->join( array( 'r'=>$this->channelsRatingsTable->getName()), "`ch`.`id`=`r`.`id`", array('hits') )
+	    	//->where( "`ch`.`featured`='1'" )
+    		->limit( $total );
+	    
+	    if (!$by_hits){
 	    	$select->order("$order ASC");
-	    	else {
-	    		$select->order("rating.hits DESC");
-	    		$select->order("channel.title ASC");
-	    	}
-	    	
-	    	//var_dump($select->assemble());
-	    	//die(__FILE__.': '.__LINE__);
-	    	
-	    	$result = $this->_db->query($select)->fetchAll(self::FETCH_MODE);
-	    		    	
-    	} catch (Zend_Db_Table_Exception $e) {
-    		throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-    	}
+	    } else {
+    		$select->order("r.hits DESC");
+    		$select->order("ch.title ASC");
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	        echo "<b>".__METHOD__."</b>";
+		    Zend_Debug::dump($select->assemble());
+		    //die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    $result = $this->_db->query($select)->fetchAll(Zend_Db::FETCH_ASSOC);	    	
     	
-    	//var_dump($result);
-	    //die(__FILE__.': '.__LINE__);
-		
-		return $result;
+	    if (APPLICATION_ENV=='development'){
+	    	//Zend_Debug::dump($result);
+		    //die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    return $result;
     	
     }
     
+    /**
+     * 
+     * @param  string $alias
+     * @throws Zend_Exception
+     * @return Zend_Db_Table_Rowset
+     */
     public function fetchCategory($alias=null){
     	
     	if (!$alias)
 			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
 		
     	$select = $this->select()
-    		->from(array('ch'=>$this->_name), '*')
-    		->join(array('cat'=>'rtvg_channels_categories'), "`ch`.`category`=`cat`.`id`", array())
+    		->from(array('ch'=>$this->getName()), '*')
+    		->join(array('cat'=>$this->channelsCategoriesTable->getName()), "`ch`.`category`=`cat`.`id`", array())
     		->where("`cat`.`alias` LIKE '$alias'")
     		->where("`ch`.`published`='1'")
     		->order("ch.title ASC");
@@ -95,82 +91,115 @@ class Xmltv_Model_DbTable_Channels extends Zend_Db_Table_Abstract
     	
     }
     
-    public function fetchWeekItems($ch_id, Zend_Date $start, Zend_Date $end){
+    /**
+     * 
+     * @param  int       $ch_id
+     * @param  Zend_Date $start
+     * @param  Zend_Date $end
+     * @param  array     $tables
+     * @throws Zend_Exception
+     */
+    public function fetchWeekItems($ch_id, Zend_Date $start, Zend_Date $end, $tables=array()){
     	
-    	//$this->_initProfiler();
-		$days = array();
+        if (APPLICATION_ENV=='development'){
+        	//Zend_Debug::dump(func_get_args());
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        if (empty($tables))
+            throw new Zend_Exception(parent::ERR_PARAMETER_MISSING.__METHOD__, 500);
+        if (!isset($tables['programs']))
+            throw new Zend_Exception(parent::ERR_PARAMETER_MISSING.__METHOD__, 500);
+        if (!isset($tables['channels']))
+            throw new Zend_Exception(parent::ERR_PARAMETER_MISSING.__METHOD__, 500);
+        
+    	$days = array();
+    	
 		do{
 			$select = $this->_db->select()
-				->from( array( 'prog'=>$this->_pfx.'programs'), '*')
-				->joinLeft( array( 'props'=>$this->_pfx."programs_props"), "`prog`.`hash`=`props`.`hash`", array('actors', 'directors', 'premiere', 'live'))
-				->joinLeft( array( 'desc'=>$this->_pfx."programs_descriptions"), "`prog`.`hash`=`desc`.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
-				->joinLeft( array( 'ch'=>$this->_pfx."channels"), "`prog`.`ch_id`=`ch`.`ch_id`", array('ch_id'))
-				->where("`prog`.`start` LIKE '".$start->toString('yyyy-MM-dd')."%'")
-				->where("`prog`.`ch_id` = '$ch_id'")
+				->from( array( 'prog'=>$tables['programs']->getName()), array(
+					'title',
+					'sub_title',
+					'alias',
+					'start',
+					'end',
+					'episode_num',
+					'hash'
+				))
+				->joinLeft( array( 'ch'=>$this->getName()), "`prog`.`channel`=`ch`.`id`", array( 
+					'channel_id'=>'id',
+					'channel_title'=>'title',
+					'channel_alias'=>'alias'))
+				->where("`prog`.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00'")
+				->where("`prog`.`start` < '".$start->toString('yyyy-MM-dd')." 23:59'")
+				->where("`prog`.`channel` = '$ch_id'")
 				->where("`ch`.`published` = '1'")
 				->order("prog.start", "ASC");
 			
-			//var_dump($select->assemble());
-			//die(__FILE__.': '.__LINE__);
-				
+			if (APPLICATION_ENV=='development'){
+			    Zend_Debug::dump($select->assemble());
+			    //die(__FILE__.': '.__LINE__);
+			}
+			
 			try {
-				$days[$start->toString('U')] = $this->_db->fetchAll($select, null, self::FETCH_MODE);
+				$days[$start->toString('U')] = $this->_db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
 			} catch (Zend_Db_Adapter_Exception $e) {
 				throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 			}
 			
-			//$this->_profileQuery();
 			$start->addDay(1);
 			
 		} while ( $start->compare($end, 'dd', 'ru')!=1 );
-		//var_dump($end->toString('YYYY-MM-dd'));
-		//$safeTag = Zend_Controller_Action_HelperBroker::getStaticHelper('safeTag');
 		
-		foreach ($days as $day) {
-			foreach ($day as $program) {
-				$program->start = new Zend_Date($program->start);
-				$program->end   = new Zend_Date($program->end);
-			}
+		if (APPLICATION_ENV=='development'){
+			//Zend_Debug::dump($days);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		foreach ($days as $timestamp=>$day) {
+		    if (!empty($day)){
+		        //Zend_Debug::dump($day);
+		        //die(__FILE__.': '.__LINE__);
+				foreach ($day as $k=>$program) {
+				    $days[$timestamp][$k]['start'] = new Zend_Date( $program['start'], 'yyyy-MM-dd HH:mm:ss');
+					$days[$timestamp][$k]['end']   = new Zend_Date( $program['end'], 'yyyy-MM-dd HH:mm:ss');
+					//Zend_Debug::dump($days[$timestamp][$k]);
+					//die(__FILE__.': '.__LINE__);
+				}
+		    }
 		}
 
-		//var_dump($days);
-		//die(__FILE__.': '.__LINE__);
+    	if (APPLICATION_ENV=='development'){
+			//Zend_Debug::dump($days);
+			//die(__FILE__.': '.__LINE__);
+		};
 		
 		return $days;
     	
     }
-    
-    private function _initProfiler(){
-    	
-    	if( $this->_profiling ) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$this->_profiler = $this->_db->getProfiler();
-		}
-    	
-    }
-    
-    private function _profileQuery(){
-    	
-    	if( $this->_profiling ) {
-			$query = $this->_profiler->getLastQueryProfile();
-			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
-		}
-    	
-    }
+	
 	/**
-	 * @return string
+	 * 
+	 * @param unknown_type $amt
 	 */
-	public function getName() {
-		return $this->_name;
+	public function topChannels($amt=20, $offset=0){
+		
+	    die(__FILE__.': '.__LINE__);
+	    
+	    $ratings = new Xmltv_Model_DbTable_ChannelsRatings();
+	    $select = $this->select(true)
+	    	->from(array('ch'=>$this->getName()))
+	    	->join(array('r'=>$ratings->getName()))
+	    	->limit($amt);
+	    	
+	    if (APPLICATION_ENV=='development'){
+	        Zend_Debug::dump($select->assemble());
+	        die(__FILE__.': '.__LINE__);
+	    }
+	    
 	}
 
-	/**
-	 * @param string $string
-	 */
-	public function setName($string=null) {
-		$this->_name = $string;
-	}
-
+	
 	
 }
 

@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/RequestValidator.php,v $
- * @version $Id: RequestValidator.php,v 1.12 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.13 2013-02-15 00:44:02 developer Exp $
  */
 class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -63,13 +63,13 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    	)
 	    );
 		
+		$profile = (bool)Zend_Registry::get('site_config')->site->get('profile');
 		if (isset($_GET['RTVG_PROFILE'])){
 			$validators['RTVG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
 		}
 		if (isset($_GET['XDEBUG_PROFILE'])){
 			$validators['XDEBUG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
 		}
-		
 	    $module     = $params['module'];
 	    $controller = $params['controller'];
 	    $action     = $params['action'];

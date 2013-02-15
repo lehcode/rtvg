@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.11 2013-01-19 10:11:14 developer Exp $
+ * @version $Id: show-video.phtml,v 1.12 2013-02-15 00:44:03 developer Exp $
  *
  */
 
@@ -20,12 +20,24 @@ if (isset($this->main_video)){
     	$this->headMeta()->setName( 'description', $this->truncateString( str_replace( "\n", ' ', $videoDesc), 12, 'words'));
     }
     
-    $this->inlineScript()->appendFile("/js/swfobject/swfobject.js");
+    $this->inlineScript()
+    	->appendFile("/js/swfobject/swfobject.js")
+    	->appendScript("var MarketGidDate = new Date();
+var min_width = '250';
+var min_height = '150';
+var overlay_interval = '40';
+var overlay_height = '55';
+var mg_opacity = '0.8';
+var mg_bgcolor = '#353535';
+document.write('<scr'+'ipt type=\"text/javascript\" '
++'src=\"http://jsc.dt00.net/r/u/rutvgid.ru.35584.js?t='+MarketGidDate.getYear()+MarketGidDate.getMonth()+MarketGidDate.getDay()+MarketGidDate.getHours() + '\" charset=\"utf-8\" ></scr'+'ipt>');");
+    
     $this->headScript()->appendScript("$(document).ready(function() {
     		var descP = $('.video.thumbnails .span4 p.desc');
     		var descHeight = descP.prop('offsetHeight');
     		if (descHeight>150) { descP.css({ height:'8.4em' }).after('<button class=\"btn\" id=\"fulldesc\">Читать полностью</a>'); }
     		$('#fulldesc').click( function(e){ descP.css({ height:descHeight }); $(this).hide(500); });
+    		$('#maincontent div.videos div.main div.player-wrap').val('');
     
     });");
     ?>
@@ -43,7 +55,7 @@ if (isset($this->main_video)){
 		<p class="desc"><?php echo strip_tags( $videoDesc ) ?></p>
 		
 		<?php 
-		$this->inlineScript()->appendScript('var params = { allowScriptAccess: "always", allowfullscreen:"true" };
+		$this->inlineScript()->appendScript('var params = { allowScriptAccess: "always", allowfullscreen:"true", wmode:"transparent" };
 	    var attrs = { id: "mytplayer" };
 	    swfobject.embedSWF("http://www.youtube.com/v/'.$this->main_video['yt_id'].'?enablejsapi=1&playerapiid=ytplayer&version=3&allowfullscreen=true", "player", "460", "258", "8", null, null, params, attrs);');
 		?>
@@ -83,11 +95,7 @@ if (isset($this->main_video)){
 							alt="<?php echo $v['title'] ?>" />
 					</a>
 					
-					<?php 
-					
-					?>
-					
-					<p class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></p>
+					<?php /*<p class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></p>*/ ?>
 					
 					<p class="category">
 						<?php 

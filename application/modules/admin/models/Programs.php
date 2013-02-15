@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.23 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: Programs.php,v 1.24 2013-02-15 00:44:02 developer Exp $
  */
 
 class Admin_Model_Programs 
@@ -153,8 +153,9 @@ class Admin_Model_Programs
 	private $_ageRatingRegex = '/\s\(?([0-9]{1,2})\+\)?$/ui';
 	private $_lAgeRatingRegex = '/^([0-9]{1,2})\+\s/ui';
 	
-	const ERR_MISSING_PARAMS = "Пропущен параметр!";
-	const ERR_CANNOT_SAVE = "Не могу сохранить запись!";
+	const ERR_MISSING_PARAMS = "Пропущен параметр для ";
+	const ERR_WRONG_TYPE     = "Неверный параметр для ";
+	const ERR_CANNOT_SAVE    = "Не могу сохранить запись!";
 
 	/**
 	 * Model onstructor
@@ -162,8 +163,6 @@ class Admin_Model_Programs
 	public function __construct(){
 		
 		$this->programsTable		   = new Admin_Model_DbTable_Programs();
-		$this->programsPropsTable	   = new Admin_Model_DbTable_ProgramsProps();
-		$this->programsDescTable	   = new Admin_Model_DbTable_ProgramsDescriptions();
 		$this->programsCategoriesTable = new Admin_Model_DbTable_ProgramsCategories();
 		$this->actorsTable			   = new Admin_Model_DbTable_Actors();
 		$this->directorsTable		   = new Admin_Model_DbTable_Directors();
@@ -1025,22 +1024,24 @@ class Admin_Model_Programs
 					// Breakpoint
 					if (APPLICATION_ENV=='development'){
 						var_dump($m);
-						die(__FILE__.': '.__LINE__);
+						//die(__FILE__.': '.__LINE__);
 					}
 					 
 					$result['category']  = $this->catIdFromTitle(trim($m[2]));
-					$result['actors'] = $this->_parsePersonsNames(trim($m[3]), 'actor');
+					$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
 					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
-					$result['directors'] = $this->_parsePersonsNames(trim($m[4]), 'director');
+					$result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[4]), 'director') );
 					$desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
 					$result['country'] = self::_parseCountry(trim($m[5]));
 					$result['year']  = (int)trim($m[6]);
 					$result['title'] = Xmltv_String::ucfirst( Xmltv_String::strtolower(trim($m[1])));
 					$desc = preg_replace('/^.+$/ui', '', $desc);
 					
-					//var_dump($result);
-					//var_dump($desc);
-					//die(__FILE__.': '.__LINE__);
+					if (APPLICATION_ENV=='development'){
+						//var_dump($result);
+						//var_dump($desc);
+						//die(__FILE__.': '.__LINE__);
+					}
 						  
 				}
 			}
@@ -1070,9 +1071,9 @@ class Admin_Model_Programs
 					$result['country'] = self::_parseCountry(trim($m[3]));
 					$result['year'] = (int)trim($m[4]);
 					$desc = trim($m[7]);
-					$result['actors'] = $this->_parsePersonsNames( trim($m[6]), 'actor');
+					$result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[6]), 'actor') );
 					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
-					$result['directors'] = $this->_parsePersonsNames(trim($m[5]), 'director');
+					$result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[5]), 'director') );
 					$desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
 			    	
 					// Breakpoint
@@ -1089,9 +1090,9 @@ class Admin_Model_Programs
 				
 			    $result['title']     = Xmltv_String::ucfirst( Xmltv_String::strtolower(trim($m[1])));
 			    $result['category']  = $this->catIdFromTitle(trim($m[2]));
-			    $result['directors'] = $this->_parsePersonsNames(trim($m[3]), 'director');
+			    $result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'director') );
 			    $desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
-			    $result['actors'] = $this->_parsePersonsNames( trim($m[4]), 'actor');
+			    $result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[4]), 'actor') );
 			    $desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
 			    
 				// Breakpoint
@@ -1116,7 +1117,7 @@ class Admin_Model_Programs
 				
 				// Breakpoint
 				if (APPLICATION_ENV=='development'){
-					var_dump($m);
+					//var_dump($m);
 					//die(__FILE__.': '.__LINE__);
 				}
 				
@@ -1126,17 +1127,17 @@ class Admin_Model_Programs
 				$result['country']   = self::_parseCountry(trim($m[3]));
 				$result['year']      = (int)trim($m[4]);
 				$result['writer']    = trim($m[6]);
-				$result['directors'] = $this->_parsePersonsNames( trim($m[5]), 'director');
+				$result['directors'] = implode( ",", $this->_parsePersonsNames( trim($m[5]), 'director') );
 				$desc = $this->_removePersonsNames( $desc, $result['directors'], 'director');
 				
-				$result['actors'] = $this->_parsePersonsNames( trim($m[7]), 'actor');
+				$result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[7]), 'actor') );
 				$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
 				$result['desc'] = $desc = trim($m[8]);
 
 				// Breakpoint
 				if (APPLICATION_ENV=='development'){
-					var_dump($result);
-					die(__FILE__.': '.__LINE__);
+					//var_dump($result);
+					//die(__FILE__.': '.__LINE__);
 				}
 				
 			}
@@ -1192,7 +1193,7 @@ class Admin_Model_Programs
 						$result['category']  = $this->catIdFromTitle(trim($m[1]));
 					}
 						
-					$result['actors'] = $this->_parsePersonsNames(trim($m[3]), 'actor');
+					$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
 					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
 					$result['country'] = self::_parseCountry(trim($m[4]));
 					$result['year'] = (int)trim($m[5]);
@@ -1216,7 +1217,7 @@ class Admin_Model_Programs
 			if (Xmltv_String::stristr($desc, 'В ролях') || Xmltv_String::stristr($desc, 'Звезды кино')){
 				if (preg_match('/^(.*)\s(В\sролях|Звезды\sкино):\s([-\w+\s\w+,^A-Z]+,?)\.?\s*(.*)$/ui', $desc, $m)){
 				    
-					$result['actors'] = $this->_parsePersonsNames( $desc, 'actor');
+					$result['actors'] = implode(",", $this->_parsePersonsNames( $desc, 'actor'));
 					$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
 					$desc = trim($m[1]);
 						
@@ -1248,6 +1249,11 @@ class Admin_Model_Programs
 			$trim = new Zend_Filter_StringTrim(array('charlist'=>' -,'));
 			$result['text'] = $trim->filter( Xmltv_String::str_ireplace('...', '…', $desc) );
 			
+			if (preg_match('/([\d]{2}-плюс)$/u', $result['alias'], $m)) {
+			    $result['alias'] = Xmltv_String::str_ireplace($m[1], '', $result['alias']);
+			    var_dump($result);
+			    die(__FILE__.': '.__LINE__);
+			}
 			
 			//var_dump($result);
 			//die(__FILE__.': '.__LINE__);
@@ -1269,7 +1275,8 @@ class Admin_Model_Programs
 	    		if ( array_key_exists( $key, $this->countriesList)){
 	    			$result['country'][] = $this->countriesList[$key];
 	    		} else {
-	    			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+	    		    $profile = (bool)Zend_Registry::get('site_config')->profile;
+			    	if ($profile){
 	    				var_dump($country);
 	    				die(__FILE__.': '.__LINE__);
 	    			}
@@ -1282,7 +1289,8 @@ class Admin_Model_Programs
 	    	if ( array_key_exists( $country, $this->countriesList)){
 	    		return $this->countriesList[$country];
 	    	} else {
-	    		if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+	    	    $profile = (bool)Zend_Registry::get('site_config')->profile;
+			    if ($profile){
 	    			var_dump($country);
 	    			die(__FILE__.': '.__LINE__);
 	    		}
@@ -1345,7 +1353,11 @@ class Admin_Model_Programs
 	    }
 	    if (!empty($persons)){
 	        
-		    $names = $table->fetchAll("`id` IN (".implode(',', $persons).")")->toArray();
+	        if (is_array($persons)){
+	            $persons = implode(',', $persons);
+	        }
+	        
+	        $names = $table->fetchAll("`id` IN (".$persons.")")->toArray();
 		    foreach ($names as $p){
 		        
 		        //var_dump($names);
@@ -1501,33 +1513,24 @@ class Admin_Model_Programs
 	public function saveDescription($data=array()){
 		
 	    if (!empty($data) && is_array($data)) {
-	    	$search = $data['hash'];
-	    	if (!$this->programsDescTable->fetchRow( "`hash`='".$data['hash']."'")){
+	        
+	        if (!$data['hash'] || (int)$data['hash']==0 ){
+	            var_dump($data);
+	            die(__FILE__.': '.__LINE__);
+	            //throw new Zend_Exception("Не указан alias!", 500);
+	        }
+	        
+	    	$search = $data['alias'];
+	    	
+	    	if (!$this->programsDescTable->fetchRow( "`alias`='$search'")){
+	    	    unset($data['hash']);
 	    		$hash = $this->programsDescTable->insert( $data);
 	    	}
-	    	return $this->programsDescTable->fetchRow( "`hash`='$hash'");
+	    	return $this->programsDescTable->fetchRow( "`alias`='$search'");
 	    } else {
 	    	return $search;
 	    }
 	    
-	    /* 
-		if( !empty($data) && is_array($data) ) {
-			try {
-				$this->programsDescTable->insert( $data );
-			} catch (Exception $e) {
-				if ($e->getCode()==1062) {
-					try {
-						$this->programsDescTable->update($data, "hash = '".$data['hash']."'");
-					} catch (Zend_Db_Table_Exception $e) {}
-					return true;
-				} else {
-					throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-				}
-			}
-		} else {
-			throw new Exception(self::ERR_MISSING_PARAMS, 500);
-		}
-		 */
 	}
 
 
@@ -1943,48 +1946,34 @@ class Admin_Model_Programs
 	 */
 	public function saveProgram( $data=array()){
 		
-	    if (!empty($data) && is_array($data)) {
-	        $search = $data['hash'];
-	        if (!$this->programsTable->fetchRow( "`hash`='".$data['hash']."'")){
-	            try {
-	                $hash = $this->programsTable->insert( $data);
-	            } catch (Zend_Db_Table_Exception $e) {
-	            }
-	            
-	        }
-	        
-	        try {
-	        	$result=$this->programsTable->fetchRow( "`hash`='$hash'");
-	        } catch (Zend_Db_Table_Exception $e) {
-	        }
-	        return $result;
+	    if (empty($data)) {
+	        throw new Zend_Exception(self::ERR_MISSING_PARAMS.__METHOD__, 500);
+	    } elseif(!is_array($data)){
+	        throw new Zend_Exception(self::ERR_WRONG_TYPE.__METHOD__, 500);
 	    } else {
-	        return $search;
+	        //var_dump($data);
+	        //die(__FILE__.': '.__LINE__);
+	        try {
+	        	$hash = $this->programsTable->insert($data);
+	        } catch (Exception $e) {
+	        	throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+	        }
+	        /*
+	        $search = $data['hash'];
+	        var_dump($search);
+        	if (!$this->programsTable->fetchRow( "`hash`='$search'")){
+        	    try {
+        	        $hash = $this->programsTable->insert($data);
+        	    } catch (Exception $e) {
+        	        throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+        	    }
+            }
+            */
+	        return $hash;
 	    }
 	    
-	    /*
-		if (!empty($data) && is_array($data)) {
-			try {
-				$hash = $this->programsTable->insert($data);
-			} catch (Exception $e) {
-				if ($e->getCode()==1062) {
-					try {
-						$this->programsTable->update($data, "hash = '".$data['hash']."'");
-					} catch (Zend_Db_Table_Exception $e) {}
-					return $data['hash'];
-				} else {
-					throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-				}
-			}
-			
-			if (!$hash)
-				throw new Exception(self::ERR_CANNOT_SAVE);
-			
-			return $hash;
-		} else {
-			throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
-		}
-		*/
+	    return false;
+	    
 	}
 	
 	/**

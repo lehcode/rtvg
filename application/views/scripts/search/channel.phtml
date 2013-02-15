@@ -19,7 +19,7 @@ $this->headTitle( 'Результаты поиска' );
 		  $tip .=" Если канала нет в категории <i>".$this->category['title']."</i>, наберите его название или часть названия и нажмите Перейти.";  
 		} 
 		?>
-		<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
+		<img class="tip" src="<?php echo $this->baseUrl("images/icons/tip-12x12.png"); ?>" title="<?php echo $tip ?>" />
 		<?php echo new Xmltv_Form_TypeaheadForm(); ?>
 	</div>
 </div>
@@ -42,6 +42,7 @@ foreach ($this->result as $r){
     	<a href="javascript:;">Больше про этот телеканал&hellip;</a>
     </p>
     
+    <?php if (isset($r['category_alias']) && !empty($r['category_alias'])) { ?>
     <p>
     	
     	<img src="<?php echo $this->baseUrl("images/categories/channels/".$r['category_icon']) ?>" />
@@ -55,5 +56,6 @@ foreach ($this->result as $r){
     	
     </p>
     <?php 
+    }
 }
 ?>

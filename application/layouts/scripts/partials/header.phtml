@@ -4,14 +4,14 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: header.phtml,v 1.6 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: header.phtml,v 1.7 2013-02-15 00:44:02 developer Exp $
  *
  */
 
 
 $this->inlineScript()
 	->appendScript('VK.Widgets.Like("vk_like", {type: "button", verb: 1, height: 18});');
-$form = new Xmltv_Form_Login();
+//$form = new Xmltv_Form_Login();
 ?>
 
 <div class="row">
@@ -33,28 +33,35 @@ $form = new Xmltv_Form_Login();
 		</div>
 	</div>
 	
-	<div class="span3">
+	<div class="span2">
 		<div id="vk_like"></div>
 	</div>
 	
-	<?php /*
-	<div class="span3">
-		<?php //echo $form; ?>
-	</div> */ ?>
+	<div class="span4">
+		<div class="brand">
+			<?php $tag = 'p'; if ($this->pageclass=='allchannels') $tag='h1'; ?>
+			<<?php echo $tag ?>>Rutvgid.ru :: <a href="<?php echo $this->url(array(), 'default_frontpage_index'); ?>" title="Телепрограмма на все телеканалы">Программа передач телеканалов России, Украины и СНГ.</a><br />
+			Онлайн-видео на любой вкус</<?php echo $tag ?>>
+		</div>
+	</div>
 	
 </div>
 
 
-<div class="brand span12">
-	<?php $tag = 'p'; if ($this->pageclass=='allchannels') $tag='h1'; ?>
-	<<?php echo $tag ?>>Rutvgid.ru :: <a href="<?php echo $this->url(array(), 'default_frontpage_index'); ?>" title="Телепрограмма на все телеканалы">Программа передач телеканалов России, Украины и СНГ.</a><br />
-	Онлайн-видео на любой вкус</<?php echo $tag ?>>
-</div>
+
     
 
 <div class="span12" id="gcse-results">
 	<gcse:searchresults></gcse:searchresults> 
 </div>
+
+<?php /*
+<div id="MarketGidComposite35536">
+	<center>
+		<a id="mg_add35536" href="http://usr.marketgid.com/demo/goods/" target="_blank">Добавить свое объявление</a><br> <a href="http://marketgid.com/" target="_blank">Загрузка...</a>
+	</center>
+</div>
+*/ ?>
 
 <div class="span12">
 	<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>

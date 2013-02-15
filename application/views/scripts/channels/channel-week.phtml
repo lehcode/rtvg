@@ -3,22 +3,22 @@
  * Week listing script for channel
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: channel-week.phtml,v 1.6 2013-01-19 10:11:14 developer Exp $
+ * @version $Id: channel-week.phtml,v 1.7 2013-02-15 00:44:02 developer Exp $
  */
-$this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на неделю c %s по %s ', $this->channel->title, $this->week_start->toString('EEEE, d MMMM'), $this->week_end->toString('EEEE, dd MMMM')));
-$this->headTitle( sprintf ('Программа телеканала «%s» на неделю с %s по %s', $this->channel->title, $this->week_start->toString('dd MMMM'), $this->week_end->toString('dd MMMM yyyy')));
-$this->headMeta()->setName('keywords', sprintf ('телепрограмма,%s,неделя', strtolower( $this->channel->title )));
+$this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на неделю c %s по %s ', $this->channel['title'], $this->week_start->toString('EEEE, d MMMM'), $this->week_end->toString('EEEE, dd MMMM')));
+$this->headTitle( sprintf ('Программа телеканала «%s» на неделю с %s по %s', $this->channel['title'], $this->week_start->toString('dd MMMM'), $this->week_end->toString('dd MMMM yyyy')));
+$this->headMeta()->setName('keywords', sprintf ('телепрограмма,%s,неделя', strtolower( $this->channel['title'] )));
 $this->headScript()
 	->appendFile($this->baseUrl()."/js/bootstrap-tab.js");
 $css = '.nav-tabs > li > a { font-size: 0.8em; padding: 9px 6px; font-weight: bold; }
 #programslist { border: none; }';
 $this->headStyle()->appendStyle($css);
-$channelAlias = $this->channel->alias;
+$channelAlias = $this->channel['alias'];
 
 ?>
 
 <h1>
-	<?php printf( 'Программа канала «%s» на неделю', $this->channel->title ); ?>
+	<?php printf( 'Программа канала «%s» на неделю', $this->channel['title'] ); ?>
 </h1>
 
 <p class="weekdate">
@@ -26,11 +26,13 @@ $channelAlias = $this->channel->alias;
 </p>
 
 <a class="btn btn-mini btn-primary" href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing' ) ?>" 
-	title="<?php printf( 'Программа %s на сегодня, %s', $this->channel->title , Zend_Date::now()->toString('EEEE, d MMMM yyyy')) ?>">
-	Программы <?php printf("%s сегодня", $this->channel->title); ?>
+	title="<?php printf( 'Программа %s на сегодня, %s', $this->channel['title'] , Zend_Date::now()->toString('EEEE, d MMMM yyyy')) ?>">
+	Программы <?php printf("%s сегодня", $this->channel['title']); ?>
 </a>
 
 <div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
+
+
 
 <div class="week_list tabbable" id="programslist">
 	<ul class="nav nav-tabs" id="days_tabs">
@@ -38,7 +40,7 @@ $channelAlias = $this->channel->alias;
 	$i=0;
 	$tabsJs = "$(document).ready(function(){ \n";
 	foreach ($this->days as $timestamp=>$programs) {
-		$date = new Zend_Date($timestamp, "U");
+	    $date = new Zend_Date($timestamp, "U");
 		$dayId = $date->toString(Zend_Date::WEEKDAY_DIGIT);
 		$class = Zend_Date::now()->toString('yyMMdd')==$date->toString('yyMMdd') ? "date active" : "date";
 		$tabsJs .= '$("ul#days_tabs li a[href=\'#day'.$dayId.'\']").click(function (e) { e.preventDefault(); $(this).tab("show"); });';
@@ -61,11 +63,12 @@ $channelAlias = $this->channel->alias;
 	<?php
 	$i=0;
 	foreach ($this->days as $timestamp=>$programs) {
+	    
 		$date = new Zend_Date($timestamp, Zend_Date::TIMESTAMP, 'ru');
-		$day_id = $date->toString(Zend_Date::WEEKDAY_DIGIT);
+		$dayId = $date->toString(Zend_Date::WEEKDAY_DIGIT);
 		$class = Zend_Date::now()->toString('yyMMdd')==$date->toString('yyMMdd') ? 'tab-pane active fade in' : 'tab-pane fade';
 		?>
-		<div id="<?php echo "day$day_id" ?>" class="<?php echo $class; ?>">
+		<div id="<?php echo "day$dayId" ?>" class="<?php echo $class; ?>">
 		
 		<h3>
 			<?php echo Xmltv_String::ucfirst( $date->toString('EEEE, d MMMM yyyy')) ?>
@@ -73,39 +76,49 @@ $channelAlias = $this->channel->alias;
 		
 		
 		<?php 
-		foreach ($programs as $k=>$prog) { 
-			//var_dump($prog);
+		foreach ($programs as $k=>$prog) {
+		    
+		    $title = $prog['title'];
+		    $alias = $prog['alias'];
+		    $start = $prog['start'];
+		    $end   = $prog['end'];
+		    $desc = empty($prog['desc_intro']) ? null : $prog['desc_intro'];
+		    $subTitle = empty($prog['sub_title']) ? null : $prog['sub_title'];
+		    
 			?>
-		<div class="item<?php echo $prog->start->toString('U'); ?> programdiv">
+			
+		<div class="item<?php echo $start->toString('U'); ?> programdiv">
 			<table class="table">
 			
 			<div class="program list">
 				
 				<p class="start">
-					<span class="start_time"><?php echo $prog->start->toString('HH:mm') ?></span>
+					<span class="start_time"><?php echo $start->toString('HH:mm') ?></span>
 				</p>
 				
 				<div class="info">
 					<h4>
-						<a href="<?php echo $this->url( array('channel'=>$this->channel->alias, 'date'=>$date->toString('dd-MM-yyyy') ), 'default_listings_day-date' ); ?>">
-							<?php echo $this->truncateProgramTitle($prog->title) ?>
+						<a href="<?php echo $this->url( array(
+							'channel'=>$this->channel['alias'],
+							'date'=>$date->toString('dd-MM-yyyy')), 'default_listings_day-date' ); ?>">
+							<?php echo $title; ?>
 						</a>
 					</h4>
 					
-					<?php  if (!empty($prog->desc_intro)) : ?>
+					<?php  if ($desc) : ?>
 					<p class="desc">
-						<?php echo $this->truncateString($prog->desc_intro, 15, 'words'); ?>
+						<?php echo $desc; ?>
 					</p>
 					<?php endif;  ?>
 					
 				</div>
 				
-				<?php if (!empty($prog->sub_title)) : ?>
-				<p class="subtitle"><?php echo $prog->sub_title ?></p>
+				<?php if ($subTitle) : ?>
+				<p class="subtitle"><?php echo $subTitle ?></p>
 				<?php endif; ?>
 				
 				<p class="end">
-					<span class="end_time"><?php echo $prog->end->toString('HH:mm') ?></span>
+					<span class="end_time"><?php echo $end->toString('HH:mm') ?></span>
 				</p>
 			</div>
 			

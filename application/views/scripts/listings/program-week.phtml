@@ -4,20 +4,20 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.13 2013-01-19 10:11:14 developer Exp $
+ * @version $Id: program-week.phtml,v 1.14 2013-02-15 00:44:03 developer Exp $
  *
  */
 
 $programTitle = $this->list[0]['title'];
 $programAlias = $this->escape( $this->list[0]['alias'] );
-$channelTitle = isset($this->channel->title) ? $this->escape( $this->channel->title ) : null ;
-$channelAlias = isset($this->channel->alias) ? $this->escape( $this->channel->alias ): null ;
+$channelTitle = isset($this->channel['title']) ? $this->escape( $this->channel['title'] ) : null ;
+$channelAlias = isset($this->channel['alias']) ? $this->escape( $this->channel['alias'] ): null ;
 
 
 
 if ($programTitle){
 	$this->headMeta()->setName( 'title', "$programTitle, $channelTitle" );
-	$this->headTitle( $this->escape( sprintf ('Программа «%s» на этой неделе на канале %s :: rutvgid.ru', $programTitle, $channelTitle )));
+	$this->headTitle( $this->escape( sprintf ('Программа «%s» на этой неделе на канале «%s» :: rutvgid.ru', $programTitle, $channelTitle )));
 }
 ?>
 
@@ -34,28 +34,34 @@ if ($programTitle){
 </p>
 
 
+<h4>
+	<a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_listings_day-listing' ) ?>">
+		Передачи <?php echo $channelTitle; ?> сегодня
+	</a>
+</h4>
+<h4>
+	<a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_channels_channel-week' ) ?>">
+		Телепрограмма <?php echo $channelTitle; ?> на текущую неделю
+	</a>
+</h4>
+
 <?php  
 foreach ($this->list as $single) {
     
     //var_dump($single);
     //die(__FILE__.': '.__LINE__);
-    
-	$program_start = new Zend_Date($single->start, 'YYYY-MM-dd HH:mm:ss' );
 	?>
 	
 	<p>
-		<?php $date = new Zend_Date($single['start'], 'YYYY-MM-dd HH:mm:ss' ); ?>
-		<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $program_start->toString( 'EEEE')); ?></span>&nbsp;
-		<span class="label"><?php echo $program_start->toString( 'dd MMMM') ?></span>&nbsp;
-		<span class="label label-info"><?php echo $program_start->toString( 'HH:mm') ?></span>
+		<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span>&nbsp;
+		<span class="label"><?php echo $single['start']->toString( 'dd MMMM') ?></span>&nbsp;
+		<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?></span>
 		<?php echo $single['category_title_single'] ?> 
-		<a href="<?php echo $this->url( array('channel'=>$single['channel_alias'], 'date'=>$program_start->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$program_start->toString("U") ?>"
-			title="<?php echo $single['title'] ?> <?php echo $program_start->toString( 'dd MMM') ?> на канале <?php echo $single['channel_title'] ?>"
-			target="_blank">
-			<em><?php echo $single['title'] ?></em>
-		</a> на канале <a href="<?php echo $this->url( array( 'channel'=>$single['channel_alias'] ), 'default_listings_day-listing' ) ?>">
-			<?php echo $single['channel_title'] ?>
-		</a>
+			<a href="<?php echo $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U") ?>"
+				title="<?php echo $single['title'] ?> <?php echo $single['start']->toString( 'dd MMM') ?> на канале <?php echo $single['channel_title'] ?>"
+				target="_blank">
+				<em><?php echo $single['title'] ?></em>
+		</a> на канале <?php echo $single['channel_title'] ?>
 		<?php echo (bool)$single['live']==-true ? 'в прямом эфире' : '' ; ?>
 		<?php echo (bool)$single['premiere']===true ? '. Премьера!' : '' ; ?>
 		
@@ -67,33 +73,41 @@ foreach ($this->list as $single) {
 
 
 <?php 
+$oldChannelTitle=null;
 if (isset($this->similar) && !empty($this->similar)) {
-    ?>
-    <h3>Похожие программы в другое время на этой неделе</h3>
-    <?php 
+    
     foreach ($this->similar as $single) {
-        $channelIcon = $this->baseUrl('images/channel_logo/'.$single['channel_icon']);
-        $date = new Zend_Date($single['start'], 'YYYY-MM-dd HH:mm:ss' );
-        $channelUrl = $this->url( array( 'channel'=>$single['channel_alias'] ), 'default_listings_day-listing' );
-        $programUrl = $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U");
+        
+        $channelUrl   = $this->url( array( 'channel'=>$single['channel_alias'] ), 'default_listings_day-listing' );
         $channelTitle = $this->escape( $single['channel_title'] );
+        
+        if (!$oldChannelTitle || ($channelTitle!=$oldChannelTitle)) {
+        	$oldChannelTitle=$channelTitle;
+        	printf( '<h3>Похожие передачи в другое время на этой неделе на канале <a href="%s" title="Передачи телеканала %s сегодня"><strong>%s</strong></a></h3>', $channelUrl, $oldChannelTitle, $oldChannelTitle);
+        }
+        
+        $channelIcon = $this->baseUrl('images/channel_logo/'.$single['channel_icon']);
+        $date = $single['start']->toString("dd-MM-yyyy");
+        $programUrl = $this->url( array(
+        	'channel'=>$this->escape( $single['channel_alias']),
+        	'alias'=>$this->escape( $single['alias']),
+        	'date'=>$date), 'default_listings_program-date');
 		?>
+		
 	<p>
 		<img src="<?php echo $channelIcon ?>" alt="<?php echo $single['channel_title'] ?>" />
-		<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $program_start->toString( 'EEEE')); ?></span> 
-		<span class="label"><?php echo Xmltv_String::ucfirst( $program_start->toString( 'dd MMMM')); ?></span> 
-		<span class="label label-info"><?php echo $program_start->toString( 'HH:mm') ?></span> 
-		<?php echo $single['category_title_single'] ?>
-		<?php printf('<a href="%s"><em>%s</em></a> на канале <a href="%s" title="Передачи %s сегодня"><strong>%s</strong></a>', 
-			$programUrl, 
-			$single['title'], 
-			$channelUrl, 
-			$single['channel_title'], 
-			$single['channel_title'] );
-		?>
+		<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span> 
+		<span class="label"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'dd MMMM')); ?></span> 
+		<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?></span> 
+		<?php echo $this->escape( $single['category_title_single'] ) ?>
+		<a href="<?php echo $programUrl ?>" 
+			title="<?php $this->escape( sprintf( 'Передача %s на канале %s', $single['title'], $channelTitle )) ?>">
+			<em><?php echo $single['title'] ?></em>
+		</a>
 	</p>
 		<?php 
     }
+    
 }
 ?>
 

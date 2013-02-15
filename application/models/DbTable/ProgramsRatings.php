@@ -31,20 +31,21 @@ class Xmltv_Model_DbTable_ProgramsRatings extends Zend_Db_Table_Abstract
      * @param string $alias
      * @param int $channel_id
      */
-	public function addHit($hash=null, $channel_id=null){
+	public function addHit($alias=null, $channel_id=null){
     			
-		if (!$hash || !$channel_id)
+		if (!$alias || !$channel_id)
 			throw new Exception("Не указан один или более параметров для ".__METHOD__, 500);
     			
 		
 		try {
-			if (!$row = $this->find($hash)->current())
-				$row = $this->createRow( array('hash'=>$hash, 'channel'=>$channel_id), true);
-		
+			if (!$row = $this->find($alias)->current()) {
+				$row = $this->createRow( array('alias'=>$alias, 'channel'=>$channel_id), true);
+			}
+			
 			$row->channel = $channel_id;		
 			$row->hits+=1;
-			
 			$row->save();
+			
 		} catch (Exception $e) {
 			if ($e->getCode()!=1062){
 				throw new Zend_Exception($e->getMessage(), $e->getCode());
@@ -64,32 +65,107 @@ class Xmltv_Model_DbTable_ProgramsRatings extends Zend_Db_Table_Abstract
     	$channels = new Xmltv_Model_DbTable_Channels();
 		$programs = new Xmltv_Model_DbTable_Programs();
 		$select = $this->_db->select()
-			->from(array('r'=>$this->getName()))
-			->where("`channel`!='0'")
-			->join(array('ch'=>$channels->getName()), "`ch`.`ch_id`=`r`.`channel`", array(
-				'channel_title'=>'ch.title',
-				'channel_alias'=>'LOWER(`ch`.`alias`)',
-				'channel_icon'=>'ch.icon')
-			)
-			->join(array('prog'=>$programs->getName()), "`r`.`hash`=`prog`.`hash`", array(
-				'prog_title'=>'prog.title',
-				'prog_sub_title'=>'prog.sub_title',
-				'prog_alias'=>'LOWER(`prog`.`alias`)')
-			)
-			->order("hits DESC")
+			->from(array('r'=>$this->getName()), array('prog_alias'=>'alias', 'prog_channel'=>'channel', 'hits'))
+			->join(array('ch'=>$channels->getName()), "`r`.`channel`=`ch`.`id`", array(
+					'channel_id'=>'ch.id',
+					'channel_title'=>'ch.title',
+					'channel_alias'=>'LOWER(`ch`.`alias`)',
+					'channel_icon'=>'ch.icon'))
+			->where("`r`.`channel` IS NOT NULL")
+			->where("`ch`.`published`='1'")
+			->group("r.channel")
+			->order("r.hits DESC")
 			->limit((int)$amt);
+			
 
-		//var_dump($select->assemble());
-		//die(__FILE__.': '.__LINE__);
-		
-		$result = $this->_db->fetchAssoc($select);
-		$view = new Zend_View();
-		foreach ($result as $k=>$r){
-		    $result[$k]['channel_icon']=$view->baseUrl('images/channel_logo/'.$result[$k]['channel_icon']);
+		if (APPLICATION_ENV=='development'){
+		    echo "<b>".__METHOD__."</b>";
+			Zend_Debug::dump($select->assemble());
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		//var_dump($result);
-		//die(__FILE__.': '.__LINE__);
+		$result = $this->_db->fetchAssoc($select);
+		
+		if (APPLICATION_ENV=='development'){
+			//Zend_Debug::dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		//$view = new Zend_View();
+		
+		$now = Zend_Date::now();
+		if ($now->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+			while ($now->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+				$now->addDay(1);
+			}
+		}
+		$weekEnd = $now;
+		
+		foreach ($result as $k=>$r){
+		    
+		    /**
+		     * @var Zend_Db_Select
+		     */
+		    if (APPLICATION_ENV=='development'){
+		    	//var_dump($result[$k]);
+		    	//die(__FILE__.': '.__LINE__);
+		    }
+		    $select = $this->_db->select()
+		    ->from(array( 'prog'=>'rtvg_programs'), array( 'count'=>'COUNT(*)'))
+		    ->where( "`prog`.`alias` LIKE '".$r['prog_alias']."'
+		    		AND `prog`.`start` >= '".Zend_Date::now()->toString('yyyy-MM-dd HH:mm')."'
+		    		AND `prog`.`start` < '".$weekEnd->toString('yyyy-MM-dd 23:59')."'
+		    		AND `prog`.`channel` = '".$r['prog_channel']."'");
+		    
+		    if (APPLICATION_ENV=='development'){
+		    	Zend_Debug::dump($select->assemble());
+		    	//die(__FILE__.': '.__LINE__);
+		    }
+		    
+		    $found = $this->_db->fetchRow($select, null, Zend_Db::FETCH_ASSOC);
+		    if (count($found)==0){
+		    	unset($result[$k]);
+		    } else {
+		        
+		        if ($result[$k]['prog_alias']=='перерыв'){
+		            unset($result[$k]);
+		            continue;
+		        }
+		        
+		        $select = $this->_db->select()
+		        ->from( array('prog'=>$programs->getName()), array(
+		        		'prog_title'=>'prog.title',
+		        		'prog_sub_title'=>'prog.sub_title',
+		        		'prog_alias'=>'LOWER(`prog`.`alias`)',
+		        		'prog_start'=>'start',
+		        		'prog_end'=>'end',
+		        		'prog_channel'=>'channel'
+		        ))
+		        ->where( "`alias`='".$result[$k]['prog_alias']."'" );
+		        
+		        if (APPLICATION_ENV=='development'){
+		        	echo "<b>".__METHOD__."</b>";
+		        	Zend_Debug::dump($select->assemble());
+		        	//die(__FILE__.': '.__LINE__);
+		        }
+		        
+		        $prog = $this->_db->fetchRow($select, null, Zend_Db::FETCH_ASSOC);
+		        if ($prog && !empty($prog)){
+		        	$result[$k] = array_merge($result[$k], $prog);
+		        
+		        }
+		        if (!isset($result[$k]['prog_title'])){
+		        	unset($result[$k]);
+		        }
+		    }
+		    
+		}
+		
+		
+		if (APPLICATION_ENV=='development'){
+			//Zend_Debug::dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
 		
     	return $result;
     	

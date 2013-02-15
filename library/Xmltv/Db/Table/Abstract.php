@@ -12,8 +12,8 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      */
     protected $_pfx = '';
     
-    const FETCH_MODE = Zend_Db::FETCH_OBJ;
-    const ERR_PARAMETER_MISSING = "Пропущен параметр!";
+    const FETCH_MODE = Zend_Db::FETCH_ASSOC;
+    const ERR_PARAMETER_MISSING = "Пропущен параметр для ";
     
     /**
      * Constructor

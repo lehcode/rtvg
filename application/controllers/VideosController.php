@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.10 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: VideosController.php,v 1.11 2013-02-15 00:44:02 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -54,10 +54,21 @@ class VideosController extends Xmltv_Controller_Action
 			$vCacheModel = new Xmltv_Model_Vcache();
 			$rtvgId = $this->input->getEscaped('id');
 			
+			if (APPLICATION_ENV=='development'){
+				//var_dump($rtvgId);
+				//die(__FILE__.': '.__LINE__);
+			}
+			
 			if ($rtvgId) {
-				$ytId = Xmltv_Youtube::decodeRtvgId( $rtvgId );
-				//var_dump($this->cache->enabled);
-				//var_dump(parent::$videoCache);
+			    
+			    $ytId = Xmltv_Youtube::decodeRtvgId( $rtvgId );
+				
+				if (APPLICATION_ENV=='development'){
+					//var_dump($this->cache->enabled);
+					//var_dump(parent::$videoCache);
+					//die(__FILE__.': '.__LINE__);
+				}
+				
 				if ($this->cache->enabled && parent::$videoCache===true){
 					
 				    // 1. Query cache model for main video ( Xmltv_Model_Vcache::getVideo($rtvgId) )
@@ -67,7 +78,12 @@ class VideosController extends Xmltv_Controller_Action
 						    $this->render('private-video');
 						    return true;
 						}
-						$video = $vCacheModel->saveMainVideo($video);
+						$videoId = $vCacheModel->saveMainVideo($video);
+					}
+					
+					if ($video){
+						var_dump($video);
+						die(__FILE__.': '.__LINE__);
 					}
 					
 					if ($video){
@@ -101,7 +117,13 @@ class VideosController extends Xmltv_Controller_Action
 				    
 				    $video = $youtube->fetchVideo( $ytId );
 				    
+				    if (APPLICATION_ENV=='development'){
+				        //var_dump($video);
+				        //die(__FILE__.': '.__LINE__);
+				    }
+				    
 				    if ($video){
+				        
 						$video = $videosModel->parseYtEntry($video);
 						$video = $videosModel->objectToArray($video);
 						$this->view->assign( 'main_video', $video );
@@ -115,9 +137,13 @@ class VideosController extends Xmltv_Controller_Action
 							$r = $videosModel->objectToArray($r);
 							$related[]=$r;
 						}
-						//var_dump($related);
-						//die(__FILE__.': '.__LINE__);
 						$this->view->assign( 'related_videos', $related );
+						
+						if (APPLICATION_ENV=='development'){
+							//var_dump($rel);
+							//var_dump($related);
+							//die(__FILE__.': '.__LINE__);
+						}
 						
 				    } else {
 				        $this->view->assign( 'hide_sidebar', 'right');
@@ -136,8 +162,8 @@ class VideosController extends Xmltv_Controller_Action
 			 * Данные для модуля самых популярных программ
 			 */
 			$this->view->assign('top_programs', 
-				parent::getTopPrograms( (int)Zend_Registry::get('site_config')
-					->topprograms->channellist->get('amount')));
+				$this->getTopPrograms( (int)Zend_Registry::get('site_config')
+					->top->channels->get('amount'), $this->_getParam('controller')));
 			
 		}
 		

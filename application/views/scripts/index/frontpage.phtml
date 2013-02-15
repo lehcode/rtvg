@@ -4,9 +4,13 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: frontpage.phtml,v 1.6 2013-01-12 09:06:23 developer Exp $
+ * @version $Id: frontpage.phtml,v 1.7 2013-02-15 00:44:03 developer Exp $
  *
  */
+/*
+var_dump($this->is_frontpage);
+die(__FILE__.': '.__LINE__);
+
 $this->headTitle( 'Программа всех каналов телевидения на сегодня и текущую неделю.' );
 $this->headMeta()
 	->setName( 'keywords', Zend_Registry::get('site_config')->site->get('keywords', 'телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв') )
@@ -14,4 +18,14 @@ $this->headMeta()
 $this->inlineScript()
 	->appendFile("http://www.directadvert.ru/show.cgi?adp=85452&div=DIV_DA_85452"); //directadvert frontpage
 ?>
-<gcse:searchbox></gcse:searchbox>
+
+<div class="brand span12">
+	<?php $tag = 'p'; if ($this->pageclass=='allchannels') $tag='h1'; ?>
+	<<?php echo $tag ?>>Rutvgid.ru :: <a href="<?php echo $this->url(array(), 'default_frontpage_index'); ?>" title="Телепрограмма на все телеканалы">Программа передач телеканалов России, Украины и СНГ.</a><br />
+	Онлайн-видео на любой вкус</<?php echo $tag ?>>
+</div>
+
+<div>
+	<gcse:searchbox></gcse:searchbox>
+</div>
+*/ ?>

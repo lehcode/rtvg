@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.9 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: Videos.php,v 1.10 2013-02-15 00:44:02 developer Exp $
  *
  */
 class Xmltv_Model_Videos
@@ -20,11 +20,11 @@ class Xmltv_Model_Videos
 	
 	public function __construct($config=array()){
 		
-	    if (isset($config['nocache']) && is_bool($config['nocache'])){
-	        self::$nocache = $config['nocache'];
-	    }
-	    
-	    $this->cache = new Xmltv_Cache();
+		if (isset($config['nocache']) && is_bool($config['nocache'])){
+			self::$nocache = $config['nocache'];
+		}
+		
+		$this->cache = new Xmltv_Cache();
 	}
 	
 	/**
@@ -40,12 +40,12 @@ class Xmltv_Model_Videos
 		}
 		
 		$v = new stdClass();
-		$v->title    = $entry->getVideoTitle();
-		$v->alias    = Xmltv_Youtube::videoAlias( $v->title );
+		$v->title	= $entry->getVideoTitle();
+		$v->alias	= Xmltv_Youtube::videoAlias( $v->title );
 		$v->desc	 = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
-		$v->yt_id    = $entry->getVideoId();
+		$v->yt_id	= $entry->getVideoId();
 		$v->rtvg_id  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
-		$v->views    = (int)$entry->getVideoViewCount();
+		$v->views	= (int)$entry->getVideoViewCount();
 		$v->category = $entry->getVideoCategory();
 		
 		$config = Zend_Registry::get('site_config')->videos->sidebar->right;
@@ -130,13 +130,14 @@ class Xmltv_Model_Videos
 			'/^.*\s*бдсм/ui',
 			'/^.*\s*xxx/ui',
 			'/^.*\s*porn/ui',
-			'/^.*\s*еб(а|л).+\s/ui',
+			'/^.*\s*еб(а|л|у).+\s/ui',
 			'/^.*\s*пизд.+\s/ui',
 		);
 		
 		foreach ($regex as $r){
 			if ( preg_match($r, $string, $m)) {
-				if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+			    $profile = (bool)Zend_Registry::get('site_config')->profile;
+			    if ($profile){
 					Zend_Debug::dump( self::ERR_PORN_ENTRY.$m);
 				}
 				return true;
@@ -155,7 +156,8 @@ class Xmltv_Model_Videos
 	 */
 	public static function isRussian($string=null){
 		
-		if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])) {
+	    $profile = (bool)Zend_Registry::get('site_config')->profile;
+		if ($profile){
 			//Zend_Debug::dump($string);
 			//Zend_Debug::dump(preg_match('/\p{Cyrillic}+/mui', $string));
 			//Zend_Debug::dump(preg_match('/[^\p{Cyrillic}]+/ui', $string));
@@ -165,7 +167,8 @@ class Xmltv_Model_Videos
 		if (preg_match('/\p{Cyrillic}+/mui', $string)) {
 			return true;
 		} else {
-			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])) {
+		    $profile = (bool)Zend_Registry::get('site_config')->profile;
+			   if ($profile){
 				Zend_Debug::dump( self::ERR_NON_CYRILLIC.$string);
 			}
 			return false;
@@ -287,13 +290,19 @@ class Xmltv_Model_Videos
 	/**
 	 * Related videos
 	 * 
-	 * @param  array     $list
-	 * @param  string    $channel
+	 * @param  array	 $list
+	 * @param  string	$channel
 	 * @param  Zend_Date $date
-	 * @param  bool      $video_cache
+	 * @param  bool	  $video_cache
 	 * @return array
 	 */
 	public function getRelatedVideos($list, $channel='', Zend_Date $date, $video_cache=false){
+		
+	    $profile = (bool)Zend_Registry::get('site_config')->site->get('profile');
+		if ($profile){
+			//var_dump(func_get_args());
+			//die(__FILE__.': '.__LINE__);
+		}
 		
 		$vc = Zend_Registry::get('site_config')->videos->listing;
 		$ytConfig['max_results'] = (int)$vc->get('max_results');
@@ -302,8 +311,8 @@ class Xmltv_Model_Videos
 		$ytConfig['safe_search'] = $vc->get('safe_search');
 		$ytConfig['language']	= 'ru';
 		
-		if ( APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
-			//var_dump($ytConfig);
+		if ($profile){
+			var_dump($ytConfig);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
@@ -311,29 +320,37 @@ class Xmltv_Model_Videos
 		$result = array();
 		if ($list){
 			foreach ($list as $li){
-			    if ($li->fetch_video===true){
-					if ($this->cache->enabled && $video_cache===false) {
-						
-						$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
+			    
+			    if ($profile){
+			        //var_dump($li);
+					//var_dump($li['fetch_video']);
+					//die(__FILE__.': '.__LINE__);
+				}
+				
+				if ($li['fetch_video']===true){
+				    
+					if ($e===true && !($video_cache===false)) {
+					    $t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
 						$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
 						
 						// Setup and create folder if needed
-						$f = '/Youtube/Related/'.$li->ch_id;
+						$f = '/Youtube/Related/'.$li['ch_id'];
 						if (!is_dir(ROOT_PATH.'/cache'.$f)){
 							mkdir(ROOT_PATH.'/cache'.$f, 0777, true);
 						}
 						
-						$hash = Xmltv_Cache::getHash('related_'.$li->hash);
-						if (($result[$li->hash] = $this->cache->load($hash, 'Core', $f))===false) {
-							$result[$li->hash] = $this->_fetchYtRelated( Xmltv_String::strtolower($li->title), $ytConfig);
-							$this->cache->save($result[$li->hash], $hash, 'Core', $f);
+						$hash = Xmltv_Cache::getHash('related_'.$li['hash']);
+						if (($result[$li['hash']] = $this->cache->load($hash, 'Core', $f))===false) {
+							$result[$li['hash']] = $this->_fetchYtRelated( Xmltv_String::strtolower($li['title']), $ytConfig);
+							$this->cache->save($result[$li['hash']], $hash, 'Core', $f);
 						}
 					} else {
-						$result[$li->hash] = $this->_fetchYtRelated( Xmltv_String::strtolower( $li->title ), $ytConfig);
+						$result[$li['hash']] = $this->_fetchYtRelated( Xmltv_String::strtolower( $li['title'] ), $ytConfig);
 					}
-			    }
+				}
 				
 			} 
+			
 			
 			if ($result){
 				foreach ($result as $hash=>$arr){
@@ -372,7 +389,8 @@ class Xmltv_Model_Videos
 			'language'=>'ru',
 		);
 	
-		if ( APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+		$profile = (bool)Zend_Registry::get('site_config')->profile;
+		if ($profile){
 			//var_dump($ytConfig);
 			//die(__FILE__.': '.__LINE__);
 		}
@@ -380,18 +398,18 @@ class Xmltv_Model_Videos
 		$result = array();
 		
 		$e = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
-	    if ($this->cache->enabled && ( self::$nocache !== true)){
-	    	$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
-	    	$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
-	    	$f = '/Youtube/SidebarRight';
-	    	$hash = Xmltv_Cache::getHash('related_'.$ch_title);
-	    	if ( ($result = $this->cache->load( $hash, 'Core', $f))===false) {
-	    		$result = $this->_fetchYtRelated( $ch_title, $ytConfig);
-	    		$this->cache->save( $result, $hash, 'Core', $f);
-	    	}
-	    } else {
-	    	$result = $this->_fetchYtRelated( $ch_title, $ytConfig);
-	    }
+		if ($e===true && ( self::$nocache !== true)){
+			$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
+			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
+			$f = '/Youtube/SidebarRight';
+			$hash = Xmltv_Cache::getHash('related_'.$ch_title);
+			if ( ($result = $this->cache->load( $hash, 'Core', $f))===false) {
+				$result = $this->_fetchYtRelated( $ch_title, $ytConfig);
+				$this->cache->save( $result, $hash, 'Core', $f);
+			}
+		} else {
+			$result = $this->_fetchYtRelated( $ch_title, $ytConfig);
+		}
 		
 		
 		return $result;
@@ -444,13 +462,13 @@ class Xmltv_Model_Videos
 	public static function objectToArray($object=null){
 		 
 		if ($object){
-			$props['title']     = $object->title;
-			$props['alias']     = $object->alias;
-			$props['desc']      = $object->desc;
-			$props['yt_id']     = $object->yt_id;
+			$props['title']	 = $object->title;
+			$props['alias']	 = $object->alias;
+			$props['desc']	  = $object->desc;
+			$props['yt_id']	 = $object->yt_id;
 			$props['rtvg_id']   = $object->rtvg_id;
-			$props['views']     = (int)$object->views;
-			$props['thumbs']    = Zend_Json::encode($object->thumbs);
+			$props['views']	 = (int)$object->views;
+			$props['thumbs']	= Zend_Json::encode($object->thumbs);
 			$props['published'] = $object->published->toString("MM-dd-YYYY");
 			$props['duration']  = $object->duration->toString("HH:mm:ss");
 			$props['delete_at'] = Zend_Date::now()->addSecond(86400)->toString("MM-dd-YYYY HH:mm:ss");

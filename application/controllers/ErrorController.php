@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ErrorController.php,v 1.5 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: ErrorController.php,v 1.6 2013-02-15 00:44:02 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -45,8 +45,8 @@ class ErrorController extends Zend_Controller_Action
         //Log exception, if logger available
         $logger = $this->getLog();
         if ($logger) {
-            $logger->log($this->view->message, $priority, $errors->exception);
-            $logger->log('Параметры запроса:'.Zend_Debug::dump( $errors->request->getParams()), $priority);
+            //$logger->log($this->view->message, $priority, $errors->exception);
+            //$logger->log('Параметры запроса:'.Zend_Debug::dump( $errors->request->getParams()), $priority);
         }
         
         $senderEmail='dev@egeshi.com';

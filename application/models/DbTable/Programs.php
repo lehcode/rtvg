@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.13 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: Programs.php,v 1.14 2013-02-15 00:44:02 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
@@ -65,9 +65,8 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 			throw new Zend_Exception(__METHOD__.' '.self::ERR_PARAMETER_MISSING, 500);
 		
 		$progsTable	   = $this->_name;
-		$descsTable	   = new Xmltv_Model_DbTable_ProgramsDescriptions();
 		$channelsTable = new Xmltv_Model_DbTable_Channels();
-		$propsTable	   = new Xmltv_Model_DbTable_ProgramsProps();
+		$categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
 		
 		/**
 		 * Load and setup archive DB adapter
@@ -81,35 +80,36 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 		 * @var Zend_Db_Select
 		 */
 		$select = $this->_db->select()
-			->from( array('prog'=>$progsTable), array('*', 'prog_rating'=>'rating') )
-			->joinLeft( array('desc'=>$descsTable->getName()), "`desc`.`hash`=`prog`.`hash`", 
-				array('desc_intro'=>'intro', 'desc_body'=>'body') )
-			->joinLeft( array( 'props'=>$propsTable->getName()), "`props`.`hash`=`prog`.`hash`",
-					array('actors', 'directors', 'premiere', 'premiere_date') )
-			->where("`prog`.`start` LIKE '$date%'")
-			->where("`prog`.`ch_id` = '$channel_id'")
-			->order("prog.start ASC");
-			
-		//var_dump($select->assemble());
-		//die(__FILE__.": ".__LINE__);
-		
-		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
-		
-		/**
-		 * Add category
-		 */
-		foreach ($result as $row){
-		    foreach ($categories as $c){
-		        if ($c['id']==$row->category){
-		            $row->category_title=$c['title'];
-		            $row->category_alias=$c['alias'];
-		        }
-		    }
+			->from( array('prog'=>$progsTable), array(
+				'title',
+				'sub_title',
+				'alias',
+				'channel',
+				'start',
+				'end',
+				'episode_num',
+				'hash',
+				'rating'
+			))
+			->join( array('cat'=>$categoriesTable->getName()), "`prog`.`category` = `cat`.`id`", array(
+				'category_id'=>'id',
+				'category_title'=>'title',
+				'category_alias'=>'alias',
+			))
+			->where( "`prog`.`start` >= '$date 00:00'" )
+			->where( "`prog`.`start` < '$date 23:59'" )
+			->where( "`prog`.`channel` = '$channel_id'" )
+			->group( "prog.start" )
+			->order( "prog.start ASC" );
+
+		$profile = (bool)Zend_Registry::get('site_config')->site->get('profile');
+		if ($profile){
+		    
+			Zend_Debug::dump($select->assemble());
+			//die(__FILE__.": ".__LINE__);
 		}
 		
-		//var_dump($categories);
-		//var_dump($result);
-		//die(__FILE__.": ".__LINE__);
+		$result = $this->_db->query( $select )->fetchAll( Zend_Db::FETCH_ASSOC );
 		
 		$actorsTable	= new Xmltv_Model_DbTable_Actors();
 		$directorsTable = new Xmltv_Model_DbTable_Directors();

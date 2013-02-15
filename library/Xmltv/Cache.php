@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Cache.php,v 1.5 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: Cache.php,v 1.6 2013-02-15 00:44:24 developer Exp $
  *
  */
 class Xmltv_Cache {
@@ -39,6 +39,8 @@ class Xmltv_Cache {
 		
 	    $this->_lifetime = isset($config['lifetime']) && !empty($config['lifetime']) ? 
 			(int)$config['lifetime'] : 86400;
+	    $this->enabled = isset($config['enabled']) && !empty($config['enabled']) ? 
+			(bool)$config['enabled'] : false;
 		$this->_location = isset($config['location']) && !empty($config['location']) ? 
 			ROOT_PATH.'/'.$this->_location.(string)$config['location'] : ROOT_PATH.'/'.$this->_location ;
 		$this->enabled  = (bool)Zend_Registry::get('site_config')->cache->system->get('enabled', false);

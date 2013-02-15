@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.14 2013-01-19 10:11:14 developer Exp $
+ * @version $Id: Init.php,v 1.15 2013-02-15 00:44:02 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -42,7 +42,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		$this->_initActionHelpers();
 		$this->_initAutoloader();
 		$this->_initUserAgent();
-	
+		
 	}
 
 	protected function _initStats(){
@@ -54,6 +54,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	public function routeShutdown (Zend_Controller_Request_Abstract $request) {
 
 		$moduleName = $request->getModuleName();
+		
 		//var_dump($moduleName);
 		//die(__FILE__.": ".__LINE__);
 		/*
@@ -152,6 +153,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	}
 	
 	protected function _initViewHelpers(){
+	    
 		//Initialize and/or retrieve a ViewRenderer object on demand via the helper broker
 		$viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
 		$viewRenderer->initView();
@@ -201,5 +203,10 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	    
 	}
 	
-
+	protected function _initPopupRand(){
+		
+	    Zend_Registry::set('popup_rand', floor(rand(0, 1)));
+	    
+	}
+	
 }

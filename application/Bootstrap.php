@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.12 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.13 2013-02-15 00:44:02 developer Exp $
  *
  */
 
@@ -57,7 +57,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		), array( 
 			'cache_dir' => $cacheConf->get('location', ROOT_PATH.'/cache')
 		));
-		$cache->setOption('caching', (bool)Zend_Registry::get('site_config')->cache->system->get('enabled', true));
+		$cache->setOption('caching', (bool)Zend_Registry::get('site_config')->cache->system->get('enabled'));
 		Zend_Registry::set('cache', $cache);
 		
 		/*
@@ -75,8 +75,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->throwExceptions( false );
 		
 		if (APPLICATION_ENV=='production'){
-		    $fc->returnResponse( true )
-		    	->throwExceptions( false );
+		    //$fc->returnResponse( true )
+		    	$fc->throwExceptions( false );
 		}
 		
 		/*
@@ -86,6 +86,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
 		$log = $this->bootstrap()->getResource('Log');
+		
 		try {
 		    
 		    $response = $fc->dispatch();
@@ -94,17 +95,16 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		    	$exceptions = $response->getException();
 		    	foreach ($exceptions as $e){
 		    		$log->log( $e->getMessage(), Zend_Log::CRIT, $e->getTraceAsString() );
-		    		/* if (APPLICATION_ENV=='development'){
+		    		if (APPLICATION_ENV=='development'){
 		    			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-		    		} */
+		    		}
 		    	}
 		    }
-		} catch (Exception $e) {
+		} catch (Zend_Exception $e) {
 		    
 		    if( APPLICATION_ENV == 'development' ) {
-		    	echo $e->getMessage();
-		    	Zend_Debug::dump($e->getTrace());
-		    	die("Response exception!");
+		        throw new Exception($e->getMessage(), $e->getCode());
+		    	//die("Response exception in ". __CLASS__."!");
 		    } else {
 		        $log->log( $e->getMessage(), Zend_Log::CRIT, $e->getTraceAsString() );
 		    }

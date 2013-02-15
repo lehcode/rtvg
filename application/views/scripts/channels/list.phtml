@@ -5,16 +5,14 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: list.phtml,v 1.14 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: list.phtml,v 1.15 2013-02-15 00:44:02 developer Exp $
  *
  */
 
-$categoryTitle = null;
-$categoryAlias = null;
+$categoryTitle = isset($this->category['title']) && !empty($this->category['title']) ? $this->escape( $this->category['title'] ) : null ;
+$categoryAlias = isset($this->category['alias']) && !empty($this->category['alias']) ? $this->escape( $this->category['alias'] ) : null ;
 
-if (isset($this->category) && $this->category!==null) {
-	$categoryTitle = $this->escape( $this->category['title'] );
-	$categoryAlias = $this->escape( $this->category['alias'] );
+if ($categoryTitle) {
 	$this->headTitle( $this->category['title'].' телеканалы: передачи сегодня и на текущей неделе.' );
 	$this->headMeta()->setName('title', 'Телепрограмма '.$this->category['title'].' каналов');
 } else {
@@ -92,7 +90,7 @@ if ( isset($this->category) && $this->category!==null) {
 
 	<?php
 	foreach ($this->channels as $channel) { 
-		$id	= $channel['ch_id'];
+		$id	= $channel['id'];
 		$title = $channel['title'];
 		$alias = $channel['alias'];
 		$icon  = $channel['icon'];
