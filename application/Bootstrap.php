@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.13 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.14 2013-02-25 11:40:40 developer Exp $
  *
  */
 
@@ -54,10 +54,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$cache = Zend_Cache::factory( 'Core', 'File', array(  
 			'lifetime' => $cacheConf->get('lifetime', 43200),
 			'automatic_serialization' => true
-		), array( 
-			'cache_dir' => $cacheConf->get('location', ROOT_PATH.'/cache')
-		));
-		$cache->setOption('caching', (bool)Zend_Registry::get('site_config')->cache->system->get('enabled'));
+		), array( 'cache_dir' => ROOT_PATH.$cacheConf->get('location')));
+		$e = (bool)Zend_Registry::get('site_config')->cache->system->get('enabled');
+		$cache->setOption( 'caching', $e );
 		Zend_Registry::set('cache', $cache);
 		
 		/*

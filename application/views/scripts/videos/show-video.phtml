@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.12 2013-02-15 00:44:03 developer Exp $
+ * @version $Id: show-video.phtml,v 1.13 2013-02-25 11:40:40 developer Exp $
  *
  */
 
@@ -67,9 +67,15 @@ document.write('<scr'+'ipt type=\"text/javascript\" '
 	$amount=(int)Zend_Registry::get('site_config')->videos->related->get('amt');
 	$i=0;
 	if (!empty($this->related_videos)) {
+	    
+	    if (APPLICATION_ENV=='development'){
+	        //var_dump($this->related_videos);
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
 	    foreach ($this->related_videos as $v) {
-	        //var_dump($i<$amount);
-	        if ($i<$amount && !empty($v['alias'])) {
+	        
+	        if (!empty($v['alias'])) {
 				?>
 			<div class="video">
 				
@@ -83,7 +89,6 @@ document.write('<scr'+'ipt type=\"text/javascript\" '
 			
 				<div class="image" itemscope itemtype="http://schema.org/ImageObject">
 					<?php 
-					$v['thumbs'] = Zend_Json::decode($v['thumbs']);
 					$thumb = $v['thumbs'][rand(0, count($v['thumbs'])-1)];
 						?>
 					<a href="<?php echo $this->url( array(

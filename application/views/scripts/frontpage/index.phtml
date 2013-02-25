@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: index.phtml,v 1.3 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: index.phtml,v 1.4 2013-02-25 11:40:40 developer Exp $
  *
  */
 
@@ -13,13 +13,42 @@ $this->headMeta()
 	->setName( 'keywords', Zend_Registry::get('site_config')->site->get('keywords', 'телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв') )
 	->appendName( 'description', Zend_Registry::get('site_config')->site->get('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.') );
 
+$this->headScript()
+	->appendScript('$(document).ready(function($){
+	$("#channel").change(function(e){
+		var selected = $("#channel :selected").val();
+		$.get( "'.$this->baseUrl('frontpage/single-channel/format/html/id/').'"+selected, function(reponseHtml) {
+			$("#listing").prepend(reponseHtml);
+		});
+		_gaq.push([\'_trackPageview\', \'//\']);
+	});
+});');
 ?>
 
 <div class="page">
 	
-	<div class="sitesearch">
-		<gcse:searchbox></gcse:searchbox>
-	</div>
+	<?php
+	$dropdown = new Zend_Form_Element_Select('channel');
+	$options  = array();
+	foreach ($this->channels as $k=>$c){
+	    $options[$k] = array('key'=>(int)$c['id'], 'value'=>$c['title']);
+	}
+	$dropdown->setMultiOptions($options);
+	$dropdown->setAttribs( array(
+		'name'=>'channelselect',
+		'size'=>1,
+	))
+	->setLabel("Выберите канал")
+	->setDecorators(array(
+		'ViewHelper',
+		'Description',
+		'Errors',
+		array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'select-container' ) ),
+	))
+	->removeDecorator('Label');
+	echo $dropdown;
+	?>
+		
 	
 	<div id="listing">
 	<?php 

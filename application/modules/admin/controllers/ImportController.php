@@ -5,18 +5,20 @@
  * @author  toshihir
  * @package rutvgid
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.18 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: ImportController.php,v 1.19 2013-02-25 11:40:40 developer Exp $
  *
  */
 
 
 
-class Admin_ImportController extends Zend_Controller_Action
+class Admin_ImportController extends Xmltv_Controller_Action
 {
 	
 	private $_progressBar;
 	private $_lockFile;
 	private $_parseFolder='/uploads/parse/';
+	protected $channelsList;
+	protected $programsCategoriesList;
 
 	/**
 	 * 
@@ -48,6 +50,8 @@ class Admin_ImportController extends Zend_Controller_Action
 	 */
 	public function init() {
 	   
+	    parent::init();
+	    
 		$this->_helper->layout->setLayout('admin');
 		$ajaxContext = $this->_helper->getHelper('AjaxContext');
 		$ajaxContext->addActionContext('xml-parse-channels', 'html')
@@ -59,6 +63,13 @@ class Admin_ImportController extends Zend_Controller_Action
 		$this->site_config = Zend_Registry::get('site_config');
 		$this->_xmlFolder  = ROOT_PATH.'/uploads/parse/';
 		$this->validator = $this->_helper->getHelper('requestValidator');
+		
+		$this->channelsModel = new Admin_Model_Channels();
+		$this->channelsList = $this->channelsModel->allChannels();
+		
+		$this->programsModel = new Admin_Model_Programs();
+		$this->programsCategoriesList = $this->programsModel->getCategoriesList();
+		
 		
 	}
 
@@ -281,110 +292,116 @@ class Admin_ImportController extends Zend_Controller_Action
 		foreach ($programs as $node){
 			
 			$prog  = array('id'=>"'NULL'");
-			$desc  = array();
-			$props = array();
 			
 			//Process program title and detect some properties
-			$title = $node->getElementsByTagName('title')
-				->item(0)->nodeValue;
-			$titles = $model->makeTitles( trim( $title, '. '));
-			//var_dump($title);
-			$prog['title'] = $titles['title'];
-			$prog['sub_title'] = $titles['sub_title'];
-			if (isset($titles['rating'])){
-				$prog['rating']=$titles['rating'];
+			$parsed = $model->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
+			$prog['title'] = $parsed['title'];
+			$prog['sub_title'] = $parsed['sub_title'];
+			$prog['rating'] = isset($parsed['rating']) ? $parsed['rating']   : null ;
+			$prog['premiere'] = isset($parsed['premiere']) || (int)$parsed['premiere']!=0 ? $parsed['premiere'] : 0 ;
+			$prog['live'] = isset($parsed['live']) ? $parsed['live']     : 0 ;
+			$prog['episode_num'] = isset($parsed['episode']) && $parsed['episode']!==null  ? (int)$parsed['episode'] : null;
+			
+			// Detect category ID
+			$prog['category'] = isset($parsed['category']) && (bool)$parsed['category']===true ? $parsed['category'] : $node->getElementsByTagName('category')->item(0)->nodeValue ;
+			if (!is_int($prog['category'])) {
+				$prog['category'] = $this->programsModel->catIdFromTitle( $prog['category']);
 			}
-			if (isset($titles['category'])){
-				$prog['category']=$titles['category'];
-			}
-			if (isset($titles['premiere'])){
-				$props['premiere']=$titles['premiere'];
-			}
-			if (isset($titles['live'])){
-				$prog['live']=$titles['live'];
-			}
-			if (isset($titles['episode'])){
-				$props['episode_num']=$titles['episode'];
+			
+			if (APPLICATION_ENV=='development'){
+				//var_dump($prog);
+				//die(__FILE__.': '.__LINE__);
 			}
 			
 			//Parse description
 			if (@$node->getElementsByTagName('desc')->item(0)){
-				$d = $node->getElementsByTagName('desc')->item(0)->nodeValue;
-				//var_dump($d);
-				$parseDesc = $model->parseDescription($d);
-				if (isset($parseDesc['title'])){
-					$prog['title'] .= ' '.$parseDesc['title'];
-				}
-				if (isset($parseDesc['actors']) && !empty($parseDesc['actors'])){
-					$prog['actors'] = $parseDesc['actors'];
-				}
-				if (isset($parseDesc['directors']) && !empty($parseDesc['directors'])){
-					$prog['directors'] = $parseDesc['directors'];
-				}
-				if (isset($parseDesc['rating'])){
-					$prog['rating'] = $parseDesc['rating'];
-				}
-				if (isset($parseDesc['writer'])){
-					$prog['writers'] = $parseDesc['writer'];
+				
+			    $parseDesc = $model->parseDescription( $node->getElementsByTagName('desc')->item(0)->nodeValue );
+				
+			    $prog['title'] = isset($parseDesc['title']) && !empty($parseDesc['title']) ?  $prog['title'].' '.$parseDesc['title'] : $prog['title'];
+				$prog['desc'] = isset($parseDesc['text']) ? $parseDesc['text'] : '' ;
+				
+				if (!empty($parseDesc['actors'])) {
+					if (is_array($parseDesc['actors'])){
+					    $prog['actors'] = implode(',', $parseDesc['actors']);
+					} elseif (is_numeric($parseDesc['actors'])) {
+					    $prog['actors'] = $parseDesc['actors'];
+					} elseif(stristr($parseDesc['actors'], ',')){
+					    $prog['actors'] = $parseDesc['actors'];
+					} else {
+					    var_dump($parseDesc['actors']);
+					    die(__FILE__.': '.__LINE__);
+					}
+				} else {
+				    $prog['actors'] = '';
 				}
 				
-				if (isset($parseDesc['category'])){
-					$prog['category'] = $parseDesc['category'];
+				if (!empty($parseDesc['directors'])) {
+					if (is_array($parseDesc['directors'])){
+						$prog['directors'] = implode(',', $parseDesc['directors']);
+					} elseif (is_numeric($parseDesc['directors'])) {
+						$prog['directors'] = $parseDesc['directors'];
+					} elseif(stristr($parseDesc['directors'], ',')){
+						$prog['directors'] = $parseDesc['directors'];
+					} else {
+						var_dump($parseDesc['directors']);
+						die(__FILE__.': '.__LINE__);
+					}
+				} else {
+					$prog['actors'] = '';
 				}
-				if (isset($parseDesc['country'])){
-					$prog['country'] = $parseDesc['country'];
+				
+				$prog['writers'] = isset($parseDesc['writers']) ? implode(',', $parseDesc['writers']) : '' ;
+				$prog['rating']  = isset($parseDesc['rating']) && (bool)$prog['rating']===false  ? $parseDesc['rating'] : $prog['rating'] ;
+				$prog['writers'] = isset($parseDesc['writers']) ? $parseDesc['writers'] : '' ;
+				$prog['country'] = isset($parseDesc['country']) ? $parseDesc['country'] : null ;
+				$prog['date'] = isset($parseDesc['year']) ? $parseDesc['year'] : null ;
+				$prog['episode_num'] = isset($parseDesc['episode']) && (int)$prog['episode_num']==0 ? (int)$parseDesc['episode'] : $prog['episode_num'];
+				$prog['country']  = isset($parseDesc['country']) ? $parseDesc['country'] : '' ;
+				$prog['category'] = isset($parseDesc['category']) && (bool)$prog['category']===false ? $parseDesc['category'] : $prog['category'] ;
+				
+				if (APPLICATION_ENV=='development'){
+					//var_dump($prog);
+					//die(__FILE__.': '.__LINE__);
 				}
-				if (isset($parseDesc['year'])){
-					$prog['date'] = $parseDesc['year'];
-				}
-				if (isset($parseDesc['episode'])){
-					$prog['episode_num'] = (int)$parseDesc['episode'];
-				}
-				if (isset($parseDesc['country'])){
-					$prog['country'] = $parseDesc['country'];
-				}
-				$prog['desc'] = $parseDesc['text'];
+				
 			}
-			//die(__FILE__.': '.__LINE__);
+			
+			// Alias
+			$prog['alias'] = $model->makeAlias( $prog['title'] );
 			
 			//Channel
 			$prog['channel'] = (int)$node->getAttribute('channel');
+			
+			// Fix category if needed
+			/*
+			if (!$prog['category']) {
+			    $fixCats = array(
+			    		222=>'Религия',
+			    		300006=>'Религия',
+			    		300037=>'Музыка' );
+			    if (array_key_exists($prog['channel'], $fixCats)){
+			    	$prog['category'] = $model->getProgramCategory( $fixCats[$prog['channel']]);
+			    } else {
+			    	$prog['category'] = null;
+			    }
+			}
+			*/
+			
+			if (APPLICATION_ENV=='development'){
+				//var_dump($prog);
+				//die(__FILE__.': '.__LINE__);
+			}
 			
 			/*
 			 * Fix split title for particular channels
 			 * mostly movies
 			 */
 			$splitTitles = array(100037);
-			if (in_array($prog['ch_id'], $splitTitles) && Xmltv_String::strlen($prog['sub_title'])){
+			if (in_array($prog['channel'], $splitTitles) && Xmltv_String::strlen($prog['sub_title'])){
 				$prog['title'] .= ' '.$prog['sub_title'];
 				$prog['sub_title'] = '';
 			}
-			
-			//Start and end datetime
-			$start = $model->startDateFromAttr( $node->getAttribute('start') );
-			$end   = $model->endDateFromAttr( $node->getAttribute('stop') );
-			$prog['start'] = $start->toString("yyyy-MM-dd HH:mm:ss");
-			$prog['end'] = $end->toString("yyyy-MM-dd HH:mm:ss");
-			
-			//Calculate hash
-			$prog['hash'] = md5($prog['ch_id'].$prog['start'].$prog['end']);
-			
-			//Detect category
-			$category = $node->getElementsByTagName('category')
-				->item(0)->nodeValue;
-			$fixCats = array(
-				300006=>'религия',
-				300037=>'музыка',
-			);
-			
-			// Fix category if needed
-			if (!isset($prog['category']) && $category) {
-				if (array_key_exists($prog['ch_id'], $fixCats)){
-					$prog['category'] = $model->getProgramCategory( $fixCats[$prog['ch_id']]);
-				} 
-				$prog['category'] = "'NULL'";
-			}
-			
 			
 			$e = explode('. ', $prog['title']);
 			if (count($e)>2){
@@ -396,28 +413,31 @@ class Admin_ImportController extends Zend_Controller_Action
 				else
 					$prog['sub_title'] = implode('. ', $e);
 			}
+				
 			
-			$prog['alias'] = $model->makeAlias($prog['title']);
+			//Start and end datetime
+			$start = $model->startDateFromAttr( $node->getAttribute('start') );
+			$end   = $model->endDateFromAttr( $node->getAttribute('stop') );
+			$prog['start'] = $start->toString("yyyy-MM-dd HH:mm:ss");
+			$prog['end']   = $end->toString("yyyy-MM-dd HH:mm:ss");
+			
+			//Calculate hash
+			$prog['hash']   = md5($prog['channel'].$prog['start'].$prog['end']);
 			
 			//debug breakpoint
-			/* 
-			if ($i<100){
-				var_dump($prog);
-				var_dump($props);
-				var_dump($desc);
+			if ($i<50){
+				if (APPLICATION_ENV=='development'){
+					//var_dump($prog);
+				}
 			} else {
-				die(__FILE__.': '.__LINE__);
+				//die(__FILE__.': '.__LINE__);
 			} 
-			 */
+			
 			
 			//Save
-			if ($prog['alias'] && !empty($prog['alias'])){
-			    try {
-			        $model->saveProgram($prog);
-			    } catch(Zend_Exception $e){
-			        throw new Zend_Exception( $e->getMessage(), 500, $e );
-			    }
-			    
+			
+			if (isset($prog['alias']) && !empty($prog['alias'])){
+			    $model->saveProgram($prog);
 			}
 			
 			$i++;
@@ -426,6 +446,11 @@ class Admin_ImportController extends Zend_Controller_Action
 		
 		$response['success'] = true;
 		$this->view->assign( 'response', $response );
+		/*
+		if (APPLICATION_ENV=='development'){
+			die(__FILE__.': '.__LINE__);
+		}
+		*/
 		$last_file = ROOT_PATH.'/uploads/parse/listings.xml.last';
 		system( 'mv '.$last_file.' '.$xml_file.'.old' );
 		system( 'mv '.$xml_file.' '.$xml_file.'.last' );

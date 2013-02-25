@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-right.phtml,v 1.5 2013-01-19 10:11:13 developer Exp $
+ * @version $Id: sidebar-right.phtml,v 1.6 2013-02-25 11:40:40 developer Exp $
  *
  */
 ?>
@@ -14,11 +14,14 @@
 </div>
 
 <?php
-//var_dump($this->videos);
-if (count($this->videos)>0 && $this->videos!==true) {
-    //var_dump($this->videos);
-    //die(__FILE__.': '.__LINE__);
-	$channelTitle = $this->escape($this->channel->title);
+if (count($this->videos) && $this->videos!==false) {
+    
+    if (APPLICATION_ENV=='development'){
+    	//var_dump($this->videos);
+    	//die(__FILE__.': '.__LINE__);
+    }
+    
+    $channelTitle = $this->escape($this->channel['title']);
 	$this->headScript()->appendScript("$(function() { 
 	var icons = { header: 'ui-icon-circle-arrow-e', activeHeader: 'ui-icon-circle-arrow-s' };
 	$( '#col_r .videos_sidebar' ).accordion({
@@ -41,46 +44,56 @@ if (count($this->videos)>0 && $this->videos!==true) {
 		<?php 
 		
 		foreach ($this->videos as $video) {
-			?>
 			
-			<?php $videoTitle = $this->escape( $this->truncateString( $video->title, 38, 'letters' ) ); ?>
-			<h4><i class="icon-plus icon-white"></i><?php echo $videoTitle ?></h4>
+		    if (APPLICATION_ENV=='development'){
+		        //var_dump($video);
+		        //die(__FILE__.': '.__LINE__);
+		    }
+		    
+		    $videoTitle = $this->escape( $this->truncateString( $video['title'], 38, 'letters' )); 
+		    $videoAlias = $this->escape( $video['alias'] );
+		    $videoPublished = $video['published']->toString( 'd MMMM YYYY');
+		    $videoDuration  = $video['duration']->toString( 'MM мин ss сек');
+		    $videoDesc = $this->escape( $video['desc'] );
+		    $linkTitle = empty($video['desc']) ? $videoTitle. $this->truncateString( $videoDesc, 40, 'letters') : $videoTitle ;
+		    $linkHref = $this->url(array('alias'=>$videoAlias, 'id'=>$video['rtvg_id']), 'default_videos_show-video');
+		    $thumb = $video['thumbs'][rand( 0, count( $video['thumbs'])-1)];
+		    
+		    ?>
+		    
+			<h4><i class="icon-plus icon-white"></i><?php echo $videoTitle; ?></h4>
 			
 			<div class="info">
 				
 				<p class="viewcount">
-					Понравилось <?php echo $video->views; ?> посетителям
+					Понравилось <?php echo (int)$video['views']; ?> посетителям
 				</p>
 				
-				<?php 
-				$thumb = $video->thumbs[rand(0, count($video->thumbs)-1)];
-				$link_title = empty($video->desc) ? $videoTitle. $this->escape( $this->truncateString( $video->desc, 40, 'letters') ) : $videoTitle ; 
-				$link_href = $this->url(array('alias'=>$video->alias, 'id'=>$video->rtvg_id), 'default_videos_show-video');
-				?>
-				
-				<a href="<?php echo $link_href ?>" title="Клик чтобы смотреть видео <?php echo $link_title ?>" target="_blank">
-					<img src="<?php echo $thumb->url ?>" alt="<?php echo $link_title ?>" />
+				<a href="<?php echo $linkHref; ?>" title="Клик чтобы смотреть видео <?php echo $linkTitle; ?>" target="_blank">
+					<img src="<?php echo $thumb['url']; ?>" alt="<?php echo $linkTitle; ?>" />
 				</a>
 				
-				<a class="btn btn-inverse btn-mini" href="<?php echo $link_href ?>" title="<?php echo $link_title ?> видео">
+				<a class="btn btn-inverse btn-mini" href="<?php echo $linkHref; ?>" title="<?php echo $linkTitle; ?> видео" target="_blank">
 					Смотреть
 				</a>
 				
 				<div class="date">
-					Загружено: <?php echo $video->published->toString('dd MMMM YYYY'); ?>
+					Загружено: <?php echo $videoPublished; ?>
 				</div>
 				
 				<div class="duration">
-					Длительность: <?php echo $video->duration->toString("mm:ss"); ?>
+					Длительность: <?php echo $videoDuration; ?>
 				</div>
 				
-				<?php  if (!empty($video->desc)) : ?>
+				<?php  if (!empty($video['desc'])): ?>
 				<p class="desc">
 					<?php 
-					$desc = $this->truncateString( $video->desc, 30, 'words') ; 
-					if (stristr($desc, $this->channel->title)) {
-						$href = '<a href="'.$this->url(array('channel'=>$this->channel->alias), 'default_listings_day-listing').'" target="_blank" title="Программа канала '.$this->channel->title.'">'.$this->channel->title.'</a>';
-						$desc = str_ireplace($this->channel->title, $href, $desc);
+					$desc = $this->truncateString( $videoDesc, 30, 'words') ; 
+					if (stristr($desc, $this->channel['title'])) {
+						$channelHref = '<a href="'.$this->url(array('channel'=>$this->channel['alias']), 'default_listings_day-listing') . '" 
+							target="_blank" 
+							title="Программа канала '.$this->channel['title'].'">'.$this->channel['title'].'</a>';
+						echo Xmltv_String::str_ireplace($this->channel['title'], $channelHref, $desc); 
 					}
 					echo $desc;
 					?>
@@ -101,11 +114,6 @@ if (count($this->videos)>0 && $this->videos!==true) {
 	
 <?php 
 }
-?>
-
-
-
-<?php 
 
 $this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').css({ display: 'block' }); });");
 ?>

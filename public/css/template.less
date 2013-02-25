@@ -47,8 +47,6 @@
 @tinyFont: (@normalFont - 0.3em);
 
 
-
-
 @grayDashedBorderThin: 1px dashed @gray;
 @grayDashedBorderNormal: 2px dashed @gray;
 @grayDashedBorderBold: 4px dashed @gray;
@@ -789,17 +787,32 @@ ul#channels_categories {
 }
 
 #content.frontpage {
+	
+	div.page{
+		div.select-container{
+			width: 640px;
+			margin: 0 auto;
+			select {
+				width: 640px;
+				font-size: 2em;
+			}
+		}
+	}
+	
 	#listing{
 		h3.title{
-			.mainHeading(8px);
 			padding: 0 0 0 0.3em;
 			margin: 0 0 0.1em;
-			&:hover{
-				background-color: #DDDDDD;
-				a{
+			color: @darkGray;
+			font-family: "OpenSans Condensed Bold",Verdana,Helvetica,sans-serif;
+			a {
+				text-decoration: underline;
+				color: gray;
+				&:hover {
 					text-decoration: none;
-				}	
+				}
 			}
+			
 			
 		}
 		div.progs {
@@ -828,8 +841,15 @@ ul#channels_categories {
 				div.info{
 					padding: 0 0 0 10px;
 					h4{
-						margin: 0;
-						font-size: 12px;
+						font-family: "OpenSans Condensed Bold",Verdana,Helvetica,sans-serif;
+					    font-size: 2em;
+					    margin: 0;
+						a {
+							color: @veryDarkGray;
+						}
+					}
+					a {
+						color: @darkGray;
 					}
 				}
 				a{

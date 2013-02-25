@@ -1,9 +1,9 @@
 <?php
 
-class Xmltv_Model_DbTable_VcacheRelated extends Xmltv_Db_Table_Abstract
+class Xmltv_Model_DbTable_VcacheSidebar extends Xmltv_Db_Table_Abstract
 {
 
-    protected $_name = 'vcache_related';
+    protected $_name = 'vcache_sidebar';
 
     /**
      * Constructor
@@ -21,7 +21,7 @@ class Xmltv_Model_DbTable_VcacheRelated extends Xmltv_Db_Table_Abstract
      * @param  array $video
      * @return NA
      */
-    public function store( $video=array()){
+    public function store($video=array()){
     	
         if (!isset($video['desc']) || empty($video['desc'])) {
     	    $video['desc']='';
@@ -50,7 +50,7 @@ class Xmltv_Model_DbTable_VcacheRelated extends Xmltv_Db_Table_Abstract
     		$this->insert($video);
     	}
     	
-    	return $video;
+    	return true;
         
     }
     

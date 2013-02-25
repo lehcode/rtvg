@@ -1,10 +1,6 @@
 <?php
-$host = '127.0.0.1';
-$db_name = 'dev_rutvgid';
-$db_user = 'dev_rutvgid';
-$db_pass = '127656';
-$pfx='rtvg_';
-require_once dirname(__FILE__).'/../../library/Xmltv/String.php';
+
+require_once dirname(__FILE__).'config.php';
 
 if (!$con = mysql_connect($host, $db_user, $db_pass)){
 	die("Cannot connect to database: ".mysql_error());

@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Cache.php,v 1.6 2013-02-15 00:44:24 developer Exp $
+ * @version $Id: Cache.php,v 1.7 2013-02-25 11:40:40 developer Exp $
  *
  */
 class Xmltv_Cache {
@@ -39,10 +39,10 @@ class Xmltv_Cache {
 		
 	    $this->_lifetime = isset($config['lifetime']) && !empty($config['lifetime']) ? 
 			(int)$config['lifetime'] : 86400;
-	    $this->enabled = isset($config['enabled']) && !empty($config['enabled']) ? 
-			(bool)$config['enabled'] : false;
-		$this->_location = isset($config['location']) && !empty($config['location']) ? 
+	    
+	    $this->_location = isset($config['location']) && !empty($config['location']) ? 
 			ROOT_PATH.'/'.$this->_location.(string)$config['location'] : ROOT_PATH.'/'.$this->_location ;
+		
 		$this->enabled  = (bool)Zend_Registry::get('site_config')->cache->system->get('enabled', false);
 		$this->_cache  = Zend_Cache::factory( 'Core', 'File', array(  
 			'lifetime' => $this->_lifetime,
@@ -80,25 +80,33 @@ class Xmltv_Cache {
 		if (!$hash)
 			throw new Zend_Cache_Exception("Не указан кэш-идентификатор");
 		
-		$loc = Zend_Registry::get('site_config')->cache->system->get('location', '/cache');
-		if (!$sub_folder) {
-			$this->setLocation( $loc );
-		} else {
-			$this->setLocation( $loc.$sub_folder );
+		if (APPLICATION_ENV=='development'){
+		    //var_dump(func_get_args());
+			//var_dump($this->_location);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		if ($sub_folder) {
+			$this->setLocation( $this->_location.$sub_folder );
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($this->_location);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
 		$frontend = ucfirst(strtolower($frontend));
 		if ($frontend!='Core') {
-		    if (mkdir('/cache/'.$frontend, 0755, true)){
+			if (mkdir('/cache/'.$frontend, 0777, true)){
 				$this->setLocation( '/cache/'.$frontend );
-		    }
+			}
 		}
 		
-		//var_dump($this->_location);
-		//die(__FILE__.': '.__LINE__);
-		
-		if (!is_dir($this->_location))
-			return false;
+		if (!is_dir($this->_location)) {
+		    if (!mkdir($this->_location, 0777, true)){
+		        return false;
+		    }
+		}
 		
 		$this->_cache = Zend_Cache::factory(
 			$frontend,
@@ -109,7 +117,19 @@ class Xmltv_Cache {
 			array( 'cache_dir' => $this->_location ) 
 		);
 		
-		return $this->_cache->load($hash);
+		if (APPLICATION_ENV=='development'){
+			//var_dump($this->_cache);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		$load = $this->_cache->load($hash);
+		
+		if (APPLICATION_ENV=='development'){
+		    //var_dump($load);
+		    //die(__FILE__.': '.__LINE__);
+		}
+		
+		return $load;
 	}
 	
 	/**
@@ -126,16 +146,16 @@ class Xmltv_Cache {
 		if (!$hash)
 			throw new Zend_Cache_Exception("Не указан кэш-идентификатор", 500);
 		
-		if (!$sub_folder) 
-			$sub_folder = $this->_location;
-		
 		if ($frontend!='Core') {
 			
 			$frontend = ucfirst(strtolower($frontend));
 			$this->_location .= '/' . $frontend;
-			
-			//var_dump($this->_location);
-			
+			/*
+			if (APPLICATION_ENV=='developmet'){
+				var_dump($this->_location);
+				die(__FILE__.': '.__LINE__);
+			}
+			*/
 			if (!is_dir($this->_location))
 				mkdir($this->_location, 0755, true);
 			
@@ -156,6 +176,8 @@ class Xmltv_Cache {
 		} catch (Exception $e) {
 			echo "Не могу сохранить запись в кэш";
 		}
+		
+		return true;
 		
 	}
 	

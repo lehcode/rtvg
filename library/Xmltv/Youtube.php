@@ -117,21 +117,26 @@ class Xmltv_Youtube {
 	 */
 	public function fetchVideo($yt_id=null){
 		
-		if (!$yt_id)
+		if (!$yt_id) {
 			throw new Zend_Exception("Не указан ID видео для ".__METHOD__, 500);
+		}
 		
 		try {
 			$result = $this->client->getVideoEntry($yt_id);	
 		} catch (Zend_Gdata_App_Exception $e) {
-		    if (is_a($e, 'ServiceForbiddenException') ){
-		        throw new Zend_Exception($e->getMessage(), 404);
-		    } else {
-		        if (is_a($e, 'ResourceNotFoundException'))
-		        	throw new Zend_Exception($e->getMessage(), 404);
-		    }
+		    throw new Zend_Exception($e->getMessage(), 404);
 		}
 		
-		return $result;
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		if (is_a($result, 'Zend_Gdata_YouTube_VideoEntry')) {
+			return $result;
+		}
+		
+		return false;
 		
 	}
 	
@@ -218,8 +223,6 @@ class Xmltv_Youtube {
 		if (empty($cat_en))
 			return '';
 		
-			
-			
 		$cats = array(
 			'film'=>'Кино',
 			'games'=>'Мультфильмы',

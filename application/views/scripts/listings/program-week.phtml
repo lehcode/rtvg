@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.14 2013-02-15 00:44:03 developer Exp $
+ * @version $Id: program-week.phtml,v 1.15 2013-02-25 11:40:40 developer Exp $
  *
  */
 
@@ -62,8 +62,8 @@ foreach ($this->list as $single) {
 				target="_blank">
 				<em><?php echo $single['title'] ?></em>
 		</a> на канале <?php echo $single['channel_title'] ?>
-		<?php echo (bool)$single['live']==-true ? 'в прямом эфире' : '' ; ?>
-		<?php echo (bool)$single['premiere']===true ? '. Премьера!' : '' ; ?>
+		<?php echo isset($single['live']) && ((bool)$single['live']==-true) ? 'в прямом эфире' : '' ; ?>
+		<?php echo isset($single['premiere']) && ((bool)$single['premiere']===true) ? '. Премьера!' : '' ; ?>
 		
 	</p>
 <?php 

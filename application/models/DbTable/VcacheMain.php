@@ -22,6 +22,18 @@ class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
     	    $video['desc']='';
     	}
     	
+    	if (is_a($video['published'], 'Zend_Date')){
+    		$video['published'] = $video['published']->toString('yyyy-MM-dd HH:mm:ss');
+    	}
+    	 
+    	if (is_a($video['duration'], 'Zend_Date')){
+    		$video['duration'] = $video['duration']->toString('yyyy-MM-dd HH:mm:ss');
+    	}
+
+    	if (is_array($video['thumbs'])){
+    		$video['thumbs'] = Zend_Json::encode($video['thumbs']);
+    	}
+    	
     	try {
     	    $this->insert($video);
     	} catch (Exception $e) {

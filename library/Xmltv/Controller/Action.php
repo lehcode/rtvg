@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Action.php,v 1.4 2013-02-15 00:44:24 developer Exp $
+ * @version $Id: Action.php,v 1.5 2013-02-25 11:40:40 developer Exp $
  *
  */
 class Xmltv_Controller_Action extends Zend_Controller_Action
@@ -30,6 +30,18 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
      * @var Xmltv_Model_Programs
      */
     protected $programsModel;
+
+    /**
+     * Videos model
+     * @var Xmltv_Model_Videos
+     */
+    protected $videosModel;
+
+    /**
+     * Video cache model
+     * @var Xmltv_Model_vCache
+     */
+    protected $vCacheModel;
     
     /**
      *
@@ -83,11 +95,10 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
         $this->validator = $this->_helper->getHelper('requestValidator');
         
         self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
+        self::$userAgent  = Zend_Registry::get('user_agent');
+        
         if (Zend_Registry::get('user_agent')!==false){
             self::$userAgent = Zend_Registry::get('user_agent');
-            if ( self::$videoCache===true) {
-            	self::$videoCache = true;
-            }
         } else {
             self::$userAgent = 'PHP/5.3';
             self::$videoCache = false;
@@ -99,8 +110,11 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
         
         $this->weekDays = $this->_helper->getHelper('WeekDays');
         $this->cache = new Xmltv_Cache();
+        $this->cache->setLocation(ROOT_PATH.'/cache');
         $this->channelsModel = new Xmltv_Model_Channels();
         $this->programsModel = new Xmltv_Model_Programs();
+        $this->videosModel = new Xmltv_Model_Videos();
+        $this->vCacheModel = new Xmltv_Model_Vcache();
         
     }
     
@@ -306,6 +320,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	    $top   = $this->_helper->getHelper('Top');
 		$table = new Xmltv_Model_DbTable_ProgramsRatings();
 		$this->cache->setLifetime(1800);
+		$this->cache->setLocation(ROOT_PATH.'/cache');
 		if ($this->cache->enabled){
 			$f = '/Listings/Programs';
 			$hash = Xmltv_Cache::getHash('top'.$amt);

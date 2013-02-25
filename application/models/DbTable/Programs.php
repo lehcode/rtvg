@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.14 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: Programs.php,v 1.15 2013-02-25 11:40:40 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
@@ -115,25 +115,25 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 		$directorsTable = new Xmltv_Model_DbTable_Directors();
 		foreach ($result as $k=>$row) {
 			
-			$result[$k]->start = new Zend_Date($row->start);
-			$result[$k]->end   = new Zend_Date($row->end);
+			$result[$k]['start'] = new Zend_Date($row['start']);
+			$result[$k]['end']   = new Zend_Date($row['end']);
 			
 			if (!empty($result[$k]->actors)) {
 				if( !is_array($result[$k]->actors) ){
-					$where = "`id` IN ( ".$result[$k]->actors." )";
+					$where = "`id` IN ( ".$result[$k]['actors']." )";
 				}
 				$result[$k]->actors = $actorsTable->fetchAll($where)->toArray();
 			}
 			
 			if (!empty($result[$k]->directors)) {
-				if( !is_array($result[$k]->directors) ){
-					$where = "`id` IN ( ".$result[$k]->directors." )";
+				if( !is_array($result[$k]['directors']) ){
+					$where = "`id` IN ( ".$result[$k]['directors']." )";
 				}
-				$result[$k]->directors = $directorsTable->fetchAll($where)->toArray();
+				$result[$k]['directors'] = $directorsTable->fetchAll($where)->toArray();
 			}
 			
-			$result[$k]->premiere = (bool)$result[$k]->premiere;
-			$result[$k]->live	 = (bool)$result[$k]->live;
+			$result[$k]['premiere'] = (bool)$result[$k]['premiere'];
+			$result[$k]['live']	 = (bool)$result[$k]['live'];
 			
 		}
 		

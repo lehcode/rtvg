@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.14 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.15 2013-02-25 11:40:40 developer Exp $
  *
  */
 class ChannelsController extends Xmltv_Controller_Action
@@ -64,9 +64,6 @@ class ChannelsController extends Xmltv_Controller_Action
 	 */
 	public function listAction () {
 		
-	   //var_dump($this->requestParamsValid());
-		//die(__LINE__);
-		
 		if ($this->requestParamsValid()) {
 			
 			$channelsModel = new Xmltv_Model_Channels();
@@ -80,8 +77,12 @@ class ChannelsController extends Xmltv_Controller_Action
 			} else {
 				$rows = $channelsModel->getPublished();
 			}
-			//var_dump($rows);
-			//die(__FILE__.': '.__LINE__);
+			
+			if (APPLICATION_ENV=='development'){
+				//var_dump($rows);
+				//die(__FILE__.': '.__LINE__);
+			}
+			
 			$this->view->assign('channels', $rows);
 			
 			/*
@@ -251,27 +252,15 @@ class ChannelsController extends Xmltv_Controller_Action
 			$channel = $channelsModel->getByAlias( $this->input->getEscaped('channel') );
 			$this->view->assign('channel', $channel);
 			
-			if (APPLICATION_ENV=='development'){
-			    //var_dump($channel);
-			    //die(__FILE__.': '.__LINE__);
-			}
-			
 			//Week start and end dates
 			$s = $this->_helper->getHelper('weekDays')->getStart( Zend_Date::now() );
 			$this->view->assign('week_start', $s);
 			$e = $this->_helper->getHelper('weekDays')->getEnd( Zend_Date::now() );
 			$this->view->assign('week_end', $e);
 			
-			if (APPLICATION_ENV=='development'){
-				var_dump($s->toString());
-				var_dump($e->toString());
-				//die(__FILE__.': '.__LINE__);
-			}
-			
-			//$start = new Zend_Date($s->toString('U'), 'U');
-			//$end   = new Zend_Date($e->toString('U'), 'U');
 			if ($this->cache->enabled){
-				$hash = Xmltv_Cache::getHash('channel_'.$channel->alias.'_week');
+			    $this->cache->setLocation(ROOT_PATH.'/cache');
+				$hash = Xmltv_Cache::getHash('channel_'.$channel['alias'].'_week');
 				$f = '/Channels';
 				if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
 					$schedule = $channelsModel->getWeekSchedule($channel, $s, $e);
@@ -326,11 +315,11 @@ class ChannelsController extends Xmltv_Controller_Action
 				$f = '/Feeds/Yandex';
 				$hash = $this->cache->getHash('YandexRss_'.$channelAlias);
 				if (($feedData = $this->cache->load($hash, 'Core', $f))===false) {
-					$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel->title.'"', $currentProgram->title ) );
+					$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel['title'].'"', $currentProgram->title ) );
 					$this->cache->save($feedData, $hash, 'Core', $f);
 				}
 			} else {
-				$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel->title.'"', $currentProgram->title ) );
+				$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel['title'].'"', $currentProgram->title ) );
 			}
 			
 			//var_dump($feedData);
@@ -338,7 +327,7 @@ class ChannelsController extends Xmltv_Controller_Action
 			
 			if ($new = $commentsModel->parseYandexFeed( $feedData, 164 )){
 				if (count($new)>0){
-					$commentsModel->saveComments($new, $channel->alias, 'channel');
+					$commentsModel->saveComments($new, $channel['alias'], 'channel');
 					$this->view->assign('items', $new);
 				}
 			}

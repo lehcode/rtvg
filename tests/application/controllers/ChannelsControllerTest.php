@@ -28,11 +28,11 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		$this->assertController( $urlParams['controller'] );
 		$this->assertAction( $urlParams['action'] );
 		$this->assertNotRedirect();
-		$this->assertQueryCountMin("div#col_l .module", 1 );
-		$this->assertQueryCountMin("div#col_r .module", 2 );
+		$this->assertQueryCountMin("div#col_l", 1 );
+		$this->assertQueryCountMin("div#col_r", 2 );
 		$this->assertQueryCountMin("div#channels h3.channeltitle", 1 );
 		
-		$controller    = Zend_Controller_Front::getInstance();
+		$controller = Zend_Controller_Front::getInstance();
 		
 		$channelsModel = new Xmltv_Model_Channels();
 		if($cat = $controller->getParam('category')){

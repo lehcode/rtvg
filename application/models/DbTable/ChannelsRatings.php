@@ -44,10 +44,6 @@ class Xmltv_Model_DbTable_ChannelsRatings extends Zend_Db_Table_Abstract
 		if (!$row = $this->find($channel_id)->current())
 			$row = $this->createRow(array('id'=>$channel_id), true);
 		
-		//var_dump($channel_id);
-		//var_dump($row);
-		//die(__FILE__.': '.__LINE__);
-		
 		$row->hits+=1;
 		$row->save();
 		

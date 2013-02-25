@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/RequestValidator.php,v $
- * @version $Id: RequestValidator.php,v 1.13 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.14 2013-02-25 11:40:40 developer Exp $
  */
 class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -212,6 +212,16 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			 * default controller
 	    			 */
 	    			case'frontpage':
+	    			    	
+	    			    	switch ($action){
+	    			    		case 'single-channel':
+	    			    		    $validators['format'] = array( new Zend_Validate_Alpha());
+	    			    		    $validators['id']     = array( new Zend_Validate_Digits());
+	    			    		    //die(__FILE__.': '.__LINE__);
+	    			    		default: 
+	    			    		    break;
+	    			    	}
+	    			    
 	    			    	break;
 	    			    	
 	    			default:

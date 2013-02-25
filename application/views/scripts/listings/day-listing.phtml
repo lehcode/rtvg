@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.17 2013-02-15 00:44:03 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.18 2013-02-25 11:40:40 developer Exp $
  *
  */
 
@@ -20,7 +20,7 @@ $this->headScript()
 	//	$.ajax({ url: '/channels/new-comments/channel/".$channelAlias."/format/html',
 	//		dataType: 'html', success: function(html){ $(html).insertAfter($('#comments h3')); }
 	//	});
-	});
+	//});
 ");
 
 
@@ -31,8 +31,8 @@ $kw = array($channelTitle, $this->listing_date->toString('d MMMM YYYY'));
 if (!empty($this->programs)) {
 	foreach ($this->programs as $p) {
 		if (count($kw)<5) {
-			if (!in_array($p->title, $kw))
-			$kw[]= Xmltv_String::strtolower( htmlspecialchars( $p->title, ENT_QUOTES, 'utf-8' ) );
+			if (!in_array($p['title'], $kw))
+			$kw[]= Xmltv_String::strtolower( htmlspecialchars( $p['title'], ENT_QUOTES, 'utf-8' ) );
 		}
 	}
 }
@@ -90,6 +90,17 @@ if ($this->is_today) {
 <strong><?php echo Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?></strong>
 <?php endif; ?>
 
+<?php
+/*
+ * Ссылка tinyurl
+ */ 
+?>
+<p>
+<em>Короткая ссылка на программу канала <?php echo $channelTitle ?></em> <a href="<?php echo $this->short_link ?>" 
+	title="<?php printf('Телепрограмма канала %s на каждый день', $channelTitle) ?>"
+	class="badge badge-important"
+	rel="nofollow"><?php echo $this->short_link; ?></a>
+</p>
 
 <?php
 /*
@@ -147,7 +158,7 @@ if (!empty($this->programs)) {
 			</h3>
 			
 			<?php if (isset($prog['sub_title']) && !empty($prog['sub_title'])) : ?>
-			<p class="subtitle"><?php echo $prog->sub_title ?></p>
+			<p class="subtitle"><?php echo $prog['sub_title'] ?></p>
 			<?php endif; ?>
 			
 		</div>
@@ -211,33 +222,54 @@ if (!empty($this->programs)) {
 		/*
 		 * Видео
 		 */
-		if ( count($this->listing_videos)) {
-			if ( array_key_exists( $prog['hash'], $this->listing_videos) && !empty($this->listing_videos[$prog['hash']])){
+		if (count($this->listing_videos)) {
+		    
+		    $exists = array_key_exists( $prog['hash'], $this->listing_videos) && !empty($this->listing_videos[$prog['hash']]);
+		    
+		    if (APPLICATION_ENV=='development'){
+		        //var_dump($this->listing_videos);
+		        //var_dump($exists);
+		        //die(__FILE__.': '.__LINE__);
+		    }
+		    
+			if ($exists){
 				
 				$vid = $this->listing_videos[$prog['hash']];
+				
+				if (APPLICATION_ENV=='development'){
+					//var_dump($vid);
+					//die(__FILE__.': '.__LINE__);
+				}
+				
 				?>
 				
 				<div class="program-video">
 				<?php 
-				$videoTitle = $this->escape( $vid->title );
-				$videoAlias = $this->escape( $vid->alias );
-				$videoDesc  = $this->escape( $vid->desc );
-				$videoId	= $this->escape( $vid->rtvg_id );
+				$videoTitle = $this->escape( $vid['title'] );
+				$videoAlias = $this->escape( $vid['alias'] );
+				$videoDesc  = $this->escape( $vid['desc'] );
+				$videoId	= $this->escape( $vid['rtvg_id'] );
 				$videoUrl = $this->url(array('alias'=>$videoAlias, 'id'=>$videoId), 'default_videos_show-video');
 				?>
 				
 				<?php 
-				if ($thumbs = $vid->thumbs){
-					$wrapStyle = empty($videoDesc) ? 'width: 100%;' : 'float:left; width:120px; margin: 0 1em 0.25em 0;' ;
+				if (isset($vid['thumbs']) && !empty($vid['thumbs'])){
+				    $wrapStyle = empty($videoDesc) ? 'width: 100%;' : 'float:left; width:120px; margin: 0 1em 0.25em 0;' ;
 					?>
-				<div style="<?php echo $wrapStyle ?>" itemscope itemtype="http://schema.org/ImageObject"> 
+				<div style="<?php echo $wrapStyle ?>"> 
 					<?php 
-					foreach ($thumbs as $thumb){
-						$thW = (int)Zend_Registry::get('site_config')->videos->listing->get('thumb_width', 240);
+					foreach ($vid['thumbs'] as $thumb){
+					    if (APPLICATION_ENV=='development'){
+					    	//var_dump($thumb);
+					    	//die(__FILE__.': '.__LINE__);
+					    }
+						$thW = (int)Zend_Registry::get('site_config')->videos->listing->get('thumb_width');
 						?>
 						<a href="<?php echo $videoUrl ?>"
 							title="Видео, похожие на <?php echo $videoTitle ?>">
-							<img src="<?php echo $thumb->url ?>" width="<?php echo $thW ?>" alt="<?php echo $videoTitle ?>" />
+							<img src="<?php echo $thumb['url'] ?>" 
+								width="<?php echo (int)$thW>1 ? (int)$thW : 240;  ?>" 
+								alt="<?php echo $videoTitle ?>" />
 						</a>
 						<?php 
 					}
@@ -248,13 +280,12 @@ if (!empty($this->programs)) {
 				?>
 				
 				<h4 class="title">
-					<?php //$vlink = empty($videoDesc) ? $videoTitle.$this->truncateString( $videoDesc, 40, 'letters') : $videoTitle; ?>
-					<?php //echo $vlink ?>
 					<?php echo $videoTitle ?>
 				</h4>
 				
 				<a class="btn btn-mini" href="<?php echo $videoUrl; ?>" 
-					title="Видео <?php echo $videoTitle; ?>">
+					title="Видео <?php echo $videoTitle; ?>"
+					target="_blank">
 					Смотреть онлайн
 				</a>
 				
@@ -311,20 +342,6 @@ if (!empty($this->programs)) {
 	</div>
 </div>
 
-
-
-
-<?php
-/*
- * Ссылка tinyurl
- */ 
-?>
-<p>
-<em>Короткая ссылка на программу канала <?php echo $channelTitle ?></em> <a href="<?php echo $this->short_link ?>" 
-	title="<?php printf('Телепрограмма канала %s на каждый день', $channelTitle) ?>"
-	class="badge badge-important"
-	rel="nofollow"><?php echo $this->short_link; ?></a>
-</p>
 
 <?php
 /*

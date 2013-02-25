@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.14 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: Channels.php,v 1.15 2013-02-25 11:40:40 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -116,6 +116,20 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		return $result;
 		
 	}
+
+	public function getById($id=null){
+		
+		if (!$id)
+			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		
+		$result = $this->table->fetchRow("`id`='$id'")->toArray();
+		$result['alias'] = Xmltv_String::strtolower($result['alias']);
+		$result['start'] = new Zend_Date($result['start'], 'yyyy-MM-dd HH:mm:ss');
+		$result['end']   = new Zend_Date($result['end'], 'yyyy-MM-dd HH:mm:ss');
+		
+		return $result;
+		
+	}
 	
 	/**
 	 * Fetch channes info for typeahead
@@ -186,10 +200,70 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	        //die(__FILE__.': '.__LINE__);
 	    }
 	    
-		return $this->table->fetchWeekItems($channel['id'], $start, $end, array(
+	    /*
+		return $this->channelsTable->fetchWeekItems($channel['id'], $start, $end, array(
 			'programs' => new Xmltv_Model_DbTable_Programs(),
 			'channels' => $this->channelsTable,
 		));
+		*/
+	    
+	    $days = array();
+	     
+	    do{
+	    	$select = $this->db->select()
+	    	->from( array( 'prog'=>$this->programsTable->getName()), array(
+	    			'title',
+	    			'sub_title',
+	    			'alias',
+	    			'start',
+	    			'end',
+	    			'episode_num',
+	    			'hash'
+	    	))
+	    	->joinLeft( array( 'ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
+	    			'channel_id'=>'id',
+	    			'channel_title'=>'title',
+	    			'channel_alias'=>'alias'))
+	    			->where("`prog`.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00'")
+	    			->where("`prog`.`start` < '".$start->toString('yyyy-MM-dd')." 23:59'")
+	    			->where("`prog`.`channel` = '".$channel['id']."'")
+	    			->where("`ch`.`published` = '1'")
+	    			->order("prog.start", "ASC");
+	    		
+	    	if (APPLICATION_ENV=='development'){
+	    		Zend_Debug::dump($select->assemble());
+	    		//die(__FILE__.': '.__LINE__);
+	    	}
+	    		
+	    	$days[$start->toString('U')] = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
+	    	$start->addDay(1);
+	    		
+	    } while ( $start->toString('DD')<=$end->toString('DD') );
+	    
+	    if (APPLICATION_ENV=='development'){
+	    	//Zend_Debug::dump($days);
+	    	//die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    foreach ($days as $timestamp=>$day) {
+	    	if (!empty($day)){
+	    		//Zend_Debug::dump($day);
+	    		//die(__FILE__.': '.__LINE__);
+	    		foreach ($day as $k=>$program) {
+	    			$days[$timestamp][$k]['start'] = new Zend_Date( $program['start'], 'yyyy-MM-dd HH:mm:ss');
+	    			$days[$timestamp][$k]['end']   = new Zend_Date( $program['end'], 'yyyy-MM-dd HH:mm:ss');
+	    			//Zend_Debug::dump($days[$timestamp][$k]);
+	    			//die(__FILE__.': '.__LINE__);
+	    		}
+	    	}
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	    	//Zend_Debug::dump($days);
+	    	//die(__FILE__.': '.__LINE__);
+	    };
+	    
+	    return $days;
 		
 	}
 	
@@ -261,15 +335,43 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	/**
 	 * Retrieve all channels info
 	 */
-	public function allChannels(){
+	public function allChannels($order_by=null){
 		
 		$select = $this->db->select()
-			->from( array('ch'=>$this->table->getName()), array('ch'=>'*', 'alias'=>'LOWER(`ch`.`alias`)'))
-			->joinLeft( array('cat'=>$this->_tbl_pfx.'channels_categories'), '`ch`.`category`=`cat`.`id`', array(
+			->from( array('ch'=>$this->table->getName()), array(
+				'id',
+				'title',
+				'alias'=>'LOWER(`ch`.`alias`)',
+				'desc_intro',
+				'desc_body',
+				'category',
+				'featured',
+				'icon',
+				'format',
+				'lang',
+				'url',
+				'country',
+				'adult',
+				'keywords',
+				'metadesc',
+				'video_aspect',
+				'video_quality',
+				'audio',
+			))
+			->joinLeft( array('cat'=>$this->channelsCategoriesTable->getName()), '`ch`.`category`=`cat`.`id`', array(
 				'category_title'=>'cat.title',
 				'category_alias'=>'LOWER(`cat`.`alias`)',
 				'category_image'=>'cat.image')
-			);
+			)
+			->where("`ch`.`published`='1'");
+		
+		if ($order_by){
+		    $select->order($order_by);
+		}
+		
+		if (APPLICATION_ENV=='development'){
+		    parent::debugSelect($select, __METHOD__);
+		}
 		
 		try {
 		    $result = $this->db->fetchAll( $select );
@@ -277,8 +379,12 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
 		
-		if ($result)
-			return $result->toArray();
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		return $result;
 	    
 	}
 	

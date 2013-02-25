@@ -41,8 +41,50 @@ abstract class Xmltv_Model_Abstract
      */
     protected $channelsTable;
     
+    /**
+     * Actors
+     * @var Xmltv_Model_DbTable_Actors
+     */
+    protected $actorsTable;
+
+    /**
+     * Programs
+     * @var Xmltv_Model_DbTable_Programs
+     */
+    protected $programsTable;
+    
+    /**
+     * Directors
+     * @var Xmltv_Model_DbTable_Directors
+     */
+    protected $directorsTable;
+
+    /**
+     * Video cache for sidebar
+     * @var Xmltv_Model_DbTable_VcacheSidebar
+     */
+    protected $vcacheSidebarTable;
+
+    /**
+     * Video cache for main listing videos
+     * @var Xmltv_Model_DbTable_VcacheMain
+     */
+    protected $vcacheMainTable;
+
+    /**
+     * Video cache for videos related to listing
+     * @var Xmltv_Model_DbTable_VcacheRelated
+     */
+    protected $vcacheRelatedTable;
+    
+    
     const ERR_WRONG_PARAMS = "Неверные параметры для ";
     const ERR_NO_DB = "Не указана база данных в ";
+    const ERR_MISSING_PARAMS="Пропущен необходимый параметр!";
+    const ERR_WRONG_ENTRY="---Wrong entry: ";
+    const ERR_PORN_ENTRY="---Порно: ";
+    const ERR_NON_CYRILLIC="---Non-cyrillic entry: ";
+    const ERR_WRONG_FORMAT="---Неверный формат для ";
     
 	/**
      * Model constructor
@@ -51,8 +93,9 @@ abstract class Xmltv_Model_Abstract
      */
 	public function __construct($config=array()){
 
-	    if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config'))
-	        throw new Zend_Exception( self::ERR_NO_DB.__METHOD__, 500);
+	    if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config')) {
+	        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
+	    }
 	    
 		// Init cache	
 		$this->cache = new Xmltv_Cache(array('location'=>'/Listings'));
@@ -95,14 +138,22 @@ abstract class Xmltv_Model_Abstract
 	    $this->channelsTable           = new Xmltv_Model_DbTable_Channels();
 	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
 	    $this->channelsRatingsTable    = new Xmltv_Model_DbTable_ChannelsRatings();
+	    $this->actorsTable = new Xmltv_Model_DbTable_Actors();
+	    $this->directorsTable = new Xmltv_Model_DbTable_Directors();
+	    $this->programsTable = new Xmltv_Model_DbTable_Programs();
+	    $this->vcacheSidebarTable = new Xmltv_Model_DbTable_VcacheSidebar();
+	    $this->vcacheMainTable = new Xmltv_Model_DbTable_VcacheMain();
+	    $this->vcacheRelatedTable = new Xmltv_Model_DbTable_VcacheRelated();
 	    
 	}
 	
 	/**
 	 * Debug select statement
+	 * 
 	 * @param Zend_Db_Select $select
+	 * @param string $method
 	 */
-	protected function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
+	protected static function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
 	    
 	    echo '<b>'.$method.'</b><br />';
 		try {

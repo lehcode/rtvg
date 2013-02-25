@@ -14,6 +14,7 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     
     const FETCH_MODE = Zend_Db::FETCH_ASSOC;
     const ERR_PARAMETER_MISSING = "Пропущен параметр для ";
+    const ERR_WRONG_DATE_FORMAT = "Неверный формат даты! ";
     
     /**
      * Constructor

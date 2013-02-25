@@ -6,57 +6,11 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.24 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: Programs.php,v 1.25 2013-02-25 11:40:40 developer Exp $
  */
 
-class Admin_Model_Programs 
+class Admin_Model_Programs extends Xmltv_Model_Programs
 	{
-	
-	//protected $_tableName = 'rtvg_programs';
-	/**
-	 * 
-	 * Programs table
-	 * @var Admin_Model_DbTable_Programs
-	 */
-	protected $programsTable;
-	/**
-	 * 
-	 * Table with properties on programs
-	 * @var Admin_Model_DbTable_ProgramsProps
-	 */
-	protected $programsPropsTable;
-	/**
-	 * 
-	 * Table with programs descriptions
-	 * @var Admin_Model_DbTable_ProgramsDescriptions
-	 */
-	protected $programsDescTable;
-	/**
-	 * 
-	 * Table with programs ratings
-	 * @var Admin_Model_DbTable_ProgramsRatings
-	 */
-	protected $programsRatingsTable;
-	/**
-	 * 
-	 * Table with programs categories
-	 * @var Admin_Model_DbTable_ProgramsCategories
-	 */
-	protected $programsCategoriesTable;
-	/**
-	 * 
-	 * Table with actors info
-	 * @var Admin_Model_DbTable_Actors
-	 */
-	protected $actorsTable;
-	/**
-	 * 
-	 * Table with directors info
-	 * @var Admin_Model_DbTable_Directors
-	 */
-	protected $directorsTable;
-	
-	protected $catList;
 	
 	protected $countriesList = array(
 		'Австралия'=>'au',
@@ -150,8 +104,11 @@ class Admin_Model_Programs
 	private $_regex_list='/[:;_,\.\[\]\(\)\\`\{\}"\!\+\?]+/';
 	private $_logger;
 	private $_nameRegex = '/^[\w]{2,}-?\s*[\w]{2,}-?\s*([\w]{2,})?\s*(мл\.|ст\.|jr|sr)?$/ui';
-	private $_ageRatingRegex = '/\s\(?([0-9]{1,2})\+\)?$/ui';
-	private $_lAgeRatingRegex = '/^([0-9]{1,2})\+\s/ui';
+	protected $ageRatingRegex = array(
+		'/\s([\d]{1,2})\+$/ui',
+		'/\s\(([\d]{1,2})\+\)$/ui',
+		'/^([\d]{1,2})\+\s/ui',
+	) ;
 	
 	const ERR_MISSING_PARAMS = "Пропущен параметр для ";
 	const ERR_WRONG_TYPE     = "Неверный параметр для ";
@@ -162,11 +119,7 @@ class Admin_Model_Programs
 	 */
 	public function __construct(){
 		
-		$this->programsTable		   = new Admin_Model_DbTable_Programs();
-		$this->programsCategoriesTable = new Admin_Model_DbTable_ProgramsCategories();
-		$this->actorsTable			   = new Admin_Model_DbTable_Actors();
-		$this->directorsTable		   = new Admin_Model_DbTable_Directors();
-		$this->catList = $this->programsCategoriesTable->fetchAll();
+	    parent::__construct();
 		
 	}
 	
@@ -301,32 +254,37 @@ class Admin_Model_Programs
 	 */
 	public function extractAgeRating($string){
 	    
-		if ($string){
-		    
-			$r=0;
-			if (preg_match($this->_ageRatingRegex, $string, $m))
-				$r = (int)$m[1];
-			elseif (preg_match($this->_lAgeRatingRegex, $string, $m))
-				$r = (int)$m[1];
-			
-			return $r;
-			
-		}
-		
+	    //var_dump($string);
+	    $r=0;
+	    foreach ($this->ageRatingRegex as $regex){
+	        //var_dump($regex);
+	        //var_dump(preg_match($regex, $string));
+	        if (preg_match($regex, $string, $m)) {
+	            $r = (int)$m[1];
+	        }
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	        //var_dump($r);
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
+		return $r;
+				
 	}
 
 	
 	
-	public function stripAgeRating($input){
-		if ($input){
-			//die(__FILE__.': '.__LINE__);
-			if (preg_match($this->_ageRatingRegex, $input, $m)){
-				return trim(Xmltv_String::str_ireplace(trim($m[0]), '', $input));
-			} elseif (preg_match($this->_lAgeRatingRegex, $input, $m)){
-				return Xmltv_String::str_ireplace(trim($m[0]), '', $input);
-			}
-			return $input;
-		}
+	public function stripAgeRating($string){
+		
+		foreach ($this->ageRatingRegex as $regex){
+	    	if (preg_match($regex, $string, $m)) {
+	    	    $t = trim($m[0]);
+	    		return trim( Xmltv_String::str_ireplace( $t, '', $string));
+	    	}
+	    }
+	    return $string;
+		
 	}
 
 	
@@ -336,288 +294,73 @@ class Admin_Model_Programs
 	 * 
 	 * @param string $string //Program title
 	 */
-	public function makeTitles ($input) {
+	public function parseTitle ($input=null) {
 		
 		if(!$input)
 			throw new Zend_Exception("No input provided!");
 		
-		//var_dump($input);
+		$result['title'] = trim($input);
 		
-		$tolower = new Zend_Filter_StringToLower( $this->_tolower_options );
-		
-		//Проверка возрастного рейтинга в названии
-		//var_dump(preg_match($this->_ageRatingRegex, $input));
-		//die();
-		if ($rating = $this->extractAgeRating($input)) {
-			$result['rating'] = $rating;
-			$result['title']  = Xmltv_String::ucfirst($this->stripAgeRating($input));
-		} else {
-			$result['title'] = Xmltv_String::ucfirst($input);
-		}
-		$result['title'] = str_replace('...', '…', $result['title']);
-		
-		//var_dump($result);
-		//die(__FILE__.': '.__LINE__);
-		
-		// Detect premiere
-		$regex = array(
-			'/\s+Нов(ые|ая)\s+сери(и|я)/ui',
-			'/\s+премьера/ui',
-		);
-		foreach ($regex as $r) {
-			if (preg_match($r, $result['title'])){
-				$result['premiere']=1;
-			} else {
-				$result['premiere']=0;
-			}
+		$result = $this->detectAgeRating( $result );
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		if (Xmltv_String::stristr($result['title'], 'Прямая трансляция') || 
-		Xmltv_String::stristr($result['title'], 'Трансляция из')) {
-			$result['live'] = 1;
-			if (preg_match('/^(Прямая трансляция:\s)(.+)$/ui', $result['title'], $m)){
-				$result['title'] = Xmltv_String::str_ireplace($m[1], '', $result['title']);
-			} elseif(preg_match('/^(.+)\s(Прямая трансляция).*$/ui', $result['title'], $m)){
-				$result['title'] = Xmltv_String::str_ireplace($m[2], '', $result['title']);
-			}
-		}
-		if (Xmltv_String::stristr($result['title'], 'Live')){
-			$result['title'] = str_replace( 'Live. ', '', $result['title'] );
-			$result['title'] = str_replace( 'Live ', '', $result['title'] );
-			$result['live']  = 1;
-		}
-		
-		// Обработка названий сериалов
-		$regex = '/\s*\("(.+)",\s+([\d])+-[\w]\s+серия\)/ui';
-		if (preg_match($regex, $result['title'], $m)){
-			$result['title'] = Xmltv_String::str_ireplace($m[0], '', $result['title']);
-			$result['sub_title'] = trim($m[1]);
-			$result['episode'] = (int)$m[2];
-			
+		// Премьера
+		$result = $this->detectPremiere( $result );
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 
-		$regex = '/^(.+),\s(ч|часть)\.?\s?([\d]+)\.?$/ui'; //"Горница", ч. 1.
-		if (preg_match($regex, $result['title'], $m)){
-			$result['title'] = trim($m[1]);
-			$result['episode'] = (int)$m[3];
-			
-		}
-
-		$regex = '/\s*\(\s*"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui'; //Опергруппа-2 ( "Деньги - это бумага", 1-я и 2-я серии)
-		if (preg_match($regex, $result['title'], $m)){
-			$result['title'] = Xmltv_String::str_ireplace($m[0], '', $result['title']);
-			$result['sub_title'] = trim($m[1]);
-			$result['episode'] = (int)$m[2].','.(int)$m[3];
-			
+		// Перерыв, профилактика
+		$result = $this->parseBreak( $result );
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		
-		$regex = array( 
-			'/^(.+)\s*\(Фильм\s+([\d]+)-[\w]\.?\s+-?\s*"(.+)"\)/ui', //Потаенное судно (Фильм 1-й. "Потаенное судно. 1710-1900 гг.")
-			'/^(.+)\s*\(Часть\s+([\d]+)-[\w]\.?\s+-?\s*"(.+)"\)/ui', //Летний дворец и тайные сады последних императоров Китая (Часть 1-я - "Цяньлун и рассвет Поднебесной")
-			'/^(.+)\s*\(([\d]+)-[\w]\s+серия\s+-\s+"(.+)"\)/ui',  //Сквозь кротовую нору с Морганом Фрименом (1-я серия - «С чего началась Вселенная?»)
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-				$result['title'] = trim($m[1]);
-				$result['sub_title'] = trim($m[3]);
-				$result['episode'] = (int)$m[2];
-				$result['episode']  = Zend_Json::encode($result['episode']);
-				$result['category'] = $this->catIdFromTitle('познавательные');
-			}
+		// Live program
+		$result = $this->detectLive( $result );		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		//var_dump($result['title']);
-		
-		$regex = array(
-			'/\s*\(([\d]+)-[\w]+\s+серия\)/ui',
-			'/\s*\(([\d]+)-[\w]\s*-\s*([\d]+)\s*-[\w]\s+серии\)/ui',
-			'/\s*\(([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui',
-			'/\s*Новые\s+серии\s+\(([\d]+)-[\w]+\s+серия\)/ui',
-			'/\s\(Серия\s([\d]+)\)$/ui',
-			'/\s\(Эпизод ([\d]+)\.[\d]{1}\)$/ui',
-		);
-		foreach ($regex as $r) {
-			if (preg_match($r, $result['title'], $m)) {
-				//var_dump($m);
-				$result['title'] = Xmltv_String::str_ireplace($m[0], '', $result['title']);
-				unset($m[0]);
-				$result['episode'] = implode(',', $m);
-				$result['category'] = $this->catIdFromTitle('сериал');
-				//var_dump($result);
-				//die(__FILE__.': '.__LINE__);
-			}
+		// Новости
+		$result = $this->parseNewsTitle( $result );
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		$regex = array( 
-			'/^(.+)\.?\s+\("(.+)"\.?\s+([\d]+)-[\w]\s+серия\s+-\s+"(.+)"\)/ui', //Исторические путешествия Ивана Толстого ("Писательская любовь. Сергей Есенин". 1-я серия - "Дунькин платок")
-			'/^(.+)\.?\s*\((.+)\s+([\d]+)-я\s+лекция\)/ui', //Aсademia (Галина Китайгородская. "Уникальность иностранного языка как учебного предмета". 1-я лекция)
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-				$result['title'] = trim($m[1]);
-				$result['sub_title'] = trim($m[2]).'. '.trim($m[4]);
-				$result['episode'] = (int)$m[3];
-				$result['category'] = $this->catIdFromTitle('познавательные');
-			}
+		// Сериалы
+		$result = $this->parseSeriesTitle( $result );		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		
-		$regex = '/^(.+)\s+\(Фильм\s+([\w]+):?\s+"(.+)"\)/ui'; //Предлагаемые обстоятельства (Фильм третий: "Богатый наследник")
-		if (preg_match($regex, $result['title'], $m)){
-			$result['title'] = trim($m[1]);
-			$result['sub_title'] = trim($m[3]);
-			switch(trim($m[2])){
-				default:
-				case 'первый':
-					$result['episode'] = 1;
-					break;
-				case 'второй':
-					$result['episode'] = 2;
-					break;
-				case 'третий':
-					$result['episode'] = 3;
-					break;
-				case 'четвертый':
-					$result['episode'] = 4;
-					break;
-			}
+		// Спортивные программы
+		$result = $this->parseSportsTitle( $result );
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		$regex = '/^(.+)\s\((Фильм\s+[\d]+)-[\w]\s+-\s+"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui'; //Шериф (Фильм 5-й - "Сто тысяч для сына", 1-я и 2-я серии)
-		if (preg_match($regex, $result['title'], $m)){
-			$result['title'] = trim($m[1]);
-			$result['sub_title'] = trim($m[2]).'. '.trim($m[3]);
-			$result['episode'] = (int)trim($m[4]).','.trim($m[5]);
+		// Музыкальные программы
+		$result = $this->parseMusicTitle( $result );
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
-		
-		$sports = array(
-			'Street Workout',
-			'Автоспорт',
-			'Альпинизм',
-			'Австралийский футбол',
-			'Американский футбол',
-			'Баскетбол',
-			'Бальные танцы',
-			'Боевые искусства',
-			'Биатлон',
-			'Профессиональный бокс',
-			'Бокс',
-			'Боулинг',
-			'Волейбол',
-			'виндсерфинг',
-			'Гандбол',
-			'Гонки',
-			'Горнолыжный спорт',
-			'Горные лыжи',
-			'Гребля',
-			'Клиффдайвинг',
-			'Конный спорт',
-			'Конькобежный спорт',
-			'Лыжные гонки',
-			'Мотоспорт',
-			'Мотофристайл',
-			'Парусный спорт',
-			'Плавание',
-			'Прыжки на лыжах с трамплина',
-			'Прыжки на лыжах',
-			'Прыжки с трамплина',
-			'Регби',
-			'Родео',
-			'Санный спорт',
-			'Сквош',
-			'Смешанные единоборства',
-			'Скейтбординг',
-			'Сноуборд',
-			'Снукер',
-			'Спортивные танцы',
-			'Теннис',
-			'Тимберспорт',
-			'Триатлон',
-			'Фигурное катание',
-			'Фрирайд',
-			'Фристайл',
-			'Футбол',
-			'Хоккей',
-			'Шары',
-			'Шахматы',
-			'Экстремальные виды спорта',
-		);
-		$champs = array(
-			'Чемпионат Италии',
-			'Чемпионат Испании',
-			'Чемпионат Германии',
-			'Кубок',
-		);
-		$regex= array(
-			'/^('.implode('|', $sports).')\.\s*([\w\s\d"-]+)\.\s*(.*)$/ui',
-			'/^('.implode('|', $champs).').*\.?(\s*)(.*)$/ui', 
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-				$result['title'] = trim(trim($m[1]).'. '.trim($m[2]), ' .');
-				$result['sub_title'] = isset($m[3]) ? trim($m[3]) : '' ;
-				$result['category'] = $this->catIdFromTitle('спорт');
-			}
-		}
-		
-		$regex = '/^(Мировой Кубок)\.\s+([\w\s\d" -\.]+)$/ui';
-		if (preg_match($regex, $result['title'], $m)){
-			//var_dump($result['title']);
-			$result['title']	 = trim($m[1]);
-			$result['sub_title'] = isset($m[2]) ? trim($m[2]) : '' ;
-			$result['category'] = $this->catIdFromTitle('спорт');
-		}
-		
-		
-		$regex = array(
-			'/^((Жеребьевка)\s+([\w\d\s\/]+))\.\s+(.+)$/ui',	  				//Жеребьевка 1/8 финала Лиги чемпионов. Прямая трансляция
-			'/^("([\w\s]+)"\.\s+([\w\s\d-]+))\.\s+([\w\s\.-]+)$/ui',			//"В дни теннисных каникул". Уимблдон-2012. Сабина Лисицки - Божана Йовановски
-			'/^("([\w\s]+)"\.\s+([\w\s\d-]+\.\s+\w+))\.\s+([\w\s\.\/-]+)$/ui',	//"В дни теннисных каникул". Уимблдон-2012. Финал. Д. Маррей/Фр. Нильсен - Р. Линдстедт/Х. Текау
-			'/^(.+(Чемпионат России\s[\w\s]+))\sсезона\s([\d]{4}-[\d]{4})\sгода\.?(.+)/ui',	//СОГАЗ - Чемпионат России по футболу сезона 2012-2013 года. "Терек" - "Динамо"
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-				//var_dump($m);
-				$result['title']	 = trim($m[2]).' '.trim($m[3]);
-				$result['sub_title'] = isset($m[4]) ? trim($m[4]) : '' ;
-				$result['category']  = $this->catIdFromTitle('спорт');
-				//var_dump($result);
-				//die();
-			}
-		}
-		
-		if (Xmltv_String::stristr($result['title'], ' Этап Кубка ')){
-			$e = explode('. ', $result['title']);
-			$result['title'] = trim($e[0]).'. '.trim($e[1]);
-			unset($e[0]); unset($e[1]);
-			$result['sub_title'] = implode(', ', $e);
-			$result['category']  = $this->catIdFromTitle('спорт');
-		}
-		
-		
-		
 		
 		if (preg_match('/^(.+)\s+\((.+)\)$/ui', $result['title'], $m)){
 			$result['title']	 = trim($m[1]);
 			$result['sub_title'] = trim($m[2]);
 		}
 		
-		if (Xmltv_String::stristr($result['title'], 'внимание! ') ||
-		Xmltv_String::stristr($result['title'], "канал заканчивает вещание") || 
-		Xmltv_String::stristr($result['title'], "Перерыв") || 
-		Xmltv_String::stristr($result['title'], "профилактика на канале")){
-			$result['title'] = 'Перерыв';
-			$result['sub_title'] = '';
-		}
-		
-		if (Xmltv_String::stristr($result['title'], 'Новости, ')){
-			$comma = Xmltv_String::strpos($result['title'], ',');
-			$title = trim( Xmltv_String::substr($result['title'], 0, $comma));
-			$result['sub_title'] = Xmltv_String::ucfirst( trim( Xmltv_String::substr( $result['title'], $comma+1, Xmltv_String::strlen($result['title']))) );
-			$result['title'] = $title;
-			$result['category'] = $this->catIdFromTitle('новости');
-		}
 		
 		//Название с восклицательным знаком
 		if (strstr($result['title'], '!')){
@@ -626,166 +369,17 @@ class Admin_Model_Programs
 			$result['sub_title'] = trim($r[1]);
 		}
 		
-		
-		$regex = array(
-			'/^(.+),\s+(раунд\s+[\d]+)$/ui', //Чемпионат мира по смешанным единоборствам Mix Fight M1 Сhallenge, раунд 7
-			'/^(.+),\s+(Этап\s+[\d]+,\s+\w+)$/ui',  //Мировая серия по мотофристайлу "X-Fighters" 2012 года, Этап 5, Мюнхен
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-			    
-			    if(APPLICATION_ENV=='development'){
-			        //var_dump($m);
-			    }
-			    
-				$result['title']	 = trim($m[1]);
-				$result['sub_title'] = Xmltv_String::ucfirst(trim($m[2]));
-				
-				if(APPLICATION_ENV=='development'){
-					//var_dump($result);
-					//die(__FILE__.': '.__LINE__);
-				}
-			}
-		}
-		
-		/*
-		 * Джазовые концерты и фестивали
-		 */
-		$trim = new Zend_Filter_StringTrim(array('charlist'=>' .,'));
-		$music = array(
-			'Фестиваль в .+',
-			'Концерт на .+',
-			'Исполняет .+',
-			'Хореография.+',
-			'на \w+ джазовом фестивале.+',
-			'на фестивале .+',
-			'на джазовом фестивале в .+',
-			'в театре .+',
-			'в клубе .+',
-		);
-		$regex = array(
-				//'/^("[\w\s-]+")(\s)\(.+\).+$/ui', //"Speсtrum Road" (Дж. Брюс, С. Блэкмен, Дж. Медески и В. Рейд) в клубе "Порги и Бесс"
-				'/^(Произведения [\w\s,-]+)\.(\s)(.+ под управлением .+)$/ui', //Произведения Брамса и Шимановского. Лондонский симфонический оркестр под управлением Валерия Гергиева
-				'/^(Произведения [\w\s,-]+)(\s)(в исполнении .+)$/ui', //Произведения Адамса и Малера в исполнении Лос-Анджелесского филармонического оркестра под управлением Г. Дудамеля
-				'/^(Оркестр [\w\s,"-]+)\.(\s)(.+)$/u', //Оркестр Чарли Хейдена "Liberation Music Orchestra". Концерт на фестивале джаза в Монреале
-				'/^([\w\s\.-]+: Симфония №[\d]{1,})\.(\s)(.+)$/ui', //Бетховен: Симфония №1. Ансамбль "Les Dissonanсes"
-				'/^([\w\s\.-]+: Квартет №[\d]{1,})\.(\s)(.+)$/ui', //Бетховен: Квартет №9. Ансамбль "Les Dissonanсes"
-				'/^([\w\s\.-]+\.? Концерт для [\w\s,]+)\.(\s)(.+)$/ui', //Бетховен. Концерт для скрипки. Давид Грималь и ансамбль "Les Dissonanсes". Дижон
-				//"Так поступают все женщины". Фестиваль в Зальцбурге
-				//Баллаке Сиссоко и Венсан Сегаль. Концерт на джазовом фестивале "Rhino Jazz"
-				//Произведения Мусоргского, Яначека и Прокофьева. Исполняет Фазиль Сай. Гренобль
-				//"Кантата". Хореография: М. Бежар. Балет Мориса Бежара
-				//Музыка "Antilles Mizik" на Мартиниканском джазовом фестивале-2010
-				//Юссу Ндур и "Super Etoile de Dakar" на фестивале в Фесе-2011
-				'/^(.+).?(\s)('.implode('|', $music).')$/u',
-				//'/^(.+).?(\s)()$/ui', //Мейнард Фергюсон на джазовом фестивале в Монреале
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-				
-			    $result['title']	 = $trim->filter(trim($m[1]).'. '.trim($m[2]), ' .');
-				$result['sub_title'] = isset($m[3]) ? str_replace(array('(',')'), '', Xmltv_String::ucfirst(trim($m[3]))) : '' ;
-				$result['category'] = $this->catIdFromTitle('музыка');
-				
-				if(APPLICATION_ENV=='development'){
-				    //var_dump($result);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
-			}
-		}
-		
-		/*
-		 * Просто концерты
-		 */
-		$regex = array(
-			'/^(.+)\.\s(Концерт\s.+)$/ui' //"Не только о любви". Концерт Николая Баскова
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-			    if(APPLICATION_ENV=='development'){
-			    	$result['title']	 = trim($m[1]);
-					$result['sub_title'] = trim($m[2]);
-			    }
-			}
-		}
-		
-		
-		/*
-		 * классическая музыка
-		 */
-		$regex = array(
-			'/^(Симфония №[\d]{1,})\s\(([\w\s]+)\)\s(под управлением\s[\w\s\.-]+)$/ui', //Симфония №7 (Брамс) под управлением Карлоса Клайбера
-			'/^(Симфония №[\d]{1,})\s\(([\w\s]+)\)\.?\s(Дирижер:\s[\w\s\.-]+)\.?$/ui', //Симфония №33 (Моцарт). Дирижер: Карлос Клайбер
-			'/^(Увертюра .+)(\s)(под управлением\s[\w\s\.-]+)$/ui', //Увертюра "Кориолан" (Бетховен) под управлением Карлоса Клайбера
-			'/^(Музыка [\w\s\,"-]+)\.?(\s)(Дирижер:\s[\w\s\.-]+)\.?$/u', //Музыка Дебюсси, Равеля и Бетховена. Дирижер: Эса-Пекка Салонен
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-			    
-				if(APPLICATION_ENV=='development'){
-			    	//die(__FILE__.': '.__LINE__);
-			    }
-			    
-				$result['title']	 = $trim->filter(trim($m[2]).', '.trim($m[1]));
-				$result['sub_title'] = isset($m[3]) ? Xmltv_String::ucfirst(trim($m[3])) : '' ;
-				$result['category'] = $this->catIdFromTitle('классическая музыка');
-				//var_dump($result);
-				//die(__FILE__.': '.__LINE__);
-			}
-		}
-		
-		$regex = array(
-				'/^Новости$/ui',
-				'/^Время$/ui',
-				'/^Вести$/ui',
-				'/^Вести\sнедели$/ui',
-				'/^Новости.+субтитрами.*$/ui',
-				'/^(вечерние)\sновости$/ui',
-				'/^местное время\.?.*$/iu',
-				'/^события\.?.*$/iu',
-				'/ news /iu',
-				'/Евроньюс/iu',
-				'/Euronews/iu',
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['title'], $m)){
-			    if(APPLICATION_ENV=='development'){
-			    	//die(__FILE__.': '.__LINE__);
-			    }
-				$result['category'] = $this->catIdFromTitle('новости');
-			}
-			
-		}
-		
-		// Обработка названий сериалов.
-		// проход 2, поиск в подзаголовке
-		$regex = array( 
-			'/([\d]+)-?[\w]?\s+серия/ui', //10 серия
-			'/серия\s+([\d]+)/ui', //Серия 7
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $result['sub_title'], $m)){
-				$result['sub_title'] = '';
-				$result['episode'] = (int)$m[1];
-			}
-		}
-		
+		// Смесь кирилицы и латинницы (бывает)
 		if (preg_match('/^([\p{Cyrillic}\s]+)\s+and\s+([\p{Cyrillic}\s]+)$/ui', $result['title'], $m)){
-			$result['title'] = trim($m[1]);
+			$result['title'] = $m[1];
 			$result['sub_title'] = Xmltv_String::ucfirst(trim($m[2]));
 		
 		}
 		
 		//"Кто хочет стать миллионером?" с Дмитрием Дибровым
 		if (preg_match('/^(.+)\s+((с|со)\s\w+\s\w+[\.-]*)$/ui', $result['title'], $m)){
-			if (APPLICATION_ENV=='development'){
-				//var_dump($result['title']);
-				//var_dump($m);
-				//die(__FILE__.': '.__LINE__);
-			}
-			$result['title']	 = trim($m[1]);
-			$result['sub_title'] = Xmltv_String::ucfirst(trim($m[2]));
+			$result['title']	 = trim( $m[1], '" ');
+			$result['sub_title'] = trim( Xmltv_String::ucfirst( trim($m[2])), '" ');
 		}
 		
 		
@@ -793,35 +387,50 @@ class Admin_Model_Programs
 			$result['title'] = Xmltv_String::str_ireplace('+', 'плюс', $result['title']);
 		}
 		
+		if (preg_match('/^"([\w\s\d]+)"\.\s+(.+)$/ui', $result['title'], $m)){
+		    if (APPLICATION_ENV=='development'){
+		    	//var_dump($m);
+		    	//die(__FILE__.': '.__LINE__);
+		    }
+		    $result['title']     = $m[1];
+		    $result['sub_title'] = $m[2];
+		}
+		
 		$result['title'] = str_replace('...', '…', $result['title']);
-		$f = new Zend_Filter_StringTrim(array('charlist'=>',!?:;- \/\''));
-		$result['title'] = $f->filter($result['title']);
+		$trim = new Zend_Filter_StringTrim(array('charlist'=>',!?:;- \/\''));
+		$result['title'] = $trim->filter($result['title']);
 		$result['sub_title'] = trim($result['sub_title']);
 		
 		return $result;
 		
 	}
 	
+	
 	/**
 	 * Get category ID from it's title
 	 * @param unknown_type $title
 	 * @return number
 	 */
-	public function catIdFromTitle($title=null){
+	public function catIdFromTitle($title){
 		
-		if ($title){
-		    $title = trim($title);
-		    $catLower = Xmltv_String::strtolower($title);
-		    if (array_key_exists($catLower, $this->categoriesMap)){
-		    	$title = $this->categoriesMap[$catLower];
-		    }
-		    
-			foreach ($this->catList as $c) {
-				if(Xmltv_String::strtolower($c->title) == Xmltv_String::strtolower($title)) {
-					return (int)$c->id;
-				}
+	    $catLower = Xmltv_String::strtolower( trim($title));
+	    if (array_key_exists($catLower, $this->categoriesMap)){
+	    	$title = $this->categoriesMap[$catLower];
+	    }
+	    
+	    foreach ($this->programsCategoriesList as $cat) {
+			if( Xmltv_String::strtolower($title) == Xmltv_String::strtolower($cat['title'])) {
+				$catId = (int)$cat['id'];
 			}
 		}
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($catId);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		return $catId;
+		
 		
 	}
 
@@ -835,13 +444,7 @@ class Admin_Model_Programs
 	 */
 	public function getProgramCategory ($cat_title=null, $prog_desc=null) {
 		
-	    
-	    
-	    
-	    //var_dump(func_get_args());
-	    //die(__FILE__.': '.__LINE__);
-	    
-		if ($cat_title) {
+	    if ($cat_title) {
 		    
 			$exists   = false;
 			$catLower = Xmltv_String::strtolower($cat_title);
@@ -852,7 +455,7 @@ class Admin_Model_Programs
 			//var_dump($cat_title);
 			//die(__FILE__.': '.__LINE__);
 			
-			foreach ($this->catList as $c) {
+			foreach ($this->programsCategoriesList as $c) {
 			    if( Xmltv_String::strtolower($c->title)==Xmltv_String::strtolower($cat_title)) {
 					$catId  = (int)$c->id;
 					$exists = true;
@@ -877,7 +480,7 @@ class Admin_Model_Programs
 			);
 			foreach ($categoriesRegex as $regex){
 				if (preg_match($regex, $prog_desc, $m)){
-					foreach ($this->catList as $c){
+					foreach ($this->programsCategoriesList as $c){
 						if (Xmltv_String::strtolower($c->title)=='сериал'){
 							$catId = (int)$c->id;
 						}
@@ -895,98 +498,7 @@ class Admin_Model_Programs
 	
 	}
 
-	/**
-	 * @deprecated
-	 */
-	/*
-	public function savePremiere ($info=array()) {
-		
-		if( empty( $info ) ) 
-		return array();
-		
-		$programs = new Admin_Model_DbTable_Programs();
-		$props	= new Admin_Model_DbTable_ProgramsProps();
-		$trim	 = new Zend_Filter_StringTrim();
-		
-		$info['new']=1;
-		
-		
-		$new = $props->createRow();
-		$new->hash=$info['hash'];
-		$new->premiere=1;
-		$new->premiere_date=$info['start'];
-		
-		//$info['title'] = Xmltv_String::ucfirst( $trim->filter( preg_replace('/премьера[ \.]?/iu', '', $info['title']) ) );
-		
-		try {
-			$new->save();
-		} catch (Exception $e){
-			if ($e->getCode() == 1062) {
-				try {
-					$props->update($new->toArray(), "`hash`='" . $info['hash'] . "'");
-				} catch (Exception $ee) {
-					echo __METHOD__.' error#: '.$ee->getCode().': '. $ee->getMessage();
-					//die(__FILE__.': '.__LINE__);
-				}
-			} else {
-				echo __METHOD__.' error#: '.$e->getCode().': '. $e->getMessage();
-				//die(__FILE__.': '.__LINE__);
-			}
-		}
-		
-		try {
-			$programs->update( $info, "`hash` = '".$info['hash']."'" );
-		} catch (Exception $e) {
-			echo __METHOD__.' error#: '.$e->getCode().': '. $e->getMessage();
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		return $info;
-
-	}
-	*/
-
-
-	/**
-	 * 
-	 * @param unknown_type $input
-	 * @return multitype:multitype:
-	 * @deprecated
-	 */
-	/*
-	public function getCredits ($input=null) {
-		
-		if($input ) {
-			
-			$result['actors']=array();
-			$result['directors']=array();
-			
-			$tolower=new Zend_Filter_StringToLower( $this->_tolower_options );
-			
-			if( strstr( $tolower->filter( $input ), 'в ролях' ) ) {
-				$d=explode( 'В ролях:', $input );
-				//var_dump($d);
-				$actors=$d[1];
-				$p=explode( 'Режиссер', $actors );
-				$result['actors']=explode( ', ', trim( $p[0], '.…: ' ) );
-				$result['directors']=explode( ', ', trim( $p[1], '.…: ' ) );
-			
-			} elseif( strstr( $tolower->filter( $input ), 'режиссер' ) ) {
-				
-				$p=explode( 'Режиссер', $input );
-				$result['actors']=array();
-				$result['directors']=explode( ', ', trim( $p[1], '.…: ' ) );
-			
-			} else {
-				return $result;
-			}
-			
-			return $result;
-		}
 	
-	}
-	*/
-
 	/**
 	 * Parse XML description
 	 * 
@@ -1003,12 +515,14 @@ class Admin_Model_Programs
 			$result = array();
 			
 			//Проверка возрастного рейтинга в названии
-			if ($r = $this->extractAgeRating($desc)) {
+			if (($r = $this->extractAgeRating($desc))>0) {
 				$result['rating'] = $r;
 				$desc = $this->stripAgeRating($desc);
 			}
 			
-			$desc = Xmltv_String::str_ireplace( ' ЗАКАЖИ и СМОТРИ +7(495)775-5620', '', $desc);
+			if (Xmltv_String::stristr($desc, "ЗАКАЖИ и СМОТРИ +7(495)775-5620")) {
+				$desc = Xmltv_String::str_ireplace( ' ЗАКАЖИ и СМОТРИ +7(495)775-5620', '', $desc);
+			}
 			
 			
 			//'([-\w+\s\w+,^A-Z]+,?)'
@@ -1023,25 +537,26 @@ class Admin_Model_Programs
 					 
 					// Breakpoint
 					if (APPLICATION_ENV=='development'){
-						var_dump($m);
-						//die(__FILE__.': '.__LINE__);
+					    //var_dump($desc);
+						//var_dump($m);
 					}
 					 
-					$result['category']  = $this->catIdFromTitle(trim($m[2]));
+					$result['category'] = $this->catIdFromTitle(trim($m[2]));
 					$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
 					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
 					$result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[4]), 'director') );
 					$desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
 					$result['country'] = self::_parseCountry(trim($m[5]));
-					$result['year']  = (int)trim($m[6]);
+					$result['year'] = (int)trim($m[6]);
 					$result['title'] = Xmltv_String::ucfirst( Xmltv_String::strtolower(trim($m[1])));
 					$desc = preg_replace('/^.+$/ui', '', $desc);
 					
 					if (APPLICATION_ENV=='development'){
 						//var_dump($result);
-						//var_dump($desc);
 						//die(__FILE__.': '.__LINE__);
 					}
+					
+					return $result;
 						  
 				}
 			}
@@ -1176,7 +691,6 @@ class Admin_Model_Programs
 					if (APPLICATION_ENV=='development'){
 						//var_dump($desc);
 						//var_dump($m);
-						//die(__FILE__.': '.__LINE__);
 					}
 					
 					/*
@@ -1203,35 +717,36 @@ class Admin_Model_Programs
 						//var_dump($result);
 						//die(__FILE__.': '.__LINE__);
 					}
+					
+					return $result;
 						
 				}
 			}
 			
 			
-			$result['actors'] = $this->_parsePersonsNames( $desc, 'actor');
-			if (!empty($result['actors'])) {
-				$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
-			}
-			//die(__FILE__.': '.__LINE__);
-			
 			if (Xmltv_String::stristr($desc, 'В ролях') || Xmltv_String::stristr($desc, 'Звезды кино')){
-				if (preg_match('/^(.*)\s(В\sролях|Звезды\sкино):\s([-\w+\s\w+,^A-Z]+,?)\.?\s*(.*)$/ui', $desc, $m)){
+				if (preg_match('/^(.*)\s(В ролях|Звезды кино):\s([-\w+\s\w+,^A-Z]+,?)\.?\s*(.*)$/ui', $desc, $m)){
+				    
+				    if (APPLICATION_ENV=='development'){
+				        //var_dump($desc);
+				    	//var_dump($m);
+				    }
 				    
 					$result['actors'] = implode(",", $this->_parsePersonsNames( $desc, 'actor'));
 					$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
-					$desc = trim($m[1]);
-						
+					$result['desc'] = trim( trim($m[1]).' '.trim($m[4]));
+					
 					// Breakpoint
 					if (APPLICATION_ENV=='development'){
-						//var_dump($m);
-						//var_dump($actors);
+						//var_dump($result);
 						//die(__FILE__.': '.__LINE__);
 					}
-					$desc = trim($m[4]);
+					
 				}
+				
+				
 			}
-			//die(__FILE__.': '.__LINE__);
-
+			
 			if (Xmltv_String::stristr($desc, 'Детективный сериал') || 
 			Xmltv_String::stristr($desc, 'сериала "Детективы"')){
 				$result['category'] = $this->catIdFromTitle('детективный сериал');
@@ -1241,9 +756,9 @@ class Admin_Model_Programs
 				$result['category'] = $this->catIdFromTitle('спортивные новости');
 			}
 			
-			if (preg_match($this->_ageRatingRegex, $desc, $m)) {
-				$result['rating'] = (int)trim($m[1]);
-				$desc = str_replace($m[0], '', $desc);
+			if (($rating=$this->extractAgeRating($desc))>0){
+			    $result['rating'] = $rating;
+			    $desc = $this->stripAgeRating($desc);
 			}
 			
 			$trim = new Zend_Filter_StringTrim(array('charlist'=>' -,'));
@@ -1255,8 +770,10 @@ class Admin_Model_Programs
 			    die(__FILE__.': '.__LINE__);
 			}
 			
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
+			$result['actors'] = $this->_parsePersonsNames( $desc, 'actor');
+			if (!empty($result['actors'])) {
+				$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
+			}
 			
 			return $result;
 			
@@ -1503,37 +1020,6 @@ class Admin_Model_Programs
 		}
 	}
 	
-	/**
-	 * Save description
-	 * 
-	 * @param  array $desc
-	 * @throws Exception
-	 * @return boolean
-	 */
-	public function saveDescription($data=array()){
-		
-	    if (!empty($data) && is_array($data)) {
-	        
-	        if (!$data['hash'] || (int)$data['hash']==0 ){
-	            var_dump($data);
-	            die(__FILE__.': '.__LINE__);
-	            //throw new Zend_Exception("Не указан alias!", 500);
-	        }
-	        
-	    	$search = $data['alias'];
-	    	
-	    	if (!$this->programsDescTable->fetchRow( "`alias`='$search'")){
-	    	    unset($data['hash']);
-	    		$hash = $this->programsDescTable->insert( $data);
-	    	}
-	    	return $this->programsDescTable->fetchRow( "`alias`='$search'");
-	    } else {
-	    	return $search;
-	    }
-	    
-	}
-
-
 	/**
 	 * @param array $credits
 	 * @param array $info
@@ -1951,85 +1437,22 @@ class Admin_Model_Programs
 	    } elseif(!is_array($data)){
 	        throw new Zend_Exception(self::ERR_WRONG_TYPE.__METHOD__, 500);
 	    } else {
-	        //var_dump($data);
-	        //die(__FILE__.': '.__LINE__);
-	        try {
-	        	$hash = $this->programsTable->insert($data);
-	        } catch (Exception $e) {
-	        	throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-	        }
-	        /*
-	        $search = $data['hash'];
-	        var_dump($search);
-        	if (!$this->programsTable->fetchRow( "`hash`='$search'")){
-        	    try {
-        	        $hash = $this->programsTable->insert($data);
-        	    } catch (Exception $e) {
-        	        throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-        	    }
-            }
-            */
+	        $data['actors']       = !isset($data['actors'])       || empty($data['actors'])       ? '' : $data['actors'] ;
+	        $data['directors']    = !isset($data['directors'])    || empty($data['directors'])    ? '' : $data['directors'] ;
+	        $data['writers']      = !isset($data['writers'])      || empty($data['writers'])      ? '' : $data['writers'] ;
+	        $data['adapters']     = !isset($data['adapters'])     || empty($data['adapters'])     ? '' : $data['adapters'] ;
+	        $data['producers']    = !isset($data['producers'])    || empty($data['producers'])    ? '' : $data['producers'] ;
+	        $data['composers']    = !isset($data['composers'])    || empty($data['composers'])    ? '' : $data['composers'] ;
+	        $data['editors']      = !isset($data['editors'])      || empty($data['editors'])      ? '' : $data['editors'] ;
+	        $data['presenters']   = !isset($data['presenters'])   || empty($data['presenters'])   ? '' : $data['presenters'] ;
+	        $data['commentators'] = !isset($data['commentators']) || empty($data['commentators']) ? '' : $data['commentators'] ;
+	        $data['guests']       = !isset($data['guests'])       || empty($data['guests'])       ? '' : $data['guests'] ;
+	        $hash = $this->programsTable->insert($data);
 	        return $hash;
 	    }
 	    
 	    return false;
 	    
-	}
-	
-	/**
-	 * 
-	 * @param  array $info
-	 * @throws Zend_Exception
-	 * @return string
-	 */
-	public function saveProps($data=array()){
-		
-	    if (!empty($data) && is_array($data)) {
-	    	$search = $data['hash'];
-	    	if (!$this->programsPropsTable->fetchRow( "`hash`='".$data['hash']."'")){
-	    	    try {
-	    	        $hash = $this->programsPropsTable->insert( $data);
-	    	    } catch (Zend_Db_Table_Exception $e) {
-	    	        if ($e->getCode()!=1062)
-	    	        	throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-	    	    }
-	    		
-	    	}
-	    	try {
-	    		$result = $this->programsPropsTable->fetchRow( "`hash`='$hash'");
-	    	} catch (Zend_Db_Table_Exception $e) {
-	    	    if ($e->getCode()!=1062)
-	    	    	throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-	    	}
-	    	return $result;
-	    } else {
-	    	return $search;
-	    }
-	    
-	    /*
-		if (!empty($data) && is_array($data)) {
-			try {
-				$hash = $this->programsPropsTable->insert($data);
-			} catch (Exception $e) {
-				if ($e->getCode()==1062) {
-					try {
-						$this->programsPropsTable->update($data, "hash = '".$data['hash']."'");
-					} catch (Zend_Db_Table_Exception $e) {}
-					return $data['hash'];
-				} else {
-					throw new Zend_Exception($e->getMessage(), $e->getCode());
-				}
-			}
-				
-			if (!$hash)
-				throw new Zend_Exception(self::ERR_CANNOT_SAVE, 500);
-				
-			return $hash;
-		} else {
-			throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
-		}
-		*/
-		
 	}
 	
 	/**
@@ -2105,28 +1528,773 @@ class Admin_Model_Programs
 	
 	/**
 	 * Generate alias
+	 * 
 	 * @param  string $input
+	 * @param  bool   $replace_plus //Заменять + на слово
 	 * @return string|null
 	 */
-	public function makeAlias($input=null){
+	public function makeAlias($input, $replace_plus=false){
 		
-		if($input) {
-			$result = $input;
-			$result = str_replace(array('"', '.', ',', '...', '…', '!', '?', ':', ';', '-'), ' ', $result );
-			$result = Xmltv_String::str_ireplace( 'ё', 'е', $result );
-			$result = Xmltv_String::str_ireplace( 'Ё', 'Е', $result );
-			$result = Xmltv_String::str_ireplace( '+', '-плюс-', $result );
-			$result = preg_replace('/[^0-9\p{Cyrillic}\p{Latin}]+/ui', ' ', $result);
-			$f = new Zend_Filter_Word_SeparatorToSeparator('  ', ' ');
-			$result = $f->filter($result);
-			$f = new Zend_Filter_StringTrim(array('charlist'=>'".,…!?:;- \/\''));
-			$result = $f->filter($result);
-			$f = new Zend_Filter_Word_SeparatorToDash(' ');
-			$result = Xmltv_String::strtolower($f->filter( $result ));
-			return Xmltv_String::strtolower( $result );
-			
+	    if (APPLICATION_ENV=='development'){
+	        //var_dump($input);
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
+		$result = $input;
+		
+		$symbols = array('"', '.', ',', '...', '…', '!', '?', ':', ';', '-', '  ');
+		foreach ($symbols as $s){
+		    if (stristr( $result, $s)){
+		        $result = str_replace($s, ' ', $result );
+		    }
 		}
 		
+		$cyrillic = array('ё'=>'е', 'Ё'=>'Е');
+		foreach ($cyrillic as $s=>$r){
+		    if (Xmltv_String::stristr( $result, $s)){
+		    	$result = str_replace($s, $r, $result );
+		    }
+		}
+		
+		if ($replace_plus){
+		    if (Xmltv_String::stristr($result, '+'))
+		    	$result = Xmltv_String::str_replace( '+', '-плюс-', $result );
+		}
+		 
+		$result = preg_replace('/[^0-9\p{Cyrillic}\p{Latin}]+/ui', ' ', $result);
+		
+		//$f = new Zend_Filter_StringTrim(array('charlist'=>'".,…!?:;- \/\''));
+		//$result = $f->filter($result);
+		
+		$f = new Zend_Filter_Word_SeparatorToDash(' ');
+		$result = Xmltv_String::strtolower( $f->filter( $result ));
+		
+		$result = trim( $result, '-' );
+		
+		$result = Xmltv_String::strtolower( $result );
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		return $result;
+		
+	}
+	
+	/**
+	 * Parse spor program title
+	 * 
+	 * @param  array $input
+	 * @return array
+	 */
+	protected function parseSportsTitle($input){
+		
+	    $sports = array(
+	    		'Street Workout',
+	    		'Автоспорт',
+	    		'Альпинизм',
+	    		'Австралийский футбол',
+	    		'Американский футбол',
+	    		'Баскетбол',
+	    		'Бальные танцы',
+	    		'Боевые искусства',
+	    		'Биатлон',
+	    		'Профессиональный бокс',
+	    		'Бокс',
+	    		'Боулинг',
+	    		'Волейбол',
+	    		'виндсерфинг',
+	    		'Гандбол',
+	    		'Гонки',
+	    		'Горнолыжный спорт',
+	    		'Горные лыжи',
+	    		'Гребля',
+	    		'Клиффдайвинг',
+	    		'Конный спорт',
+	    		'Конькобежный спорт',
+	    		'Лыжные гонки',
+	    		'Мотоспорт',
+	    		'Мотофристайл',
+	    		'Парусный спорт',
+	    		'Плавание',
+	    		'Прыжки на лыжах с трамплина',
+	    		'Прыжки на лыжах',
+	    		'Прыжки с трамплина',
+	    		'Регби',
+	    		'Родео',
+	    		'Санный спорт',
+	    		'Сквош',
+	    		'Смешанные единоборства',
+	    		'Скейтбординг',
+	    		'Сноуборд',
+	    		'Снукер',
+	    		'Спортивные танцы',
+	    		'Теннис',
+	    		'Тимберспорт',
+	    		'Триатлон',
+	    		'Фигурное катание',
+	    		'Фрирайд',
+	    		'Фристайл',
+	    		'Футбол',
+	    		'Хоккей',
+	    		'Шары',
+	    		'Шахматы',
+	    		'Экстремальные виды спорта',
+	    );
+	    $champs = array(
+	    		'Чемпионат Италии',
+	    		'Чемпионат Испании',
+	    		'Чемпионат Германии',
+	    		'Кубок',
+	    );
+	    $regex= array(
+	    		'/^('.implode('|', $sports).')\.\s*([\w\s\d"-]+)\.\s*(.*)$/ui',
+	    		'/^('.implode('|', $champs).').*\.?(\s*)(.*)$/ui',
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    		$result['title'] = trim(trim($m[1]).'. '.trim($m[2]), ' .');
+	    		$result['sub_title'] = isset($m[3]) ? trim($m[3]) : '' ;
+	    		$result['category'] = $this->catIdFromTitle('спорт');
+	    	}
+	    }
+	    
+	    $regex = '/^(Мировой Кубок)\.\s+([\w\s\d" -\.]+)$/ui';
+	    if (preg_match($regex, $input['title'], $m)){
+	    	//var_dump($string);
+	    	$result['title']	 = trim($m[1]);
+	    	$result['sub_title'] = isset($m[2]) ? trim($m[2]) : '' ;
+	    	$result['category'] = $this->catIdFromTitle('спорт');
+	    }
+	    
+	    
+	    $regex = array(
+	    		'/^((Жеребьевка)\s+([\w\d\s\/]+))\.\s+(.+)$/ui',	  				//Жеребьевка 1/8 финала Лиги чемпионов. Прямая трансляция
+	    		'/^("([\w\s]+)"\.\s+([\w\s\d-]+))\.\s+([\w\s\.-]+)$/ui',			//"В дни теннисных каникул". Уимблдон-2012. Сабина Лисицки - Божана Йовановски
+	    		'/^("([\w\s]+)"\.\s+([\w\s\d-]+\.\s+\w+))\.\s+([\w\s\.\/-]+)$/ui',	//"В дни теннисных каникул". Уимблдон-2012. Финал. Д. Маррей/Фр. Нильсен - Р. Линдстедт/Х. Текау
+	    		'/^(.+(Чемпионат России\s[\w\s]+))\sсезона\s([\d]{4}-[\d]{4})\sгода\.?(.+)/ui',	//СОГАЗ - Чемпионат России по футболу сезона 2012-2013 года. "Терек" - "Динамо"
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    		$result['title']	 = trim($m[2]).' '.trim($m[3]);
+	    		$result['sub_title'] = isset($m[4]) ? trim($m[4]) : '' ;
+	    		$result['category']  = $this->catIdFromTitle('спорт');
+	    	}
+	    }
+	    
+	    if (Xmltv_String::stristr($input['title'], ' Этап Кубка ')){
+	    	$e = explode('. ', $input['title']);
+	    	$result['title'] = trim($e[0]).'. '.trim($e[1]);
+	    	unset($e[0]); unset($e[1]);
+	    	$result['sub_title'] = implode(', ', $e);
+	    	$result['category']  = $this->catIdFromTitle('спорт');
+	    }
+	    
+	    $regex = array(
+	    		'/^(.+),\s+(раунд\s+[\d]+)$/ui', //Чемпионат мира по смешанным единоборствам Mix Fight M1 Сhallenge, раунд 7
+	    		'/^(.+),\s+(Этап\s+[\d]+,\s+\w+)$/ui',  //Мировая серия по мотофристайлу "X-Fighters" 2012 года, Этап 5, Мюнхен
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+				$result['title'] = trim($m[1]);
+	    		$result['sub_title'] = Xmltv_String::ucfirst(trim($m[2]));
+	    		
+	    	}
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	    	//var_dump($result);
+	    	//die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    if ($result) {
+	    	return $result;
+	    }
+	    
+	    return $input;
+	    
+	}
+	
+	/**
+	 * Parse news program title
+	 * 
+	 * @param  array $input
+	 * @return array
+	 */
+	protected function parseNewsTitle($input){
+		
+	    if ( $input['title']=='Вечерние новости с субтитрами') {
+	        
+	    	$result['title'] = $input['title'];
+	    	$result['sub_title'] = '';
+	    	$result['category'] = $this->catIdFromTitle('Новости');
+	    	$result['live'] = 1;
+	    	
+	    } elseif (Xmltv_String::stristr($input['title'], 'Новости, ')){
+	        $result = $input;
+	    	$comma = Xmltv_String::strpos($input['title'], ',');
+	    	$title = trim( Xmltv_String::substr($input['title'], 0, $comma));
+	    	$result['title'] = $title;
+	    	$result['sub_title'] = Xmltv_String::ucfirst( trim( Xmltv_String::substr( $input['title'], $comma+1, Xmltv_String::strlen( $input['title']))) );
+	    	$result['category'] = $this->catIdFromTitle('Новости');
+	    	$result['live'] = 1;
+	    }
+	    
+	    $regex = array(
+	    		'/^Новости$/ui',
+	    		'/^Время$/ui',
+	    		'/^Вести$/ui',
+	    		'/^Вести\sнедели$/ui',
+	    		'/^Новости.+субтитрами.*$/ui',
+	    		'/^(вечерние)\sновости$/ui',
+	    		'/^местное время\.?.*$/iu',
+	    		'/^события\.?.*$/iu',
+	    		'/ news /iu',
+	    		'/Евроньюс/iu',
+	    		'/Euronews/iu',
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    	    $result = $input;
+	    		$result['category'] = $this->catIdFromTitle('Новости');
+	    		$result['live'] = 1;
+	    	}
+	    		
+	    }
+	    
+	    if ($result){
+	        return $result;
+	    }
+	    
+	    $input['live'] = 0;
+	    return $input;
+	    
+	}
+	
+	/**
+	 * Detect live program
+	 * 
+	 * @param  array $input
+	 * @return array
+	 */
+	protected function detectLive($input){
+		
+	    
+	    $search = array(
+	    	'Прямая трансляция',
+	    	'Трансляция из',
+	    );
+	    foreach ($search as $string){
+	        if ( Xmltv_String::stristr($input['title'], $string)) {
+	            $result['live'] = 1;
+	        }
+	    }
+	    
+	    if ( preg_match( '/^(Прямая трансляция:\s)(.+)$/ui', $input['title'], $m)){
+	    	$result['title'] = Xmltv_String::str_ireplace( $m[1], '', $input['title']);
+	    } elseif( preg_match('/^(.+)\s(Прямая трансляция).*$/ui', $input['title'], $m)){
+	    	$result['title'] = Xmltv_String::str_ireplace( $m[2], '', $input['title']);
+	    }
+	    
+	    if (Xmltv_String::stristr($input['title'], 'Live')){
+	    	$result['title'] = str_replace( 'Live. ', '', $input['title'] );
+	    	$result['title'] = str_replace( 'Live ', '', $input['title'] );
+	    	$result['live']  = 1;
+	    }
+	    
+	    if ($result){
+	        return $result;
+	    } 
+	    
+	    $input['live'] = 0;
+	    return $input;
+	    
+	}
+	
+	/**
+	 * Detect premiere
+	 * 
+	 * @param  array $input
+	 * @return int
+	 */
+	protected function detectPremiere($input){
+	    
+	    $input['premiere'] = 0;
+	    
+	    $regex = array(
+	    		'/\s+Нов(ые|ая)\s+сери(и|я)/ui',
+	    		'/\s+премьера/ui',
+	    );
+	    foreach ($regex as $r) {
+	    	if ( preg_match($r, $input['title'], $m) ){
+	    	    $result = $input;
+	    	    $result['title'] = Xmltv_String::str_ireplace($m[1], '', $input['title']);
+	    		$result['premiere'] = 1;
+	    		return $result;
+	    	}
+	    }
+	    
+	    if (Xmltv_String::stristr($input['title'], 'Премьера сезона.')) {
+	        $result = $input;
+	        $result['title'] = Xmltv_String::str_ireplace('Премьера сезона.', '', $input['title']);
+	        $result['premiere'] = 1;
+	        return $result;
+	    }
+	    
+	    return $input;
+	}
+	
+	
+	/**
+	 * Parse music program title
+	 * 
+	 * @param  array $input
+	 * @return array
+	 */
+	protected function parseMusicTitle($input){
+		
+	    /*
+	     * Джазовые концерты и фестивали
+	    */
+	    $trim = new Zend_Filter_StringTrim(array('charlist'=>' .,'));
+	    $music = array(
+	    		'Фестиваль в .+',
+	    		'Концерт на .+',
+	    		'Исполняет .+',
+	    		'Хореография.+',
+	    		'на \w+ джазовом фестивале.+',
+	    		'на фестивале .+',
+	    		'на джазовом фестивале в .+',
+	    		'в театре .+',
+	    		'в клубе .+',
+	    );
+	    $regex = array(
+	    		//'/^("[\w\s-]+")(\s)\(.+\).+$/ui', //"Speсtrum Road" (Дж. Брюс, С. Блэкмен, Дж. Медески и В. Рейд) в клубе "Порги и Бесс"
+	    		'/^(Произведения [\w\s,-]+)\.(\s)(.+ под управлением .+)$/ui', //Произведения Брамса и Шимановского. Лондонский симфонический оркестр под управлением Валерия Гергиева
+	    		'/^(Произведения [\w\s,-]+)(\s)(в исполнении .+)$/ui', //Произведения Адамса и Малера в исполнении Лос-Анджелесского филармонического оркестра под управлением Г. Дудамеля
+	    		'/^(Оркестр [\w\s,"-]+)\.(\s)(.+)$/u', //Оркестр Чарли Хейдена "Liberation Music Orchestra". Концерт на фестивале джаза в Монреале
+	    		'/^([\w\s\.-]+: Симфония №[\d]{1,})\.(\s)(.+)$/ui', //Бетховен: Симфония №1. Ансамбль "Les Dissonanсes"
+	    		'/^([\w\s\.-]+: Квартет №[\d]{1,})\.(\s)(.+)$/ui', //Бетховен: Квартет №9. Ансамбль "Les Dissonanсes"
+	    		'/^([\w\s\.-]+\.? Концерт для [\w\s,]+)\.(\s)(.+)$/ui', //Бетховен. Концерт для скрипки. Давид Грималь и ансамбль "Les Dissonanсes". Дижон
+	    		//"Так поступают все женщины". Фестиваль в Зальцбурге
+	    		//Баллаке Сиссоко и Венсан Сегаль. Концерт на джазовом фестивале "Rhino Jazz"
+	    		//Произведения Мусоргского, Яначека и Прокофьева. Исполняет Фазиль Сай. Гренобль
+	    		//"Кантата". Хореография: М. Бежар. Балет Мориса Бежара
+	    		//Музыка "Antilles Mizik" на Мартиниканском джазовом фестивале-2010
+	    		//Юссу Ндур и "Super Etoile de Dakar" на фестивале в Фесе-2011
+	    		'/^(.+).?(\s)('.implode('|', $music).')$/u',
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    		$result['title']	 = $trim->filter(trim($m[1]).'. '.trim($m[2]), ' .');
+	    		$result['sub_title'] = isset($m[3]) ? str_replace(array('(',')'), '', Xmltv_String::ucfirst(trim($m[3]))) : '' ;
+	    		$result['category'] = $this->catIdFromTitle('Музыка');
+	    	}
+	    }
+	    
+	    /*
+	     * Просто концерты
+	    */
+	    $regex = array(
+	    		'/^(.+)\.\s(Концерт\s.+)$/ui' //"Не только о любви". Концерт Николая Баскова
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    		if(APPLICATION_ENV=='development'){
+	    			$result['title']	 = trim($m[1]);
+	    			$result['sub_title'] = trim($m[2]);
+	    		}
+	    	}
+	    }
+	    
+	    
+	    /*
+	     * классическая музыка
+	    */
+	    $regex = array(
+	    		'/^(Симфония №[\d]{1,})\s\(([\w\s]+)\)\s(под управлением\s[\w\s\.-]+)$/ui', //Симфония №7 (Брамс) под управлением Карлоса Клайбера
+	    		'/^(Симфония №[\d]{1,})\s\(([\w\s]+)\)\.?\s(Дирижер:\s[\w\s\.-]+)\.?$/ui', //Симфония №33 (Моцарт). Дирижер: Карлос Клайбер
+	    		'/^(Увертюра .+)(\s)(под управлением\s[\w\s\.-]+)$/ui', //Увертюра "Кориолан" (Бетховен) под управлением Карлоса Клайбера
+	    		'/^(Музыка [\w\s\,"-]+)\.?(\s)(Дирижер:\s[\w\s\.-]+)\.?$/u', //Музыка Дебюсси, Равеля и Бетховена. Дирижер: Эса-Пекка Салонен
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    		$result['title']	 = trim($m[2]).', '.trim($m[1]);
+	    		$result['sub_title'] = isset($m[3]) ? Xmltv_String::ucfirst(trim($m[3])) : '' ;
+	    		$result['category'] = $this->catIdFromTitle('классическая музыка');
+	    	}
+	    }
+	    
+	    if ($result) {
+	    	return $result;
+	    }
+	    
+	    return $input;
+	    
+	}
+	
+	/**
+	 * Parse series title
+	 * 
+	 * @param  array $input
+	 * @return array
+	 */
+	protected function parseSeriesTitle($input){
+		
+	    // Обработка названий сериалов
+	    $regex = '/(.+)\s*\("(.+)",\s+([\d]+)-[\w]\s+серия\)/ui';
+	    if (preg_match($regex, $input['title'], $m)){
+	        
+	        $result = $input;
+	        
+	        if (APPLICATION_ENV=='development'){
+	        	//var_dump($input['title']);
+	        	//var_dump($m);
+	        }
+	        
+	        $result['title']     = trim($m[1]);
+	    	$result['sub_title'] = trim($m[2]);
+	    	$result['episode']   = (int)$m[3];
+	    	$result['category']  = $this->catIdFromTitle('Сериал');
+	    	
+	    	if (APPLICATION_ENV=='development'){
+	    		//var_dump($result);
+	    		//die(__FILE__.': '.__LINE__);
+	    	}
+	    	
+	    	return $result;
+	    	
+	    }
+	    
+	    $regex = '/^(.+),\s(ч|часть)\.?\s?([\d]+)\.?$/ui'; //"Горница", ч. 1.
+	    if (preg_match($regex, $input['title'], $m)){
+	        
+	        if (APPLICATION_ENV=='development'){
+	        	var_dump($input['title']);
+	        	var_dump($m);
+	        }
+	        
+	        $result = $input;
+	    	$result['title'] = trim($m[1]);
+	    	$result['episode'] = (int)$m[3];
+	    	$result['category'] = $this->catIdFromTitle('Сериал');
+	    	
+	    	if (APPLICATION_ENV=='development'){
+	    		var_dump($result);
+	    		die(__FILE__.': '.__LINE__);
+	    	}
+	    	
+	    }
+	    
+	    
+	    $regex = '/\s*\(\s*"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui'; //Опергруппа-2 ( "Деньги - это бумага", 1-я и 2-я серии)
+	    if (preg_match($regex, $input['title'], $m)){
+	        
+	        if (APPLICATION_ENV=='development'){
+	        	//var_dump($input['title']);
+	        	//var_dump($m);
+	        }
+	        
+	        $result = $input;
+	    	$result['title'] = Xmltv_String::str_ireplace($m[0], '', $input['title']);
+	    	$result['sub_title'] = trim($m[1]);
+	    	$result['episode'] = (int)$m[2].','.(int)$m[3];
+	    	$result['category'] = $this->catIdFromTitle('Сериал');
+	    	
+	    	if (APPLICATION_ENV=='development'){
+	    	    //var_dump($result);
+	    		//die(__FILE__.': '.__LINE__);
+	    	}
+	    }
+	    
+	    
+	    if (preg_match_all('/(([\d]+)-я серия - "([\w\d\s]+)"\.?)/ui', $input['title'], $m)){
+	        
+	        if (APPLICATION_ENV=='development'){
+	        	//var_dump($m);
+	        	//die(__FILE__.': '.__LINE__);
+	        }
+	        
+	        $result = $input;
+	        $trim = new Zend_Filter_StringTrim(array('charlist'=>' ()'));
+	        $subTitle = (bool)$input['sub_title']===false ? '' : $input['sub_title'] ;
+	        if (count($m[1])>1){
+		        foreach ($m[1] as $k=>$s){
+		            $input['title'] =  Xmltv_String::str_ireplace($s, '', $input['title']);
+		            $subTitle .= "$s ";
+		        }
+		        $result['title']     = $trim->filter( $input['title'] );
+		        $result['sub_title'] = $trim->filter( $subTitle );
+	        } else {
+	            $result['title']     = $trim->filter( Xmltv_String::str_ireplace($m[1][0], '', $input['title']));
+	            $result['sub_title'] = $m[3][0];
+	            $result['episode']   = (int)$m[2][0];
+	        }
+	        
+	        $result['category'] = $this->catIdFromTitle('Сериал');
+	        
+	        if (APPLICATION_ENV=='development'){
+	        	//var_dump($result);
+	        	//die(__FILE__.': '.__LINE__);
+	        }
+	        
+	        return $result;
+	        
+	    }
+	    
+	    
+	    $regex = array(
+	    		'/^(.+)\s*\(Фильм\s+([\d]+)-[\w]\.?\s+-?\s*"(.+)"\)/ui', //Потаенное судно (Фильм 1-й. "Потаенное судно. 1710-1900 гг.")
+	    		'/^(.+)\s*\(Часть\s+([\d]+)-[\w]\.?\s+-?\s*"(.+)"\)/ui', //Летний дворец и тайные сады последних императоров Китая (Часть 1-я - "Цяньлун и рассвет Поднебесной")
+	    		'/^(.+)\s*\(([\d]+)-[\w]\s+серия\s+-\s+"(.+)"\)/ui',  //Сквозь кротовую нору с Морганом Фрименом (1-я серия - «С чего началась Вселенная?»)
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    	    
+	    	    $result = $input;
+	    	    
+	    		if (APPLICATION_ENV=='development'){
+	    		    //var_dump($m);
+	    		}
+	    	    
+	    		$result['title']     = trim($m[1]);
+	    		$result['sub_title'] = trim($m[3]);
+	    		$result['episode']   = (int)$m[2];
+	    		$result['category']  = $this->catIdFromTitle('Познавательные');
+	    		
+	    		if (APPLICATION_ENV=='development'){
+	    			//var_dump($result);
+	    			//die(__FILE__.': '.__LINE__);
+	    		}
+	    		
+	    		return $result;
+	    	}
+	    }
+	    
+	    $regex = array(
+	    		'/\s*\(([\d]+)-[\w]+\s+серия\)/ui',
+	    		'/\s\(Серия\s([\d]+)\)$/ui',
+	    		'/\s\(Эпизод ([\d]+)\.[\d]{1}\)$/ui',
+	    );
+	    foreach ($regex as $r) {
+	    	if (preg_match($r, $input['title'], $m)) {
+	    	    
+	    	    $result = $input;
+	    	    
+	    		if (APPLICATION_ENV=='development'){
+	    			//var_dump($m);
+	    		    //die(__FILE__.': '.__LINE__);
+	    		}
+	    		
+	    		$result['title'] = Xmltv_String::str_ireplace($m[0], '', $input['title']);
+	    		unset($m[0]);
+	    		$result['episode']  = (int)$m[1];
+	    		$result['category'] = $this->catIdFromTitle('Сериал');
+	    		
+	    		if (APPLICATION_ENV=='development'){
+	    			//var_dump($result);
+	    			//die(__FILE__.': '.__LINE__);
+	    		}
+	    		
+	    		return $result;
+	    	}
+	    }
+	    
+	    $regex = array(
+	    		'/\s*\(([\d]+)-[\w]\s*-\s*([\d]+)\s*-[\w]\s+серии\)/ui',
+	    		'/\s*\(([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui',
+	    		'/\s*Новые\s+серии\s+\(([\d]+)-[\w]+\s+серия\)/ui',
+	    );
+	    foreach ($regex as $r) {
+	    	if (preg_match($r, $input['title'], $m)) {
+	    	    
+	    	    $result = $input;
+	    	    
+	    	    if (APPLICATION_ENV=='development'){
+	    	        //var_dump($m);
+	    	    }
+	    	    
+	    	    $result['title'] = Xmltv_String::str_ireplace($m[0], '', $input['title']);
+	    		unset($m[0]);
+	    		$result['episode']  = implode(',', $m);
+	    		$result['category'] = $this->catIdFromTitle('Сериал');
+	    		
+	    		if (APPLICATION_ENV=='development'){
+	    			//var_dump($result);
+	    			//die(__FILE__.': '.__LINE__);
+	    		}
+	    		
+	    		return $result;
+	    	}
+	    }
+	    
+	    $regex = array(
+	    		'/^(.+)\.?\s+\("(.+)"\.?\s+([\d]+)-[\w]\s+серия\s+-\s+"(.+)"\)/ui', //Исторические путешествия Ивана Толстого ("Писательская любовь. Сергей Есенин". 1-я серия - "Дунькин платок")
+	    		'/^(.+)\.?\s*\((.+)\s+([\d]+)-я\s+лекция\)/ui', //Aсademia (Галина Китайгородская. "Уникальность иностранного языка как учебного предмета". 1-я лекция)
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    	    
+	    	    $result = $input;
+	    	    
+	    	    if (APPLICATION_ENV=='development'){
+	    	    	//var_dump($m);
+	    	    }
+	    	    
+	    		$result['title'] = trim($m[1]);
+	    		$result['sub_title'] = trim($m[2]).'. '.trim($m[4]);
+	    		$result['episode'] = (int)$m[3];
+	    		$result['category'] = $this->catIdFromTitle('Познавательные');
+	    		
+	    		if (APPLICATION_ENV=='development'){
+	    			//var_dump($result);
+	    			//die(__FILE__.': '.__LINE__);
+	    		}
+	    		
+	    		return $result;
+	    		
+	    	}
+	    }
+	    
+	    $regex = '/^(.+)\s\((Фильм\s+[\d]+)-[\w]\s+-\s+"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui'; //Шериф (Фильм 5-й - "Сто тысяч для сына", 1-я и 2-я серии)
+	    if (preg_match($regex, $input['title'], $m)){
+	        die(__FILE__.': '.__LINE__);
+	        $result = $input;
+	    	$result['title'] = trim($m[1]);
+	    	$result['sub_title'] = trim($m[2]).'. '.trim($m[3]);
+	    	$result['episode'] = (int)trim($m[4]).','.(int)trim($m[5]);
+	    	$result['category'] = $this->catIdFromTitle('Сериал');
+	    }
+	    
+	    
+	    $regex = '/^(.+)\s+\(Фильм\s+([\w]+):?\s+"(.+)"\)/ui'; //Предлагаемые обстоятельства (Фильм третий: "Богатый наследник")
+	    if (preg_match($regex, $result['title'], $m)){
+	        die(__FILE__.': '.__LINE__);
+	        $result = $input;
+	    	$result['title'] = trim($m[1]);
+	    	$result['sub_title'] = trim($m[3]);
+	    	switch(trim($m[2])){
+	    		default:
+	    		case 'первый':
+	    			$result['episode'] = 1;
+	    			break;
+	    		case 'второй':
+	    			$result['episode'] = 2;
+	    			break;
+	    		case 'третий':
+	    			$result['episode'] = 3;
+	    			break;
+	    		case 'четвертый':
+	    			$result['episode'] = 4;
+	    			break;
+	    	}
+	    	$result['category'] = $this->catIdFromTitle('Сериал');
+	    }
+	    
+	    
+	    
+	    if ( preg_match('/^(.+)\s?\(([\d]+)-?я?\s+серия\s-\s"([\w\d\s]+)"\.?\)/ui', $result['title'], $m)) { //(25-я серия - "Рейдерский захват".
+	    	die(__FILE__.': '.__LINE__);
+	    	$result = $input;
+	    	$result['title']     = trim($m[1]).'. «'.trim($m[3]).'»';
+	    	$result['sub_title'] = '';
+	    	$result['episode']   = (int)$m[2];
+	    	$result['category'] = $this->catIdFromTitle('Сериал');
+	    }
+	    
+	    
+	    // Обработка названий сериалов. проход 2, поиск в подзаголовке
+	    $regex = array(
+	    		'/([\d]+)-?[\w]?\s+серия\s?-\s?/ui', //10 серия
+	    		'/серия\s+([\d]+)/ui', //Серия 7
+	    );
+	    foreach ($regex as $r){
+	    	if (preg_match($r, $input['title'], $m)){
+	    	    
+	    	    $result = $input;
+	    	    
+	    	    if (APPLICATION_ENV=='development'){
+	    	        //var_dump($m);
+	    	    }
+	    	    
+	    	    $result['title'] = Xmltv_String::str_ireplace($m[0], '', $input['title']);
+	    	    $result['sub_title'] = '';
+	    		$result['episode'] = (int)$m[1];
+	    		$result['category'] = $this->catIdFromTitle('Сериал');
+	    		
+	    		if (APPLICATION_ENV=='development'){
+	    			//var_dump($result);
+	    			//die(__FILE__.': '.__LINE__);
+	    		}
+	    		
+	    		return $result;
+	    	}
+	    }
+	    
+	    if(APPLICATION_ENV=='development'){
+	    	//var_dump($result);
+	    	//die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    if ($result) {
+	        $result['category'] = $this->catIdFromTitle('Сериал');
+	        return $result;
+	    }
+	    
+	    $input['episode'] = null;
+	    return $input;
+	    
+	}
+	
+	/**
+	 * Parse break
+	 * 
+	 * @param  array $input
+	 * @return array
+	 */
+	protected function parseBreak($input){
+		
+	    if (Xmltv_String::stristr($input['title'], 'внимание! ') || Xmltv_String::stristr($input['title'], "канал заканчивает вещание")
+	    	 || Xmltv_String::stristr($input['title'], "Перерыв") ){
+	        $result = $input;
+	    	$result['title'] = 'Перерыв';
+	    	$result['sub_title'] = '';
+	    	return $result;
+	    }
+	    
+	    if (Xmltv_String::stristr($input['title'], 'профилактика на канале! ') || (Xmltv_String::strtolower($input['title'])=="Профилактические работы")){
+	        $result = $input;
+	        $result['title'] = 'Профилактика';
+	        $result['sub_title'] = '';
+	        return $result;
+	    }
+	    
+	    return $input;
+	    
+	}
+	
+	/**
+	 * Detect and strip age rating
+	 * 
+	 * @param  array $input
+	 * @return array
+	 */
+	protected function detectAgeRating($input){
+		
+	    //Проверка возрастного рейтинга в названии
+	    if (($rating = $this->extractAgeRating($input['title']))>0) {
+	        $result['title']  = Xmltv_String::ucfirst($this->stripAgeRating($input['title']));
+	    	$result['rating'] = $rating;
+	    }
+	    
+	    if ($result) {
+	    	return $result;
+	    }
+	    
+	    $input['rating'] = null;
+	    return $input;
+	    
 	}
 	
 }

@@ -3,7 +3,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 {
 	
 	protected $frontController;
-	const ERR_WRONG="---Wrong for ";
+	const ERR_WRONG_CONTROLLER="---Wrong controller for ";
 	const ERR_MISSING="---Missing for ";
 	const MARK_INCOMPLETE=" has not been implemented yet.";
 	/**
@@ -78,21 +78,19 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 				'controller'=>'listings',
 				'action'=>'day-listing',
 			));
-			$this->request->setQuery(array(
-				'channel' => $channel['alias'],
-				'date' => $today,
-			));
+			$this->request->setQuery(array( 'channel' => $channel['alias'], 'date' => $today ));
 			$url = $this->url( $urlParams );
 			$this->dispatch($url);
 			
 			// assertions
 			$this->assertModule( $urlParams['module'] );
-			$this->assertController( $urlParams['controller'], self::ERR_WRONG.$channel['title'] );
+			$this->assertController( $urlParams['controller'], self::ERR_WRONG_CONTROLLER.$channel['title'] );
 			$this->assertAction( $urlParams['action'] );
+			
 			$this->assertNotRedirect();
 			
 			$this->assertQueryCountMin("ul#channels_categories li", 23 );
-			$this->assertQueryCountMin("ul#program-top li", (int)$siteConfig->topprograms->channellist->get('amount') );
+			$this->assertQueryCountMin("ul#program-top li", (int)$siteConfig->top->channels->get('amount') );
 			$this->assertQueryContentContains( "#maincontent h1", $channel['title']);
 			//$this->assertQueryCount("div#programs-carousel", 1, self::ERR_MISSING.$channel['title'] );
 			//$this->assertQueryCountMin("div#programs-carousel .programcontainer", 1, self::ERR_MISSING.$channel['title'] );

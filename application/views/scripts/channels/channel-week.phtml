@@ -3,13 +3,13 @@
  * Week listing script for channel
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: channel-week.phtml,v 1.7 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: channel-week.phtml,v 1.8 2013-02-25 11:40:40 developer Exp $
  */
 $this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на неделю c %s по %s ', $this->channel['title'], $this->week_start->toString('EEEE, d MMMM'), $this->week_end->toString('EEEE, dd MMMM')));
 $this->headTitle( sprintf ('Программа телеканала «%s» на неделю с %s по %s', $this->channel['title'], $this->week_start->toString('dd MMMM'), $this->week_end->toString('dd MMMM yyyy')));
 $this->headMeta()->setName('keywords', sprintf ('телепрограмма,%s,неделя', strtolower( $this->channel['title'] )));
-$this->headScript()
-	->appendFile($this->baseUrl()."/js/bootstrap-tab.js");
+//$this->headScript()
+//	->appendFile($this->baseUrl()."/js/bootstrap-tab.js");
 $css = '.nav-tabs > li > a { font-size: 0.8em; padding: 9px 6px; font-weight: bold; }
 #programslist { border: none; }';
 $this->headStyle()->appendStyle($css);
@@ -27,7 +27,7 @@ $channelAlias = $this->channel['alias'];
 
 <a class="btn btn-mini btn-primary" href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing' ) ?>" 
 	title="<?php printf( 'Программа %s на сегодня, %s', $this->channel['title'] , Zend_Date::now()->toString('EEEE, d MMMM yyyy')) ?>">
-	Программы <?php printf("%s сегодня", $this->channel['title']); ?>
+	<?php printf("Передачи %s сегодня", $this->channel['title']); ?>
 </a>
 
 <div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>

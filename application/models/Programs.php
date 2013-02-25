@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.15 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: Programs.php,v 1.16 2013-02-25 11:40:40 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -12,6 +12,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	
 	protected $weekDays;
 	protected static $videoCache=false;
+	protected $programsCategoriesList;
 	
 	const ERR_MISSING_PARAMS="Пропущены необходимые параметры!";
 	
@@ -21,8 +22,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 */
 	public function __construct($config=array()){
 		
-	    $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
-        parent::__construct($config);
+	    parent::__construct($config);
         
         if (isset($config['video_cache']) && is_bool($config['video_cache'])){
             self::$videoCache = $config['video_cache'];
@@ -34,6 +34,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
          */
 	    $this->table    = new Xmltv_Model_DbTable_Programs();
 	    $this->weekDays = isset($config['week_days']) ? $config['week_days'] : null ;
+	    $this->programsCategoriesList = $this->getCategoriesList();
 			
 	}
 	
@@ -98,8 +99,6 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	        throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
 	    
 	    $progStart = new Zend_Date( $date->toString() );
-	    //var_dump($progStart->toString());
-	    //die(__FILE__.': '.__LINE__);
 	    $where = array(
 			"prog.alias LIKE '%$alias%'",
 			"prog.start >= '".$date->toString('YYYY-MM-dd hh:MM:00')."'",
@@ -336,7 +335,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 			->where( "`prog`.`start` < '".$end->toString('yyyy-MM-dd')." 23:59'" )
 			->where( "`prog`.`alias` LIKE '%$program_alias%'" )
 			->where( "`channel`.`published` = '1'")
-			//->where( "`channel`.`lang` = 'ru'")
+			->where( "`channel`.`lang` = 'ru'")
 			->where( "`prog`.`channel` != '$orig_channel'")
 			->order( array( "channel_title ASC", "prog.start DESC"));	
 
@@ -711,7 +710,21 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		 
 	}
 	
-	
+	/**
+	 * Load categories list from database
+	 * 
+	 * @param  string $order
+	 * @return array
+	 */
+	public function getCategoriesList($order=null){
+		
+	    if ($order){
+	        return $this->categoriesTable->fetchAll(null, $order)->toArray();
+	    } else {
+	        return $this->categoriesTable->fetchAll()->toArray();
+	    }
+	    
+	}
 	
 }
 
