@@ -1,9 +1,9 @@
 <?php
 
-class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
+class Xmltv_Model_DbTable_VcacheListings extends Xmltv_Db_Table_Abstract
 {
 
-    protected $_name = 'vcache_main';
+    protected $_name = 'vcache_listings';
 
     /**
      * Constructor
