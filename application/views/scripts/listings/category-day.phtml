@@ -1,0 +1,32 @@
+<?php
+/**
+ * 
+ */
+?>
+
+<h1><?php echo $this->category['title']?> на этой неделе</h1>
+
+<?php 
+foreach ($this->list as $single){
+    //var_dump($single);
+    //die(__FILE__.': '.__LINE__);
+    ?>
+    <div class="item programcontainer">
+    	<p>
+			<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span>&nbsp;
+			<span class="label"><?php echo $single['start']->toString( 'dd MMMM') ?></span>&nbsp;
+			<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?></span>
+			<?php echo $single['category_title_single'] ?> 
+				<a href="<?php echo $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U") ?>"
+					title="<?php echo $single['title'] ?> <?php echo $single['start']->toString( 'dd MMM') ?> на канале <?php echo $single['channel_title'] ?>"
+					target="_blank">
+					<em><?php echo $single['title'] ?></em>
+			</a> на канале <?php echo $single['channel_title'] ?>
+			<?php echo (bool)$single['live']==-true ? 'в прямом эфире' : '' ; ?>
+			<?php echo (bool)$single['premiere']===true ? '. Премьера!' : '' ; ?>
+			
+		</p>
+    </div>
+    <?php 
+}
+?>

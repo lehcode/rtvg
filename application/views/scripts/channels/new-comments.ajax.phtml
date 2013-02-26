@@ -1,0 +1,61 @@
+<?php
+/**
+ * Add new comments to page with AJAX
+ * 
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: new-comments.ajax.phtml,v 1.1 2013-02-26 17:56:34 developer Exp $
+ *
+ */
+
+
+//var_dump($this->items);
+if (count($this->items)){
+	foreach ($this->items as $comment) {
+		//var_dump($comment);
+		?>
+	<div xmlns:v="http://rdf.data-vocabulary.org/#" typeof="v:Review" class="hreview">
+	
+		<?php if (!empty($comment['title'])) : ?>
+		<div class="summary"><?php echo $comment['title'] ?></div>
+		<?php else: ?>
+		<div class="summary">
+			<span property="v:itemreviewed"><?php echo $this->escape( $this->channel->title ); ?></span>
+		</div>
+		<?php endif; ?>
+		
+		
+		<?php if (!empty($comment['author'])) : ?>
+		<div class="author">
+			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
+				<small><span property="v:reviewer"><?php echo $comment['author'] ?></span></small>
+			</a>
+		</div>
+		<?php endif; ?>
+		
+		
+		<?php if (!empty($comment['date_created'])) { ?>
+		<div class="date">
+			<?php echo $comment['date_created']->toString('EEEE, dd MMM yyyy hh:mm'); ?>
+			<span property="v:dtreviewed" content="<?php echo $comment['date_created']->toString('yyyy-MM-dd') ?>">
+		</div>
+		<?php 
+		} ?>
+		
+		
+		<div class="description">
+			<span property="v:description">
+				<?php echo str_ireplace($this->channel->title, '<em>'.$this->channel->title.'</em>', $comment['intro']) ?>
+			</span>
+		</div>
+		
+		<span property="v:rating"></span>
+		
+	</div>
+		<?php 
+	}
+	?>
+
+
+<?php  
+} ?>
