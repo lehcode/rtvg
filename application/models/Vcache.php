@@ -28,22 +28,20 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
             if (!$result) { 
                 return false;
             } else { 
+                
                 $now = Zend_Date::now();
+                $deleteAt = new Zend_Date( $result->delete_at, 'YYYY-MM-dd HH:mm:ss' );
                 
-                //var_dump($result);
-                //die(__FILE__.': '.__LINE__);
-                
-                $deleteAt = new Zend_Date( $result->delete_at, 'dd-MM-YYYY HH:mm:ss' );
                 if ($deleteAt->compare($now)==-1){
                 	return $result->toArray();
                 } else {
                     try {
-                        $this->vcacheMainTable->delete("`rtvg_id`='$rtvgId'");
+                        $this->vcacheListingsTable->delete("`rtvg_id`='$rtvgId'");
                     } catch (Zend_Db_Table_Exception $e) {
                         throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
                     }
-                    return null;
                 }
+                return false;
             }
         }
         
@@ -57,10 +55,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
     public function saveMainVideo($video=null){
     	
         $vModel = new Xmltv_Model_Videos();
-        
-        if ($video && is_a($video, 'Zend_Gdata_YouTube_VideoEntry')){
-            $video = $vModel->parseYtEntry($video);
-        }
+        $video = $vModel->parseYtEntry($video);
         
         if (APPLICATION_ENV=='development'){
             //var_dump($video);

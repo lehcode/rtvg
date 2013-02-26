@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.15 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.16 2013-02-26 21:58:56 developer Exp $
  *
  */
 class ChannelsController extends Xmltv_Controller_Action
@@ -29,25 +29,15 @@ class ChannelsController extends Xmltv_Controller_Action
 		 * Change layout for AJAX requests
 		 */
 		if ($this->getRequest()->isXmlHttpRequest()) {
+		    
+		    $ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
+		    $ajaxContext
+		    	->addActionContext( 'typeahead', 'json' )
+			    ->addActionContext( 'new-comments', 'html' )
+			    ->initContext();
 			
-			$this->contextSwitch
-				->addActionContext('typeahead', 'json')
-				->initContext();
 	   	}
-		
-		$this->validator = $this->_helper->getHelper( 'requestValidator');
-		$this->_initCache();
-	}
-	
-	/**
-	 * Initialize caching
-	 */
-	protected function _initCache(){
-		
-		$this->cacheRoot = '/Channels';
-		$this->cache = new Xmltv_Cache( array('location'=>$this->cacheRoot) );
-		$this->cache->lifetime = (int)Zend_Registry::get('site_config')->cache->system->get('lifetime');
-		
+	   	
 	}
 	
 
@@ -309,33 +299,28 @@ class ChannelsController extends Xmltv_Controller_Action
 			
 			//Attach comments model
 			$commentsModel = new Xmltv_Model_Comments();
-				
-			//Fetch and parse feed
-			if ($this->cache->enabled){
-				$f = '/Feeds/Yandex';
-				$hash = $this->cache->getHash('YandexRss_'.$channelAlias);
-				if (($feedData = $this->cache->load($hash, 'Core', $f))===false) {
-					$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel['title'].'"', $currentProgram->title ) );
-					$this->cache->save($feedData, $hash, 'Core', $f);
-				}
-			} else {
-				$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel['title'].'"', $currentProgram->title ) );
-			}
-			
-			//var_dump($feedData);
-			//die(__FILE__.': '.__LINE__);
-			
-			if ($new = $commentsModel->parseYandexFeed( $feedData, 164 )){
-				if (count($new)>0){
-					$commentsModel->saveComments($new, $channel['alias'], 'channel');
-					$this->view->assign('items', $new);
-				}
-			}
+			$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel['title'].'"' ) );
 			
 			if (APPLICATION_ENV=='development'){
-				var_dump($new);
-				die(__FILE__.': '.__LINE__);
+				//var_dump($feedData);
+				//die(__FILE__.': '.__LINE__);
 			}
+			
+			if ( ($new = $commentsModel->parseYandexFeed( $feedData ))!==false){
+				
+			    if (APPLICATION_ENV=='development'){
+			        //var_dump($new);
+			        //die(__FILE__.': '.__LINE__);
+			    }
+			    
+			    if (count($new)){
+				    $commentsModel->saveComments($new, $channel['id'], 'channel');
+			    }
+				
+			    $this->view->assign('items', $new);
+			    
+			}
+
 		}
 		 
 	}

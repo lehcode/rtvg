@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.15 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: Programs.php,v 1.16 2013-02-26 21:58:56 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
@@ -59,28 +59,19 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	 * @param int $channel_id
 	 * @param string $date
 	 */
-	public function fetchDayItems($channel_id=null, $date=null, $categories=null, $archived=false) {
+	public function fetchDayItems($channel_id=null, $date=null) {
 		
-		if (!$channel_id || !$date || !$categories)
-			throw new Zend_Exception(__METHOD__.' '.self::ERR_PARAMETER_MISSING, 500);
+		if (!$channel_id || !$date)
+			throw new Zend_Exception(parent::ERR_PARAMETER_MISSING.__METHOD__, 500);
 		
-		$progsTable	   = $this->_name;
-		$channelsTable = new Xmltv_Model_DbTable_Channels();
 		$categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
-		
-		/**
-		 * Load and setup archive DB adapter
-		 */
-		if ($archived===true) {
-			$this->_db = Zend_Registry::get('db_archive');
-		}
 		
 		/**
 		 * Create SQL query
 		 * @var Zend_Db_Select
 		 */
 		$select = $this->_db->select()
-			->from( array('prog'=>$progsTable), array(
+			->from( array('prog'=>$this->getName()), array(
 				'title',
 				'sub_title',
 				'alias',
@@ -102,10 +93,8 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 			->group( "prog.start" )
 			->order( "prog.start ASC" );
 
-		$profile = (bool)Zend_Registry::get('site_config')->site->get('profile');
-		if ($profile){
-		    
-			Zend_Debug::dump($select->assemble());
+		if (APPLICATION_ENV=='development'){
+		    parent::debugSelect($select, __METHOD__);
 			//die(__FILE__.": ".__LINE__);
 		}
 		
@@ -137,41 +126,10 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 			
 		}
 		
-		return $result;
-		
-	}
-	
-	public function fetchProgramThisDay($program_alias=null, $channel_alias=null, Zend_Date $date){
-		
-		//var_dump(func_get_args());
-		//var_dump($date->toString());
-		
-		$channels = new Xmltv_Model_DbTable_Channels();
-		$ch_id = (int)$channels->find($channel_alias)->current()->ch_id;
-		
-		$select = $this->_db->select()
-			->from( array( 'prog'=>'rtvg_programs' ), '*')
-			->joinLeft( array( 'props'=>'rtvg_programs_props'), "`prog`.`hash`=`props`.`hash`", array('actors', 'directors', 'premiere', 'live'))
-			->joinLeft( array( 'desc'=>'rtvg_programs_descriptions'), "`prog`.`hash`=`desc`.`hash`", array('intro', 'body'))
-			->joinLeft( array('ch'=>$this->_pfx.'channels' ), "`prog`.`ch_id`=`ch`.`ch_id`", array('channel_title'=>'title', 'channel_alias'=>'LOWER(`ch`.`alias`)'))
-			->where("`prog`.`alias` LIKE '$program_alias'")
-			->where("`prog`.`start` LIKE '".$date->toString('yyyy-MM-dd%')."'")
-			->where("`prog`.`ch_id` = '$ch_id'");
-		
-			
-		//var_dump($select->assemble());
-		//die(__FILE__.': '.__LINE__);
-			
-		try {
-			$result = $this->_db->fetchAll($select, null, self::FETCH_MODE);
-		} catch (Zend_Db_Table_Exception $e) {
-			if ($this->debug) {
-				throw new Exception($e->getMessage(), $e->getCode(), $e);
-			}
+		if (APPLICATION_ENV=='development'){
+			var_dump($result);
+			die(__FILE__.": ".__LINE__);
 		}
-		
-		//var_dump($result);
-		//die(__FILE__.': '.__LINE__);
 		
 		return $result;
 		

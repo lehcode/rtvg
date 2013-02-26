@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.13 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: show-video.phtml,v 1.14 2013-02-26 21:58:56 developer Exp $
  *
  */
 
@@ -82,7 +82,7 @@ document.write('<scr'+'ipt type=\"text/javascript\" '
 				<h3 class="title">
 					<a href="<?php echo $this->url( array('alias'=>$v['alias'], 'id'=>$v['rtvg_id']), 'default_videos_show-video' )  ?>" 
 						title="Смотреть онлайн <?php echo $v['title'] ?>" 
-						target="_blank">
+						target="_self">
 						<?php echo $v['title'] ?>
 					</a>
 				</h3>
@@ -112,7 +112,7 @@ document.write('<scr'+'ipt type=\"text/javascript\" '
 							?>
 							Категория: 
 							<a href="<?php echo $this->url( array('category'=>Xmltv_String::strtolower( $catRu )), 'default_channels_category'); ?>"
-								target="_blank"
+								target="_self"
 								title="<?php echo $catRu ?> каналы телепрограмма">
 								<?php echo $catRu; ?>
 							</a>

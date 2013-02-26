@@ -50,9 +50,9 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     
     /**
      * Debug select statement
-     * @param Zend_Db_Table_Select $select
+     * @param Zend_Db_Select $select
      */
-    protected function debugSelect( Zend_Db_Table_Select $select, $method=__METHOD__){
+    protected function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
         
         echo '<b>'.$method.'</b><br />';
         try {

@@ -67,15 +67,21 @@ abstract class Xmltv_Model_Abstract
 
     /**
      * Video cache for main listing videos
-     * @var Xmltv_Model_DbTable_VcacheMain
+     * @var Xmltv_Model_DbTable_VcacheListings
      */
-    protected $vcacheMainTable;
+    protected $vcacheListingsTable;
 
     /**
      * Video cache for videos related to listing
      * @var Xmltv_Model_DbTable_VcacheRelated
      */
     protected $vcacheRelatedTable;
+
+    /**
+     * Video cache for videos related to listing
+     * @var Xmltv_Model_DbTable_VcacheRelated
+     */
+    protected $channelsCommentsTable;
     
     
     const ERR_WRONG_PARAMS = "Неверные параметры для ";
@@ -138,12 +144,16 @@ abstract class Xmltv_Model_Abstract
 	    $this->channelsTable           = new Xmltv_Model_DbTable_Channels();
 	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
 	    $this->channelsRatingsTable    = new Xmltv_Model_DbTable_ChannelsRatings();
-	    $this->actorsTable = new Xmltv_Model_DbTable_Actors();
+	    
+	    $this->actorsTable    = new Xmltv_Model_DbTable_Actors();
 	    $this->directorsTable = new Xmltv_Model_DbTable_Directors();
-	    $this->programsTable = new Xmltv_Model_DbTable_Programs();
-	    $this->vcacheSidebarTable = new Xmltv_Model_DbTable_VcacheSidebar();
-	    $this->vcacheMainTable = new Xmltv_Model_DbTable_VcacheMain();
-	    $this->vcacheRelatedTable = new Xmltv_Model_DbTable_VcacheRelated();
+	    $this->programsTable  = new Xmltv_Model_DbTable_Programs();
+	    
+	    $this->vcacheListingsTable = new Xmltv_Model_DbTable_VcacheListings();
+	    $this->vcacheSidebarTable  = new Xmltv_Model_DbTable_VcacheSidebar();
+	    $this->vcacheRelatedTable  = new Xmltv_Model_DbTable_VcacheRelated();
+	    
+	    $this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
 	    
 	}
 	

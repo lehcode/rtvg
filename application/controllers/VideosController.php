@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.12 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: VideosController.php,v 1.13 2013-02-26 21:58:56 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -43,12 +43,19 @@ class VideosController extends Xmltv_Controller_Action
 		if ($this->requestParamsValid()){
 			
 			$this->view->assign( 'pageclass', 'show-video' );
-			$conf = Zend_Registry::get('site_config')->videos->video;
+			$conf = Zend_Registry::get('site_config')->videos->get(related);
+			
+			if (APPLICATION_ENV=='development'){
+				var_dump($conf);
+				die(__FILE__.': '.__LINE__);
+			}
+			
 			$ytConfig=array(
-				'max_results' => (int)$conf->get('max_results'),
+				'max_results' => (int)$conf->get('amount'),
 				'safe_search' => $conf->get('safe_search'),
 				'start_index' => (int)$conf->get('start_index'),
 			);
+			
 			$youtube	 = new Xmltv_Youtube($ytConfig);
 			$videosModel = new Xmltv_Model_Videos();
 			$vCacheModel = new Xmltv_Model_Vcache();
@@ -66,8 +73,8 @@ class VideosController extends Xmltv_Controller_Action
 				if (APPLICATION_ENV=='development'){
 					//var_dump($this->cache->enabled);
 					//var_dump(parent::$videoCache);
-					var_dump($rtvgId);
-					var_dump($ytId);
+					//var_dump($rtvgId);
+					//var_dump($ytId);
 					//die(__FILE__.': '.__LINE__);
 				}
 				
@@ -97,58 +104,79 @@ class VideosController extends Xmltv_Controller_Action
 				/*
 				 * 2. Related videos
 				 */
-				$youtube = new Xmltv_Youtube( array(
-					'max_results' => (int)Zend_Registry::get('site_config')->videos->related->get('amt'),
-				));
-				
+				$relatedAmt = (int)Zend_Registry::get('site_config')->videos->related->get('amount');
 				$related = array();
-				
-				if (APPLICATION_ENV=='development'){
-					//var_dump($this->cache->enabled);
-					//var_dump(parent::$videoCache);
-					//die(__FILE__.': '.__LINE__);
-				}
 				
 				if ($this->cache->enabled){
 				    
 				    $this->cache->setLocation(ROOT_PATH.'/cache');
-				    $f = '/Youtube/Main/Related';
+				    $f    = '/Youtube/Main/Related';
 				    $hash = Xmltv_Cache::getHash('relatedVideo_'.$ytId);
 				    
 				    if (parent::$videoCache===true){
 				    
 				    	if (APPLICATION_ENV=='development'){
 				    		//var_dump($ytId);
-				    		//var_dump((int)$conf->get('amt'));
+				    		//var_dump($relatedAmt);
 				    		//var_dump($vCacheModel->getRelated($ytId, (int)$conf->get('amt'))===false);
 				    		//var_dump($this->cache->load( $hash, 'Core', $f)===false);
 				    		//die(__FILE__.': '.__LINE__);
 				    	}
 				    	
 				    	if (($result = $this->cache->load( $hash, 'Core', $f))===false){
-				    	    if (($result = $vCacheModel->getRelated($ytId, (int)$conf->get('amt')))===false){
+				    	    
+				    	    if (APPLICATION_ENV=='development'){
+				    	        //var_dump($result);
+				    	        //die(__FILE__.': '.__LINE__);
+				    	    }
+				    	    
+				    	    if (($result = $videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))===false){
+				    	        
+				    	    }
+				    	    
+				    	    /*
+				    	    if (($result = $vCacheModel->getRelated( $ytId, $relatedAmt))===false){
+				    	        
+				    	        if (APPLICATION_ENV=='development'){
+				    	        	//var_dump($result);
+				    	        	//die(__FILE__.': '.__LINE__);
+				    	        }
+				    	        
 					    	    $feed = $youtube->fetchRelated( $ytId );
-					    		$result = $this->_saveRelatedVideos( $feed, $ytId);
-					    		$this->cache->save( $result, $hash, 'Core', $f);
-					    	} 
+					    	    
+					    	    if (APPLICATION_ENV=='development'){
+					    	    	//var_dump(count($feed));
+					    	    	//die(__FILE__.': '.__LINE__);
+					    	    }
+					    	    
+					    	    $result = $this->_saveRelatedVideos( $feed, $ytId);
+					    	    $this->cache->save( $result, $hash, 'Core', $f);
+					    	    
+					    	}
+					    	*/
+					    	/*
+					    	if (count($result) && $result!==false){
+					    		$c=0;
+					    		foreach ($result as $v){
+					    			$related[$c] = $v;
+					    			//var_dump($related[$c]);
+					    			//die(__FILE__.': '.__LINE__);
+					    			$related[$c]['published'] = new Zend_Date($v['published'], 'yyyy-MM-dd');
+					    			$related[$c]['duration']  = new Zend_Date($v['duration'], 'HH:mm:ss');
+					    			$related[$c]['thumbs']    = Zend_Json::decode($v['thumbs']);
+					    			 
+					    			$c++;
+					    		}
+					    	}
+					    	*/
+					    	
 				    	} else {
-				    	    $feed   = $youtube->fetchRelated( $ytId );
-				    		$result = $this->_saveRelatedVideos( $feed, $ytId);
-				    	}
+				    	    
+				    	    $feed    = $youtube->fetchRelated( $ytId );
+				    		$related = $this->_saveRelatedVideos( $feed, $ytId);
 				    		
-				    	if (count($result)){
-				    		$c=0;
-				    		foreach ($result as $v){
-				    		    var_dump($v);
-				    		    die();
-				    			$related[$c] = $v;
-				    			$related[$c]['published'] = new Zend_Date($v['published'], 'yyyy-MM-dd');
-				    			$related[$c]['duration']  = new Zend_Date($v['duration'], 'HH:mm:ss');
-				    			$related[$c]['thumbs']    = Zend_Json::decode($v['thumbs']);
-				    			$c++;
-				    		}
 				    	}
-				    		
+				    	
 				    	if (APPLICATION_ENV=='development'){
 				    		//var_dump($related);
 				    		//die(__FILE__.': '.__LINE__);
@@ -229,20 +257,44 @@ class VideosController extends Xmltv_Controller_Action
 		
 	    $c=0;
 	    $result = array();
+	    
 	    foreach ($video_feed as $v){
+	        
+	        if (APPLICATION_ENV=='development'){
+	        	//var_dump($v);
+	        	//die(__FILE__.': '.__LINE__);
+	        }
 	        
 	        if (!is_a($v, 'Zend_Gdata_YouTube_VideoEntry')) {
 	            throw new Zend_Exception(parent::ERR_INVALID_INPUT.__METHOD__, 404);
 	        } else {
-	            $p = $this->videosModel->parseYtEntry($v);
-	            $result['yt_parent'] = $yt_id;
-	            $result[$c] = $this->vCacheModel->saveRelatedVideo($p);
-	            $c++;
+	            
+	            if (($parsed = $this->videosModel->parseYtEntry($v))!==false) {
+	                if (APPLICATION_ENV=='development'){
+	                	//var_dump($result[$c]);
+	                	//die(__FILE__.': '.__LINE__);
+	                }
+	                $r[$c] = $parsed;
+	                $r[$c]['yt_parent'] = $yt_id;
+	                $result[$c] = $this->vCacheModel->saveRelatedVideo($r[$c]);
+	                $c++;
+	            }
 	        }
 	        
-	        return $result;
-	        
 	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	    	var_dump($result);
+	    	die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    if (count($result)) {
+	    	return $result;
+	    }
+	    
+	    return false;
+	    
+	    
 	    	    
 	}
 	

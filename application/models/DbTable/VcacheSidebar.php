@@ -39,7 +39,7 @@ class Xmltv_Model_DbTable_VcacheSidebar extends Xmltv_Db_Table_Abstract
     	    $video['thumbs'] = Zend_Json::encode($video['thumbs']);
     	}
 
-    	$video['delete_at'] = Zend_Date::now()->addHour(24)->toString('YYYY-MM-dd HH:mm:ss');
+    	$video['delete_at'] = Zend_Date::now()->addDay(7)->toString('YYYY-MM-dd HH:mm:ss');
     	
     	if (APPLICATION_ENV=='development'){
     		//var_dump($video);
@@ -47,10 +47,25 @@ class Xmltv_Model_DbTable_VcacheSidebar extends Xmltv_Db_Table_Abstract
     	}
     	
     	if ($video['rtvg_id'] && !empty($video['rtvg_id'])) {
-    		$this->insert($video);
+    	    $values = array();
+	    	foreach ($video as $k=>$v){
+	    	    $values[] = "`$k`=".$this->_db->quote($v);
+	    	}
+    	    $sql = "INSERT INTO `".$this->getName()."` VALUES (".implode(',', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$video['delete_at']."'";
+    	    if (APPLICATION_ENV=='development'){
+	    	    //var_dump($query);
+	    	    //die(__FILE__.': '.__LINE__);
+    	    }
+    	    
+    	    try {
+    	        $this->_db->query($sql);
+    	    } catch (Zend_Db_Adapter_Mysqli_Exception $e) {
+    	        throw new Zend_Exception("Cannot insert into ".$this->getName(), 500);
+    	    }
+    	    
+    	    return true;
+    	    
     	}
-    	
-    	return true;
         
     }
     

@@ -4,16 +4,26 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: new-comments.ajax.phtml,v 1.1 2013-02-26 17:56:34 developer Exp $
+ * @version $Id: new-comments.ajax.phtml,v 1.2 2013-02-26 21:58:56 developer Exp $
  *
  */
 
 
-//var_dump($this->items);
+if(APPLICATION_ENV=='development'){
+    //var_dump($this->items);
+    //die(__FILE__.': '.__LINE__);
+}
+
 if (count($this->items)){
 	foreach ($this->items as $comment) {
-		//var_dump($comment);
+	    
+	    if(APPLICATION_ENV=='development'){
+			//var_dump($comment);
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
 		?>
+		
 	<div xmlns:v="http://rdf.data-vocabulary.org/#" typeof="v:Review" class="hreview">
 	
 		<?php if (!empty($comment['title'])) : ?>
@@ -27,7 +37,7 @@ if (count($this->items)){
 		
 		<?php if (!empty($comment['author'])) : ?>
 		<div class="author">
-			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
+			<a href="<?php echo $comment['link'] ?>" rel="nofollow" target="_blank">
 				<small><span property="v:reviewer"><?php echo $comment['author'] ?></span></small>
 			</a>
 		</div>

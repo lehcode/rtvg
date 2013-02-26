@@ -1,6 +1,6 @@
 <?php
 
-class Xmltv_Model_DbTable_ChannelsComments extends Zend_Db_Table_Abstract
+class Xmltv_Model_DbTable_ChannelsComments extends Xmltv_Db_Table_Abstract
 {
 
 	protected $_name = 'channels_comments';
@@ -12,30 +12,13 @@ class Xmltv_Model_DbTable_ChannelsComments extends Zend_Db_Table_Abstract
      */
     public function __construct ($config = array()) {
     
-    	parent::__construct();
-    
-    	if (isset($config['tbl_prefix'])) {
-    		$pfx = $config['tbl_prefix'];
-    	} else {
-    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
-    	}
-    	$this->setName($pfx.$this->_name);
+    	parent::__construct(array(
+    		'name'=>$this->_name,
+    		'primary'=>$this->_primary,
+    	));
     
     }
     
-    /**
-     * @return string
-     */
-    public function getName() {
-    	return $this->_name;
-    }
-    
-    /**
-     * @param string $string
-     */
-    public function setName($string=null) {
-    	$this->_name = $string;
-    }
     
     protected function _setup(){
         
@@ -51,7 +34,6 @@ class Xmltv_Model_DbTable_ChannelsComments extends Zend_Db_Table_Abstract
     		'published'=>1,
     		'src_url'=>'',
     		'feed_url'=>'',
-    		'parent_type'=>'',
     		'parent_id'=>''
     	);
     	

@@ -4,78 +4,89 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.11 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: Videos.php,v 1.12 2013-02-26 21:58:56 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 {
 	
+    /**
+     * 
+     * @var unknown_type
+     */
+    private $_vcacheModel;
+    
 	public function __construct($config=array()){
 		
-	    parent::__construct();
-	    /*
-		if (isset($config['nocache']) && is_bool($config['nocache'])){
-			self::$nocache = $config['nocache'];
-		}
+		parent::__construct();
+		$this->_vcacheModel = new Xmltv_Model_Vcache();
 		
-		$this->cache = new Xmltv_Cache();
-		*/
 	}
 	
 	/**
 	 * 
 	 * Convert Zend_Gdata_YouTube_VideoEntry data to array
-	 * @param Zend_Gdata_YouTube_VideoEntry $entry
+	 * @param Zend_Gdata_YouTube_VideoEntry|array $entry
 	 */
-	public function parseYtEntry(Zend_Gdata_YouTube_VideoEntry $entry){
+	public function parseYtEntry($entry){
 		
 		
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($entry);
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	    
+		if (APPLICATION_ENV=='development'){
+			//var_dump($entry);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
 		if (!self::okToOutput($entry)){
 			return false;
 		}
 		
-		$v = array();
-		$v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
-		$v['yt_id']	   = $entry->getVideoId();
-		$v['title']	   = $entry->getVideoTitle();
-		$v['alias']	   = Xmltv_Youtube::videoAlias( $v['title'] );
-		$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
-		$v['views']	   = (int)$entry->getVideoViewCount();
-		$v['category'] = $entry->getVideoCategory();
-		
-		$d = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
-		$v['published'] = $d->addHour(3);
-		$d = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
-		$v['duration'] = $d;
-		
-		$thumbWidth = Zend_Registry::get('site_config')->videos->sidebar->right->get('thumb_width');
-		if (!$thumbWidth){
-		    $thumbWidth = 120;
-		}
-		$thumbs = $entry->getVideoThumbnails();
-		$i=0;
-		$v['thumbs'] = array();
-		foreach($thumbs as $th) {
-			if ( $th['width']==$thumbWidth) {
-				if (preg_match('/.+[\d]+\.jpg$/', $th['url'])) {
-					$v['thumbs'][$i]['time']  = new Zend_Date($th['time'], 'HH:mm:ss.S');
-					$v['thumbs'][$i]['height'] = (int)$th['height'];
-					$v['thumbs'][$i]['width']  = (int)$th['width'];
-					$v['thumbs'][$i]['url']    = $th['url'];
-					$i++;
-					
+		if (is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
+			$v = array();
+			$v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
+			$v['yt_id']	   = $entry->getVideoId();
+			$v['title']	   = $entry->getVideoTitle();
+			$v['alias']	   = Xmltv_Youtube::videoAlias( $v['title'] );
+			$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
+			$v['views']	   = (int)$entry->getVideoViewCount();
+			$v['category'] = $entry->getVideoCategory();
+			
+			$d = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
+			$v['published'] = $d->addHour(3);
+			$d = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
+			$v['duration'] = $d;
+			
+			$thumbWidth = Zend_Registry::get('site_config')->videos->sidebar->right->get('thumb_width');
+			if (!$thumbWidth){
+				$thumbWidth = 120;
+			}
+			$thumbs = $entry->getVideoThumbnails();
+			$i=0;
+			$v['thumbs'] = array();
+			foreach($thumbs as $th) {
+				if ( $th['width']==$thumbWidth) {
+					if (preg_match('/.+[\d]+\.jpg$/', $th['url'])) {
+						$v['thumbs'][$i]['time']  = new Zend_Date($th['time'], 'HH:mm:ss.S');
+						$v['thumbs'][$i]['height'] = (int)$th['height'];
+						$v['thumbs'][$i]['width']  = (int)$th['width'];
+						$v['thumbs'][$i]['url']	= $th['url'];
+						$i++;
+						
+					}
 				}
 			}
+		} elseif (is_array($entry)){
+			
+			$v['published'] = is_a($entry['published'], 'Zend_Date') ? $entry['published'] : new Zend_Date($entry['published'], 'yyyy-MM-dd');
+			$v['duration']  = is_a($entry['published'], 'Zend_Date') ? $entry['duration'] : new Zend_Date($entry['duration'], 'HH:mm:ss');
+			$v['thumbs']	= is_array($entry['thumbs']) ? $entry['thumbs'] : Zend_Json::decode($entry['thumbs']);
+			
+		} else {
+			throw new Exception(parent::ERR_WRONG_FORMAT.__METHOD__, 500);
 		}
 		
 		if (APPLICATION_ENV=='development'){
-		    //var_dump($v);
-		    //die(__FILE__.': '.__LINE__);
+			//var_dump($v);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
 		return $v;
@@ -141,8 +152,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		
 		foreach ($regex as $r){
 			if ( preg_match($r, $string, $m)) {
-			    $profile = (bool)Zend_Registry::get('site_config')->profile;
-			    if ($profile){
+				$profile = (bool)Zend_Registry::get('site_config')->profile;
+				if ($profile){
 					Zend_Debug::dump( self::ERR_PORN_ENTRY.$m);
 				}
 				return true;
@@ -161,7 +172,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public static function isRussian($string=null){
 		
-	    $profile = (bool)Zend_Registry::get('site_config')->profile;
+		$profile = (bool)Zend_Registry::get('site_config')->profile;
 		if ($profile){
 			//Zend_Debug::dump($string);
 			//Zend_Debug::dump(preg_match('/\p{Cyrillic}+/mui', $string));
@@ -172,7 +183,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		if (preg_match('/\p{Cyrillic}+/mui', $string)) {
 			return true;
 		} else {
-		    $profile = (bool)Zend_Registry::get('site_config')->profile;
+			$profile = (bool)Zend_Registry::get('site_config')->profile;
 			   if ($profile){
 				Zend_Debug::dump( self::ERR_NON_CYRILLIC.$string);
 			}
@@ -301,9 +312,9 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @param  bool	  $video_cache
 	 * @return array
 	 */
-	public function getRelatedVideos($list, $channel='', Zend_Date $date, $video_cache=false){
+	public function getRelatedVideos($list, $channel=array(), Zend_Date $date, $video_cache=false){
 		
-	    if (APPLICATION_ENV=='development'){
+		if (APPLICATION_ENV=='development'){
 			//var_dump(func_get_args());
 			//die(__FILE__.': '.__LINE__);
 		}
@@ -320,21 +331,20 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			//die(__FILE__.': '.__LINE__);
 		}
 		
-		$e = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		$result = array();
 		if ($list){
 			foreach ($list as $li){
-			    
-			    if (APPLICATION_ENV=='development'){
-			        //var_dump($li);
+				
+				if (APPLICATION_ENV=='development'){
+					//var_dump($li);
 					//var_dump($li['fetch_video']);
 					//die(__FILE__.': '.__LINE__);
 				}
 				
 				if ($li['fetch_video']===true){
-				    
-					if ($e===true && !($video_cache===false)) {
-					    $t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
+					
+					if ($video_cache) {
+						$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
 						$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
 						// Setup and create folder if needed
 						$f = '/Youtube/Related/'.$li['id'];
@@ -349,11 +359,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 						
 						$hash = Xmltv_Cache::getHash('related_'.$li['hash']);
 						if (($result[$li['hash']] = $this->cache->load($hash, 'Core', $f))===false) {
-							$result[$li['hash']] = $this->_fetchYtRelated( Xmltv_String::strtolower($li['title']), $ytConfig);
+							$result[$li['hash']] = $this->_ytSearch( Xmltv_String::strtolower($li['title']), $ytConfig);
 							$this->cache->save($result[$li['hash']], $hash, 'Core', $f);
 						}
 					} else {
-						$result[$li['hash']] = $this->_fetchYtRelated( Xmltv_String::strtolower( $li['title'] ), $ytConfig);
+						$result[$li['hash']] = $this->_ytSearch( Xmltv_String::strtolower( $li['title'] ), $ytConfig);
 					}
 				}
 				
@@ -385,50 +395,283 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public function dbCacheSidebarVideos($channel){
 		
-	    $max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
-	    
-	    $select = $this->db->select()
-	    	->from( array('video'=>$this->vcacheSidebarTable->getName()), array(
-	    		'rtvg_id',
-	    		'yt_id',
-	    		'channel',
-	    		'title',
-	    		'alias',
-	    		'desc',
-	    		'views',
-	    		'published',
-	    		'duration',
-	    		'category',
-	    		'thumbs',
-	    	))
-	    	->where( "`video`.`channel`='".$channel['id']."'")
-	    	->limit( $max);
-	    
-	    if (APPLICATION_ENV=='development'){
-	        parent::debugSelect($select, __METHOD__);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    $result = $this->db->fetchAll( $select, null, Zend_Db::FETCH_ASSOC);
-	    if (!$result || empty($result)) {
-	        return false;
-	    }
-	    
-	    if (count($result)){
-	    	foreach($result as $k=>$v){
-	    		$result[$k]['published'] = new Zend_Date( $v['published'], 'YYYY-MM-dd HH:mm:ss');
-	    		$result[$k]['duration']  = new Zend_Date( $v['duration'], 'HH:mm:ss');
-	    		$result[$k]['thumbs']    = Zend_Json::decode( $v['thumbs']);
-	    	}
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($result);
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    return $result;
+		$max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
+		$select = $this->db->select()
+			->from( array('video'=>$this->vcacheSidebarTable->getName()), array(
+				'rtvg_id',
+				'yt_id',
+				'channel',
+				'title',
+				'alias',
+				'desc',
+				'views',
+				'published',
+				'duration',
+				'category',
+				'thumbs',
+			))
+			->where( "`video`.`channel`='".$channel['id']."'")
+			->limit( $max);
+		
+		if (APPLICATION_ENV=='development'){
+			parent::debugSelect($select, __METHOD__);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		$result = $this->db->fetchAll( $select, null, Zend_Db::FETCH_ASSOC);
+		if (!$result || empty($result)) {
+			return false;
+		}
+		
+		if (count($result)){
+			foreach($result as $k=>$v){
+				$result[$k]['published'] = new Zend_Date( $v['published'], 'YYYY-MM-dd HH:mm:ss');
+				$result[$k]['duration']  = new Zend_Date( $v['duration'], 'HH:mm:ss');
+				$result[$k]['thumbs']	= Zend_Json::decode( $v['thumbs']);
+			}
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		return $result;
 	
+	}
+	
+	public function dbCacheListingRelatedVideos($list=array(), $channel_title, $date){
+		
+		if (empty($list) || !is_array($list))
+			throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+		
+		$max = (int)Zend_Registry::get('site_config')->videos->listing->get('amount');
+		foreach ($list as $li){
+			$hashes[] = "'".$li['hash']."'";
+		}
+		
+		$select = $this->db->select()
+		->from( array('video'=>$this->vcacheListingsTable->getName()), array(
+				'rtvg_id',
+				'yt_id',
+				'title',
+				'alias',
+				'desc',
+				'views',
+				'published',
+				'duration',
+				'category',
+				'thumbs',
+				'delete_at',
+				'hash',
+		))
+		->where( "`video`.`hash` IN ( \n".implode(",\n", $hashes)." )");
+		
+		if (APPLICATION_ENV=='development'){
+			parent::debugSelect($select, __METHOD__);
+			//die(__FILE__.': '.__LINE__);
+		}
+			
+		$cached = $this->db->fetchAll( $select, null, Zend_Db::FETCH_ASSOC);
+		if (!$cached || empty($cached)) {
+			return false;
+		}
+		
+		if (count($cached)){
+		    
+		    $now = Zend_Date::now();
+		    foreach ($cached as $p){
+			    
+			    $deleteAt = new Zend_Date( $p['delete_at'], 'YYYY-MM-dd HH:mm:ss' );
+				if ($now->compare($deleteAt) == -1){ // now is earlier than deletion date
+				    $result[$p['hash']] = $p;
+				    $result[$p['hash']]['published'] = new Zend_Date( $p['published'], 'YYYY-MM-dd HH:mm:ss');
+					$result[$p['hash']]['duration']  = new Zend_Date( $p['duration'], 'HH:mm:ss');
+					$result[$p['hash']]['thumbs']	 = Zend_Json::decode( $p['thumbs']);
+				} else { // delete from cache if now is later than deletion date
+				    $this->vcacheListingsTable->delete("`hash`='".$p['hash']."'");
+				}
+			}
+		}
+			
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		return $result;
+		
+	}
+	
+	
+	public function dbCacheVideoRelatedVideos($yt_id=array(), $amt=5){
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			die(__FILE__.': '.__LINE__);
+		}
+	}
+	
+	
+	public function ytListingRelatedVideos($list=array(), $channel_title, Zend_Date $date, $file_cache=false){
+		
+		$conf = Zend_Registry::get('site_config')->videos->get('listing');
+		$ytConfig['max_results'] = 1;
+		$ytConfig['order'] = $conf->get('order');
+		//$ytConfig['start_index'] = (int)$conf->get('start_index')>=1 ? (int)$conf->get('start_index') : 1 ;
+		$ytConfig['safe_search'] = $conf->get('safe_search');
+		$ytConfig['language']	= 'ru';
+		
+		if (APPLICATION_ENV=='development'){
+			echo "<b>".__METHOD__."</b><br />";
+			var_dump($ytConfig);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		$result = array();
+		if ($list){
+		    
+		    if (APPLICATION_ENV=='development'){
+		    	//var_dump($list);
+		    	//die(__FILE__.': '.__LINE__);
+		    }
+		    
+		    if ($file_cache===true) {
+		        
+		        $t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
+		        $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
+		        $this->cache->setLocation(ROOT_PATH.'/cache');
+		        $f = '/Listings/Videos';
+		        
+		        if (APPLICATION_ENV=='development'){
+		        	//var_dump($this->cache);
+		        	//die(__FILE__.': '.__LINE__);
+		        }
+		        
+		        $hash = Xmltv_Cache::getHash('listingVideo_'.$channel_title.'-'.$date->toString());
+		        if ( ($result = $this->cache->load( $hash, 'Core', $f))===false) {
+		            foreach ($list as $li){
+		                
+		                $progTitle = Xmltv_String::strtolower($li['title']);
+		            	if (($ytParsed = $this->_ytSearch( $progTitle, $ytConfig))!==false){
+		            		if (!empty($ytParsed)){
+		            			$result[$li['hash']] = $ytParsed[0];
+		            		}
+		            	}
+		            }
+		            $this->cache->save( $result, $hash, 'Core', $f);
+		        }
+		        
+		    } else {
+		    
+				foreach ($list as $li){
+			
+				    if (APPLICATION_ENV=='development'){
+						//var_dump($li);
+						//var_dump($li['fetch_video']);
+						//die(__FILE__.': '.__LINE__);
+					}
+			
+					$progTitle = Xmltv_String::strtolower($li['title']);
+					if (($ytParsed = $this->_ytSearch( $progTitle, $ytConfig))!==false){
+					    if (!empty($ytParsed)){
+							$result[$li['hash']] = $ytParsed[0];
+					    }
+					}
+					
+				}
+				
+		    }
+			
+			if (APPLICATION_ENV=='development'){
+			    //var_dump($result);
+			    //die(__FILE__.': '.__LINE__);
+			}
+			
+			$newRows = array();
+			foreach ($result as $k=>$v){
+			    
+			    $new = $v;
+			    $new['delete_at'] = Zend_Date::now()->addHour(3)->toString('YYYY-MM-dd HH:mm:ss');
+			    $new['hash'] = $k;
+			    $new['published'] = $v['published']->toString('YYYY-MM-dd HH:mm:ss');
+			    $new['duration']  = $v['duration']->toString('HH:mm:ss');
+			    $new['thumbs']    = Zend_Json::encode($v['thumbs']);
+			    
+			    $newRow = $this->vcacheListingsTable->createRow($new)->toArray();
+			    
+			    if (APPLICATION_ENV=='development'){
+			        //var_dump($newRow);
+			        //die(__FILE__.': '.__LINE__);
+			    }
+			    
+			    $values = array();
+			    $keys   = array();
+			    foreach ($newRow as $rowK=>$rowVal){
+			        $keys[]   = "`$rowK`";
+			        $values[] = $this->db->quote($rowVal);
+			    }
+			    
+			    $sql = "INSERT INTO `".$this->vcacheListingsTable->getName()."` ( ".implode(', ', $keys)." )
+			    VALUES (".implode(', ', $values).")
+			    ON DUPLICATE KEY UPDATE `delete_at`='".$new['delete_at']."'";
+			    
+			    if (APPLICATION_ENV=='development'){
+			    	var_dump($sql);
+			    	//die(__FILE__.': '.__LINE__);
+			    }
+			    
+			    $this->db->query($sql);
+			    $newRows[] = $v;
+			    
+			}
+			
+			return $newRows;
+			
+			
+		} else {
+			return false;
+		}
+		
+	}
+	
+	/**
+	 * Save listing-related video to database
+	 * 
+	 * @param  array $video
+	 * @throws Zend_Exception
+	 */
+	private function _storeListingVideo($video=array()){
+	    
+	    if (empty($video) && !is_array($video)){
+	        throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+	    }
+	    
+		if (APPLICATION_ENV=='development'){
+		    //var_dump($video);
+		    //die(__FILE__.': '.__LINE__);
+		} 
+		
+		try {
+			$this->vcacheListingsTable->store($video);
+		} catch (Zend_Db_Table_Exception $e) {
+			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		}
+		
+		return true;
+	    
+	}
+
+	public function ytVideoRelatedVideos($yt_id=null, $file_cache=false){
+		
+		if (!$yt_id){
+			throw new Zend_Exception(parent::ERR_MISSING_PARAMS.__METHOD__, 500);
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			var_dump(func_get_args());
+			die(__FILE__.': '.__LINE__);
+		}
+		
 	}
 	
 	
@@ -440,74 +683,77 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @return Zend_Gdata_YouTube_VideoFeed|false
 	 */
 	public function ytSidebarVideos($channel=array(), $file_cache=false){
-	    
-	    $vc  = Zend_Registry::get('site_config')->videos->sidebar->right;
-	    $max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
-	    $ytConfig = array(
-	    		'order'=>$vc->get('order'),
-	    		'max_results'=>(int)$vc->get('max_results'),
-	    		'start_index'=>(int)$vc->get('start_index'),
-	    		'safe_search'=>$vc->get('safe_search'),
-	    		'language'=>'ru',
-	    );
-	    
-	    if (APPLICATION_ENV=='development'){
-	        echo '<b>'.__METHOD__.'</b><br />';
-	        Zend_Debug::dump($ytConfig);
-	    }
-	    
-	    if ($file_cache===true){
-	        $t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
-	    	$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
-	    	$f = '/Youtube/SidebarRight';
-	    	$this->cache->setLocation(ROOT_PATH.'/cache');
-	    	if (APPLICATION_ENV=='development'){
-		    	//var_dump($this->cache);
-		    	//die(__FILE__.': '.__LINE__);
-	    	}
-	    	$hash = Xmltv_Cache::getHash('related_'.$channel['title']);
-	    	if ( ($result = $this->cache->load( $hash, 'Core', $f))===false) {
-	    		$result = $this->_fetchYtRelated( 'канал '.Xmltv_String::strtolower($channel['title']), $ytConfig);
-	    		$this->cache->save( $result, $hash, 'Core', $f);
-	    	}
-	    } else {
-	    	$result = $this->_fetchYtRelated( $channel['title'], $ytConfig);
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($result);
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    if (count($result)>=1){
-	        foreach($result as $k=>$v){
-	            if ($v===false){
-	                unset($result[$k]);
-	            } else {
-	                $result[$k]['published'] = new Zend_Date($v['published'], 'YYYY-MM-dd HH:mm:ss');
-	                $result[$k]['duration'] = new Zend_Date($v['duration'], 'HH:mm:ss');
-	                $result[$k]['channel'] = (int)$channel['id'];
-	                $this->vcacheSidebarTable->store($result[$k]);
-	            }
-	        }
-	        if (empty($result)){
-	            return false;
-	        } else {
-	        	return $result;
-	        }
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	var_dump($result);
-	    	die(__FILE__.': '.__LINE__);
-	    }
-	    	    
-	    return false;
-	    
+		
+		if (empty($channel))
+			throw new Zend_Exception(parent::ERR_MISSING_PARAMS.__METHOD__, 500);
+		
+		$vc  = Zend_Registry::get('site_config')->videos->sidebar->right;
+		$max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
+		$ytConfig = array(
+				'order'=>$vc->get('order'),
+				'max_results'=>(int)$vc->get('max_results'),
+				'start_index'=>(int)$vc->get('start_index'),
+				'safe_search'=>$vc->get('safe_search'),
+				'language'=>'ru',
+		);
+		
+		if (APPLICATION_ENV=='development'){
+			echo '<b>'.__METHOD__.'</b><br />';
+			Zend_Debug::dump($ytConfig);
+		}
+		
+		if ($file_cache===true){
+			$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
+			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
+			$f = '/Youtube/SidebarRight';
+			$this->cache->setLocation(ROOT_PATH.'/cache');
+			if (APPLICATION_ENV=='development'){
+				//var_dump($this->cache);
+				//die(__FILE__.': '.__LINE__);
+			}
+			$hash = Xmltv_Cache::getHash('related_'.$channel['title']);
+			if ( ($result = $this->cache->load( $hash, 'Core', $f))===false) {
+				$result = $this->_ytSearch( 'канал '.Xmltv_String::strtolower($channel['title']), $ytConfig);
+				$this->cache->save( $result, $hash, 'Core', $f);
+			}
+		} else {
+			$result = $this->_ytSearch( $channel['title'], $ytConfig);
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		if (count($result)>=1){
+			foreach($result as $k=>$v){
+				if ($v===false){
+					unset($result[$k]);
+				} else {
+					$result[$k]['published'] = new Zend_Date($v['published'], 'YYYY-MM-dd HH:mm:ss');
+					$result[$k]['duration'] = new Zend_Date($v['duration'], 'HH:mm:ss');
+					$result[$k]['channel'] = (int)$channel['id'];
+					$this->vcacheSidebarTable->store($result[$k]);
+				}
+			}
+			if (empty($result)){
+				return false;
+			} else {
+				return $result;
+			}
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			var_dump($result);
+			die(__FILE__.': '.__LINE__);
+		}
+				
+		return false;
+		
 	}
 	
 	/**
-	 * Fetch related Youtube videos
+	 * Search youtube for videos
 	 * 
 	 * @param  string $search
 	 * @param  array $config
@@ -515,7 +761,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @return array
 	 * @final
 	 */
-	private function _fetchYtRelated($search='', $config=array()){
+	private function _ytSearch($search='', $config=array()){
 			
 		$result = array();
 		$yt = new Xmltv_Youtube($config);
@@ -529,16 +775,16 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		}
 		
 		$search = preg_replace('/[^\p{Cyrillic}\p{Latin}\d\s]+/ui', ' ', $search);
-		$vids = $yt->fetchVideos( $search );
 		
 		if (APPLICATION_ENV=='development'){
-		    echo '<b>'.__METHOD__.'</b><br />';
-			Zend_Debug::dump(count($vids));
+			echo '<b>'.__METHOD__.'</b><br />';
+			Zend_Debug::dump($search);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
+		$vids = $yt->fetchVideos( $search );
 		if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
-		    $c=0;
+			$c=0;
 			foreach ($vids as $v){
 				$result[$c]=$this->parseYtEntry($v);
 				$c++;
@@ -567,11 +813,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			if (preg_match('/^\d{4}-\d{2}-\d{2}\s\d{2}-\d{2}-\d{2}$/', $object->published)) {
 				$props['published'] = new Zend_Date($props->published, 'YYYY-MM-dd HH:mm:ss');
 			} else {
-			    if (is_a($object->published, 'Zend_Date')){
-			    	$props['published'] = $object->published->toString("MM-dd-YYYY");
-			    } else {
-			        throw new Zend_Exception(parent::ERR_WRONG_FORMAT.' published');
-			    }
+				if (is_a($object->published, 'Zend_Date')){
+					$props['published'] = $object->published->toString("MM-dd-YYYY");
+				} else {
+					throw new Zend_Exception(parent::ERR_WRONG_FORMAT.' published');
+				}
 			}
 			
 			$props['duration']  = $object->duration->toString("HH:mm:ss");
