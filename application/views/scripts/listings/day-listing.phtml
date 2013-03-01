@@ -4,13 +4,12 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.19 2013-02-26 21:58:56 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.20 2013-03-01 19:37:58 developer Exp $
  *
  */
 
 $channelTitle = $this->escape($this->channel['title']);
 $channelAlias = $this->escape($this->channel['alias']);
-
 
 $this->headScript()
 	->appendFile($this->baseUrl()."/js/listing-day.js")
@@ -113,12 +112,16 @@ if (!empty($this->programs)) {
 <div id="programslist" class="carousel slide">
 	<div class="carousel-inner" id="programs-carousel">
 	<?php 
-	
+	$pc=0;
 	foreach ($this->programs as $k=>$prog) {
 		
-		$active = $k==0 ? ' active' : '' ;
-		
-		if (APPLICATION_ENV=='development'){
+	    if ($this->is_today){
+	        $active = $prog['now_showing']===true ? ' active' : '' ;
+	    } else {
+	        $active = $pc==0 ? ' active' : '' ;
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
 			//var_dump($k);
 			//var_dump($active);
 			//var_dump($prog);
@@ -227,7 +230,7 @@ if (!empty($this->programs)) {
 		 */
 		if (count($this->listing_videos)) {
 			
-			$exists = array_key_exists( $prog['hash'], $this->listing_videos) && !empty($this->listing_videos[$prog['hash']]);
+			$exists = array_key_exists( $prog['hash'], $this->listing_videos);
 			
 			if (APPLICATION_ENV=='development'){
 				//var_dump($this->listing_videos);
@@ -333,6 +336,7 @@ if (!empty($this->programs)) {
 	</div>
 	
 	<?php 
+		$pc++;
 	}
 	?>
 	</div>
@@ -375,14 +379,16 @@ if (!empty($this->programs)) {
 <ul id="daynav" class="nav nav-pills">
 	<li>
 		<?php 
-		//var_dump($this->listing_date->toString('dd-MM-yyyy'));
-		//die(__FILE__.': '.__LINE__);
 		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
 		$d->subDay(1);
+		if (APPLICATION_ENV=='development'){
+		    //var_dump($this->listing_date->toString('dd-MM-YYYY'));
+		    //var_dump($d->toString('dd-MM-YYYY'));
+		}
 		?>
-		<a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
+		<a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-YYYY')), 'default_listings_day-date') ?>"
 			class="btn"
-			title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-yyyy') ?>">Вчера</a>
+			title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-YYYY') ?>">Вчера</a>
 	</li>
 	<li>
 		<a href="<?php echo $this->url(array(), 'default_channels_list') ?>" class="btn" title="Все телеканалы">Все каналы</a>
@@ -391,6 +397,9 @@ if (!empty($this->programs)) {
 		<?php 
 		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
 		$d->addDay(1);
+		if (APPLICATION_ENV=='development'){
+			//var_dump($d->toString('dd-MM-YYYY'));
+		}
 		?>
 		<a href="<?php echo $this->url(array( 'channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
 			class="btn"

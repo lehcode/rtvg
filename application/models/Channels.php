@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.15 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: Channels.php,v 1.16 2013-03-01 19:37:58 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -428,7 +428,25 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function featuredChannels($amt=null){
 		
-	    return $this->table->featuredChannels($amt);
+	    $select = $this->db->select()
+    		->from( array( 'ch'=>$this->channelsTable->getName()), array( 
+    			'id',
+    			'title',
+    			'alias'=>'LOWER(`ch`.`alias`)'
+    		))
+    		->join( array( 'rating'=>$this->channelsRatingsTable->getName()), "`ch`.`id`=`rating`.`id`", null )
+	    	->where( "`ch`.`featured`='1'" )
+	    	->order( "rating.hits")
+    		->limit( (int)$amt );
+	    
+	    if (APPLICATION_ENV=='development'){
+	        parent::debugSelect($select, __METHOD__);
+		    //die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    $result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);	    	
+	    
+	    return $result;
 	    
 	}
 }

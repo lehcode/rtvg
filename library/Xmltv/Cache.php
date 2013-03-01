@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Cache.php,v 1.7 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: Cache.php,v 1.8 2013-03-01 19:37:58 developer Exp $
  *
  */
 class Xmltv_Cache {
@@ -103,9 +103,7 @@ class Xmltv_Cache {
 		}
 		
 		if (!is_dir($this->_location)) {
-		    if (!mkdir($this->_location, 0777, true)){
-		        return false;
-		    }
+		    throw new Zend_Exception("Папка ".$this->_location." не существует!");
 		}
 		
 		$this->_cache = Zend_Cache::factory(

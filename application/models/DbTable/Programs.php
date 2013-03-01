@@ -3,13 +3,14 @@
 /**
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.16 2013-02-26 21:58:56 developer Exp $
+ * @version $Id: Programs.php,v 1.17 2013-03-01 19:37:58 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 {
 
 	protected $_name = 'programs';
+	protected $_primary = 'id';
 
 	/**
 	 * Constructor
@@ -20,6 +21,50 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 
 		parent::__construct(array('name'=>$this->_name));
 		
+	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see Zend_Db_Table_Abstract::_setup()
+	 */
+	protected function _setup(){
+	
+		parent::_setup();
+		$now = Zend_Date::now();
+		$this->_defaultValues = array(
+				'id'=>0,
+				'title'=>'',
+				'sub_title'=>'',
+				'alias'=>'',
+				'channel'=>null,
+				'start'=>null,
+				'end'=>null,
+				'category'=>null,
+				'rating'=>null,
+				'new'=>0,
+				'live'=>0,
+				'image'=>'',
+				'last_chance'=>0,
+				'previously_shown'=>null,
+				'country'=>'',
+				'actors'=>'',
+				'directors'=>'',
+				'writers'=>'',
+				'adapters'=>'',
+				'producers'=>'',
+				'composers'=>'',
+				'editors'=>'',
+				'presenters'=>'',
+				'commentators'=>'',
+				'guests'=>'',
+				'episode_num'=>null,
+				'premiere'=>0,
+				'date'=>null,
+				'length'=>null,
+				'desc'=>'',
+				'hash'=>'',
+		);
+			
 	}
 	
 	/**
@@ -127,8 +172,8 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 		}
 		
 		if (APPLICATION_ENV=='development'){
-			var_dump($result);
-			die(__FILE__.": ".__LINE__);
+			//var_dump($result);
+			//die(__FILE__.": ".__LINE__);
 		}
 		
 		return $result;

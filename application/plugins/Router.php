@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.10 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: Router.php,v 1.11 2013-03-01 19:37:58 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -221,8 +221,21 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'controller'=>'listings',
 			'action'=>'category')));
 		
+		// Полный список программ в определенный день
+		// В отличие от используемого по умолчанию default_listings_day-date
 		/*
+		$this->_router->addRoute( 'deault_listings_day_complete', 
+		new Zend_Controller_Router_Route( 'передачи/:channel/:date', 
+		array(
+			'module'=>'default',
+			'controller'=>'listings',
+			'action'=>'day-complete')));
+		*/
+		
+		/* 
+		 * ###############################################################
 		 * admin routes
+		 * ###############################################################
 		 */
 		
 		$this->_router->addRoute( 'admin_import_remote', 

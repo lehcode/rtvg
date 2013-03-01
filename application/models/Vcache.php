@@ -81,6 +81,44 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         
     }
     
+    public function saveListingVideo($video=null, $time_hash=null){
+    	
+        if (!is_array($video) || !$time_hash) {
+            throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+        }
+        
+        if (APPLICATION_ENV=='development'){
+            //var_dump(func_get_args());
+            //die(__FILE__.': '.__LINE__);
+        }
+        
+        $row = $video;
+        $row['published'] = $video['published']->toString('YYYY-MM-dd HH:mm:ss');
+        $row['duration']  = $video['duration']->toString('HH:mm:ss');
+        $row['thumbs']    = Zend_Json::encode($video['thumbs']);
+        $row['delete_at'] = Zend_Date::now()->addHour(12)->toString("YYYY-MM-dd HH:mm:ss");
+        $row['hash'] = $time_hash;
+        $row = $this->vcacheListingsTable->createRow( $row);
+        
+        foreach ($row as $rowK=>$rowVal){
+	        $keys[]   = $this->db->quoteIdentifier($rowK);
+	        $values[] = "'".str_ireplace("'", '"', $rowVal)."'";
+	    }
+				    
+	    $sql = "INSERT INTO `".$this->vcacheListingsTable->getName()."` ( ".implode(', ', $keys)." ) 
+	    VALUES (".implode(', ', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$row['delete_at']."'";
+        
+	    if (APPLICATION_ENV=='development'){
+	        Zend_Debug::dump($sql);
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    $this->db->query($sql);
+	    
+        return $video;
+        
+    }
+    
     
     /**
      * 

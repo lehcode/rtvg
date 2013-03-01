@@ -4,42 +4,33 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-left.phtml,v 1.6 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: sidebar-left.phtml,v 1.7 2013-03-01 19:37:58 developer Exp $
  *
  */
-?>
-
-<?php /*
-<div class="module" style="width: 100px; margin: 0 auto;">
-	<script type="text/javascript">
-		document.write("<scr"+"ipt type='text/javascript' src='http://elephant.fotostrana.ru/get?adv_id=43583&ref_id=819849633&format=js&gid=1&place=100x100_tz&cache="+Math.random()+"'></scr"+"ipt>"); 
-	</script>
-</div>
-*/ ?>
 
 
-
-
-
-<?php 
 /*
  * Top programs block
  */
-if (isset($this->top_programs)) {
+if (isset($this->top_programs) && !empty($this->top_programs)) {
 	?>
 <div class="module">
 	<h4>Популярные программы на этой неделе</h4>
 	<ul id="program-top">
 		<?php 
-		foreach ($this->top_programs as $k=>$p){
-		    //var_dump($p);
-		    //die(__FILE__.': '.__LINE__);
+		foreach ($this->top_programs as $prog){
+		    
+		    if (APPLICATION_ENV=='development'){
+			    //var_dump($prog);
+			    //die(__FILE__.': '.__LINE__);
+		    }
+		    
 		    ?>
 		<li>
-			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$p['channel_icon'] ) ?>" width="16" />
-			<a href="<?php echo $this->url( array('channel'=>$p['channel_alias'], 'alias'=>$p['prog_alias']), 'default_listings_program-week'); ?>"
-				title="<?php echo $this->escape( sprintf("«%s» на канале %s на этой неделе", $p['prog_title'], $p['channel_title'])) ?>"
-				target="_blank"><?php echo $this->truncateString( $p['prog_title'], 3, 'words') ?>
+			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$prog['channel_icon'] ) ?>" width="16" />
+			<a href="<?php echo $this->url( array('channel'=>$prog['channel_alias'], 'alias'=>$prog['alias']), 'default_listings_program-week'); ?>"
+				title="<?php echo $this->escape( sprintf("«%s» на канале %s на этой неделе", $prog['title'], $prog['channel_title'])) ?>"
+				target="_blank"><?php echo $this->truncateString( $prog['title'], 3, 'words') ?>
 			</a>
 		</li>
 			<?php 
@@ -58,7 +49,7 @@ if (isset($this->top_programs)) {
 /*
  * Channels categories block
  */ 
-if (isset($this->cats)) {
+if (isset($this->cats) && !empty($this->cats)) {
     ?>
 <div class="module">
 	<h4>Каналы</h4>

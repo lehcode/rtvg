@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.13 2013-03-01 03:49:38 developer Exp $
+ * @version $Id: Videos.php,v 1.14 2013-03-01 19:37:58 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -421,14 +421,34 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	
 	public function dbCacheListingRelatedVideos($list=array(), $channel_title, $date){
 		
-		if (empty($list) || !is_array($list))
-			throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
-		
-		$max = (int)Zend_Registry::get('site_config')->videos->listing->get('amount');
-		foreach ($list as $li){
-			$hashes[] = "'".$li['hash']."'";
+		if (empty($list) || !is_array($list)) {
+			throw new Zend_Exception( parent::ERR_WRONG_PARAMS.__METHOD__, 500);
 		}
 		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($date->Tostring('dd-MM-YYYY'));
+			//var_dump(empty($list));
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		if ($date->isToday()){
+			foreach ($list as $k=>$li){
+			    if ($li['now_showing']===false){
+			        unset($list[$k]);
+			    } else {
+			        break;
+			    }
+			}
+		}
+		
+		
+		
+		// Collect hashes
+		$hashes = array();
+		foreach ($list as $k=>$prog){
+		    $hashes[] = $this->db->quote($prog['hash']);
+		}
+				
 		$select = $this->db->select()
 		->from( array('video'=>$this->vcacheListingsTable->getName()), array(
 				'rtvg_id',
@@ -522,13 +542,18 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		
 	}
 	
-	
-	public function ytListingRelatedVideos($list=array(), $channel_title, Zend_Date $date, $file_cache=false){
+	/**
+	 * Fetch videos related for today's listing from Youtube
+	 * 
+	 * @param array $list
+	 * @param string $channel_title
+	 * @param Zend_Date $date
+	 */
+	public function ytListingRelatedVideos( $list=array(), $channel_title, Zend_Date $date ){
 		
 		$conf = Zend_Registry::get('site_config')->videos->get('listing');
 		$ytConfig['max_results'] = 1;
 		$ytConfig['order'] = $conf->get('order');
-		//$ytConfig['start_index'] = (int)$conf->get('start_index')>=1 ? (int)$conf->get('start_index') : 1 ;
 		$ytConfig['safe_search'] = $conf->get('safe_search');
 		$ytConfig['language']	= 'ru';
 		
@@ -546,106 +571,34 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		    	//die(__FILE__.': '.__LINE__);
 		    }
 		    
-		    if ($file_cache===true) {
-		        
-		        $t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
-		        $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
-		        $this->cache->setLocation(ROOT_PATH.'/cache');
-		        $f = '/Listings/Videos';
-		        
-		        if (APPLICATION_ENV=='development'){
-		        	//var_dump($this->cache);
-		        	//die(__FILE__.': '.__LINE__);
-		        }
-		        
-		        $hash = Xmltv_Cache::getHash('listingVideo_'.$channel_title.'-'.$date->toString());
-		        if ( ($result = $this->cache->load( $hash, 'Core', $f))===false) {
-		            foreach ($list as $li){
-		                
-		                $progTitle = Xmltv_String::strtolower($li['title']);
-		            	if (($ytParsed = $this->_ytSearch( $progTitle, $ytConfig))!==false){
-		            		if (!empty($ytParsed)){
-		            			$result[$li['hash']] = $ytParsed[0];
-		            		}
-		            	}
-		            }
-		            $this->cache->save( $result, $hash, 'Core', $f);
-		        }
-		        
-		    } else {
 		    
-				foreach ($list as $li){
-			
-				    if (APPLICATION_ENV=='development'){
-						//var_dump($li);
-						//var_dump($li['fetch_video']);
-						//die(__FILE__.': '.__LINE__);
-					}
-			
-					$progTitle = Xmltv_String::strtolower($li['title']);
-					if (($ytParsed = $this->_ytSearch( $progTitle, $ytConfig))!==false){
-					    if (!empty($ytParsed)){
-							$result[$li['hash']] = $ytParsed[0];
-					    }
-					}
-					
+			foreach ($list as $li){
+				$progTitle = Xmltv_String::strtolower($li['title']);
+				if (($ytParsed = $this->_ytSearch( $progTitle, $ytConfig))!==false){
+				    if (!empty($ytParsed)){
+						$result[$li['hash']] = $ytParsed[0];
+				    }
 				}
 				
-		    }
-			
-			if (APPLICATION_ENV=='development'){
-			    //var_dump($result);
-			    //die(__FILE__.': '.__LINE__);
+			}
+
+			/*
+		    if (APPLICATION_ENV=='development'){
+			    var_dump($result);
+			    die(__FILE__.': '.__LINE__);
 			}
 			
 			$newRows = array();
 			foreach ($result as $k=>$v){
-			    
 			    if ($v && is_array($v) && $v!==false) {
-			        
-				    $new = $v;
-				    $newRow = $v;
-				    $newRow['delete_at'] = Zend_Date::now()->addHour(3)->toString('YYYY-MM-dd HH:mm:ss');
-				    $newRow['hash'] = $new['hash'] = $k;
-				    $newRow['published'] = is_a($v['published'], 'Zend_Date') ? $v['published']->toString('YYYY-MM-dd HH:mm:ss') : $v['published'] ;
-				    $newRow['duration']  = is_a($v['duration'], 'Zend_Date') ? $v['duration']->toString('HH:mm:ss') : $v['duration'];
-				    $newRow['thumbs']    = is_array($v['thumbs']) ? Zend_Json::encode($v['thumbs']) : $v['thumbs'] ;
-				    unset($newRow['yt_parent']);
-				    $newRow = $this->vcacheListingsTable->createRow($newRow)->toArray();
-				    
-				    if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
-				        //var_dump($newRow);
-				        //die(__FILE__.': '.__LINE__);
-				    }
-				    
-				    $values = array();
-				    $keys   = array();
-				    foreach ($newRow as $rowK=>$rowVal){
-				        $keys[]   = $this->db->quoteIdentifier($rowK);
-				        $values[] = "'".str_ireplace("'", '"', $rowVal)."'";
-				    }
-				    
-				    $sql = "INSERT INTO `".$this->vcacheListingsTable->getName()."` ( ".implode(', ', $keys)." ) 
-				    VALUES (".implode(', ', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$new['delete_at']."'";
-				    
-				    if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
-				    	var_dump($sql);
-				    	//die(__FILE__.': '.__LINE__);
-				    }
-				    
-				    $this->db->query($sql);
-				    
-				    if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
-				    	//die(__FILE__.': '.__LINE__);
-				    }
-				    
-				    $newRows[$k] = $new;
-				    
+			        $newRows[$k] = $v;
 			    }
-			    
 			}
 			
 			return $newRows;
+			*/
+			
+			return $result;
 			
 		} else {
 			return false;

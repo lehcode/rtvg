@@ -3,15 +3,14 @@
  * Database table for channels info
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.14 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: Channels.php,v 1.15 2013-03-01 19:37:58 developer Exp $
  */
 
 class Xmltv_Model_DbTable_Channels extends Xmltv_Db_Table_Abstract
 {
 
     protected $_name = 'channels';
-    protected $channelsRatingsTable;
-    protected $channelsCategoriesTable;
+    protected $_primary = 'id';
 	
 	const FETCH_MODE = Zend_Db::FETCH_OBJ;
 	
@@ -22,9 +21,10 @@ class Xmltv_Model_DbTable_Channels extends Xmltv_Db_Table_Abstract
 	 */
     public function __construct($config=array()) {
     	
-    	parent::__construct(array('name'=>$this->_name));
-		$this->channelsRatingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
-		$this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
+    	parent::__construct(array(
+    		'name'=>$this->getName(),
+    		'primary'=>$this->_primary,
+    	));
     }
     
     /**
@@ -36,35 +36,9 @@ class Xmltv_Model_DbTable_Channels extends Xmltv_Db_Table_Abstract
      * @throws Zend_Exception
      * @return mixed
      */
-    public function featuredChannels($total=20, $order='id', $by_hits=true){
+    public function featuredChannels($total=20, $order='id'){
     	
-    	$select = $this->_db->select()
-    		->from( array( 'ch'=>$this->getName() ), array( 'id', 'title', 'alias'=>'LOWER(`ch`.`alias`)') )
-    		->join( array( 'r'=>$this->channelsRatingsTable->getName()), "`ch`.`id`=`r`.`id`", array('hits') )
-	    	//->where( "`ch`.`featured`='1'" )
-    		->limit( $total );
-	    
-	    if (!$by_hits){
-	    	$select->order("$order ASC");
-	    } else {
-    		$select->order("r.hits DESC");
-    		$select->order("ch.title ASC");
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	        echo "<b>".__METHOD__."</b>";
-		    Zend_Debug::dump($select->assemble());
-		    //die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    $result = $this->_db->query($select)->fetchAll(Zend_Db::FETCH_ASSOC);	    	
-    	
-	    if (APPLICATION_ENV=='development'){
-	    	//Zend_Debug::dump($result);
-		    //die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    return $result;
+    	return $this->fetchAll("`featured`='1'", $order, $total);
     	
     }
     

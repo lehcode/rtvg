@@ -23,7 +23,15 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      */
     public function __construct($config=array()){
         
-        parent::__construct(array('name'=>$config['name']));
+        if (isset($config['name']) && !empty($config['name'])){
+            $conf['name'] = $config['name'];
+        }
+        
+        if (isset($config['primary']) && !empty($config['primary'])){
+            $conf['primary'] = $config['primary'];
+        }
+        
+        parent::__construct($conf);
         
         if (isset($config['tbl_prefix'])) {
         	$this->_pfx = (string)$config['tbl_prefix'];

@@ -89,6 +89,12 @@ abstract class Xmltv_Model_Abstract
      */
     protected $channelsCommentsTable;
     
+    /**
+     * Video cache for videos related to listing
+     * @var Xmltv_Model_DbTable_ProgramsRatings
+     */
+    protected $programsRatingsTable;
+    
     
     const ERR_WRONG_PARAMS = "Неверные параметры для ";
     const ERR_NO_DB = "Не указана база данных в ";
@@ -162,6 +168,7 @@ abstract class Xmltv_Model_Abstract
 	    
 	    $this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
 	    
+	    $this->programsRatingsTable = new Xmltv_Model_DbTable_ProgramsRatings();
 	}
 	
 	/**

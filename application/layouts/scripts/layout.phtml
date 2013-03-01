@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.25 2013-03-01 03:49:38 developer Exp $
+ * @version $Id: layout.phtml,v 1.26 2013-03-01 19:37:58 developer Exp $
  *
  */
 
@@ -84,18 +84,23 @@ if (APPLICATION_ENV!='development') {
 }
 
 
-
-
 $this->placeholder('maincontent')->set( $this->layout()->content );
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
 if (!$isFrontpage){
 	$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array('list'=>$this->featured)) );
 }
+
+if (APPLICATION_ENV=='development'){
+	//var_dump($this->top_programs);
+	//die(__FILE__.': '.__LINE__);
+}
+
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'top_programs'=>$this->top_programs,
 	'cats'=>$this->channels_cats,
 	'channel'=>$this->channel )));
+
 if ($isFrontpage) {
 	$this->placeholder('frontpage_menu')->set( $this->partial('partials/frontpage-menu.phtml', array()) );
 }

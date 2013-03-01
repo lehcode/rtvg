@@ -244,14 +244,14 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		);
 		$feedCache = Zend_Cache::factory( 'Core', 'File', $frontendOptions, $backendOptions );
 		
+		$query = preg_replace('/[^\p{Cyrillic}\p{Latin}\s\d"]/ui', '', $query);
+		
 		if (APPLICATION_ENV=='development'){
 			echo "<b>".__METHOD__."</b><br />";
 			Zend_Debug::dump($query);
 			//var_dump($feedCache);
 			//die(__FILE__.': '.__LINE__);
 		}
-		
-		$query = preg_replace('/[^\p{Cyrillic}\p{Latin}\s\d"]/ui', '', $query);
 		
 		Zend_Feed_Reader::setCache( $feedCache );
 		Zend_Feed_Reader::useHttpConditionalGet();
@@ -371,38 +371,30 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	
 	/**
 	 * 
-	 * Save comments to database
-	 * @param array $list
-	 * @param int $parent_id
-	 * @param string $parent_type
+	 * Save channel-related RSS entries to database
+	 * 
+	 * @param  array $list
+	 * @param  int $parent_id //Channel ID
 	 * @throws Zend_Exception
+	 * @return array
 	 */
-	public function saveComments($list=array(), $parent_id=null, $parent_type='channel'){
+	public function saveChannelComments($list=array(), $parent_id=null ){
 	
 		if (empty($list) || !$parent_id) {
 			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
 		}
 
-		if (APPLICATION_ENV=='development'){
-			//var_dump(func_get_args());
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		$now = new Zend_Date();
-		
 		foreach ( $list as $li ) {
 			
-			$row = $this->channelsCommentsTable->createRow(array(), Zend_Db_Table::DEFAULT_CLASS);
-			
-			$row->date_created  = $li['date']->toString("YYYY-MM-dd HH:mm:ss");
-			$row->date_added	= $now->toString("yyyy-MM-dd hh:mm:ss");
-			$row->src_url	    = $li['link'];
-			$row->parent_id	    = $parent_id;
-			$row->author		= $this->_extractBlogAuthor($row->src_url);
-			$row->intro		    = $li['intro'];
-			
+		    $new = $li;
+		    $new['date_created'] = $li['date']->toString("YYYY-MM-dd HH:mm:ss");
+		    $new['src_url']	     = $li['link'];
+		    $new['parent_id']    = $parent_id;
+		    $new['author']       = $this->_extractBlogAuthor($row->src_url);
+		    $new['intro']        = $li['intro'];
+		    $row = $this->channelsCommentsTable->createRow($new);
 			$row->save();
-						
+			return $new;
 		}
 		
 	}

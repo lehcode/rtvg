@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.16 2013-02-26 21:58:56 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.17 2013-03-01 19:37:58 developer Exp $
  *
  */
 class ChannelsController extends Xmltv_Controller_Action
@@ -299,7 +299,7 @@ class ChannelsController extends Xmltv_Controller_Action
 			
 			//Attach comments model
 			$commentsModel = new Xmltv_Model_Comments();
-			$feedData = $commentsModel->getYandexRss( array( ' телеканал "'.$channel['title'].'"' ) );
+			$feedData = $commentsModel->getYandexRss( array( 'телеканал "'.Xmltv_String::strtolower($channel['title']).'"') );
 			
 			if (APPLICATION_ENV=='development'){
 				//var_dump($feedData);
@@ -314,7 +314,7 @@ class ChannelsController extends Xmltv_Controller_Action
 			    }
 			    
 			    if (count($new)){
-				    $commentsModel->saveComments($new, $channel['id'], 'channel');
+				    $commentsModel->saveChannelComments($new, $channel['id']);
 			    }
 				
 			    $this->view->assign('items', $new);
