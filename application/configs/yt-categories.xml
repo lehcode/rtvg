@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<categories>
+    <category>
+        <en>Film</en>
+        <ru>Кино</ru>
+    </category>
+    <category>
+        <en>Games</en>
+        <ru>Мультфильмы</ru>
+    </category>
+    <category>
+        <en>Education</en>
+        <ru>Образовательные</ru>
+    </category>
+    <category>
+        <en>Comedy</en>
+        <ru>Юмористические</ru>
+    </category>
+    <category>
+        <en>Tech</en>
+        <ru>Научные</ru>
+    </category>
+    <category>
+        <en>People</en>
+        <ru>Общественные</ru>
+    </category>
+    <category>
+        <en>Music</en>
+        <ru>Музыкальные</ru>
+    </category>
+    <category>
+        <en>News</en>
+        <ru>Новости</ru>
+    </category>
+    <category>
+        <en>Sports</en>
+        <ru>Спорт</ru>
+    </category>
+    <category>
+        <en>Entertainment</en>
+        <ru>Развлекательные</ru>
+    </category>
+</categories>

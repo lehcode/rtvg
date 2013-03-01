@@ -1,0 +1,98 @@
+<div class="channel" id="<?php echo hash( 'crc32', $this->channel['id'] ) ?>">
+<h3 class="title">
+	<a href="<?php echo $this->url( array(
+		'channel'=>$this->escape($this->channel['alias'])), 'default_listings_day-listing') ?>"
+		target="_blank"
+		title="<?php echo $this->escape( sprintf("Передачи «%s» сегодня", $this->escape($this->channel['title']))) ?>">
+		<?php echo $this->escape( sprintf("%s сегодня", $this->channel['title'])) ?>
+	</a>
+</h3>
+<div class="progs">
+	<?php 
+	$w = 24;
+	$c = 0;
+	
+	if (!$this->list || empty($this->list)){
+	    return true;
+	}
+	
+	foreach ($this->list as $prog){
+		$showRating = false;
+		
+		//var_dump($prog);
+		//die();
+		
+		if ($c<4){
+			$timespan = '';
+			switch ($c){
+				case 0:
+					$timespan = 'Сейчас';
+					$bg = "#FFCC00";
+					$showRating = true;
+					break;
+				case 1:
+					$timespan = 'Далее';
+					$bg = "#BABABA";
+					$showRating = true;
+					break;
+				case 2:
+					$timespan = 'Затем';
+					$bg = "#FFFFFF";
+					$showRating = true;
+					break;
+				case 3:
+					$timespan = 'После';
+					$bg = "#FFFFFF";
+					break;
+				default: break;
+			}
+			?>
+		
+	<div class="item" style="width:<?php echo $w."%" ?>;">
+		
+			<div class="time" style="background-color: <?php echo $bg ?>;">
+				<?php echo $timespan ?>
+			</div>
+			
+			<div class="info">
+			
+				<p>
+					<?php $text = $timespan=='Сейчас' ? '' : 'Начало в '  ; ?>
+					<?php echo $text ?><strong><?php echo $prog['start']->toString("HH:mm") ?></strong>
+				</p>
+				
+				<h4 class="title">
+					<a href="<?php echo $this->url( array(
+				'channel'=>$this->escape($prog['channel_alias']),
+				'alias'=>$this->escape($prog['alias']) ), 'default_listings_program-week') ?>"
+				title="<?php echo $this->escape(sprintf("Программа «%s» на неделе", $this->escape($prog['title']))) ?>">
+					<?php echo $this->escape( $prog['title'] ) ?>
+					</a>
+				</h4>
+				
+				<?php if (!empty($prog['sub_title'])): ?>
+				<p class="sub_title">
+					<?php echo $this->escape( $prog['sub_title'] ) ?>
+				</p>
+				<?php endif; ?>
+				
+				<a href="<?php echo $this->url( array('category'=>$this->escape( $prog['category_alias'] ), 'timespan'=>'сегодня'), 'deault_listings_category' ) ?>"
+				title="<?php printf("Все %s на канале «%s» сегодня", 
+					Xmltv_String::strtolower( $this->escape( $prog['category_title'] )),
+					$this->escape( $prog['channel_title'] )) ?>">
+				<?php echo $this->escape( $prog['category_single'] ) ?>
+			</a>
+			<br />
+			<?php if ((int)$prog['rating']>0 && $showRating===true): ?>
+			<span class="rating">Возрастной рейтинг: <?php echo $this->escape( $prog['rating'] ).'+' ?></span>
+			<?php endif; ?>
+			</div>
+			
+		</div>
+			<?php 
+			$c++;
+		}
+	}
+	?>
+   	</div>
+</div>

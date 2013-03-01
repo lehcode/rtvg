@@ -4,9 +4,15 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.14 2013-02-26 21:58:56 developer Exp $
+ * @version $Id: show-video.phtml,v 1.15 2013-03-01 03:49:38 developer Exp $
  *
  */
+
+if (APPLICATION_ENV=='development'){
+	//var_dump($this->main_video);
+	//var_dump($this->related_videos);
+	//die(__FILE__.': '.__LINE__);
+}
 
 if (isset($this->main_video)){
     

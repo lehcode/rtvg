@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.17 2013-02-26 21:58:56 developer Exp $
+ * @version $Id: Programs.php,v 1.18 2013-03-01 03:49:38 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -598,24 +598,86 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		
 	}
 	
+	/**
+	 * Programs category listing for week (slow)
+	 * 
+	 * @param  id        $category_id
+	 * @param  Zend_Date $start
+	 * @param  Zend_Date $end
+	 * @return array
+	 */
 	public function categoryWeek( $category_id=null, Zend_Date $start, Zend_Date $end){
 		
 	    $select = $this->db->select()
-	    ->from( array('prog'=>$this->table->getName()), array(
-	    		'hash',
-	    		'prog_title'=>'title',
-	    		'prog_sub_title'=>'sub_title',
-	    		'prog_alias'=>'LOWER(`prog`.`alias`)',
-	    		'prog_start'=>'start',
-	    		'prog_end'=>'end',
-	    		'rating',
-	    		'live'
-	    ));
+		    ->from( array('prog'=>$this->programsTable->getName()), array(
+		    		'id',
+		    		'title',
+		    		'sub_title',
+		    		'alias',
+		    		'start',
+		    		'end',
+		    		'rating',
+		    		'new',
+		    		'live',
+		    		'image',
+		    		//'last_chance',
+		    		//'previously_shown',
+		    		'country',
+		    		'actors',
+		    		'directors',
+		    		//'writers',
+		    		//'adapters',
+		    		//'producers',
+		    		//'composers',
+		    		//'editors',
+		    		//'presenters',
+		    		//'commentators',
+		    		//'guests',
+		    		//'guests',
+		    		'episode_num',
+		    		'premiere',
+		    		'date',
+		    		'length',
+		    		'desc',
+		    		'hash',
+		    ))
+		    ->joinLeft(array('cat'=>$this->categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array(
+		    	'category_title'=>'title',
+		    	'category_title_single'=>'title_single',
+		    	'category_alias'=>'alias',
+		    ))
+		    ->joinLeft(array('ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
+		    	'channel_id'=>'id',
+		    	'channel_title'=>'title',
+		    	'channel_alias'=>'alias',
+		    ))
+	    	->where("`prog`.`category`='$category_id'")
+	    	->where("`prog`.`start` >= '".$start->toString('YYYY-MM-dd')." 00:00'")
+	    	->where("`prog`.`start` < '".$end->addDay(1)->toString('YYYY-MM-dd')." 00:00'")
+	    	->where("`ch`.`published` = '1'")
+	    	->group("prog.start")
+	    	->order( array( "prog.start ASC", "ch.title ASC" ));
 	     
 	    if (APPLICATION_ENV=='development'){
 	    	parent::debugSelect($select, __METHOD__);
-	    	die(__FILE__.': '.__LINE__);
+	    	//die(__FILE__.': '.__LINE__);
 	    }
+	    
+	    $result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
+	    
+	    if (count($result)){
+	        foreach ($result as $k=>$p){
+	        	$result[$k]['start'] = new Zend_Date( $p['start'], 'YYYY-MM-dd HH:mm:ss');
+	        	$result[$k]['end']   = new Zend_Date( $p['end'], 'YYYY-MM-dd HH:mm:ss');
+	        } 
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	    	//var_dump(count($result));
+	    	//die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    return $result;
 	    
 	}
 	
@@ -732,36 +794,36 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	        $date = Zend_Date::now();
 	    
 		$select = $this->db->select()
-		->from( array('prog'=>$this->table->getName()), array(
+			->from( array('prog'=>$this->table->getName()), array(
+				'id',
 				'title',
-				'sub_title',
 				'desc',
-				'prog_alias'=>'LOWER(`prog`.`alias`)',
+				'alias',
 				'start',
 				'end',
 				'rating',
 				'live',
-				'prog_category'=>'category',
-				'prog_channel'=>'channel',
 				'hash',
-		))
-		->joinLeft(array('cat'=>$this->categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array(
-			'prog_category_title'=>'title',
-			'prog_category_alias'=>'alias',
-			'prog_category_single'=>'title_single',
-		))
-		->joinLeft(array('ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
-			'channel_title'=>'title',
-			'channel_alias'=>'alias',
-		))
-		->joinLeft(array('ch_cat'=>$this->channelsCategoriesTable->getName()), "`prog`.`channel`=`ch_cat`.`id`", array(
+			))
+			->joinLeft(array('cat'=>$this->categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array(
+				'prog_category_title'=>'title',
+				'prog_category_alias'=>'alias',
+				'prog_category_single'=>'title_single',
+			))
+			->joinLeft(array('ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
+				'channel_title'=>'title',
+				'channel_alias'=>'alias',
+			))
+			->joinLeft(array('ch_cat'=>$this->channelsCategoriesTable->getName()), "`prog`.`channel`=`ch_cat`.`id`", array(
 				'channel_category_title'=>'title',
 				'channel_category_alias'=>'alias',
-		))
-		->group("prog.start")
-		->where("`prog`.`category`='$category_id'")
-		->where("`prog`.`start` >= '".$date->toString('yyyy-MM-dd HH:mm')."'")
-		->where("`prog`.`start` < '".$date->toString('yyyy-MM-dd')." 23:59'");
+			))
+			->where("`prog`.`category`='$category_id'")
+			->where("`prog`.`start` >= '".$date->toString('YYYY-MM-dd')." 00:00'")
+	    	->where("`prog`.`start` < '".$date->addDay(1)->toString('YYYY-MM-dd')." 00:00'")
+	    	->where("`ch`.`published` = '1'")
+	    	->group("prog.start")
+	    	->order( array( "prog.start ASC", "ch.title ASC" ));
 	
 		if (APPLICATION_ENV=='development'){
 			parent::debugSelect($select, __METHOD__);

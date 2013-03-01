@@ -114,6 +114,7 @@ class Xmltv_Youtube {
 	 * 
 	 * @param  string $vid	//Youtube video ID
 	 * @throws Zend_Exception
+	 * @return Zend_Gdata_YouTube_VideoEntry
 	 */
 	public function fetchVideo($yt_id=null){
 		
@@ -141,24 +142,24 @@ class Xmltv_Youtube {
 	}
 	
 	/**
-	 * Fetch related videos
+	 * Fetch related videos from youtube directly
 	 * 
 	 * @param  string $vid	//Youtube video ID
 	 * @throws Exception
+	 * @return Zend_Gdata_YouTube_VideoFeed
 	 */
 	public function fetchRelated($vid=null){
 		
 		if (!$vid)
 			throw new Exception("Не задан параметр поиска видео");
 		
-		$vids = array();
 		try {
-			$vids = $this->client->getRelatedVideoFeed($vid);
+			$ytFeed = $this->client->getRelatedVideoFeed($vid);
 		} catch (Zend_Gdata_App_Exception $e) {
-			return null;
+			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
 		
-		return $vids;
+		return $ytFeed;
 	
 	}
 	

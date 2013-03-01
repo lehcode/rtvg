@@ -1,9 +1,9 @@
 <?php
 
-class Xmltv_Model_DbTable_VcacheListings extends Xmltv_Db_Table_Abstract
+class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
 {
 
-	protected $_name = 'vcache_listings';
+	protected $_name = 'vcache_main';
 	protected $_primary='yt_id';
 	
 	/**
@@ -47,10 +47,10 @@ class Xmltv_Model_DbTable_VcacheListings extends Xmltv_Db_Table_Abstract
 	
 	public function store($video=array()){
 		
-		if (empty($video['hash']) || !isset($video['hash'])){
-			throw new Zend_Db_Table_Exception("Не указан hash для ".__METHOD__, 500);
-		}
-
+	    if ($video['desc']===null){
+	    	return;
+	    }
+	    
 		if (empty($video['alias']) || !isset($video['alias'])){
 			throw new Zend_Db_Table_Exception("Не указан alias для ".__METHOD__, 500);
 		}
@@ -67,10 +67,6 @@ class Xmltv_Model_DbTable_VcacheListings extends Xmltv_Db_Table_Abstract
 			throw new Zend_Db_Table_Exception("Не указан yt_id для ".__METHOD__, 500);
 		}
 		
-		if ($video['desc']===null){
-			$video['desc']='';
-		}
-		
 		if (is_a($video['published'], 'Zend_Date')){
 			$video['published'] = $video['published']->toString('yyyy-MM-dd HH:mm:ss');
 		}
@@ -84,10 +80,12 @@ class Xmltv_Model_DbTable_VcacheListings extends Xmltv_Db_Table_Abstract
 		}
 		
 		foreach ($video as $k=>$v){
-			$values[] = "`$k`=".$this->_db->quote($v);
+		    $cols[]   = "`$k`";
+			$values[] = $this->_db->quote($v);
+			
 		}
 		
-		$sql = "INSERT INTO `".$this->getName()."` VALUES ( ".implode(',', $values)." ) ON DUPLICATE KEY UPDATE `delete_at`='".$video['delete_at']."'";
+		$sql = "INSERT INTO `".$this->getName()."` ( ".implode(', ', $cols)." ) VALUES ( ".implode(',', $values)." ) ON DUPLICATE KEY UPDATE `delete_at`='".$video['delete_at']."'";
 		
 		if (APPLICATION_ENV=='development'){
 			var_dump($sql);

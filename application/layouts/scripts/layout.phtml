@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.24 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: layout.phtml,v 1.25 2013-03-01 03:49:38 developer Exp $
  *
  */
 
@@ -66,7 +66,7 @@ jQuery(document).ready(function(){
 	//if  ($("#col_r .da_adp_links")) { $("#col_r .da_adp_links").css({ display: "none" }); }
 });');
 
-if (!isFrontpage){
+if (!$isFrontpage){
     $this->inlineScript()
     	->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, width: "350", height: "290" }, 27716041);');
 }
@@ -89,7 +89,7 @@ if (APPLICATION_ENV!='development') {
 $this->placeholder('maincontent')->set( $this->layout()->content );
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
-if (!isFrontpage){
+if (!$isFrontpage){
 	$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array('list'=>$this->featured)) );
 }
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(

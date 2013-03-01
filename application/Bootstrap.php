@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.14 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.15 2013-03-01 03:49:38 developer Exp $
  *
  */
 
@@ -74,8 +74,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->throwExceptions( false );
 		
 		if (APPLICATION_ENV=='production'){
-		    //$fc->returnResponse( true )
-		    	$fc->throwExceptions( false );
+		    //$fc->returnResponse( true );
+		    $fc->throwExceptions( false );
 		}
 		
 		/*

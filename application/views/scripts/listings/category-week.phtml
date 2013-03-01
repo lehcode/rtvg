@@ -1,33 +1,35 @@
 <?php
 /**
- * Wiew script for programs category listing day
+ * Wiew script for programs category listing week
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: category-day.phtml,v 1.2 2013-03-01 03:49:38 developer Exp $
+ * @version $Id: category-week.phtml,v 1.1 2013-03-01 03:49:38 developer Exp $
  *
  */
-$this->headTitle( $this->category['title']." ".$this->today->toString("d MMMM YYYY"));
-$this->headMeta( $this->category['title'], "description");
+
+$this->headTitle( $this->category['title']." с ".$this->weekStart->toString("d MMMM YYYY")." по ".$this->weekEnd->toString("d MMMM YYYY"));
+$this->headMeta( $this->category['title']." на неделю на всех телеканалах", "description");
 ?>
 
 <h1>
-	<?php printf( "%s сегодня", $this->category['title']); ?>
+	<?php printf( "%s на этой неделе", $this->category['title']); ?>
 </h1>
-
-<p>
-	<?php printf("Сегодня %d программ", count($this->list)); ?>
-</p>
 
 <?php 
 foreach ($this->list as $single){
-    //var_dump($single);
-    //die(__FILE__.': '.__LINE__);
+    
+    if (APPLICATION_ENV=='development'){
+    	//var_dump($single);
+    	//die(__FILE__.': '.__LINE__);
+    }
     ?>
+    
     <div class="item programcontainer">
     	<p>
 			<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span>&nbsp;
-			<u><?php echo $single['start']->toString( 'HH:mm') ?></u>
+			<span class="label"><?php echo $single['start']->toString( 'dd MMMM') ?></span>&nbsp;
+			<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?></span>
 			<?php echo $single['category_title_single'] ?> 
 				<a href="<?php echo $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U") ?>"
 					title="<?php echo $single['title'] ?> <?php echo $single['start']->toString( 'dd MMM') ?> на канале <?php echo $single['channel_title'] ?>"

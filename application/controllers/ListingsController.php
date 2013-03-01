@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.20 2013-02-26 21:58:56 developer Exp $
+ * @version $Id: ListingsController.php,v 1.21 2013-03-01 03:49:38 developer Exp $
  *
  */
 class ListingsController extends Xmltv_Controller_Action
@@ -137,10 +137,10 @@ class ListingsController extends Xmltv_Controller_Action
 				$list = $programsModel->getProgramsForDay( $listingDate, $channel['id'] );
 			}
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump(count($list));
+			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+				var_dump(count($list));
 				//var_dump($list);
-				//die(__FILE__.': '.__LINE__);
+				//die(__METHOD__);
 			}
 			$this->view->assign( 'programs', $list );
 			$currentProgram = $list[0];
@@ -194,20 +194,24 @@ class ListingsController extends Xmltv_Controller_Action
 			 */
 			if (count($list)){
 				if (parent::$videoCache){
-				    $videos = $videosModel->dbCacheListingRelatedVideos( $list, $channel['title'], $now );
-				    if (!$videos){
-				        $videos = $videosModel->ytListingRelatedVideos( $list, $channel['title'], $now, true );
+				    
+				    $dbCache = $videosModel->dbCacheListingRelatedVideos( $list, $channel['title'], $now );
+				    if (count($dbCache)) {
+				        $ListingVideos = $dbCache;
+				    } else {
+				        $ListingVideos = $videosModel->ytListingRelatedVideos( $list, $channel['title'], $now, true );
 				    }
+				    
 				} else {
-				   $videos = $videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
+				   $ListingVideos = $videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
 				}
 			}
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($videos);
+			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+				//var_dump($ListingVideos);
 				//die(__FILE__.': '.__LINE__);
 			}
-			$this->view->assign('listing_videos', $videos);
+			$this->view->assign('listing_videos', $ListingVideos);
 			
 			/*
 			 * #####################################################################
@@ -261,7 +265,7 @@ class ListingsController extends Xmltv_Controller_Action
 			if (parent::$videoCache){
 			    
 			    $dbCache = $videosModel->dbCacheSidebarVideos( $channel );
-			    if (is_array($dbCache)){
+			    if (count($dbCache) && is_array($dbCache)){
 			        $videos = $dbCache;
 			    } else {
 			        $videos = $videosModel->ytSidebarVideos( $channel, true );
@@ -270,7 +274,8 @@ class ListingsController extends Xmltv_Controller_Action
 			} else {
 			    $videos = $videosModel->ytSidebarVideos( $channel );
 			}
-			if (APPLICATION_ENV=='development'){
+			
+			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
 				//var_dump($videos);
 				//die(__FILE__.': '.__LINE__);
 			}
@@ -781,31 +786,66 @@ class ListingsController extends Xmltv_Controller_Action
 		$cats = $this->getProgramsCategories();
 		if ( $this->requestParamsValid( array('programsCategories'=>$cats))){
 	
-			$model	= new Xmltv_Model_Programs();
-			$weekDays = $this->_helper->getHelper('WeekDays');
-			$today	= new Zend_Date();
-			$categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+		    $weekDays = $this->_helper->getHelper('WeekDays');
+			
+		    $categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
 			$category = $categoriesTable->fetchRow("`alias`='".$this->input->getEscaped('category')."'")->toArray();
 			$this->view->assign('category', $category);
 			$categoryId = $category['id'];
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($categoryId);
-				//die(__FILE__.': '.__LINE__);
-			}
+			$today = Zend_Date::now();
 			
 			switch ($this->input->getEscaped('timespan')){
 					
 				case 'неделя':
-					$list = $model->categoryWeek( $categoryId, $weekDays->getStart($today), $weekDays->getEnd($today));
-					$this->view->assign('list', $list);
-					$this->render('category-week');
+				    
+				    $weekStart = $weekDays->getStart($today);
+				    $weekEnd   = $weekDays->getEnd($today);
+				    
+				    if ($this->cache->enabled){
+				        $hash = "categoryWeek_$categoryId";
+				        $this->cache->setLifetime( 86400*7);
+				        $this->cache->setLocation( ROOT_PATH.'/cache');
+				        $f = "/Listings/Category/Week";
+						if (($list = $this->cache->load( $hash, 'Core', $f))===false){
+						    $list = $this->programsModel->categoryWeek( $categoryId, $weekStart, $weekEnd);
+						    $this->cache->save( $list, $hash, 'Core', $f);
+						}
+				    } else {
+				        $list = $this->programsModel->categoryWeek( $categoryId, $weekStart, $weekEnd);
+				    }
+				    
+					
+					$this->view->assign( 'weekStart', $weekStart);
+					$this->view->assign( 'weekEnd', $weekEnd);
+					$this->view->assign( 'list', $list);
+					$this->view->assign( 'pageclass', 'category-week');
+					$this->render( 'category-week');
+					
 					break;
 	
 				case 'сегодня':
-					$list = $model->categoryDay( $categoryId, $today);
+				    
+				    if ($this->cache->enabled){
+				    	$hash = "categoryDay_".$categoryId."_".$today->toString("ddd");
+				    	$this->cache->setLifetime( 86400);
+				    	$this->cache->setLocation( ROOT_PATH.'/cache');
+				    	$f = "/Listings/Category/Day";
+				    	if (($list = $this->cache->load( $hash, 'Core', $f))===false){
+				    		$list = $this->programsModel->categoryDay( $categoryId, $today);
+				    		$this->cache->save( $list, $hash, 'Core', $f);
+				    	}
+				    } else {
+				    	$list = $this->programsModel->categoryDay( $categoryId, $today);
+				    }
+					
+				    
 					$this->view->assign('list', $list);
+					$this->view->assign('pageclass', 'category-day');
+					$this->view->assign('today', Zend_Date::now());
+					
 					$this->render('category-day');
+					
 					break;
 			}
 	

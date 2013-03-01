@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.12 2013-02-26 21:58:56 developer Exp $
+ * @version $Id: Videos.php,v 1.13 2013-03-01 03:49:38 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -31,16 +31,12 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	public function parseYtEntry($entry){
 		
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($entry);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		if (!self::okToOutput($entry)){
 			return false;
 		}
 		
 		if (is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
+		    $table  = new Xmltv_Model_DbTable_VcacheRelated();
 			$v = array();
 			$v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
 			$v['yt_id']	   = $entry->getVideoId();
@@ -84,12 +80,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			throw new Exception(parent::ERR_WRONG_FORMAT.__METHOD__, 500);
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($v);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		return $v;
+		return $table->createRow($v)->toArray();
 		
 	}
 	
@@ -210,11 +201,6 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		
 	}
 	
-	public function parseYtFeed(){
-		
-		
-		
-	}
 	
 	/**
 	 * 
@@ -419,9 +405,6 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		}
 		
 		$result = $this->db->fetchAll( $select, null, Zend_Db::FETCH_ASSOC);
-		if (!$result || empty($result)) {
-			return false;
-		}
 		
 		if (count($result)){
 			foreach($result as $k=>$v){
@@ -429,14 +412,10 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 				$result[$k]['duration']  = new Zend_Date( $v['duration'], 'HH:mm:ss');
 				$result[$k]['thumbs']	= Zend_Json::decode( $v['thumbs']);
 			}
+			return $result;
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		return $result;
+		return false;
 	
 	}
 	
@@ -473,9 +452,6 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		}
 			
 		$cached = $this->db->fetchAll( $select, null, Zend_Db::FETCH_ASSOC);
-		if (!$cached || empty($cached)) {
-			return false;
-		}
 		
 		if (count($cached)){
 		    
@@ -504,11 +480,46 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	}
 	
 	
-	public function dbCacheVideoRelatedVideos($yt_id=array(), $amt=5){
+	public function dbCacheVideoRelatedVideos($yt_id=null, $amt=5){
+	    
+	    if (!$yt_id)
+	        throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+	    
+		$select = $this->db->select()
+			->from( array('rel'=>$this->vcacheRelatedTable->getName()), array(
+				'rtvg_id',
+				'yt_id',
+				'title',
+				'alias',
+				'desc',
+				'views',
+				'duration',
+				'category',
+				'thumbs',
+			))
+			->where("`yt_parent`='$yt_id'")
+			->limit($amt);
+		
 		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			die(__FILE__.': '.__LINE__);
+			parent::debugSelect($select, __METHOD__);
+			//die(__FILE__.': '.__LINE__);
 		}
+		
+		$result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
+		
+		if (count($result)) {
+		    foreach ($result as $k=>$v){
+		        
+		        $result[$k]['published'] = new Zend_Date( $v['published'], 'YYYY-MM-dd HH:mm:ss');
+			    $result[$k]['duration']  = new Zend_Date( $v['duration'], 'HH:mm:ss');
+			    $result[$k]['thumbs']    = Zend_Json::decode($v['thumbs']);
+		    }
+		    
+		    return $result;
+		}
+		
+		return false;
+		
 	}
 	
 	
@@ -590,43 +601,51 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$newRows = array();
 			foreach ($result as $k=>$v){
 			    
-			    $new = $v;
-			    $new['delete_at'] = Zend_Date::now()->addHour(3)->toString('YYYY-MM-dd HH:mm:ss');
-			    $new['hash'] = $k;
-			    $new['published'] = $v['published']->toString('YYYY-MM-dd HH:mm:ss');
-			    $new['duration']  = $v['duration']->toString('HH:mm:ss');
-			    $new['thumbs']    = Zend_Json::encode($v['thumbs']);
-			    
-			    $newRow = $this->vcacheListingsTable->createRow($new)->toArray();
-			    
-			    if (APPLICATION_ENV=='development'){
-			        //var_dump($newRow);
-			        //die(__FILE__.': '.__LINE__);
+			    if ($v && is_array($v) && $v!==false) {
+			        
+				    $new = $v;
+				    $newRow = $v;
+				    $newRow['delete_at'] = Zend_Date::now()->addHour(3)->toString('YYYY-MM-dd HH:mm:ss');
+				    $newRow['hash'] = $new['hash'] = $k;
+				    $newRow['published'] = is_a($v['published'], 'Zend_Date') ? $v['published']->toString('YYYY-MM-dd HH:mm:ss') : $v['published'] ;
+				    $newRow['duration']  = is_a($v['duration'], 'Zend_Date') ? $v['duration']->toString('HH:mm:ss') : $v['duration'];
+				    $newRow['thumbs']    = is_array($v['thumbs']) ? Zend_Json::encode($v['thumbs']) : $v['thumbs'] ;
+				    unset($newRow['yt_parent']);
+				    $newRow = $this->vcacheListingsTable->createRow($newRow)->toArray();
+				    
+				    if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+				        //var_dump($newRow);
+				        //die(__FILE__.': '.__LINE__);
+				    }
+				    
+				    $values = array();
+				    $keys   = array();
+				    foreach ($newRow as $rowK=>$rowVal){
+				        $keys[]   = $this->db->quoteIdentifier($rowK);
+				        $values[] = "'".str_ireplace("'", '"', $rowVal)."'";
+				    }
+				    
+				    $sql = "INSERT INTO `".$this->vcacheListingsTable->getName()."` ( ".implode(', ', $keys)." ) 
+				    VALUES (".implode(', ', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$new['delete_at']."'";
+				    
+				    if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+				    	var_dump($sql);
+				    	//die(__FILE__.': '.__LINE__);
+				    }
+				    
+				    $this->db->query($sql);
+				    
+				    if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+				    	//die(__FILE__.': '.__LINE__);
+				    }
+				    
+				    $newRows[$k] = $new;
+				    
 			    }
-			    
-			    $values = array();
-			    $keys   = array();
-			    foreach ($newRow as $rowK=>$rowVal){
-			        $keys[]   = "`$rowK`";
-			        $values[] = $this->db->quote($rowVal);
-			    }
-			    
-			    $sql = "INSERT INTO `".$this->vcacheListingsTable->getName()."` ( ".implode(', ', $keys)." )
-			    VALUES (".implode(', ', $values).")
-			    ON DUPLICATE KEY UPDATE `delete_at`='".$new['delete_at']."'";
-			    
-			    if (APPLICATION_ENV=='development'){
-			    	var_dump($sql);
-			    	//die(__FILE__.': '.__LINE__);
-			    }
-			    
-			    $this->db->query($sql);
-			    $newRows[] = $v;
 			    
 			}
 			
 			return $newRows;
-			
 			
 		} else {
 			return false;
@@ -703,19 +722,20 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		}
 		
 		if ($file_cache===true){
+		    
 			$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
 			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
 			$f = '/Youtube/SidebarRight';
 			$this->cache->setLocation(ROOT_PATH.'/cache');
-			if (APPLICATION_ENV=='development'){
-				//var_dump($this->cache);
-				//die(__FILE__.': '.__LINE__);
-			}
 			$hash = Xmltv_Cache::getHash('related_'.$channel['title']);
-			if ( ($result = $this->cache->load( $hash, 'Core', $f))===false) {
-				$result = $this->_ytSearch( 'канал '.Xmltv_String::strtolower($channel['title']), $ytConfig);
-				$this->cache->save( $result, $hash, 'Core', $f);
+			
+			if ( ($cached = $this->cache->load( $hash, 'Core', $f))!==false) {
+			    $result = $cached;
+			} else {
+			    $result = $this->_ytSearch( 'канал '.Xmltv_String::strtolower($channel['title']), $ytConfig);
+			    $this->cache->save( $result, $hash, 'Core', $f);
 			}
+			
 		} else {
 			$result = $this->_ytSearch( $channel['title'], $ytConfig);
 		}
@@ -725,30 +745,63 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			//die(__FILE__.': '.__LINE__);
 		}
 		
-		if (count($result)>=1){
-			foreach($result as $k=>$v){
-				if ($v===false){
-					unset($result[$k]);
-				} else {
-					$result[$k]['published'] = new Zend_Date($v['published'], 'YYYY-MM-dd HH:mm:ss');
-					$result[$k]['duration'] = new Zend_Date($v['duration'], 'HH:mm:ss');
-					$result[$k]['channel'] = (int)$channel['id'];
-					$this->vcacheSidebarTable->store($result[$k]);
-				}
-			}
-			if (empty($result)){
-				return false;
-			} else {
-				return $result;
-			}
+		if (empty($result)){
+			return false;
+		} else {
+		    $videos = array();
+		    $c=0;
+		    foreach($result as $k=>$v){
+				/* 
+		        if (APPLICATION_ENV=='development'){
+		        	var_dump($v);
+		        	die(__FILE__.': '.__LINE__);
+		        }
+		         */
+		        if ($v!==false){
+		            $videos[$c] = $v;
+		        	$videos[$c]['published'] = new Zend_Date($v['duration'], 'YYYY_MM-dd HH:mm:ss');
+		        	$videos[$c]['duration']  = new Zend_Date($v['duration'], 'HH:mm:ss');
+		        	$videos[$c]['channel']   = (int)$channel['id'];
+		        	$c++;
+		        }
+	    	}
+	    	
+	    	if (APPLICATION_ENV=='development'){
+	    		//var_dump($videos);
+	    		//die(__FILE__.': '.__LINE__);
+	    	}
+	    	
+			return $videos;
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			var_dump($result);
-			die(__FILE__.': '.__LINE__);
+		/*
+		$videos = array();
+		if (count($result)>=1){
+			foreach($result as $k=>$v){
+				if ($v!==false){
+				    
+				    var_dump($v);
+				    die(__FILE__.': '.__LINE__);
+				    
+					$new = $v;
+				    $new['published'] = $v->toString();
+					$new['duration'] = new Zend_Date($v['duration'], 'HH:mm:ss');
+					$new['channel'] = (int)$channel['id'];
+					$this->vcacheSidebarTable->store( $new);
+					$videos[] = $new;
+				}
+			}
+			
+			if (empty($videos)){
+				return false;
+			} else {
+				return $videos;
+			}
+			
 		}
-				
+		
 		return false;
+		*/
 		
 	}
 	

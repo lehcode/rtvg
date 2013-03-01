@@ -79,6 +79,12 @@ abstract class Xmltv_Model_Abstract
 
     /**
      * Video cache for videos related to listing
+     * @var Xmltv_Model_DbTable_VcacheMain
+     */
+    protected $vcacheMainTable;
+
+    /**
+     * Video cache for videos related to listing
      * @var Xmltv_Model_DbTable_VcacheRelated
      */
     protected $channelsCommentsTable;
@@ -152,6 +158,7 @@ abstract class Xmltv_Model_Abstract
 	    $this->vcacheListingsTable = new Xmltv_Model_DbTable_VcacheListings();
 	    $this->vcacheSidebarTable  = new Xmltv_Model_DbTable_VcacheSidebar();
 	    $this->vcacheRelatedTable  = new Xmltv_Model_DbTable_VcacheRelated();
+	    $this->vcacheMainTable     = new Xmltv_Model_DbTable_VcacheMain();
 	    
 	    $this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
 	    

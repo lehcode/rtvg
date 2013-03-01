@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ErrorController.php,v 1.6 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: ErrorController.php,v 1.7 2013-03-01 03:49:38 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -67,6 +67,7 @@ class ErrorController extends Zend_Controller_Action
         } else {
             $t = new Zend_Mail_Transport_File(array('path'=>ROOT_PATH.'/log/mail'));
         }
+        
         //Send
 		$sent = true;
 		try {
