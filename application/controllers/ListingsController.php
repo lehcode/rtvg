@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ListingsController.php,v 1.22 2013-03-01 19:37:58 developer Exp $
+ * @version $Id: ListingsController.php,v 1.23 2013-03-02 09:43:55 developer Exp $
  *
  */
 class ListingsController extends Xmltv_Controller_Action
@@ -183,11 +183,11 @@ class ListingsController extends Xmltv_Controller_Action
 			    $f = "/Listings/Programs";
 				$hash = Xmltv_Cache::getHash( $channel['id'].'_'.$listingDate->toString('DDD') );
 				if (!$list = $this->cache->load($hash, 'Core', $f)) {
-					$list = $programsModel->getProgramsForDay( $listingDate, $channel['id'] );
+					$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'] );
 					$this->cache->save($list, $hash, 'Core', $f);
 				}
 			} else {
-				$list = $programsModel->getProgramsForDay( $listingDate, $channel['id'] );
+				$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'] );
 			}
 			
 			$this->view->assign( 'programs', $list );
@@ -239,7 +239,7 @@ class ListingsController extends Xmltv_Controller_Action
 			if (count($list)){
 				if (parent::$videoCache){
 				    // Запрос в БД
-				    $dbCache = $videosModel->dbCacheListingRelatedVideos( $list, $channel['title'], $now );
+				    $dbCache = $this->videosModel->dbCacheListingRelatedVideos( $list, $channel['title'], $now );
 				    if (count($dbCache)) {
 				        $listingVideos = $dbCache;
 				    } else {
@@ -252,7 +252,7 @@ class ListingsController extends Xmltv_Controller_Action
 				            $hash = Xmltv_Cache::getHash('listingVideo_'.$channel['title'].'-'.$now->toString('YYYY-MM-dd'));
 				            if (($listingVideos=$this->cache->load($hash, 'Core', $f) )===false){
 				                // Если не найдено - запрос к Yoututbe
-				                $listingVideos = $videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
+				                $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
 				                // Сохранение в файловый кэш
 				                $this->cache->save($listingVideos, $hash, 'Core', $f);
 				                
@@ -262,7 +262,7 @@ class ListingsController extends Xmltv_Controller_Action
 				                
 				            }
 				        } else {
-				            $listingVideos = $videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
+				            $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
 				            foreach ($listingVideos as $k=>$vid){
 				            	$this->vCacheModel->saveListingVideo( $vid, $k);
 				            }
@@ -270,7 +270,7 @@ class ListingsController extends Xmltv_Controller_Action
 				    }
 				    
 				} else {
-				   $listingVideos = $videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
+				   $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
 				}
 			}
 			
@@ -301,12 +301,12 @@ class ListingsController extends Xmltv_Controller_Action
 				    }
 				    
 					if (($channelComments = $this->cache->load( $hash, 'Core', $f))===false) {
-						$channelComments  = $commentsModel->channelComments( $channel['id'] );
+						$channelComments  = $this->commentsModel->channelComments( $channel['id'] );
 						$this->cache->save($channelComments, $hash, 'Core', $f);
 					}
 					
 				} else {
-					$channelComments = $commentsModel->channelComments( $channel['id'] );
+					$channelComments = $this->commentsModel->channelComments( $channel['id'] );
 				}
 			}
 			$this->view->assign('comments', $channelComments);
@@ -319,15 +319,15 @@ class ListingsController extends Xmltv_Controller_Action
 			 */
 			if (parent::$videoCache){
 			    
-			    $dbCache = $videosModel->dbCacheSidebarVideos( $channel );
+			    $dbCache = $this->videosModel->dbCacheSidebarVideos( $channel );
 			    if (count($dbCache) && is_array($dbCache)){
 			        $videos = $dbCache;
 			    } else {
-			        $videos = $videosModel->ytSidebarVideos( $channel, true );
+			        $videos = $this->videosModel->ytSidebarVideos( $channel, true );
 			    }
 			    
 			} else {
-			    $videos = $videosModel->ytSidebarVideos( $channel );
+			    $videos = $this->videosModel->ytSidebarVideos( $channel );
 			}
 			
 			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
@@ -407,9 +407,9 @@ class ListingsController extends Xmltv_Controller_Action
 			$this->view->assign('short_link', $tinyUrl);
 			
 			//Add hit for channel and model
-			$channelsModel->addHit( $channel['id'] );
+			$this->channelsModel->addHit( $channel['id'] );
 			if ($currentProgram)
-				$programsModel->addHit( $currentProgram );
+				$this->programsModel->addHit( $currentProgram );
 			
 			$this->view->assign('typeahead_form', new Xmltv_Form_TypeaheadForm());
 			$this->view->assign('featured', $this->getFeaturedChannels());
@@ -439,12 +439,10 @@ class ListingsController extends Xmltv_Controller_Action
 				return true;
 			}
 			
-			$programsModel = new Xmltv_Model_Programs(array(
+			$this->programsModel = new Xmltv_Model_Programs(array(
 				'week_days'=>$this->_helper->getHelper('WeekDays'),
 			));
-			$channelsModel = new Xmltv_Model_Channels();
-			$videosModel   = new Xmltv_Model_Videos();
-			$commentsModel = new Xmltv_Model_Comments();
+			$this->channelsModel = new Xmltv_Model_Channels();
 			
 			//Current channel
 			$channelAlias = $this->input->getEscaped('channel');
@@ -453,11 +451,11 @@ class ListingsController extends Xmltv_Controller_Action
 				$f = '/Channels';
 				$hash = $this->cache->getHash('channel_'.$channelAlias);
 				if (($channel = $this->cache->load( $hash, 'Core', $f))===false) {
-					$channel = $channelsModel->getByAlias($channelAlias);
+					$channel = $this->channelsModel->getByAlias($channelAlias);
 					$this->cache->save($channel, $hash, 'Core', $f);
 				}
 			} else {
-				$channel = $channelsModel->getByAlias($channelAlias);
+				$channel = $this->channelsModel->getByAlias($channelAlias);
 			}
 			$this->view->assign('channel', $channel );
 			
@@ -497,7 +495,7 @@ class ListingsController extends Xmltv_Controller_Action
 			
 			$this->view->assign('notfound', false);
 			$this->view->assign('nosimilar', false);
-			$currentProgram = $programsModel->getSingle( 
+			$currentProgram = $this->programsModel->getSingle( 
 				$this->input->getEscaped('alias'), $channel['id'], $listingDate );
 			
 			
@@ -526,12 +524,12 @@ class ListingsController extends Xmltv_Controller_Action
 					$f = '/Listings/Similar';
 					$hash = $this->cache->getHash('similarPrograms_'.$programAlias);
 					if (($similarPrograms = $this->cache->load( $hash, 'Core', $f))===false) {
-						$similarPrograms = $programsModel->getSimilarProgramsThisWeek(
+						$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek(
 							$this->input->getEscaped('alias'), $listingDate, $this->weekDays->getEnd($listingDate));
 						$this->cache->save($similarPrograms, $hash, 'Core', $f);
 					}
 				} else {
-					$similarPrograms = $programsModel->getSimilarProgramsThisWeek(
+					$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek(
 							$this->input->getEscaped('alias'), $listingDate, $this->weekDays->getEnd($listingDate));
 				}
 				
@@ -553,7 +551,7 @@ class ListingsController extends Xmltv_Controller_Action
 				//var_dump($listingDate);
 				//die(__FILE__.': '.__LINE__);
 				
-				$list = $programsModel->getProgramForDay( 
+				$list = $this->programsModel->getProgramForDay( 
 					$currentProgram['alias'], $channel['alias'], $listingDate );
 					
 				$this->view->assign( 'programs', $list );
@@ -571,11 +569,11 @@ class ListingsController extends Xmltv_Controller_Action
 					$f = "/Channels";
 					$hash  = $this->cache->getHash("channelscategories");
 					if (!$cats = $this->cache->load($hash, 'Core', $f)) {
-						$cats = $channelsModel->channelsCategories();
+						$cats = $this->channelsModel->channelsCategories();
 						$this->cache->save($cats, $hash, 'Core', $f);
 					}
 				} else {
-					$cats = $channelsModel->channelsCategories();
+					$cats = $this->channelsModel->channelsCategories();
 				}
 				//var_dump($cats);
 				//die(__FILE__.': '.__LINE__);
@@ -599,11 +597,11 @@ class ListingsController extends Xmltv_Controller_Action
 						$f = '/Feeds/Yandex';
 						$hash = Xmltv_Cache::getHash('channel_comments_'.$channel['alias']);
 						if (!$channelComments = $this->cache->load($hash, 'Core', $f)) {
-							$channelComments  = $commentsModel->channelComments( $channel['title'] );
+							$channelComments  = $this->commentsModell->channelComments( $channel['title'] );
 							$this->cache->save($channelComments, $hash, 'Core', $f);
 						}
 					} else {
-						$channelComments = $commentsModel->channelComments( $channel['title'] );
+						$channelComments = $this->commentsModell->channelComments( $channel['title'] );
 					}
 				}
 				//var_dump($channelComments);
@@ -681,9 +679,9 @@ class ListingsController extends Xmltv_Controller_Action
 				/*
 				 * Add hit for channel and model
 				*/
-				$channelsModel->addHit( $channel['id'] );
+				$this->channelsModel->addHit( $channel['id'] );
 				//if ($currentProgram)
-				//	$programsModel->addHit( $currentProgram );
+				//	$this->programsModel->addHit( $currentProgram );
 					
 				//die(__FILE__.': '.__LINE__);
 				

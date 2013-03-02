@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: VideosController.php,v 1.14 2013-03-01 03:49:38 developer Exp $
+ * @version $Id: VideosController.php,v 1.15 2013-03-02 09:43:55 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -51,8 +51,6 @@ class VideosController extends Xmltv_Controller_Action
 			);
 			
 			$youtube	 = new Xmltv_Youtube($ytConfig);
-			$videosModel = new Xmltv_Model_Videos();
-			$vCacheModel = new Xmltv_Model_Vcache();
 			$rtvgId = $this->input->getEscaped('id');
 			
 			if (APPLICATION_ENV=='development'){
@@ -79,7 +77,7 @@ class VideosController extends Xmltv_Controller_Action
 				     * 1. Query cache model for main video ( Xmltv_Model_Vcache::getVideo($rtvgId) )
 				     * ################################################################################
 				     */
-				    if (($cached = $vCacheModel->getVideo($rtvgId))!==false){
+				    if (($cached = $this->vCacheModel->getVideo($rtvgId))!==false){
 				        
 				        $mainVideo = $cached;
 				        
@@ -96,7 +94,7 @@ class VideosController extends Xmltv_Controller_Action
 				        	    $mainVideo = $cached;
 				        	} else { // If not found in file cache
 				        	    if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
-				        	        $mainVideo = $videosModel->parseYtEntry( $ytEntry);
+				        	        $mainVideo = $this->videosModel->parseYtEntry( $ytEntry);
 				        	        $this->cache->save( $mainVideo, $hash, 'Core', $f);
 				        	    } else {
 				        	        // Video not fount at youtube
@@ -108,7 +106,7 @@ class VideosController extends Xmltv_Controller_Action
 				        } else {
 				            
 				            if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
-				            	$mainVideo = $videosModel->parseYtEntry($ytEntry);
+				            	$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
 				            } else {
 				            	$this->render('video-not-found');
 				            	return true;
@@ -140,7 +138,7 @@ class VideosController extends Xmltv_Controller_Action
 				if (parent::$videoCache===true){
 					
 				    // (1) Try to load result from DB cache first
-				    if (($cached = $videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
+				    if (($cached = $this->videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
 				    	
 				        $relatedVideos = $cached;
 				         

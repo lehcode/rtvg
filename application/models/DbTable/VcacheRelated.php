@@ -17,6 +17,32 @@ class Xmltv_Model_DbTable_VcacheRelated extends Xmltv_Db_Table_Abstract
     }
     
     /**
+     * (non-PHPdoc)
+     * @see Zend_Db_Table_Abstract::_setup()
+     */
+    protected function _setup(){
+    
+    	parent::_setup();
+    	$now = Zend_Date::now();
+    	$this->_defaultValues = array(
+    			'rtvg_id'=>null,
+    			'yt_id'=>null,
+    			'yt_parent'=>null,
+    			'title'=>'',
+    			'alias'=>'',
+    			'desc'=>'',
+    			'views'=>0,
+    			'published'=>1,
+    			'duration'=>null,
+    			'category'=>'',
+    			'thumbs'=>'',
+    			'delete_at'=>$now->addDay(7)->toString('YYYY-MM-dd HH:mm:ss'),
+    			'hash'=>null
+    	);
+    		
+    }
+    
+    /**
      * 
      * @param  array $video
      * @return NA

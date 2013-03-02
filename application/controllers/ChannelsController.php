@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.17 2013-03-01 19:37:58 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.18 2013-03-02 09:43:55 developer Exp $
  *
  */
 class ChannelsController extends Xmltv_Controller_Action
@@ -56,16 +56,16 @@ class ChannelsController extends Xmltv_Controller_Action
 		
 		if ($this->requestParamsValid()) {
 			
-			$channelsModel = new Xmltv_Model_Channels();
+			$this->channelsModel = new Xmltv_Model_Channels();
 			$this->view->assign('pageclass', 'allchannels');
 			if ($this->cache->enabled){
 				$hash = Xmltv_Cache::getHash('published_channels');
 				if (!$rows = $this->cache->load($hash, 'Core', $this->cacheRoot)) {
-					$rows = $channelsModel->getPublished();
+					$rows = $this->channelsModel->getPublished();
 					$this->cache->save($rows, $hash, 'Core', $this->cacheRoot);
 				}
 			} else {
-				$rows = $channelsModel->getPublished();
+				$rows = $this->channelsModel->getPublished();
 			}
 			
 			if (APPLICATION_ENV=='development'){
@@ -81,40 +81,27 @@ class ChannelsController extends Xmltv_Controller_Action
 			 * ######################################################
 			*/
 			if ($this->cache->enabled){
+			    $this->cache->setLocation(ROOT_PATH.'/cache');
 				$f = "/Channels";
 				$hash  = $this->cache->getHash("channelscategories");
 				if (!$cats = $this->cache->load($hash, 'Core', $f)) {
-					$cats = $channelsModel->channelsCategories();
+					$cats = $this->channelsModel->channelsCategories();
 					$this->cache->save($cats, $hash, 'Core', $f);
 				}
 			} else 	{
-				$cats = $channelsModel->channelsCategories();
+				$cats = $this->channelsModel->channelsCategories();
 			}
 			//var_dump($cats);
 			//die(__FILE__.': '.__LINE__);
 			$this->view->assign('channels_cats', $cats);
 			
 			/*
-			 * ######################################################
-			 * Top programs for left sidebar
-			 * ######################################################
+			 * #####################################################################
+			 * Данные для модуля самых популярных программ
+			 * #####################################################################
 			 */
-			$top = $this->_helper->getHelper('Top');
-			$amt = Zend_Registry::get('site_config')->top->listings->get('amount');
-			if ($this->cache->enabled){
-				$f = '/Listings/Programs';
-				$hash = Xmltv_Cache::getHash('top'.$amt);
-				if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
-					$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
-					$this->cache->save($topPrograms, $hash, 'Core', $f);
-				}
-			} else {
-				$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
-			}
-			//var_dump($top);
-			//var_dump($topPrograms);
-			//die(__FILE__.': '.__LINE__);
-			$this->view->assign('top_programs', $topPrograms);	
+			$top = $this->getTopPrograms();
+			$this->view->assign('top_programs', $top);
 		}
 		
 	}
@@ -131,15 +118,16 @@ class ChannelsController extends Xmltv_Controller_Action
 				$category = $channelsCategories->fetchRow("`alias` LIKE '".$this->input->getEscaped('c')."'")->toArray();
 			}
 			
-			$channelsModel = new Xmltv_Model_Channels();
+			$this->channelsModel = new Xmltv_Model_Channels();
 			$hash = Xmltv_Cache::getHash( 'typeahead_all' );
 			if ($this->cache->enabled) {
+			    $this->cache->setLocation(ROOT_PATH.'/cache');
 				if (($items = $this->cache->load( $hash, 'Core', $this->cacheRoot))===false){
-					$items = $channelsModel->getTypeaheadItems( $category['id']);
+					$items = $this->channelsModel->getTypeaheadItems( $category['id']);
 					$this->cache->save($items, $hash, 'Core', $this->cacheRoot);
 				}
 			} else {
-				$items = $channelsModel->getTypeaheadItems( $category['id']);
+				$items = $this->channelsModel->getTypeaheadItems( $category['id']);
 			}
 			
 			foreach ($items as $k=>$part){
@@ -159,44 +147,31 @@ class ChannelsController extends Xmltv_Controller_Action
 		if (parent::requestParamsValid()) {
 		   
 			$this->view->assign('pageclass', 'category');
-			$channelsModel = new Xmltv_Model_Channels();
-			$catProps = $channelsModel->category( $this->input->getEscaped('category') )->toArray();
+			$this->channelsModel = new Xmltv_Model_Channels();
+			$catProps = $this->channelsModel->category( $this->input->getEscaped('category') )->toArray();
 			$this->view->assign('category', $catProps);
 			
 			if ($this->cache->enabled){
+			    $this->cache->setLocation(ROOT_PATH.'/cache');
 				$hash = md5('channelcategories_'.$catProps['alias']);
 				if (!$rows = $this->cache->load($hash, 'Core', $this->cacheRoot)){
-					$rows = $channelsModel->categoryChannels($catProps['alias']);
+					$rows = $this->channelsModel->categoryChannels($catProps['alias']);
 					$this->cache->save($rows->toArray(), $hash, 'Core', $this->cacheRoot);
 				}
 			} else {
-				$rows = $channelsModel->categoryChannels($catProps['alias']);
+				$rows = $this->channelsModel->categoryChannels($catProps['alias']);
 			}
 			//var_dump($rows);
 			//die(__FILE__.':'.__LINE__);
 			$this->view->assign('channels', $rows);
 			
 			/*
-			 * ######################################################
-			 * Top programs for left sidebar
-			 * ######################################################
+			 * #####################################################################
+			 * Данные для модуля самых популярных программ
+			 * #####################################################################
 			 */
-			$top = $this->_helper->getHelper('Top');
-			$amt = Zend_Registry::get('site_config')->top->listings->get('amount');
-			//var_dump($top);
-			if ($this->cache->enabled){
-				$f = '/Listings/Programs';
-				$hash = Xmltv_Cache::getHash('top'.$amt);
-				if (!$topPrograms = $this->cache->load($hash, 'Core', $f)) {
-					$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
-					$this->cache->save($topPrograms, $hash, 'Core', $f);
-				}
-			} else {
-				$topPrograms = $top->direct( 'TopPrograms', array( 'amt'=>$amt ));
-			}
-			//var_dump($topPrograms);
-			//die(__FILE__.': '.__LINE__);
-			$this->view->assign('top_programs', $topPrograms);
+			$top = $this->getTopPrograms();
+			$this->view->assign('top_programs', $top);
 			
 			/*
 			 * ######################################################
@@ -205,13 +180,14 @@ class ChannelsController extends Xmltv_Controller_Action
 			*/
 			if ($this->cache->enabled){
 				$f = "/Channels";
+				$this->cache->setLocation(ROOT_PATH.'/cache');
 				$hash  = $this->cache->getHash("channelscategories");
 				if (!$cats = $this->cache->load($hash, 'Core', $f)) {
-					$cats = $channelsModel->channelsCategories();
+					$cats = $this->channelsModel->channelsCategories();
 					$this->cache->save($cats, $hash, 'Core', $f);
 				}
 			} else {
-				$cats = $channelsModel->channelsCategories();
+				$cats = $this->channelsModel->channelsCategories();
 			}
 			//var_dump($cats);
 			//die(__FILE__.': '.__LINE__);
@@ -238,8 +214,8 @@ class ChannelsController extends Xmltv_Controller_Action
 			$this->view->assign('pageclass', 'channel-week');
 			
 			// Channel properties
-			$channelsModel = new Xmltv_Model_Channels();
-			$channel = $channelsModel->getByAlias( $this->input->getEscaped('channel') );
+			$this->channelsModel = new Xmltv_Model_Channels();
+			$channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
 			$this->view->assign('channel', $channel);
 			
 			//Week start and end dates
@@ -253,15 +229,15 @@ class ChannelsController extends Xmltv_Controller_Action
 				$hash = Xmltv_Cache::getHash('channel_'.$channel['alias'].'_week');
 				$f = '/Channels';
 				if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
-					$schedule = $channelsModel->getWeekSchedule($channel, $s, $e);
+					$schedule = $this->channelsModel->getWeekSchedule($channel, $s, $e);
 					$this->cache->save($schedule, $hash, 'Core', $f);
 				}
 			} else {
-				$schedule = $channelsModel->getWeekSchedule($channel, $s, $e);
+				$schedule = $this->channelsModel->getWeekSchedule($channel, $s, $e);
 			}
 			$this->view->assign('days', $schedule);
 			
-			$channelsModel->addHit( $channel['id'] );
+			$this->channelsModel->addHit( $channel['id'] );
 			
 		}
 		
@@ -283,17 +259,18 @@ class ChannelsController extends Xmltv_Controller_Action
 			}
 				
 			// Channel properties
-			$channelsModel = new Xmltv_Model_Channels();
+			$this->channelsModel = new Xmltv_Model_Channels();
 			$channelAlias = $this->input->getEscaped('channel');
 			if ($this->cache->enabled){
-				$f = '/Channels';
+			    $this->cache->setLocation(ROOT_PATH.'/cache');
+				$f    = '/Feeds/Yandex';
 				$hash = $this->cache->getHash('channel_'.$channelAlias);
 				if (($channel = $this->cache->load($hash, 'Core', $f))===false) {
-					$channel = $channelsModel->getByAlias($channelAlias);
+					$channel = $this->channelsModel->getByAlias($channelAlias);
 					$this->cache->save($channel, $hash, 'Core', $f);
 				}
 			} else {
-				$channel = $channelsModel->getByAlias($channelAlias);
+				$channel = $this->channelsModel->getByAlias($channelAlias);
 			}
 			$this->view->assign('channel', $channel);
 			

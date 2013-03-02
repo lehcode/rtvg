@@ -131,44 +131,48 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
      */
     public function saveRelatedVideo($video=null, $yt_parent=null){
     	
-        if ($video && $yt_parent && is_a($video, 'Zend_Gdata_YouTube_VideoEntry')){
         
-	        $vModel = new Xmltv_Model_Videos();
-	        if (($video = $vModel->parseYtEntry($video))!==false){
-	            
-            	$video['yt_parent'] = $yt_parent;
-            	
-            	if (APPLICATION_ENV=='development'){
-            		//var_dump($video);
-            		//die(__FILE__.': '.__LINE__);
-            	}
-            	
-		         try {
-	                $saved = $this->vcacheRelatedTable->store($video);
-	            } catch (Zend_Db_Table_Exception $e) {
-	                throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-	            }
-	            
-	            if (APPLICATION_ENV=='development'){
-	            	//var_dump($saved);
-	            	//die(__FILE__.': '.__LINE__);
-	            }
-	            
+        $vModel = new Xmltv_Model_Videos();
+        
+        if ($video && $yt_parent && is_a($video, 'Zend_Gdata_YouTube_VideoEntry')){
+        	if (($row = $vModel->parseYtEntry($video))===false){
+	            return false;
 	        }
-	        
         } elseif(is_array($video)) {
-            
-            try {
-                $saved = $this->vcacheRelatedTable->store($video);
-            } catch (Zend_Db_Table_Exception $e) {
-                throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-            }
-            
+            $row = $video;
         } else {
-            $video = false;
+            return false;
         }
         
-        return $video;
+        $row = $this->vcacheRelatedTable->createRow($row);
+        
+        $row->yt_parent = $yt_parent;
+        $row->published = $row->published->toString('YYYY-MM-dd HH:mm:ss');
+        $row->duration  = $row->duration->toString('HH:mm:ss');
+        $row->thumbs    = Zend_Json::encode($row->thumbs);
+        $row->delete_at = Zend_Date::now()->addDay(7)->toString("YYYY-MM-dd HH:mm:ss");
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump($row->toArray());
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        foreach ($row->toArray() as $rowK=>$rowVal){
+	        $keys[]   = $this->db->quoteIdentifier($rowK);
+	        $values[] = "'".str_ireplace("'", '"', $rowVal)."'";
+	    }
+				    
+	    $sql = "INSERT INTO `".$this->vcacheRelatedTable->getName()."` ( ".implode(', ', $keys)." ) 
+	    VALUES (".implode(', ', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$row['delete_at']."'";
+        
+	    if (APPLICATION_ENV=='development'){
+	        Zend_Debug::dump($sql);
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    $this->db->query($sql);
+        
+	    return $row;
         
     }
     

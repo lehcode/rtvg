@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Action.php,v 1.7 2013-03-01 19:37:58 developer Exp $
+ * @version $Id: Action.php,v 1.8 2013-03-02 09:43:55 developer Exp $
  *
  */
 class Xmltv_Controller_Action extends Zend_Controller_Action
@@ -42,6 +42,12 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	 * @var Xmltv_Model_vCache
 	 */
 	protected $vCacheModel;
+
+	/**
+	 * Video cache model
+	 * @var Xmltv_Model_Comments
+	 */
+	protected $commentsModel;
 	
 	/**
 	 *
@@ -111,6 +117,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		$this->channelsModel = new Xmltv_Model_Channels();
 		$this->programsModel = new Xmltv_Model_Programs();
 		$this->videosModel   = new Xmltv_Model_Videos();
+		$this->commentsModel   = new Xmltv_Model_Comments();
 		
 		$kc = Zend_Registry::get('site_config')->channels->kids;
 		if (stristr($kc, ',')){
