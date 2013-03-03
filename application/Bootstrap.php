@@ -1,11 +1,10 @@
 <?php
 
 /**
- * Bootstrap
+ * Application bootstrap
  * 
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: Bootstrap.php,v 1.15 2013-03-01 03:49:38 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: Bootstrap.php,v 1.16 2013-03-03 23:34:12 developer Exp $
  *
  */
 
@@ -38,14 +37,22 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		date_default_timezone_set( Zend_Registry::get('site_config')->site->get( 'timezone', 'Europe/Moscow' ) );
 		
 		$db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
-		$db->setFetchMode( Zend_DB::FETCH_OBJ);
-		Zend_Registry::set('db_local', $db);
+		$db->setFetchMode( Zend_DB::FETCH_OBJ );
+		Zend_Registry::set( 'db_local', $db);
 		
 		$db = $this->bootstrap( 'multidb')->getResource('multidb')->getDb('archive');
 		$db->setFetchMode( Zend_DB::FETCH_OBJ);
 		Zend_Registry::set( 'db_archive', $db);
-
-		//Zend_Layout::startMvc();
+		
+		/* 
+		$options = array(
+			'layout' => 'foo',
+			'layoutPath' => '/path/to/layouts',
+			'contentKey' => 'CONTENT', // игнорируется, если не используется MVC
+		);
+		Zend_Layout::startMvc($options);
+		 */
+		Zend_Layout::startMvc();
 		
 		/*
 		 * Caching
@@ -62,16 +69,20 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		/*
 		 * Front controller
 		 */
-		$router = new Xmltv_Plugin_Router( APPLICATION_ENV );
+		$router    = new Xmltv_Plugin_Router( APPLICATION_ENV );
 		$fc = Zend_Controller_Front::getInstance()
 			->setParam( 'useDefaultControllerAlways', true )
 			->setParam( 'bootstrap', $this )
 			->registerPlugin( $router )
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
-			->registerPlugin( new Xmltv_Plugin_Antibot( APPLICATION_ENV ) )
+			//->registerPlugin( new Xmltv_Plugin_Antibot( APPLICATION_ENV ) )
+			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
 			->returnResponse( false )
 			->throwExceptions( false );
+		
+		
+		
 		
 		if (APPLICATION_ENV=='production'){
 		    //$fc->returnResponse( true );
@@ -179,6 +190,91 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	 * @todo _initStats()
 	 */
 	
+	/**
+	 * Initialize user
+	 */
+	protected function _initUser()
+	{
+	    $db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
+	    $db->setFetchMode( Zend_DB::FETCH_OBJ );
+	    
+		$auth = Zend_Auth::getInstance();
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($auth->hasIdentity());
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		if ($auth->hasIdentity()) {
+		    
+		    $users = new Xmltv_Model_Users();
+		    
+		    if (APPLICATION_ENV=='development'){
+		        //var_dump($auth->getIdentity());
+		        //die(__FILE__.': '.__LINE__);
+		    }
+		    
+		    try {
+		        
+		        $openId = $auth->getIdentity();
+		        if (is_object($openId)){
+		            $openId = $openId->email;
+		        }
+		        
+		        if (($user = $users->searchByOpenId( $openId ))!==false) {
+		        	if ((time() - (int)strtotime($user->last_login)) > 60*5) {
+		        		$user->last_login = Zend_Date::now()->toString('YYYY-MM-dd HH:mm:ss');
+		        		$user->save();
+		        	}
+		        }
+		        
+		        if (APPLICATION_ENV=='development'){
+		        	//var_dump($openId);
+		        	//var_dump($user);
+		        	//die(__FILE__.': '.__LINE__);
+		        }
+		        
+		        Xmltv_Bootstrap_Auth::setCurrentUser($user);
+		        
+		    } catch (Zend_Exception $e) {
+		        throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		    }
+		}
+		
+		$user = Xmltv_Bootstrap_Auth::getCurrentUser($db);
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($user);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		return $user;
+		
+	}
+	
+	/**
+	 * Initialize ACLs
+	 * 
+	 * @return Xmltv_Model_Acl
+	 */
+	protected function _initAcl()
+	{
+	    
+	    $db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
+	    $db->setFetchMode( Zend_DB::FETCH_OBJ );
+	    
+		$acl = Xmltv_Model_Acl::getInstance();
+		Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl( $acl );
+		
+		Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole( Xmltv_Bootstrap_Auth::getCurrentUser($db)->role );
+		
+		Zend_Registry::set('ACL', $acl);
+		
+		return $acl;
+	}
+	
+	
 }
+
 
 

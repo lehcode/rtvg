@@ -6,108 +6,83 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/models/DbTable/Users.php,v $
- * @version $Id: Users.php,v 1.2 2012-12-25 01:57:53 developer Exp $
+ * @version $Id: Users.php,v 1.3 2013-03-03 23:34:13 developer Exp $
  */
-class Xmltv_Model_DbTable_Users extends Zend_Db_Table_Abstract
+class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
 {
 
-	protected $_name = 'users';
-	protected $_user;
-
-	protected static $_instance;
-	
-	const FETCH_MODE = Zend_Db::FETCH_OBJ;
-	
+	protected $_name    = 'users';
+	protected $_primary = array('id');
 	
 	/**
-     * Constructor
-     * @param unknown_type $config
-     */
-    public function __construct ($config = array()) {
-    
-    	parent::__construct(array('name'=>$this->_name));
-    
-    	if (isset($config['tbl_prefix'])) {
-    		$pfx = $config['tbl_prefix'];
-    	} else {
-    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
-    	}
-    	$this->setName($pfx.$this->_name);
-    
+	 * (non-PHPdoc)
+	 * @see Zend_Db_Table_Abstract::init()
+	 */
+    public function init() {
+        
+        parent::init();
+        
+        $this->setRowClass('Xmltv_User');
+        $this->setRowsetClass('Xmltv_Users');
+    	
+    	
     }
     
     /**
-     * @return string
+     * (non-PHPdoc)
+     * @see Xmltv_Db_Table_Abstract::_setup()
      */
-    public function getName() {
-    	return $this->_name;
+    protected function _setup(){
+    	parent::_setup();
+    	$this->_defaultValues = array(
+    		'id'=>null,
+    		'email'=>'',
+    		'display_name'=>'',
+    		'real_name'=>'',
+    		'last_login'=>null,
+    		'login_source'=>'site',
+    		'hash'=>'',
+    		'role'=>'guest',
+    		'created'=>Zend_Date::now()->toString("YYYY-MM-dd HH:mm:ss"),
+    	);
     }
     
     /**
-     * @param string $string
-     */
-    public function setName($string=null) {
-    	$this->_name = $string;
-    }
-	
-	/**
-	 * 
-	 * Get user info by email
-	 * @param string $email
-	 */
-	public function fetchByOpenId($email=null){
-		
-		if (!$email)
-			return $this->createRow();
-		
-		return $this->fetchRow("`open_id`='".$email."'");
-		
-	}
-	
-
-	/**
-	 * 
-	 * Create empty guest user
-	 */
-	public function getUser(){
-		
-		$result = $this->createRow();
-		
-		if (empty($result->role))
-			$result->role = 'guest';
-		
-		return $result;
-		
-	}
-	
-	
- 	/**
      * 
-     * @return App_Model_Users
+     * @param  string $email
+     * @throws Zend_Db_Table_Exception
+     * @return string|boolean
      */
-    public static function getInstance()
-    {
-        if (null === self::$_instance) {
-            self::$_instance = new self();
+    public function fetchByOpenId( $email=null ){
+    	
+        if (!$email)
+            return $this->createRow();
+        
+        $where = "`email`='$email'";
+        $row = $this->fetchRow($where);
+        
+        if (APPLICATION_ENV=='development'){
+            //var_dump($where);
+            //var_dump($row);
+            //die(__FILE__.': '.__LINE__);
         }
-        return self::$_instance;
+        
+        if ($row && is_a($row, 'Xmltv_User')){
+        	return $row;
+        }
+        
+        return false;
+        
     }
     
-    
-    public static function resetInstance()
-    {
-        self::$_instance = null;
-        self::getInstance();
+    public function createRow($data=array()){
+    	
+        return parent::createRow($this->_defaultValues);
     }
-	
-	private function _setTableName($name=null, $prefix=null){
-		
-		if (!$name || !$prefix)
-		return false;
-		
-		$this->_name = $prefix.'_'.$name;
-	
-	}
 
 }
+
+
+
+
 

@@ -1,9 +1,17 @@
 <?php
-
+/**
+ * Video cache for related videos from VideosController::showVideoAction()
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: VcacheRelated.php,v 1.4 2013-03-03 23:34:13 developer Exp $
+ *
+ */
 class Xmltv_Model_DbTable_VcacheRelated extends Xmltv_Db_Table_Abstract
 {
 
-    protected $_name = 'vcache_related';
+    protected $_name    = 'vcache_related';
+    protected $_primary = 'yt_id';
 
     /**
      * Constructor
@@ -37,7 +45,6 @@ class Xmltv_Model_DbTable_VcacheRelated extends Xmltv_Db_Table_Abstract
     			'category'=>'',
     			'thumbs'=>'',
     			'delete_at'=>$now->addDay(7)->toString('YYYY-MM-dd HH:mm:ss'),
-    			'hash'=>null
     	);
     		
     }

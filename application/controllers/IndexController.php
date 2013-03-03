@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Frontend index controller
+ * Default frontend controller
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: IndexController.php,v 1.6 2013-01-02 05:07:49 developer Exp $
+ * @uses    Zend_Controller_Action
+ * @version $Id: IndexController.php,v 1.7 2013-03-03 23:34:13 developer Exp $
  *
  */
 class IndexController extends Zend_Controller_Action

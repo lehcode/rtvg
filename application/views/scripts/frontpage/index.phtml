@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: index.phtml,v 1.4 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: index.phtml,v 1.5 2013-03-03 23:34:13 developer Exp $
  *
  */
 
@@ -54,6 +54,7 @@ $this->headScript()
 	<?php 
 	$max=4;
 	foreach ($this->list as $channel){
+	    
 	    $keys = array_keys($channel);
 	    ?>
 	    <div class="channel" id="<?php echo hash( 'crc32', $channel[$keys[0]]['channel'] ) ?>">

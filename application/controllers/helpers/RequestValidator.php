@@ -4,11 +4,9 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package rutvgid
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/RequestValidator.php,v $
- * @version $Id: RequestValidator.php,v 1.14 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.15 2013-03-03 23:34:13 developer Exp $
  */
-class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
+class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
 	/**
      * @var Zend_Loader_PluginLoader
@@ -26,6 +24,9 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
     }
     
     const ALIAS_REGEX='/^[\p{Cyrillic}\p{Latin}\d_-]+$/ui';
+    const ERR_WRONG_ACTION="Неверный Action";
+    const ERR_WRONG_MODULE="Неверный Module";
+    const ERR_WRONG_CONTROLLER="Неверный Controller";
     
     /**
      * 
@@ -157,9 +158,9 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			            if ($this->getRequest()->getParam('date')) {
 	    			            	$d = $this->getRequest()->getParam('date');
 		    			            if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
-		    			            	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-yyyy', 'locale'=>'ru')), 'presence'=>'required');
+		    			            	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')), 'presence'=>'required');
 		    			            } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
-		    			            	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
+		    			            	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd')), 'presence'=>'required');
 		    			            } else{
 		    			                $validators['date'] = array( new Zend_Validate_Regex( '/^(сегодня|неделя)$/u' ));
 		    			            }
@@ -171,9 +172,9 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			    	    if ($this->getRequest()->getParam('date')) {
 		    			    	    $d = $this->getRequest()->getParam('date');
 		    			    	    if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
-		    			    	    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-yyyy', 'locale'=>'ru')), 'presence'=>'required');
+		    			    	    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')), 'presence'=>'required');
 		    			    	    } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
-		    			    	    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
+		    			    	    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd',)), 'presence'=>'required');
 		    			    	    } else {
 		    			    	        if ($d=='сегодня' || $d=='неделя') {
 		    			    	            $validators['date'] = array( new Zend_Validate_Alpha(false) );
@@ -188,9 +189,11 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 							    if ($this->getRequest()->getParam('date')) {
 							    	$d = $this->getRequest()->getParam('date');
 							    	if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d))
-							    		$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-yyyy', 'locale'=>'ru')), 'presence'=>'required');
+							    		$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')),
+							    			'presence'=>'required');
 							    	if (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d))
-							    		$validators['date'] = array( new Zend_Validate_Date( array('format'=>'yyyy-MM-dd', 'locale'=>'ru')), 'presence'=>'required');
+							    		$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd')),
+							    			'presence'=>'required');
 
 							    }
 							    
@@ -224,8 +227,33 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			    
 	    			    	break;
 	    			    	
-	    			default:
-	    			    return false;
+	    			case 'user':
+	    			    
+	    			    switch ($action){
+	    			        
+	    			    	case 'login':
+	    			    	    $validators['openid'] = array( new Zend_Validate_Regex( '/^[\w\d\._-]{2,128}@[\w\d\._-]{2,128}\.[\w]{2,4}$/ui' ));
+	    			    	    $validators['passwd'] = array( new Zend_Validate_Regex( '/^[\w\d]{6,32}$/ui' ));
+	    			    	    $validators['submit'] = array( new Zend_Validate_Alpha(false));
+	    			    	    break;
+
+	    			    	case 'logout':
+	    			    	    $validators['submit'] = array( new Zend_Validate_Alpha(false));
+	    			    	    break;
+
+	    			    	case 'profile':
+	    			    	    die(__FILE__.': '.__LINE__);
+	    			    	    break;
+	    			        
+	    			    	default:
+	    			    	    throw new Zend_Exception(self::ERR_WRONG_ACTION, 500);
+	    			    }
+	    			    
+	    			    
+	    			    break;
+	    			    	
+	    			default: 
+	    				throw new Zend_Exception(self::ERR_WRONG_CONTROLLER, 500);
 	    			
 	    		}
 	    		
@@ -235,15 +263,14 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    	 * Administrator interface
 	    	 */
 	    	case 'admin':
-	    	    //var_dump( $this->getRequest()->getParams() );
+	    	    
 	    	    switch ($controller){
 	    			case 'archive':
 	    				switch ($action){
 	    					case 'store';
-	    						$validators['start_date'] = array( new Zend_Validate_Date( array('format'=>'dd.MM.yyyy', 'locale'=>'ru' )), 'presence'=>'required');
-	    						$validators['end_date']   = array( new Zend_Validate_Date( array('format'=>'dd.MM.yyyy', 'locale'=>'ru' )), 'presence'=>'required');
+	    						$validators['start_date'] = array( new Zend_Validate_Date( array('format'=>'dd.MM.YYYY' )), 'presence'=>'required');
+	    						$validators['end_date']   = array( new Zend_Validate_Date( array('format'=>'dd.MM.YYYY' )), 'presence'=>'required');
 	    						$validators['format']     = array( new Zend_Validate_Regex('/^html|json$/'));
-	    						//die(__FILE__.': '.__LINE__);
 	    						break;
 	    						
 	    					default:
@@ -253,10 +280,7 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    				
 	    			case 'import':
 	    			    
-	    			    //var_dump($action);
-	    			    //die(__FILE__.': '.__LINE__);
-	    			    
-						switch ($action){
+	    			    switch ($action){
 							case 'remote':
 							    if ($this->getRequest()->getParam('site')) {
 							    	$validators['site'] = array( new Zend_Validate_Alnum());
@@ -265,16 +289,17 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 							    	$validators['format'] = array( new Zend_Validate_Regex('/^(html|json)$/'));
 							    }
 							    
-							    //var_dump($validators);
-							    //die(__FILE__.': '.__LINE__);
-							    	
 							    break;
+							    
 							case 'xml-parse-channels':
 							case 'xml-parse-programs':
 							    if ($this->getRequest()->getParam('xml_file')) {
 							    	$validators['xml_file'] = array( new Zend_Validate_File_Exists( $this->getRequest()->getParam('xml_file')));
 							    }
 								break;
+								
+								default:
+									throw new Zend_Exception(self::ERR_WRONG_ACTION);
 						}
 						
 	    				break;
@@ -299,7 +324,7 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 	    			    		break;
 	    			    		
 	    			        default: 
-	    			            return false;
+	    			            throw new Zend_Exception(self::ERR_WRONG_ACTION);
 	    			    }
 	    			
 	    		}
@@ -310,11 +335,7 @@ class Xmltv_Controller_Action_Helper_RequestValidator extends Zend_Controller_Ac
 		
 		
 		$input = new Zend_Filter_Input($filters, $validators, $this->getRequest()->getParams());
-    	
-		//var_dump($validators);
-		//var_dump($input->isValid('delete_start'));
-		//die(__FILE__.': '.__LINE__);
-		
+				
 		return $input;
     	
     }

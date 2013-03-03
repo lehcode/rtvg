@@ -1,10 +1,10 @@
 <?php
 /**
- * Frontend search controller
+ * Process various types of search and display results
  *
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: SearchController.php,v 1.3 2013-02-15 00:44:02 developer Exp $
+ * @uses    Xmltv_Controller_Action
+ * @version $Id: SearchController.php,v 1.4 2013-03-03 23:34:13 developer Exp $
  *
  */
 class SearchController extends Xmltv_Controller_Action

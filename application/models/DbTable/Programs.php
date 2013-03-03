@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: Programs.php,v 1.17 2013-03-01 19:37:58 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @uses Xmltv_Db_Table_Abstract
+ * @version $Id: Programs.php,v 1.18 2013-03-03 23:34:13 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
@@ -17,10 +17,8 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	 * 
 	 * @param array $config
 	 */
-	public function __construct ($config = array()) {
-
-		parent::__construct(array('name'=>$this->_name));
-		
+	public function init() {
+		parent::init();
 	}
 	
 	/**

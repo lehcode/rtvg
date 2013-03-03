@@ -4,11 +4,9 @@
  * Resizes an image and converts it to PNG returning the PNG data as a string
  *
  * @author  Acuminate http://stackoverflow.com/users/2482/acuminate
- * @package rutvgid
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/ImageToPng.php,v $
- * @version $Id: ImageToPng.php,v 1.2 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: ImageToPng.php,v 1.3 2013-03-03 23:34:13 developer Exp $
  */
-class Xmltv_Controller_Action_Helper_ImageToPng extends Zend_Controller_Action_Helper_Abstract
+class Xmltv_Controller_Helper_ImageToPng extends Zend_Controller_Action_Helper_Abstract
 {
     
     /**

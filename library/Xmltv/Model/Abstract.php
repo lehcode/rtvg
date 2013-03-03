@@ -10,11 +10,7 @@ abstract class Xmltv_Model_Abstract
     protected $dbConf;
     protected static $tblPfx='';
     
-    /**
-     * Programs properties
-     * @var Xmltv_Model_DbTable_ProgramsProps
-     */
-    protected $propertiesTable;
+    
     /**
      * Programs descriptions
      * @var Xmltv_Model_DbTable_ProgramsDescriptions
@@ -116,7 +112,7 @@ abstract class Xmltv_Model_Abstract
 	    }
 	    
 		// Init cache	
-		$this->cache = new Xmltv_Cache(array('location'=>'/Listings'));
+		$this->cache = new Xmltv_Cache(array('location'=>'/'));
 		
 		// Init database
 		$this->dbConf = $config['db'];
@@ -128,7 +124,7 @@ abstract class Xmltv_Model_Abstract
 		    self::$tblPfx = $this->dbConf->get('tbl_prefix'); 
 		}
 		
-		$this->_initTables();
+		$this->initTables();
 				
 		
 	}
@@ -148,10 +144,9 @@ abstract class Xmltv_Model_Abstract
 		return $this->db;
 	}
 	
-	private function _initTables(){
+	protected function initTables(){
 		
 	    $this->descriptionsTable       = new Xmltv_Model_DbTable_ProgramsDescriptions();
-	    $this->propertiesTable         = new Xmltv_Model_DbTable_ProgramsProps();
 	    $this->categoriesTable         = new Xmltv_Model_DbTable_ProgramsCategories();
 	    $this->channelsTable           = new Xmltv_Model_DbTable_Channels();
 	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();

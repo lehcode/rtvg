@@ -4,8 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: ChannelsController.php,v 1.18 2013-03-02 09:43:55 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.19 2013-03-03 23:34:13 developer Exp $
  *
  */
 class ChannelsController extends Xmltv_Controller_Action
@@ -67,12 +66,6 @@ class ChannelsController extends Xmltv_Controller_Action
 			} else {
 				$rows = $this->channelsModel->getPublished();
 			}
-			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($rows);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
 			$this->view->assign('channels', $rows);
 			
 			/*
@@ -80,28 +73,14 @@ class ChannelsController extends Xmltv_Controller_Action
 			 * Channels categories
 			 * ######################################################
 			*/
-			if ($this->cache->enabled){
-			    $this->cache->setLocation(ROOT_PATH.'/cache');
-				$f = "/Channels";
-				$hash  = $this->cache->getHash("channelscategories");
-				if (!$cats = $this->cache->load($hash, 'Core', $f)) {
-					$cats = $this->channelsModel->channelsCategories();
-					$this->cache->save($cats, $hash, 'Core', $f);
-				}
-			} else 	{
-				$cats = $this->channelsModel->channelsCategories();
-			}
-			//var_dump($cats);
-			//die(__FILE__.': '.__LINE__);
-			$this->view->assign('channels_cats', $cats);
+			$this->view->assign('channels_cats', $this->getChannelsCategories());
 			
 			/*
 			 * #####################################################################
 			 * Данные для модуля самых популярных программ
 			 * #####################################################################
 			 */
-			$top = $this->getTopPrograms();
-			$this->view->assign('top_programs', $top);
+			$this->view->assign('top_programs', $this->topPrograms());
 		}
 		
 	}
@@ -170,8 +149,7 @@ class ChannelsController extends Xmltv_Controller_Action
 			 * Данные для модуля самых популярных программ
 			 * #####################################################################
 			 */
-			$top = $this->getTopPrograms();
-			$this->view->assign('top_programs', $top);
+			$this->view->assign('top_programs', $this->topPrograms());
 			
 			/*
 			 * ######################################################

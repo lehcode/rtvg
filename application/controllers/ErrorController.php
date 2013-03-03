@@ -1,10 +1,10 @@
 <?php
 /**
- * Frontend error-handling controller
+ * Frontend errors handling
  * 
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: ErrorController.php,v 1.7 2013-03-01 03:49:38 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @uses    Zend_Controller_Action
+ * @version $Id: ErrorController.php,v 1.8 2013-03-03 23:34:13 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -112,10 +112,16 @@ class ErrorController extends Zend_Controller_Action
     public function missingPageAction(){
     	
     }
+    
     public function invalidInputAction(){
     	
     }
 
+    public function noAccessAction(){
+        
+    	$this->view->assign('hide_sidebar', 'right');
+    	
+    }
 
 }
 

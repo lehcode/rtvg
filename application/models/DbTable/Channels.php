@@ -2,8 +2,9 @@
 /**
  * Database table for channels info
  *
- * @uses Zend_Db_Table_Abstract
- * @version $Id: Channels.php,v 1.15 2013-03-01 19:37:58 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @uses    Zend_Db_Table_Abstract
+ * @version $Id: Channels.php,v 1.16 2013-03-03 23:34:13 developer Exp $
  */
 
 class Xmltv_Model_DbTable_Channels extends Xmltv_Db_Table_Abstract
@@ -15,16 +16,43 @@ class Xmltv_Model_DbTable_Channels extends Xmltv_Db_Table_Abstract
 	const FETCH_MODE = Zend_Db::FETCH_OBJ;
 	
 	/**
-	 * Constructor
-	 * 
-	 * @param array $config
+	 * (non-PHPdoc)
+	 * @see Xmltv_Db_Table_Abstract::init()
 	 */
-    public function __construct($config=array()) {
-    	
-    	parent::__construct(array(
-    		'name'=>$this->getName(),
-    		'primary'=>$this->_primary,
-    	));
+    public function init() {
+    	parent::init();
+    }
+    
+    /**
+     * (non-PHPdoc)
+     * @see Xmltv_Db_Table_Abstract::_setup()
+     */
+    protected function _setup(){
+        parent::_setup();
+        $now = Zend_Date::now();
+        $this->_defaultValues = array(
+        		'id'=>null,
+        		'title'=>null,
+        		'alias'=>null,
+        		'desc_intro'=>'',
+        		'desc_body'=>'',
+        		'category'=>null,
+        		'featured'=>1,
+        		'icon'=>'',
+        		'format'=>'dvb',
+        		'published'=>1,
+        		'parse'=>1,
+        		'lang'=>'',
+        		'url'=>'',
+        		'country'=>'',
+        		'adult'=>0,
+        		'keywords'=>'',
+        		'metadesc'=>'',
+        		'video_aspect'=>'16:9',
+        		'video_quality'=>'720x576',
+        		'audio'=>'dolby',
+        		'added'=>$now->toString('YYYY-MM-dd'),
+        );
     }
     
     /**
@@ -39,29 +67,6 @@ class Xmltv_Model_DbTable_Channels extends Xmltv_Db_Table_Abstract
     public function featuredChannels($total=20, $order='id'){
     	
     	return $this->fetchAll("`featured`='1'", $order, $total);
-    	
-    }
-    
-    /**
-     * 
-     * @param  string $alias
-     * @throws Zend_Exception
-     * @return Zend_Db_Table_Rowset
-     */
-    public function fetchCategory($alias=null){
-    	
-    	if (!$alias)
-			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
-		
-    	$select = $this->select()
-    		->from(array('ch'=>$this->getName()), '*')
-    		->join(array('cat'=>$this->channelsCategoriesTable->getName()), "`ch`.`category`=`cat`.`id`", array())
-    		->where("`cat`.`alias` LIKE '$alias'")
-    		->where("`ch`.`published`='1'")
-    		->order("ch.title ASC");
-    	
-    	$result = $this->fetchAll($select);
-    	return $result;
     	
     }
 	

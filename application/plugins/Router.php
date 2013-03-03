@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.11 2013-03-01 19:37:58 developer Exp $
+ * @version $Id: Router.php,v 1.12 2013-03-03 23:34:13 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -220,6 +220,30 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'module'=>'default',
 			'controller'=>'listings',
 			'action'=>'category')));
+		
+		$this->_router->addRoute( 'default_user_login', 
+		new Zend_Controller_Router_Route( 'login', 
+		array(
+			'module'=>'default',
+			'controller'=>'user',
+			'action'=>'login',
+		)));
+		
+		$this->_router->addRoute( 'default_user_profile', 
+		new Zend_Controller_Router_Route( 'моя-страница', 
+		array(
+			'module'=>'default',
+			'controller'=>'user',
+			'action'=>'profile',
+		)));
+		
+		$this->_router->addRoute( 'default_user_logout', 
+		new Zend_Controller_Router_Route( 'logout', 
+		array(
+			'module'=>'default',
+			'controller'=>'user',
+			'action'=>'logout',
+		)));
 		
 		// Полный список программ в определенный день
 		// В отличие от используемого по умолчанию default_listings_day-date

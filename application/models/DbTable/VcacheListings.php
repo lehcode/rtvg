@@ -1,5 +1,13 @@
 <?php
-
+/**
+ * Database table class
+ * serving video cache for listings video
+ *
+ * @author  Antony Repin
+ * @package rutvgid
+ * @version $Id: VcacheListings.php,v 1.4 2013-03-03 23:34:13 developer Exp $
+ *
+ */
 class Xmltv_Model_DbTable_VcacheListings extends Xmltv_Db_Table_Abstract
 {
 
@@ -11,13 +19,8 @@ class Xmltv_Model_DbTable_VcacheListings extends Xmltv_Db_Table_Abstract
 	 *
 	 * @param array $config
 	 */
-	public function __construct ($config = array()) {
-	
-		parent::__construct(array(
-			'name'=>$this->_name,
-			'primary'=>$this->_primary,
-		));
-	
+	public function init () {
+	    parent::init();
 	}
 	
 	/**
@@ -31,9 +34,9 @@ class Xmltv_Model_DbTable_VcacheListings extends Xmltv_Db_Table_Abstract
 		$this->_defaultValues = array(
 				'rtvg_id'=>null,
 				'yt_id'=>null,
-				'title'=>'',
-				'alias'=>'',
-				'desc'=>'',
+				'title'=>null,
+				'alias'=>null,
+				'desc'=>null,
 				'views'=>0,
 				'published'=>1,
 				'duration'=>null,

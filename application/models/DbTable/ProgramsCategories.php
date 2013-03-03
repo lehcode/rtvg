@@ -4,19 +4,34 @@ class Xmltv_Model_DbTable_ProgramsCategories extends Xmltv_Db_Table_Abstract
 {
 
     protected $_name = 'programs_categories';
-    protected static $pfx='';
+    protected $_primary = 'id';
 
     /**
-     * Constructor
-     * @param array $config
+     * Initialize class
      */
-    public function __construct ($config = array()) {
+    public function init() {
+        parent::init();
+    }
     
-    	parent::__construct( array(
-    		'name'=>$this->getName(),
-    		'primary'=>$this->_primary
-    	));
-    
+    /**
+     * (non-PHPdoc)
+     * @see Xmltv_Db_Table_Abstract::_setup()
+     */
+    protected function _setup(){
+        
+    	parent::_setup();
+    	$this->_defaultValues = array(
+    			'id'=>null,
+    			'title'=>null,
+    			'title_single'=>null,
+    			'alias'=>null,
+    			'movie'=>0,
+    			'series'=>0,
+    			'cartoon'=>0,
+    			'sport'=>0,
+    			'news'=>0,
+    			'params'=>'',
+    	);
     }
 
 }

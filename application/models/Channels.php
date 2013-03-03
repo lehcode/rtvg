@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.16 2013-03-01 19:37:58 developer Exp $
+ * @version $Id: Channels.php,v 1.17 2013-03-03 23:34:13 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -179,16 +179,48 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 	}
 	
+	/**
+	 * 
+	 * Channels belonging to particular category
+	 * 
+	 * @param  string $cat_alias
+	 * @throws Zend_Exception
+	 * @return array
+	 */
 	public function categoryChannels($cat_alias=null){
 	
 		if (!$cat_alias)
 			throw new Zend_Exception(self::ERR_WRONG_PARAMS, 500);
 		
-		$result = $this->table->fetchCategory($cat_alias);
-		$view = new Zend_View();
-		foreach ($result as $row) {
-			$row->icon = $view->baseUrl('images/channel_logo/'.$row->icon);
-		}	
+		
+		$select = $this->db->select()
+			->from(array('ch'=>$this->channelsTable->getName()), '*')
+			->join(array('cat'=>$this->channelsCategoriesTable->getName()), "`ch`.`category`=`cat`.`id`", array())
+			->where("`cat`.`alias` LIKE '$cat_alias'")
+			->where("`ch`.`published`='1'")
+			->order("ch.title ASC");
+		
+		if (APPLICATION_ENV=='development'){
+		    parent::debugSelect($select, __METHOD__);
+		    //die(__FILE__.': '.__LINE__);
+		}
+		
+		$result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
+		
+		if (!$result || empty($result)){
+		    return false;
+		}
+		
+		if (APPLICATION_ENV=='development'){
+	    	//Zend_Debug::dump($result);
+	    	//die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    $view = new Zend_View();
+		foreach ($result as $k=>$row) {
+			$result[$k]['icon'] = $view->baseUrl('images/channel_logo/'.$row['icon']);
+		}
+		
 		return $result;
 		
 	}
@@ -200,15 +232,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	        //die(__FILE__.': '.__LINE__);
 	    }
 	    
-	    /*
-		return $this->channelsTable->fetchWeekItems($channel['id'], $start, $end, array(
-			'programs' => new Xmltv_Model_DbTable_Programs(),
-			'channels' => $this->channelsTable,
-		));
-		*/
-	    
 	    $days = array();
-	     
 	    do{
 	    	$select = $this->db->select()
 	    	->from( array( 'prog'=>$this->programsTable->getName()), array(
@@ -231,7 +255,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    			->order("prog.start", "ASC");
 	    		
 	    	if (APPLICATION_ENV=='development'){
-	    		Zend_Debug::dump($select->assemble());
+	    		parent::debugSelect($select, __METHOD__);
 	    		//die(__FILE__.': '.__LINE__);
 	    	}
 	    		

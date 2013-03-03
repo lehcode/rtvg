@@ -2,87 +2,103 @@
 /**
  * Login form
  *
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: Login.php,v 1.2 2013-01-12 09:06:22 developer Exp $
- * @todo login form
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @uses    Zend_Form
+ * @version $Id: Login.php,v 1.3 2013-03-03 23:34:13 developer Exp $
  *
  */
 class Xmltv_Form_Login extends Zend_Form
 {
 	
-	protected $formClass='';
-	protected $formCss='';
+	protected $class;
 	
-	public function __construct($options=array()) {
+	/**
+	 * Constructor
+	 * @param array $options
+	 */
+	public function __construct(array $options=null){
+	    
+	    parent::__construct($options);
+	    
+	    //var_dump($this);
+	    //die(__FILE__.': '.__LINE__);
+	    
+	    $submit = new Zend_Form_Element_Submit('submit');
+	    $submit->setAttrib('id', 'submitbutton');
+	    $submit->setAttrib('class', 'btn btn-primary btn-mini');
+		$submit->setDecorators(array(
+			'ViewHelper',
+			'Description',
+			'Errors',
+			array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'pull-left' ) ),
+		));
+	    $label = isset($options['submit_text']) && !empty($options['submit_text']) ? $options['submit_text'] : 'Войти' ;
+	    $submit->setLabel( $label );
+	    $this->addElement( $submit );
+	    
+	    $this->class = isset($options['class']) && !empty($options['class']) ? $options['class'] : null ;
+	    
+	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see Zend_Form::init()
+	 */
+	public function init($options=array()) {
 		
-		parent::__construct($options);
+	    $login = new Zend_Form_Element_Text('openid');
+		$login->setAttribs( array(
+			'name'=>'openid',
+			'size'=>12,
+			'style'=>'width:128px',
+		))
+		->setLabel('E-mail')
+		->setDecorators(array(
+			'ViewHelper',
+			//'Description',
+			'Errors',
+			array( 'Label', array( 'class'=>'pull-left' ) ),
+			array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'pull-left' ) ),
+		))
+		->setValidators( array( new Zend_Validate_Regex( '/^[\w\d\._-]{2,128}@[\w\d\._-]{2,128}\.[\w]{2,4}$/ui' )) );
 		
-		$formClass='';
-		if (isset($options['form_class']) && !empty($options['form_class'])) {
-			$this->formClass = 	$options['form_class'];
-		}
-			
-		
-		$login = new Zend_Form_Element_Text('addr');
-		$login->setAttribs(array(
-				'name'=>'addr',
-				'size'=>12,
-				'style'=>'width:128px',
-			))
-			->setLabel('E-mail')
-			->setDecorators(array(
-				'ViewHelper',
-				'Description',
-				'Errors',
-				array( 'Label', array( 'class'=>'pull-left' ) ),
-				array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'pull-left' ) ),
-			));
-			//->removeDecorator('HtmlTag');
-		
-		$password = new Zend_Form_Element_Password('psw');
+		$password = new Zend_Form_Element_Password('pw');
 		$password->setAttribs(array( 
-				'name'=>'psw',
-				'size'=>12,
-				'style'=>'width:128px',
-			))
-			->setLabel('Пароль')
-			->setDecorators(array(
-				'ViewHelper',
-				'Description',
-				'Errors',
-				array( 'Label', array( 'class'=>'pull-left' ) ),
-				array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'pull-left' ) ),
-			));
-
-		$button = new Zend_Form_Element_Submit('submit');
-		$button->setLabel('Войти')
-			->setAttribs(array(
-				'id'=>'submitbutton',
-				'class'=>'btn btn-primary btn-mini',
-			))
-			->setDecorators(array(
-				'ViewHelper',
-				'Description',
-				'Errors',
-				array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'pull-left' ) ),
-			));
-			
-		$this->addElements(array($login, $password, $button ))
-			->setAttribs(array(
-				'name'=>"userlogin",
-				'action'=>"/user/login",
-				'id'=>"userlogin",
-				'class'=>"form-horizontal",
-			))
-			->setMethod('post')
-			->setDecorators(array(
-				'FormElements',
-				'Form',
-				array(array('data'=>'HtmlTag'), array('tag'=>'div', 'class'=>$this->formClass)),
-			));
-					
-		return $this;
+			'name'=>'passwd',
+			'size'=>12,
+			'style'=>'width:128px', 
+		))
+		->setLabel('Пароль')
+		->setDecorators(array(
+			'ViewHelper',
+			'Description',
+			'Errors',
+				array( 'Label', array( 
+					'class'=>'pull-left',
+				)),
+				array( 'HtmlTag', array( 
+					'tag'=>'div',
+					'class'=>'pull-left',
+				)),
+		))
+		->setValidators( array( new Zend_Validate_Regex( '/^[\w\d]{6,32}$/ui' )));
+		
+		$this->addElement($login);
+		$this->addElement($password);
+		
+		$this->setAttrib('name', 'userlogin');
+		$this->setAttrib('id', 'userlogin');
+		$this->setMethod('post');
+		
+		$htmlTagProps = array('tag'=>'div');
+		if ($this->class!==null){
+			$htmlTagProps['class'] = $this->class;
+		}
+		$this->setDecorators(array(
+			'FormElements',
+			'Form',
+			array(array('data'=>'HtmlTag'), $htmlTagProps),
+		));
 		
     }
     

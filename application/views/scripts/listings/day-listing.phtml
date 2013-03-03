@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.20 2013-03-01 19:37:58 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.21 2013-03-03 23:34:13 developer Exp $
  *
  */
 
@@ -102,13 +102,8 @@ if ($this->is_today) {
 	rel="nofollow"><?php echo $this->short_link; ?></a>
 </p>
 
-<?php
-/*
- * Programs list
- */ 
-if (!empty($this->programs)) {
-	?>
-	
+
+
 <div id="programslist" class="carousel slide">
 	<div class="carousel-inner" id="programs-carousel">
 	<?php 
@@ -437,22 +432,8 @@ if ($this->torrent_links) {
 <?php 
 } ?>
 
-<?php
 
 
-
-
-} else {
-	
-	
-	
-	
-?>
-<p>К сожалению в выбранный вами период программ не найдено. Попробуйте посетить эту страницу позже.</p>
-<div id="DIV_DA_78319"></div>
-<?php 
-}?>
- 
 <?php 
 if (isset($this->comments)) { 
     

@@ -3,8 +3,8 @@
  * Frontend videos controller
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: VideosController.php,v 1.15 2013-03-02 09:43:55 developer Exp $
+ * @uses    Xmltv_Controller_Action
+ * @version $Id: VideosController.php,v 1.16 2013-03-03 23:34:13 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -25,9 +25,7 @@ class VideosController extends Xmltv_Controller_Action
 	 */
 	public function indexAction () {
 		
-		if ($this->requestParamsValid()){
-			$this->_forward( 'show-video' );
-		}
+		$this->_forward( 'show-video' );
 		
 	}
 	
@@ -74,9 +72,10 @@ class VideosController extends Xmltv_Controller_Action
 				    
 				    /* 
 				     * ################################################################################
-				     * 1. Query cache model for main video ( Xmltv_Model_Vcache::getVideo($rtvgId) )
+				     * Request cache model for main video data ( Xmltv_Model_Vcache::getVideo($rtvgId) )
 				     * ################################################################################
 				     */
+				    // 1. Query database cache for main video
 				    if (($cached = $this->vCacheModel->getVideo($rtvgId))!==false){
 				        
 				        $mainVideo = $cached;
@@ -89,7 +88,7 @@ class VideosController extends Xmltv_Controller_Action
 				        	$f = '/Youtube/ShowVideo/Main';
 				        	$hash = md5( $ytId );
 				        	
-				        	// Try to load main video data from file cache
+				        	// 2. Try to load main video data from file cache
 				        	if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
 				        	    $mainVideo = $cached;
 				        	} else { // If not found in file cache
@@ -115,13 +114,18 @@ class VideosController extends Xmltv_Controller_Action
 				        }
 				    }
 				    
-				    if (APPLICATION_ENV=='development'){
-				    	//var_dump($mainVideo);
-				    	//die(__FILE__.': '.__LINE__);
-				    }
-				    
 				} else {
-				    $mainVideo = $youtube->fetchVideo( $ytId );
+					if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
+		            	$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
+		            } else {
+		            	$this->render('video-not-found');
+		            	return true;
+		            }
+				}
+				
+				if (APPLICATION_ENV=='development'){
+					//var_dump($mainVideo);
+					//die(__FILE__.': '.__LINE__);
 				}
 				
 				$this->view->assign( 'main_video', $mainVideo );
@@ -137,48 +141,70 @@ class VideosController extends Xmltv_Controller_Action
 				
 				if (parent::$videoCache===true){
 					
-				    // (1) Try to load result from DB cache first
+				    // 1. Query database cache for main video
 				    if (($cached = $this->videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
 				    	
 				        $relatedVideos = $cached;
 				         
-				    } else { // Nothing found in DB
-				    	
-				        if ($this->cache->enabled){
+				    } else { 
+				        
+				        // 2. Try to load main video data from file cache
+				    	if ($this->cache->enabled){
 				            
 				            $this->cache->setLocation( ROOT_PATH.'/cache');
 				            $f = '/Youtube/ShowVideo/Main';
 				            $hash = Xmltv_Cache::getHash( 'relatedVideo_'.$ytId);
 				            
-				            // Try to load result from file cache
-					    	if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
-					    	    $relatedVideos = $cached;
-					    	} else {
-					    	    $ytRelated = $youtube->fetchRelated( $ytId );
-					    	    foreach ($ytRelated as $ytEntry){
-					    	    	if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
-					    	    		if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
-					    	    			$this->vCacheModel->saveRelatedVideo($ytEntry, $ytId);
-					    	    			$relatedVideos[] = $parsed;
-					    	    		}
-					    	    	}
-					    	    }
-					    	    $this->cache->save($relatedVideos, $hash, 'Core', $f);
-					    	}
+				            // 3. Try to load main video data from file cache
+				            if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
+				                
+				            	$relatedVideos = $cached;
+				            	
+				            } else { 
+				                
+				                // 4. If was not found in file cache
+				            	if (($ytRelated = $youtube->fetchRelated( $ytId ))!==false) {
+					            	foreach ($ytRelated as $ytEntry){
+						    	    	if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
+						    	    		if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
+						    	    			$this->vCacheModel->saveRelatedVideo($ytEntry, $ytId);
+						    	    			$relatedVideos[] = $parsed;
+						    	    		}
+						    	    	}
+						    	    }
+				            		$this->cache->save( $relatedVideos, $hash, 'Core', $f);
+				            	} else {
+				            		// 5. Video was not found at youtube
+				            		$this->render('video-not-found');
+				            		return true;
+				            	}
+				            	 
+				            }
+				            
 				        } else {
 				            
-				            $result = $youtube->fetchRelated( $ytId );
-				            foreach ($result as $v){
-				            	$relatedVideos[] = $this->videosModel->parseYtEntry( $v);
-				            }
+				            $result = $ytRelated = $youtube->fetchRelated( $ytId );
+				        	foreach ($ytRelated as $ytEntry){
+				    	    	if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
+				    	    		if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
+				    	    			$relatedVideos[] = $parsed;
+				    	    		}
+				    	    	}
+				    	    }
 				            
 				        }
 				    	 
 				    }
+				} else {
+				    
+				    $result = $youtube->fetchRelated( $ytId );
+				    foreach ($result as $v){
+				    	$relatedVideos[] = $this->videosModel->parseYtEntry( $v);
+				    }
+				    
 				}
 				
 			    if (APPLICATION_ENV=='development'){
-					//var_dump($this->cache);
 					//var_dump($relatedVideos);
 					//die(__FILE__.': '.__LINE__);
 				}
@@ -192,44 +218,40 @@ class VideosController extends Xmltv_Controller_Action
 			
 			
 			/*
+			 * #############################################################
 			 * Данные для модуля самых популярных программ
+			 * #############################################################
 			 */
-			$this->view->assign('top_programs', 
-				$this->getTopPrograms( (int)Zend_Registry::get('site_config')
-					->top->channels->get('amount'), $this->_getParam('controller')));
+			$this->view->assign('top_programs', $this->topPrograms());
+			
+			/*
+			 * #####################################################################
+			 * Данные для модуля категорий каналов
+			 * #####################################################################
+			 */
+			$this->view->assign('channels_cats', $this->getChannelsCategories());
+
+			/*
+			 * #####################################################################
+			 * Данные для модуля популярных каналов
+			 * #####################################################################
+			 */
+			$this->view->assign('featured_channels', $this->getFeaturedChannels());
 			
 		}
 		
 		
 		
 	}
+	
 	
 	/**
-	 * Generate data for video page compatible 
-	 * with card-sharing.org Joomla component
 	 * 
-	 * @deprecated
+	 * @param unknown_type $video_feed
+	 * @param unknown_type $yt_id
+	 * @throws Zend_Exception
+	 * @return multitype:Ambigous <multitype:, boolean, Zend_Db_Table_Row_Abstract> |boolean
 	 */
-	public function showVideoCompatAction(){
-		
-		if ($this->requestParamsValid()) {  
-			
-			$videos_model = new Xmltv_Model_Videos();
-			
-			$id = base64_decode($this->_getParam('id'));
-			
-			$video = $videos_model->getVideo( $id, false );
-			$this->view->assign( 'main_video', $video );
-			
-			$related = $videos_model->getRelatedVideos( $video );
-			$this->view->assign( 'related_videos', $related );
-			
-			$this->render('show-video');
-			
-		}
-		
-	}
-	
 	private function _saveRelatedVideos($video_feed, $yt_id){
 		
 	    $c=0;

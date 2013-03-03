@@ -1,10 +1,10 @@
 <?php
 /**
- * Frontend programs listings controller
+ * Programs listings display
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: ListingsController.php,v 1.23 2013-03-02 09:43:55 developer Exp $
+ * @uses    Xmltv_Controller_Action
+ * @version $Id: ListingsController.php,v 1.24 2013-03-03 23:34:13 developer Exp $
  *
  */
 class ListingsController extends Xmltv_Controller_Action
@@ -90,9 +90,11 @@ class ListingsController extends Xmltv_Controller_Action
 				//die(__FILE__.': '.__LINE__);
 			}
 			
-			if (!$this->checkDate($listingDate)){
+			$l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
+			if (parent::checkDate($listingDate, $l)===false){
+			    $this->view->assign( 'history_length', $l);
 				$this->view->assign('hide_sidebar', 'right');
-				$this->_forward('outdated');
+				$this->render('outdated');
 				return true;
 			}
 			
@@ -159,7 +161,7 @@ class ListingsController extends Xmltv_Controller_Action
 			 * Данные для модуля самых популярных программ
 			 * #####################################################################
 			 */
-			$top = $this->getTopPrograms();
+			$top = $this->topPrograms();
 			$this->view->assign('top_programs', $top);
 			
 			
@@ -190,13 +192,13 @@ class ListingsController extends Xmltv_Controller_Action
 				$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'] );
 			}
 			
-			$this->view->assign( 'programs', $list );
-			
-			foreach ($list as $li){
-			    if ($li['now_showing']===true){
-			        $currentProgram = $li;
-			    }
+			if ($list===false){
+			    $this->view->assign('hide_sidebar', 'right');
+			    $this->render('no-listings');
+			    return true;
 			}
+			
+			$this->view->assign( 'programs', $list );
 			
 			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
 				//var_dump(count($list));
@@ -205,11 +207,16 @@ class ListingsController extends Xmltv_Controller_Action
 				//die(__FILE__.': '.__LINE__);
 			}
 			
+			foreach ($list as $li){
+			    if ($li['now_showing']===true){
+			        $currentProgram = $li;
+			    }
+			}
 			
 			
 			/*
 			 * #####################################################################
-			 * (3) Update start and end times of each program in listing
+			 * Update start and end times of each program in listing
 			 * #####################################################################
 			 */
 			if ($this->_getParam('tz', null)!==null) {
@@ -236,7 +243,7 @@ class ListingsController extends Xmltv_Controller_Action
 			 *   2. Запрос в файловый кэш
 			 * 		Если найдено - сохранение в БД
 			 */
-			if (count($list)){
+			if (count($list) && ($list!==false)) {
 				if (parent::$videoCache){
 				    // Запрос в БД
 				    $dbCache = $this->videosModel->dbCacheListingRelatedVideos( $list, $channel['title'], $now );
@@ -257,14 +264,18 @@ class ListingsController extends Xmltv_Controller_Action
 				                $this->cache->save($listingVideos, $hash, 'Core', $f);
 				                
 				                foreach ($listingVideos as $k=>$vid){
-				                    $this->vCacheModel->saveListingVideo( $vid, $k);
+				                    if ($vid!==false){
+				                    	$this->vCacheModel->saveListingVideo( $vid, $k);
+				                    }
 				                }
 				                
 				            }
 				        } else {
 				            $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
 				            foreach ($listingVideos as $k=>$vid){
-				            	$this->vCacheModel->saveListingVideo( $vid, $k);
+				                if ($vid!==false){
+				            		$this->vCacheModel->saveListingVideo( $vid, $k);
+				                }
 				            }
 				        }
 				    }
@@ -272,7 +283,7 @@ class ListingsController extends Xmltv_Controller_Action
 				} else {
 				   $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
 				}
-			}
+			} 
 			
 			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
 				//var_dump($listingVideos);
@@ -288,28 +299,7 @@ class ListingsController extends Xmltv_Controller_Action
 			 * Комменты
 			 * ######################################################
 			 */
-			$e = (bool)Zend_Registry::get('site_config')->channels->comments->get('enabled');
-			if ($e===true){
-				if ($this->cache->enabled){
-				    $this->cache->setLocation(ROOT_PATH.'/cache');
-				    $f = '/Feeds/Yandex';
-				    
-				    if (APPLICATION_ENV=='development'){
-				        $hash = 'channel_comments_'.$channel['id'];
-				    } else {
-						$hash = Xmltv_Cache::getHash( 'channel_comments_'.$channel['alias']);
-				    }
-				    
-					if (($channelComments = $this->cache->load( $hash, 'Core', $f))===false) {
-						$channelComments  = $this->commentsModel->channelComments( $channel['id'] );
-						$this->cache->save($channelComments, $hash, 'Core', $f);
-					}
-					
-				} else {
-					$channelComments = $this->commentsModel->channelComments( $channel['id'] );
-				}
-			}
-			$this->view->assign('comments', $channelComments);
+			$this->view->assign('comments', $this->_yandexComments($channel));
 			
 			
 			/* 
@@ -459,10 +449,6 @@ class ListingsController extends Xmltv_Controller_Action
 			}
 			$this->view->assign('channel', $channel );
 			
-			if (APPLICATION_ENV=='development'){
-				var_dump($channel);
-				die(__FILE__.': '.__LINE__);
-			}
 			
 			$dg = $this->input->getEscaped('date');
 			if ($dg!='сегодня' && $dg!='неделя') {
@@ -478,214 +464,133 @@ class ListingsController extends Xmltv_Controller_Action
 			}
 			
 			/*
+			 * ##############################################################
+			 * Check if requested date is older than allowed in history
+			 * ##############################################################
+			 */
 			$l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
-			$this->view->assign( 'history_length', $l);
-			$maxAgo = new Zend_Date( Zend_Date::now()->subDay($l)->toString('U'), 'U' ) ;
-			if ($listingDate->compare($maxAgo)==-1){ //More than x days
+			if (parent::checkDate($listingDate, $l)===false){
+			    $this->view->assign( 'history_length', $l);
 				$this->view->assign('hide_sidebar', 'right');
-				$this->_forward('outdated');
-				return true;
-			}
-			*/
-			if (!$this->checkDate($listingDate)){
-				$this->view->assign('hide_sidebar', 'right');
-				$this->_forward('outdated');
+				$this->render('outdated');
 				return true;
 			}
 			
 			$this->view->assign('notfound', false);
 			$this->view->assign('nosimilar', false);
-			$currentProgram = $this->programsModel->getSingle( 
-				$this->input->getEscaped('alias'), $channel['id'], $listingDate );
+			$currentProgram = $this->programsModel->getSingle( $this->input->getEscaped('alias'), $channel['id'], $listingDate );
 			
+			if (APPLICATION_ENV=='development'){
+			    //var_dump($currentProgram);
+			    //die(__FILE__.': '.__LINE__);
+			}
 			
-			$tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias']), 
-			'default_listings_day-listing',
-			array(
-				$this->_getParam('module'),
-				$this->_getParam('controller'),
-				$this->_getParam('action'),
-				$channel['id'],
-			));
-			$this->view->assign('short_link', $tinyUrl);
-			
-			
-			/*
-			 * Данные для модуля видео в правой колонке
-			*/
-			$videos = $videosModel->getSidebarVideos( 'канал '.Xmltv_String::strtolower( $channel['title']) );
-			$this->view->assign('sidebar_videos', $videos);
-			//die(__FILE__.': '.__LINE__);
-			
-			if (empty($currentProgram)){
+			if ($currentProgram){
+			    
+			    /*
+			     * ######################################################
+			    * Спискок программ
+			    * ######################################################
+			    */
+			    $list = $this->programsModel->getProgramForDay( $currentProgram['alias'], $channel['alias'], $listingDate );
+			    	
+			    $this->view->assign( 'programs', $list );
+			    $this->view->assign( 'current_program', $currentProgram );
+			    $this->view->assign( 'channel', $channel  );
+			    $this->view->assign( 'date', $listingDate );
+			    $this->view->assign( 'pageclass', 'program-day' );
+			    	
+			    /*
+			     * #####################################################################
+			    * Данные для модуля категорий каналов
+			    * #####################################################################
+			    */
+			    $cats = $this->getChannelsCategories();
+			    $this->view->assign('channels_cats', $cats);
+			    
+			    /*
+			     * ######################################################
+			    * Видео для списка программ
+			    * ######################################################
+			    */
+			    $videos = $this->videosModel->getRelatedVideos( $list, $channel['title'], $listingDate);
+			    $this->view->assign('listing_videos', $videos);
+			    
+			    /*
+			     * ######################################################
+			    * Комменты
+			    * ######################################################
+			    */
+			    //$this->view->assign('comments', $this->_yandexComments($channel));
+			    
+			    /*
+			     * ######################################################
+			    * Короткая ссылка на страницу
+			    * ######################################################
+			    */
+			    $tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias']), 'default_listings_day-listing', array(
+			    		$this->_getParam('module'),
+			    		$this->_getParam('controller'),
+			    		$this->_getParam('action'),
+			    		$channel['id'],
+			    ));
+			    $this->view->assign('short_link', $tinyUrl);
+			    
+			    
+			    /*
+			     * ######################################################
+			    * Add hit for channel and program
+			    * ######################################################
+			    */
+			    $this->channelsModel->addHit( $channel['id'] );
+			    if ($currentProgram) {
+			    	$this->programsModel->addHit( $currentProgram );
+			    }
+			    
+			    
 				
-				$this->view->assign('notfound', true);
-				if ($this->cache->enabled){
-					$f = '/Listings/Similar';
-					$hash = $this->cache->getHash('similarPrograms_'.$programAlias);
-					if (($similarPrograms = $this->cache->load( $hash, 'Core', $f))===false) {
-						$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek(
-							$this->input->getEscaped('alias'), $listingDate, $this->weekDays->getEnd($listingDate));
-						$this->cache->save($similarPrograms, $hash, 'Core', $f);
-					}
-				} else {
-					$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek(
-							$this->input->getEscaped('alias'), $listingDate, $this->weekDays->getEnd($listingDate));
-				}
-				
-				
-				
-				if(!empty($currentProgram)){
-					$this->render('similar-week');
-					return true;
-				} else {
-					$this->view->assign('hide_sidebar', 'right');
-					$this->render('program-not-found');
-					return true;
-				}
-				
+			    
 			} else {
 				
-				//var_dump($currentProgram);
-				//var_dump($channel['alias']);
-				//var_dump($listingDate);
-				//die(__FILE__.': '.__LINE__);
+			    if ($this->cache->enabled){
+			    	 
+			    	$this->cache->setLifetime(3600*6);
+			    	$this->cache->setLocation(ROOT_PATH.'/cache');
+			    	$f = '/Listings/Similar';
+			    
+			    	$hash = $this->cache->getHash('similarPrograms_'.$programAlias);
+			    	if (($similarPrograms = $this->cache->load( $hash, 'Core', $f))===false) {
+			    		$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek (
+			    				$currentProgram['alias'],
+			    				$listingDate,
+			    				$this->weekDays->getEnd($listingDate),
+			    				$currentProgram['channel_id']);
+			    		$this->cache->save($similarPrograms, $hash, 'Core', $f);
+			    	}
+			    	 
+			    } else {
+			    	$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek (
+			    			$currentProgram['alias'],
+			    			$listingDate,
+			    			$this->weekDays->getEnd($listingDate),
+			    			$currentProgram['channel_id']);
+			    }
+			     
+			    if ($similarPrograms===false){ 
+				    $this->view->assign('hide_sidebar', 'right');
+				    $this->render('program-not-found');
+				    return true;
+			    }
 				
-				$list = $this->programsModel->getProgramForDay( 
-					$currentProgram['alias'], $channel['alias'], $listingDate );
-					
-				$this->view->assign( 'programs', $list );
-				$this->view->assign( 'current_program', $currentProgram );
-				$this->view->assign( 'channel', $channel  );
-				$this->view->assign( 'date', $listingDate );
-				$this->view->assign( 'pageclass', 'program-day' );
-					
-				/*
-				 * ######################################################
-				* Channels categories
-				* ######################################################
-				*/
-				if ($this->cache->enabled){
-					$f = "/Channels";
-					$hash  = $this->cache->getHash("channelscategories");
-					if (!$cats = $this->cache->load($hash, 'Core', $f)) {
-						$cats = $this->channelsModel->channelsCategories();
-						$this->cache->save($cats, $hash, 'Core', $f);
-					}
-				} else {
-					$cats = $this->channelsModel->channelsCategories();
-				}
-				//var_dump($cats);
-				//die(__FILE__.': '.__LINE__);
-				$this->view->assign('channels_cats', $cats);
-					
-				
-				/*
-				 * Видео для списка программ
-				*/
-				$videos = $videosModel->getRelatedVideos( $list, $channel['title'], $listingDate->toString('dd-MM-yyyy'));
-				$this->view->assign('listing_videos', $videos);
-				//die(__FILE__.': '.__LINE__);
-				
-				/*
-				 * ######################################################
-				* Comments for current channel
-				* ######################################################
-				*/
-				if ((bool)Zend_Registry::get('site_config')->channels->comments->get('enabled', true)){
-					if ($this->cache->enabled){
-						$f = '/Feeds/Yandex';
-						$hash = Xmltv_Cache::getHash('channel_comments_'.$channel['alias']);
-						if (!$channelComments = $this->cache->load($hash, 'Core', $f)) {
-							$channelComments  = $this->commentsModell->channelComments( $channel['title'] );
-							$this->cache->save($channelComments, $hash, 'Core', $f);
-						}
-					} else {
-						$channelComments = $this->commentsModell->channelComments( $channel['title'] );
-					}
-				}
-				//var_dump($channelComments);
-				//die(__FILE__.': '.__LINE__);
-				$this->view->assign('comments', $channelComments);
-				
-				
-					
-				/*
-				 * ######################################################
-				 * Torrents
-				 * ######################################################
-				*/
-				if ((bool)Zend_Registry::get('site_config')->channels->torrents->get('enabled')===true) {
-					
-					$url  = 'http://torrent-poisk.com/search.php?q='.urlencode($channel['title']).'&r=0&qsrv='.urlencode($channel['title']);
-					$curl = new Xmltv_Parser_Curl();
-					$curl->setOption(CURLOPT_CONNECTTIMEOUT, 8);
-					$curl->setOption(CURLOPT_TIMEOUT, 8);
-					$curl->setUrl($url);
-					//$curl->setUserAgent(@$_SERVER['HTTP_USER_AGENT']);
-					$f = '/Torrents/Programs';
-					$hash = Xmltv_Cache::getHash($url);
-					if ($this->cache->enabled){
-						if (($html = $this->cache->load($hash, 'Core', $f))===false) {
-							$html = $curl->fetch(Xmltv_Parser_Curl::PAGE_HTML);
-							$this->cache->save($html, $hash, 'Core', $f);
-						}
-					} else {
-						$html = $curl->fetch(Xmltv_Parser_Curl::PAGE_HTML);
-					}
-					
-					if ($html){
-						$dom = new DOMDocument('1.0', 'UTF-8');
-						$dom->preserveWhiteSpace = false;
-						$dom->recover = true;
-						$dom->strictErrorChecking = false;
-						@$dom->loadHTML($html);
-						$xpath = new DOMXPath($dom);
-						$links = $xpath->query("descendant-or-self::a[contains(concat(' ', normalize-space(@class), ' '), ' visit ')]");
-						$torrentLinks = array();
-						if ($this->cache->enabled){
-							$hash = Xmltv_Cache::getHash('tinyurl_'.$url);
-							$f	= '/Tinyurl/Torrents';
-							if (($torrentLinks = $this->cache->load($hash, 'Core', $f))===false) {
-								if (!($torrentLinks = parent::torrentsShortLinks($links))) {
-									continue;
-								}
-								$this->cache->save($torrentLinks, $hash, 'Core', $f);
-							}
-						} else {
-							$torrentLinks = parent::torrentsShortLinks($links);
-						}
-						$this->view->assign('torrent_links', $torrentLinks);
-						
-						if (APPLICATION_ENV=='development'){
-							//var_dump($torrentLinks);
-							//die(__FILE__.': '.__LINE__);
-						}
-					}
-				}
-				
-				$tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias']), 
-				'default_listings_day-listing',
-				array(
-					$this->_getParam('module'),
-					$this->_getParam('controller'),
-					$this->_getParam('action'),
-					$channel['id'],
-				));
-				$this->view->assign('short_link', $tinyUrl);
-					
-				
-					
-				/*
-				 * Add hit for channel and model
-				*/
-				$this->channelsModel->addHit( $channel['id'] );
-				//if ($currentProgram)
-				//	$this->programsModel->addHit( $currentProgram );
-					
-				//die(__FILE__.': '.__LINE__);
 				
 			}
+			
+			/*
+			 * ######################################################
+			 * Данные для модуля видео в правой колонке
+			 * ######################################################
+			 */
+			$this->view->assign('sidebar_videos', $this->_sidebarVideos($channel));
 			
 		}
 		
@@ -735,7 +640,7 @@ class ListingsController extends Xmltv_Controller_Action
 			 * Данные для модуля самых популярных программ
 			 * #####################################################################
 			*/
-			$top = $this->getTopPrograms();
+			$top = $this->topPrograms();
 			$this->view->assign('top_programs', $top);
 			
 			/*
@@ -845,7 +750,7 @@ class ListingsController extends Xmltv_Controller_Action
 		     * Данные для модуля самых популярных программ
 		     * #####################################################################
 		     */
-		    $top = $this->getTopPrograms();
+		    $top = $this->topPrograms();
 		    $this->view->assign('top_programs', $top);
 		    
 		    switch ($this->input->getEscaped('timespan')){
@@ -924,6 +829,72 @@ class ListingsController extends Xmltv_Controller_Action
 	 */
 	public function outdatedAction(){
 		
+	}
+	
+	/**
+	 * Videos for right sidebar
+	 * 
+	 * @param  array $channel
+	 * @return array
+	 */
+	private function _sidebarVideos($channel){
+		
+	    if (parent::$videoCache){
+	    	 
+	    	$dbCache = $this->videosModel->dbCacheSidebarVideos( $channel );
+	    	if (count($dbCache) && is_array($dbCache)){
+	    		$videos = $dbCache;
+	    	} else {
+	    		$videos = $this->videosModel->ytSidebarVideos( $channel, true );
+	    	}
+	    	 
+	    } else {
+	    	$videos = $this->videosModel->ytSidebarVideos( $channel );
+	    }
+	    
+	    return $videos;
+	    
+	}
+	
+	/**
+	 * Fetch blog entries from blogs.yandex.ru
+	 * 
+	 * @param  array $channel
+	 * @throws Zend_Exception
+	 * @return array
+	 */
+	private function _yandexComments($channel=array()){
+		
+	    if (empty($channel) && !is_array($channel)){
+	        throw new Zend_Exception(parent::ERR_WRONG_PARAM.__METHOD__, 500);
+	    }
+	    
+	    $e = (bool)Zend_Registry::get('site_config')->channels->comments->get('enabled');
+	    if ($e===true){
+	        
+	    	if ($this->cache->enabled){
+	    	    
+	    		$this->cache->setLocation(ROOT_PATH.'/cache');
+	    		$f = '/Feeds/Yandex';
+	    
+	    		if (APPLICATION_ENV=='development'){
+	    			$hash = 'channel_comments_'.$channel['id'];
+	    		} else {
+	    			$hash = Xmltv_Cache::getHash( 'channel_comments_'.$channel['alias']);
+	    		}
+	    
+	    		if (($channelComments = $this->cache->load( $hash, 'Core', $f))===false) {
+	    			$channelComments  = $this->commentsModel->channelComments( $channel['id'] );
+	    			$this->cache->save($channelComments, $hash, 'Core', $f);
+	    		}
+	    			
+	    	} else {
+	    		$channelComments = $this->commentsModel->channelComments( $channel['id'] );
+	    	}
+	    }
+	    
+	    return $channelComments;
+	    
 	}
 	
 	

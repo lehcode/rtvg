@@ -5,7 +5,8 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses Xmltv_Db_Table_Abstract
- * @version $Id: ProgramsDescriptions.php,v 1.3 2013-03-02 15:29:45 developer Exp $
+ * @version $Id: ProgramsDescriptions.php,v 1.4 2013-03-03 23:34:13 developer Exp $
+ * @since beta3
  *
  */
 class Xmltv_Model_DbTable_ProgramsDescriptions extends Xmltv_Db_Table_Abstract

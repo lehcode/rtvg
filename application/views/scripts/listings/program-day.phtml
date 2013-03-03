@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-day.phtml,v 1.8 2013-01-02 05:07:50 developer Exp $
+ * @version $Id: program-day.phtml,v 1.9 2013-03-03 23:34:13 developer Exp $
  *
  */
 
@@ -15,8 +15,8 @@
 /*
  * Channel properties
  */
-$channelTitle = $this->escape( $this->channel->title );
-$channelAlias = $this->escape( $this->channel->alias );
+$channelTitle = $this->escape( $this->channel['title'] );
+$channelAlias = $this->escape( $this->channel['alias'] );
 
 /*
  * Generate keywords

@@ -1,11 +1,12 @@
 <?php
 
+defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
+
 /**
- * Bootstrap
+ * Cache
  * 
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: Cache.php,v 1.8 2013-03-01 19:37:58 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: Cache.php,v 1.9 2013-03-03 23:30:36 developer Exp $
  *
  */
 class Xmltv_Cache {
@@ -15,16 +16,19 @@ class Xmltv_Cache {
      * @var boolean
      */
 	public $enabled;
+	
 	/**
 	 * Caching object
 	 * @var Zend_Cache_Frontend_File
 	 */
 	private $_cache;
+	
 	/**
 	 * Sub-folder for data, relative to /cache
 	 * @var string
 	 */
 	private $_location='cache';
+	
 	/**
 	 * Cache lifetime
 	 * @var int

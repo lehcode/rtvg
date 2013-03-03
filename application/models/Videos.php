@@ -4,21 +4,22 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.14 2013-03-01 19:37:58 developer Exp $
+ * @version $Id: Videos.php,v 1.15 2013-03-03 23:34:13 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 {
 	
     /**
-     * 
-     * @var unknown_type
+     * Video Cache model
+     * @var Xmltv_Model_Vcache
      */
     private $_vcacheModel;
     
 	public function __construct($config=array()){
 		
 		parent::__construct();
+		
 		$this->_vcacheModel = new Xmltv_Model_Vcache();
 		
 	}
@@ -36,8 +37,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		}
 		
 		if (is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
-		    $table  = new Xmltv_Model_DbTable_VcacheRelated();
-			$v = array();
+		    
+		    $v = array();
 			$v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
 			$v['yt_id']	   = $entry->getVideoId();
 			$v['title']	   = $entry->getVideoTitle();
@@ -80,6 +81,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			throw new Exception(parent::ERR_WRONG_FORMAT.__METHOD__, 500);
 		}
 		
+		$table  = new Xmltv_Model_DbTable_VcacheRelated();
 		return $table->createRow($v)->toArray();
 		
 	}
@@ -298,7 +300,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @param  bool	  $video_cache
 	 * @return array
 	 */
-	public function getRelatedVideos($list, $channel=array(), Zend_Date $date, $video_cache=false){
+	public function getRelatedVideos($list, $channel=array(), Zend_Date $date){
 		
 		if (APPLICATION_ENV=='development'){
 			//var_dump(func_get_args());
@@ -322,14 +324,16 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			foreach ($list as $li){
 				
 				if (APPLICATION_ENV=='development'){
-					//var_dump($li);
+					var_dump($li);
 					//var_dump($li['fetch_video']);
-					//die(__FILE__.': '.__LINE__);
+					die(__FILE__.': '.__LINE__);
 				}
 				
 				if ($li['fetch_video']===true){
+				    
+					$e = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 					
-					if ($video_cache) {
+					if ($e===true) {
 						$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
 						$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
 						// Setup and create folder if needed
@@ -421,6 +425,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	
 	public function dbCacheListingRelatedVideos($list=array(), $channel_title, $date){
 		
+	    if (APPLICATION_ENV=='development'){
+	        //var_dump(func_get_args());
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
 		if (empty($list) || !is_array($list)) {
 			throw new Zend_Exception( parent::ERR_WRONG_PARAMS.__METHOD__, 500);
 		}
@@ -571,33 +580,16 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		    	//die(__FILE__.': '.__LINE__);
 		    }
 		    
-		    
-			foreach ($list as $li){
+		    foreach ($list as $li){
 				$progTitle = Xmltv_String::strtolower($li['title']);
 				if (($ytParsed = $this->_ytSearch( $progTitle, $ytConfig))!==false){
-				    if (!empty($ytParsed)){
+				    if (!empty($ytParsed) && $ytParsed!==false){
 						$result[$li['hash']] = $ytParsed[0];
 				    }
 				}
 				
 			}
 
-			/*
-		    if (APPLICATION_ENV=='development'){
-			    var_dump($result);
-			    die(__FILE__.': '.__LINE__);
-			}
-			
-			$newRows = array();
-			foreach ($result as $k=>$v){
-			    if ($v && is_array($v) && $v!==false) {
-			        $newRows[$k] = $v;
-			    }
-			}
-			
-			return $newRows;
-			*/
-			
 			return $result;
 			
 		} else {

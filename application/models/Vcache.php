@@ -81,6 +81,14 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         
     }
     
+    /**
+     * Save program listing video to databasse cache
+     * 
+     * @param  unknown_type $video
+     * @param  unknown_type $time_hash
+     * @throws Zend_Exception
+     * @return unknown
+     */
     public function saveListingVideo($video=null, $time_hash=null){
     	
         if (!is_array($video) || !$time_hash) {

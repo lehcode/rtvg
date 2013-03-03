@@ -3,8 +3,8 @@
  * Frontend Sitemap controller
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: SitemapController.php,v 1.5 2013-01-19 10:11:13 developer Exp $
+ * @uses    Xmltv_Controller_Action
+ * @version $Id: SitemapController.php,v 1.6 2013-03-03 23:34:13 developer Exp $
  *
  */
 class SitemapController extends Xmltv_Controller_Action

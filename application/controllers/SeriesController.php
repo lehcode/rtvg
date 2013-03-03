@@ -3,11 +3,11 @@
  * Frontend Series controller
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: SeriesController.php,v 1.4 2012-12-25 01:57:52 developer Exp $
+ * @uses    Xmltv_Controller_Action
+ * @version $Id: SeriesController.php,v 1.5 2013-03-03 23:34:13 developer Exp $
  *
  */
-class SeriesController extends Zend_Controller_Action
+class SeriesController extends Xmltv_Controller_Action
 {
 	public function init () {
 		//$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );

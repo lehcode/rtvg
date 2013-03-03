@@ -4,8 +4,7 @@
  * Week date calculations functions
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: WeekDays.php,v 1.7 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: WeekDays.php,v 1.8 2013-03-03 23:34:13 developer Exp $
  *
  */
 class Xmltv_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {

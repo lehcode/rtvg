@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.19 2013-03-01 19:37:58 developer Exp $
+ * @version $Id: Programs.php,v 1.20 2013-03-03 23:34:13 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -56,30 +56,83 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    $progStart = new Zend_Date( $date->toString() );
 	    $where = array(
 			"`prog`.`alias` LIKE '%$alias%'",
-			"`prog`.`start` >= '".$date->toString('YYYY-MM-dd 00:00:00')."'",
-			"`prog`.`start` < '".$date->toString('YYYY-MM-dd 23:59:59')."'",
+			"`prog`.`start` >= '".$date->toString('YYYY-MM-dd')." 00:00'",
+			"`prog`.`start` < '".$date->toString('YYYY-MM-dd')." 23:59'",
 		);
 		
 		if ($channel_id){
-			$where[] = "`prog`.`ch_id`='".$channel_id."'";
+			$where[] = "`prog`.`channel`='".$channel_id."'";
 		}
 		
 		$where = count($where) ? implode(' AND ', $where) : '' ;
 		$select = $this->db->select()
-			->from(array('prog'=>$this->table->getName()), '*')
-			->where($where)
-			->order('start DESC');
+			->from(array('prog'=>$this->programsTable->getName()), array(
+				'id',
+				'title',
+				'sub_title',
+				'alias',
+				//'channel',
+				'start',
+				'end',
+				//'category',
+				'rating',
+				'new',
+				'live',
+				'image',
+				//'last_chance',
+				//'previously_shown',
+				'country',
+				'actors',
+				'directors',
+				//'writers',
+				//'adapters',
+				//'producers',
+				//'composers',
+				//'editors',
+				//'presenters',
+				//'commentators',
+				//'guests',
+				'episode_num',
+				'premiere',
+				'date',
+				'length',
+				'desc',
+				'hash',
+			))
+			->join( array('ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
+				'channel_id'=>'id',
+				'channel_title'=>'title',
+				'channel_alias'=>'alias',
+				'channel_desc'=>"CONCAT_WS( ' ', `desc_intro`, `desc_body` )",
+			))
+			->joinLeft( array('cat'=>$this->categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array(
+				'category_id'=>'id',
+				'category_title'=>'title',
+				'category_title_single'=>'title_single',
+				'category_alias'=>'alias',
+			))
+			->where( $where)
+			->order( 'start DESC');
 		
 		if (APPLICATION_ENV=='development') {
 			parent::debugSelect($select, __METHOD__);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
-		$result = $result = $this->db->fetchRow($select);
-		if (!$result)
-		return array();
-		else
-		return $result;
+		$result = $this->db->fetchRow($select);
+		
+		if ($result) {
+		    $result['start'] = new Zend_Date($result['start'], 'YYYY-MM-dd HH:mm:ss');
+		    $result['end']   = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
+		    $result['new']   = (bool)$result['new'];
+		    $result['live']  = (bool)$result['live'];
+		    $result['premiere'] = (bool)$result['premiere'];
+		    $result['date']   = $result['date']!==null ? new Zend_Date( $result['date'], 'YYYY-MM-dd HH:mm:ss') : null ;
+		    $result['length'] = $result['length']!==null ? new Zend_Date( $result['length'], 'HH:mm:ss') : null ;
+			return $result;
+		} 
+		
+		return false;
 		
 	}
 	
@@ -261,16 +314,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 			}
 			
 		} else {
-			return;
-		}
-		
-		if (APPLICATION_ENV=='development'){
-		    /* 
-		    foreach ($rows as $item){
-		        var_dump($item['now_showing']);
-		    }
-			die(__FILE__.': '.__LINE__); 
-			*/
+			return false;
 		}
 		
 		return $rows;
@@ -352,16 +396,20 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	}
 	
 	/**
-	 * 
 	 * Подобные программы на этой неделе
 	 * 
-	 * @param string    $program_alias
-	 * @param Zend_Date $date
+	 * @param  string $program_alias
+	 * @param  Zend_Date $start
+	 * @param  Zend_Date $end
+	 * @param  int $channel_id
+	 * @throws Zend_Exception
+	 * @return array
 	 */
-	public function getSimilarProgramsThisWeek($program_alias=null, Zend_Date $start, Zend_Date $end, $orig_channel=null){
+	public function getSimilarProgramsThisWeek($program_alias=null, Zend_Date $start, Zend_Date $end, $channel_id=null){
 		
-		if (!$program_alias || !$orig_channel)
+	    if (!$program_alias || !is_numeric($channel_id)) {
 			throw new Zend_Exception( parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+		}
 		
 		$select = $this->db->select()
 		->from(array( 'prog'=>$this->table->getName()), array(
@@ -400,7 +448,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 			->where( "`prog`.`alias` LIKE '%$program_alias%'" )
 			->where( "`channel`.`published` = '1'")
 			->where( "`channel`.`lang` = 'ru'")
-			->where( "`prog`.`channel` != '$orig_channel'")
+			->where( "`prog`.`channel` != '$channel_id'")
 			->order( array( "channel_title ASC", "prog.start DESC"));	
 
 		if (APPLICATION_ENV=='development'){
@@ -420,11 +468,8 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 				$result[$k]['start'] = new Zend_Date( $item['start'], 'yyyy-MM-dd HH:mm:ss');
 				$result[$k]['end']   = new Zend_Date( $item['end'], 'yyyy-MM-dd HH:mm:ss');
 			}
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
+		} else {
+		    return false;
 		}
 		
 		return $result;
@@ -542,11 +587,17 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		
 	    $table = new Xmltv_Model_DbTable_ProgramsRatings();
 		if (is_array($program)) {
-			$table->addHit($program['alias'], $program['channel']);
+		    
+		    // Both ['channel_id'] and ['channel'] can be used here
+		    $channel = isset($program['channel_id']) ? (int)$program['channel_id'] : (int)$program['channel'] ;
+			$table->addHit($program['alias'], $channel);
 			return true;
+			
 		} elseif (is_object($program)){
+		    
 		    $table->addHit($program->alias, $program->channel);
 		    return true;
+		    
 		}
 		
 		return false;

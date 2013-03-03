@@ -1,4 +1,11 @@
 <?php 
+/**
+ * Abstract class for Rutvgid database tables
+ *
+ * @uses Zend_Db_Table_Abstract
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: Abstract.php,v 1.7 2013-03-03 23:30:36 developer Exp $
+ */
 class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     
     /**
@@ -6,38 +13,37 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      * @var string
      */
     protected $_name = '';
+    
     /**
      * Table prefix
      * @var string
      */
     protected $_pfx = '';
+
+    /**
+     * Table prefix
+     * @var string
+     */
+    protected $_primary = 'id';
     
     const FETCH_MODE = Zend_Db::FETCH_ASSOC;
     const ERR_PARAMETER_MISSING = "Пропущен параметр для ";
     const ERR_WRONG_DATE_FORMAT = "Неверный формат даты! ";
+    const ERR_WRONG_DB_PREFIX = "Неверный префикс базы данных!";
     
     /**
      * Constructor
      * 
      * @param array $config
      */
-    public function __construct($config=array()){
+    public function init(){
         
-        if (isset($config['name']) && !empty($config['name'])){
-            $conf['name'] = $config['name'];
+        $this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
+        
+        if (!$this->_pfx){
+            throw new Zend_Exception(self::ERR_WRONG_DB_PREFIX);
         }
         
-        if (isset($config['primary']) && !empty($config['primary'])){
-            $conf['primary'] = $config['primary'];
-        }
-        
-        parent::__construct($conf);
-        
-        if (isset($config['tbl_prefix'])) {
-        	$this->_pfx = (string)$config['tbl_prefix'];
-        } else {
-        	$this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
-        }
         $this->setName($this->_pfx.$this->_name);
         
     }
@@ -52,7 +58,7 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     /**
      * @param string $string
      */
-    public function setName($string=null) {
+    protected function setName($string=null) {
     	$this->_name = $string;
     }
     
@@ -69,6 +75,14 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
             throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
         }
         
+    }
+    
+    /**
+     * (non-PHPdoc)
+     * @see Zend_Db_Table_Abstract::_setup()
+     */
+    protected function _setup(){
+    	parent::_setup();
     }
     
 }

@@ -1,13 +1,13 @@
 <?php
-
 /**
  * Frontend index controller
  * 
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: FrontpageController.php,v 1.5 2013-02-25 11:40:40 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @uses    Xmltv_Controller_Action
+ * @version $Id: FrontpageController.php,v 1.6 2013-03-03 23:34:13 developer Exp $
  *
  */
+
 class FrontpageController extends Xmltv_Controller_Action
 {
     
@@ -40,16 +40,12 @@ class FrontpageController extends Xmltv_Controller_Action
 	    $this->view->assign('pageclass', 'frontpage');
 	    
 	    if ($this->cache->enabled){
-	        $this->cache->setLifetime(300);
-	        $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
+	        
+	        $this->cache->setLifetime(600);
 	        $this->cache->setLocation(ROOT_PATH.'/cache');
-	        
-	        if (APPLICATION_ENV=='development'){
-		        var_dump($this->cache);
-		        //die(__FILE__.': '.__LINE__);
-	        }
-	        
 	        $f = '/Listings/Frontpage';
+	        
+	        $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
 		    if (($this->list = $this->cache->load( $hash, 'Core', $f))===false) {
 		        $this->_getList();
 		        $this->cache->save( $this->list, $hash, 'Core', $f);
@@ -58,26 +54,17 @@ class FrontpageController extends Xmltv_Controller_Action
 		    $this->_getList();
 	    }
 	    
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($this->list);
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	    
 	    $this->view->assign( 'list', $this->list );
 	    
 	    // Channels data for dropdown
 		if ($this->cache->enabled){
-		    $this->cache->setLifetime(300);
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
 		    
-			if (APPLICATION_ENV=='development'){
-		        var_dump($this->cache);
-		        //die(__FILE__.': '.__LINE__);
-	        }
-	        
-	        $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
-	        $f = '/Channels';
-		    if (($channels = $this->cache->load( $hash, 'Core', $f))===false) {
+		    $this->cache->setLifetime(600);
+		    $this->cache->setLocation(ROOT_PATH.'/cache');
+		    $f = '/Channels';
+			
+			$hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
+	        if (($channels = $this->cache->load( $hash, 'Core', $f))===false) {
 		        $channels = $this->channelsModel->allChannels("title ASC");
 		        $this->cache->save( $channels, $hash, 'Core', $f);
 		    }
@@ -92,39 +79,57 @@ class FrontpageController extends Xmltv_Controller_Action
 		$this->list = $this->programsModel->frontpageListing( $this->_helper->top( 'topchannels', array('amt'=>self::TOP_CHANNELS_AMT)));
 	}
 	
+	/**
+	 * Display single channel listings
+	 */
 	public function singleChannelAction(){
 		
+	    if (!$this->_request->isXmlHttpRequest()){
+	        throw new Zend_Exception(parent::ERR_INVALID_INPUT.__METHOD__, 500);
+	    }
+	    
 	    if (parent::requestParamsValid()){
 	        
 	        $channelId = $this->input->getEscaped('id');
 	        
 	        if ($this->cache->enabled){
+	            
 	            $this->cache->setLifetime(86400);
-	            $hash = md5('channel-info-'.$channelId);
+	            $this->cache->setLocation(ROOT_PATH.'/cache');
 	            $f = '/Channels';
+	            $hash = md5('channel-info-'.$channelId);
 	            if (($channel = $this->cache->load( $hash, 'Core', $f))===false) {
 	            	$channel = $this->channelsModel->getById($this->input->getEscaped('id'));
 	            	$this->cache->save( $channel, $hash, 'Core', $f);
 	            }
+	            
 	        } else {
 	            $channel = $this->channelsModel->getById($this->input->getEscaped('id'));
 	        }
+	        
 	        $ch[] = $channel;
 	        $this->view->assign( 'channel', $ch[0] );
-	        
 	        $this->channelsModel->addHit($ch[0]['id']);
 	        
 	        if ($this->cache->enabled){
+	            
+	            $this->cache->setLocation(ROOT_PATH.'/cache');
 	            $this->cache->setLifetime(300);
-	            $hash = md5('frontpage-channel-'.$channelId);
 	            $f = '/Listings/Frontpage';
+	            $hash = md5('frontpage-channel-'.$channelId);
 	            if (($list = $this->cache->load( $hash, 'Core', $f))===false) {
 	            	$list = $this->programsModel->frontpageListing($ch);
 	            	$this->cache->save( $list, $hash, 'Core', $f);
 	            }
+	        } else {
+	            $list = $this->programsModel->frontpageListing($ch);
 	        }
-	        $keys = array_keys($list);
-	        $this->view->assign( 'list', $list[$keys[0]] );
+	        
+	        if ($list){
+	        	$keys = array_keys($list);
+	        	$this->view->assign( 'list', $list[$keys[0]] );
+	        }
+	        
 			
 	    }
 	    

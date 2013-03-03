@@ -1,41 +1,23 @@
 <?php
-
-class Xmltv_Model_DbTable_ChannelsCategories extends Zend_Db_Table_Abstract
+/**
+ * Database table for channels categories info
+ *
+ * @uses Xmltv_Db_Table_Abstract
+ * @version $Id: ChannelsCategories.php,v 1.6 2013-03-03 23:34:13 developer Exp $
+ */
+class Xmltv_Model_DbTable_ChannelsCategories extends Xmltv_Db_Table_Abstract
 {
 	
-	protected $_name = 'channels_categories';
+	protected $_name    = 'channels_categories';
+	protected $_primary = 'id';
 	
-	const FETCH_MODE = Zend_Db::FETCH_OBJ;
-	
+		
 	/**
-	 * Constructor
-	 * @param unknown_type $config
+	 * (non-PHPdoc)
+	 * @see Zend_Db_Table_Abstract::init()
 	 */
-	public function __construct ($config = array()) {
-	
-		parent::__construct(array('name'=>$this->_name));
-	
-		if (isset($config['tbl_prefix'])) {
-			$pfx = $config['tbl_prefix'];
-		} else {
-			$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
-		}
-		$this->setName($pfx.$this->_name);
-	
-	}
-	
-	/**
-	 * @return string
-	 */
-	public function getName() {
-		return $this->_name;
-	}
-	
-	/**
-	 * @param string $string
-	 */
-	public function setName($string=null) {
-		$this->_name = $string;
+	public function init() {
+		parent::init();
 	}
 	
 	public function fetchId($alias = null){

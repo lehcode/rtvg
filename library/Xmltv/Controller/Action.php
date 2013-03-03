@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Action.php,v 1.8 2013-03-02 09:43:55 developer Exp $
+ * @version $Id: Action.php,v 1.9 2013-03-03 23:30:36 developer Exp $
  *
  */
 class Xmltv_Controller_Action extends Zend_Controller_Action
@@ -75,14 +75,28 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	protected $contextSwitch;
 	
 	/**
-	 * (non-PHPdoc)
-	 * @see Zend_Controller_Action::__call()
+	 * 
+	 * @var Xmltv_Model_Users
 	 */
+	protected $usersModel;
 	
-	const ERR_INVALID_INPUT = 'Неверные данные для ';
+	/**
+     * FlashMessenger
+     *
+     * @var Zend_Controller_Action_Helper_FlashMessenger
+     */
+    protected $_flashMessenger = null;
+	
+    /**
+     * Current data
+     * @var Xmltv_User
+     */
+    protected static $user;
+    
+	const ERR_INVALID_INPUT        = 'Неверные данные для ';
 	const ERR_MISSING_CHANNEL_INFO = "Не указаны данные канала для ";
 	const ERR_MISSING_CONTROLLER   = "Не указан контроллер для ";
-	
+	const ERR_WRONG_PARAM          = "Неверный параметр для ";
 	
 	
 	/**
@@ -95,10 +109,10 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		 * Change layout for AJAX requests
 		 */
 		if ($this->getRequest()->isXmlHttpRequest()) {
-			$this->contextSwitch = $this->_helper->getHelper('contextSwitch');
+			$this->contextSwitch = $this->_helper->getHelper('ContextSwitch');
 		}
 		
-		$this->validator = $this->_helper->getHelper('requestValidator');
+		$this->validator = $this->_helper->getHelper('RequestValidator');
 		
 		self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		if (self::$videoCache){
@@ -116,8 +130,11 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		$this->cache->setLocation(ROOT_PATH.'/cache');
 		$this->channelsModel = new Xmltv_Model_Channels();
 		$this->programsModel = new Xmltv_Model_Programs();
-		$this->videosModel   = new Xmltv_Model_Videos();
-		$this->commentsModel   = new Xmltv_Model_Comments();
+		$this->videosModel = new Xmltv_Model_Videos();
+		$this->commentsModel = new Xmltv_Model_Comments();
+		$this->usersModel = new Xmltv_Model_Users();
+		
+		$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
 		
 		$kc = Zend_Registry::get('site_config')->channels->kids;
 		if (stristr($kc, ',')){
@@ -134,6 +151,16 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 			$this->kidsChannels = intval($kc);
 		}
 		
+		$this->initView();
+		
+		
+		$auth = Zend_Auth::getInstance();
+		if ($auth->getIdentity()===null){
+		    self::$user = $this->usersModel->defaultUser();
+		} else {
+		    self::$user = $auth->getIdentity();
+		}
+		$this->view->assign('user', self::$user);
 		
 	}
 	
@@ -161,8 +188,8 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		if ($this->input===false) {
 			if (APPLICATION_ENV=='development'){
 				echo "Wrong input!";
-				var_dump($this->_getAllParams());
-				die(__FILE__.': '.__LINE__);
+				Zend_Debug::dump($this->input->getMessages());
+				//die(__FILE__.': '.__LINE__);
 			} elseif(APPLICATION_ENV!='production'){
 				throw new Zend_Exception(self::ERR_INVALID_INPUT, 404);
 			}
@@ -252,12 +279,15 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		$tinyurl = new Zend_Service_ShortUrl_BitLy( self::$bitlyLogin, self::$bitlyKey);
 		$url	 = 'http://rutvgid.ru'.$this->view->url( $parts, $route);
 		$e = (bool)Zend_Registry::get('site_config')->cache->tinyurl->get('enabled');
+		
 		if ($e===true){
+		    
 			$t = (int)Zend_Registry::get('site_config')->cache->tinyurl->get('lifetime');
 			$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
-			$hash = Xmltv_Cache::getHash('tinyurl_'.implode(';', $parts).implode(';', $uniq));
-			$f = '/Tinyurl/Pages';
 			$this->cache->setLocation(ROOT_PATH.'/cache');
+			$f = '/Tinyurl/Pages';
+			
+			$hash = Xmltv_Cache::getHash('tinyurl_'.implode(';', $parts).implode(';', $uniq));
 			if (($link = $this->cache->load($hash, 'Core', $f))===false) {
 				$link = trim($tinyurl->shorten( $url ));
 				$this->cache->save($link, $hash, 'Core', $f);
@@ -271,19 +301,20 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	}
 	
 	/**
+	 * Check if listing date is earlier than allowed history 
 	 * 
-	 * @param Zend_Date $date
+	 * @param  Zend_Date $date
+	 * @param  int $history_length
 	 * @return boolean
 	 */
-	protected function checkDate(Zend_Date $date){
+	protected static function checkDate(Zend_Date $date, $history_length=30){
 		
-		$l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
-		$this->view->assign( 'history_length', $l);
-		$maxAgo = new Zend_Date( Zend_Date::now()->subDay($l)->toString('U'), 'U' ) ;
-		if ($date->compare($maxAgo)==-1){ //More than x days
-			return false;
-		}
-		return true;
+	    $maxAgo = new Zend_Date( Zend_Date::now()->subDay($history_length)->toString('U'), 'U' ) ;
+	    if ($date->compare($maxAgo)==-1){
+	    	return false;
+	    }
+	    return true;
+	    
 	}
 
 	/**
@@ -339,7 +370,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	 * @params Zend_Date $week_end
 	 * @return array
 	 */
-	protected function getTopPrograms($amt=20){
+	protected function topPrograms($amt=20){
 		
 	    $now = Zend_Date::now();
 	    $topAmt = (int)Zend_Registry::get('site_config')->top->listings->get('amount');

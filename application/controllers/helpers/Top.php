@@ -4,9 +4,7 @@
  * Routing plugin
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package rutvgid
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/controllers/helpers/Top.php,v $
- * @version $Id: Top.php,v 1.4 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: Top.php,v 1.5 2013-03-03 23:34:13 developer Exp $
  */
 
 class Xmltv_Controller_Action_Helper_Top extends Zend_Controller_Action_Helper_Abstract
