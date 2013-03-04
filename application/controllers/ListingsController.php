@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: ListingsController.php,v 1.25 2013-03-04 17:57:38 developer Exp $
+ * @version $Id: ListingsController.php,v 1.26 2013-03-04 18:29:48 developer Exp $
  *
  */
 class ListingsController extends Xmltv_Controller_Action
@@ -896,8 +896,8 @@ class ListingsController extends Xmltv_Controller_Action
 	        	    		$videos = $this->vCacheModel->sidebarVideos( $channel['id'] );
 	        	    
 	        	    		if (APPLICATION_ENV=='development'){
-	        	    			var_dump($videos);
-	        	    			die(__FILE__.': '.__LINE__);
+	        	    			//var_dump($videos);
+	        	    			//die(__FILE__.': '.__LINE__);
 	        	    		}
 	        	    
 	        	    	}

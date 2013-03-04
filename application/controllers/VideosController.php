@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.17 2013-03-04 17:57:38 developer Exp $
+ * @version $Id: VideosController.php,v 1.18 2013-03-04 18:29:48 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -282,8 +282,8 @@ class VideosController extends Xmltv_Controller_Action
 	    }
 	    
 	    if (APPLICATION_ENV=='development'){
-	    	var_dump($result);
-	    	die(__FILE__.': '.__LINE__);
+	    	//var_dump($result);
+	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
 	    if (count($result)) {

@@ -4,7 +4,7 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.16 2013-03-04 17:57:38 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.17 2013-03-04 18:29:48 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -26,7 +26,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
     	
         
     	if (APPLICATION_ENV=='development'){
-    	    var_dump( $this->getRequest()->getParams() );
+    	    //var_dump( $this->getRequest()->getParams() );
     	    //die(__FILE__.': '.__LINE__);
     	}
 		

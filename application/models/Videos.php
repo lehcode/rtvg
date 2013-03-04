@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.16 2013-03-04 17:57:39 developer Exp $
+ * @version $Id: Videos.php,v 1.17 2013-03-04 18:29:48 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -42,7 +42,12 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
 			$v['yt_id']	   = $entry->getVideoId();
 			$v['title']	   = $entry->getVideoTitle();
-			$v['alias']	   = Xmltv_Youtube::videoAlias( $v['title'] );
+			
+			try {
+			    $v['alias'] = Xmltv_Youtube::videoAlias( $v['title'] );
+			} catch (Zend_Exception $e) {
+			}
+			
 			$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
 			$v['views']	   = (int)$entry->getVideoViewCount();
 			$v['category'] = $entry->getVideoCategory();
@@ -314,7 +319,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$ytConfig['language']	= 'ru';
 		
 		if (APPLICATION_ENV=='development'){
-			var_dump($ytConfig);
+			//var_dump($ytConfig);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
@@ -323,7 +328,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			foreach ($list as $li){
 				
 				if (APPLICATION_ENV=='development'){
-					var_dump($li);
+					//var_dump($li);
 					//var_dump($li['fetch_video']);
 					die(__FILE__.': '.__LINE__);
 				}
@@ -569,8 +574,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$ytConfig['language']	= 'ru';
 		
 		if (APPLICATION_ENV=='development'){
-			echo "<b>".__METHOD__."</b><br />";
-			var_dump($ytConfig);
+			//echo "<b>".__METHOD__."</b><br />";
+			//var_dump($ytConfig);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
@@ -634,8 +639,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		}
 		
 		if (APPLICATION_ENV=='development'){
-			var_dump(func_get_args());
-			die(__FILE__.': '.__LINE__);
+			//var_dump(func_get_args());
+			//die(__FILE__.': '.__LINE__);
 		}
 		
 	}

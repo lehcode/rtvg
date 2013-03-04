@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: UserController.php,v 1.3 2013-03-04 17:57:38 developer Exp $
+ * @version $Id: UserController.php,v 1.4 2013-03-04 18:29:48 developer Exp $
  *
  */
 
@@ -81,9 +81,9 @@ class UserController extends Xmltv_Controller_Action
                 $result = $auth->authenticate($authAdapter);
                 
                 if (APPLICATION_ENV=='development'){
-                	var_dump($result);
+                	//var_dump($result);
                 	//var_dump($result->isValid());
-                	die(__FILE__.': '.__LINE__);
+                	//die(__FILE__.': '.__LINE__);
                 }
                 
                 if ($result->isValid()) {
