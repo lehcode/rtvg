@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.12 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: Router.php,v 1.13 2013-03-04 17:57:39 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -172,6 +172,20 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'controller'=>'error',
 			'action'=>'invalid-input')));
 			
+		$this->_router->addRoute( 'default_error_error', 
+		new Zend_Controller_Router_Route( 'ошибка',
+		array(
+			'module'=>'default',
+			'controller'=>'error',
+			'action'=>'error')));
+			
+		$this->_router->addRoute( 'default_error_index', 
+		new Zend_Controller_Router_Route( 'ошибка',
+		array(
+			'module'=>'default',
+			'controller'=>'error',
+			'action'=>'error')));
+			
 		$this->_router->addRoute( 'sitemap', 
 		new Zend_Controller_Router_Route( 'sitemap.xml',
 		array(
@@ -261,6 +275,13 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 		 * admin routes
 		 * ###############################################################
 		 */
+		
+		$this->_router->addRoute( 'admin_index_index', 
+		new Zend_Controller_Router_Route( 'admin',
+		array(
+			'module'=>'admin',
+			'controller'=>'index',
+			'action'=>'index')));
 		
 		$this->_router->addRoute( 'admin_import_remote', 
 		new Zend_Controller_Router_Route( 'admin/import/listings/:site',

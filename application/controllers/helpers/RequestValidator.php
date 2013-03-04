@@ -4,29 +4,16 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.15 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.16 2013-03-04 17:57:38 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
-	/**
-     * @var Zend_Loader_PluginLoader
-     */
-    public $pluginLoader;
-    
-	/**
-     * Constructor: initialize plugin loader
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-    	$this->pluginLoader = new Zend_Loader_PluginLoader();
-    }
-    
-    const ALIAS_REGEX='/^[\p{Cyrillic}\p{Latin}\d_-]+$/ui';
+	
+    const ALIAS_REGEX='/^[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
     const ERR_WRONG_ACTION="Неверный Action";
     const ERR_WRONG_MODULE="Неверный Module";
     const ERR_WRONG_CONTROLLER="Неверный Controller";
+    const ERR_WRONG_ALIAS="Неверный Alias";
     
     /**
      * 

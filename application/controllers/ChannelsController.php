@@ -4,7 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.19 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.20 2013-03-04 17:57:38 developer Exp $
  *
  */
 class ChannelsController extends Xmltv_Controller_Action
@@ -132,16 +132,18 @@ class ChannelsController extends Xmltv_Controller_Action
 			
 			if ($this->cache->enabled){
 			    $this->cache->setLocation(ROOT_PATH.'/cache');
-				$hash = md5('channelcategories_'.$catProps['alias']);
-				if (!$rows = $this->cache->load($hash, 'Core', $this->cacheRoot)){
+			    $f = "/Channels/Category";
+				$hash = md5('channels-categories_'.$catProps['alias']);
+				if (!$rows = $this->cache->load($hash, 'Core', $f)){
 					$rows = $this->channelsModel->categoryChannels($catProps['alias']);
-					$this->cache->save($rows->toArray(), $hash, 'Core', $this->cacheRoot);
+					foreach ($rows as $k=>$row) {
+						$rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
+					}
+					$this->cache->save($rows, $hash, 'Core', $f);
 				}
 			} else {
 				$rows = $this->channelsModel->categoryChannels($catProps['alias']);
 			}
-			//var_dump($rows);
-			//die(__FILE__.':'.__LINE__);
 			$this->view->assign('channels', $rows);
 			
 			/*

@@ -4,8 +4,7 @@
  * Model for user management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package rutvgid
- * @version $Id: Users.php,v 1.2 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: Users.php,v 1.3 2013-03-04 17:57:39 developer Exp $
  */
 class Xmltv_Model_Users extends Xmltv_Model_Abstract
 {

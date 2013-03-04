@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.27 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: layout.phtml,v 1.28 2013-03-04 17:57:38 developer Exp $
  *
  */
 
@@ -87,7 +87,8 @@ if (APPLICATION_ENV!='development') {
 $this->placeholder('maincontent')->set( $this->layout()->content );
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
-if (!$isFrontpage){
+
+if ($pageClass=='show-video'){
 	$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array('list'=>$this->featured_channels)) );
 }
 
@@ -167,6 +168,7 @@ if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
 	<?php endif; ?>
 	
 	<?php 
+	/*
 	if ($this->user->role == 'guest') {
 		$form = new Xmltv_Form_Login( array(
 			'action'=>$this->url( array(), 'default_user_login'),
@@ -180,7 +182,10 @@ if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
 		)); 
 		echo $form;
 	}
+	*/
 	?>
+	
+	
 	
 	
 	<div id="content" class="row-fluid<?php echo $pageClass; ?>">
@@ -190,7 +195,20 @@ if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
 			?>
 		<div class="span12" id="maincontent">
 			<?php 
-			echo $this->placeholder('frontpage_menu'); 
+			echo $this->placeholder('frontpage_menu');
+			
+			if (count($this->messages)) {
+				foreach ($this->messages as $text) {
+					if (is_array($text)) {
+						foreach ($text as $string) {
+							echo $this->showMessage( $string );
+						}
+					} else {
+						echo $this->showMessage( $text );
+					}
+				}
+			}
+			
 			echo $this->placeholder('maincontent'); 
 			?>
 		</div>
@@ -243,7 +261,7 @@ if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
 	/*
 	 * Featured channels links
 	 */
-	if (!$pageClass=='show-video'){
+	if ($pageClass=='show-video'){
 		$fChannels = $this->placeholder('featured_channels');
 		if (!empty($fChannels)) { ?>
 		<div id="featuredchannels" class="row-fluid">

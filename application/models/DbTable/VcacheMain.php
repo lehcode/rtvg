@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses Xmltv_Db_Table_Abstract
- * @version $Id: VcacheMain.php,v 1.5 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: VcacheMain.php,v 1.6 2013-03-04 17:57:39 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
@@ -28,9 +28,7 @@ class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
 	 */
 	protected function _setup(){
 	
-		parent::_setup();
-		$now = Zend_Date::now();
-		$this->_defaultValues = array(
+	    $this->_defaultValues = array(
 				'rtvg_id'=>null,
 				'yt_id'=>null,
 				'title'=>null,
@@ -41,11 +39,19 @@ class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
 				'duration'=>null,
 				'category'=>null,
 				'thumbs'=>'',
-				'delete_at'=>$now->addDay(7)->toString('YYYY-MM-dd HH:mm:ss')
+				'delete_at'=>null
 		);
+		
+		parent::_setup();
 			
 	}
 	
+	/**
+	 * Save main video to database cache
+	 * 
+	 * @param  array $video
+	 * @throws Zend_Exception
+	 */
 	public function store($video=array()){
 		
 	    if (empty($video['alias']) || !isset($video['alias'])){
@@ -78,12 +84,13 @@ class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
 			$new['thumbs'] = serialize($video['thumbs']);
 		}
 		
-		$this->createRow($new)->toArray();
+		$new['delete_at'] = $video['delete_at'] = Zend_Date::now()->addDay(7)->toString('YYYY-MM-dd HH:mm:ss');
 		
-		foreach ($new as $rowKey=>$rowVal){
+		$new = parent::createRow($new);
+		
+		foreach ($new->toArray() as $rowKey=>$rowVal){
 		    $cols[]   = $this->_db->quoteIdentifier($rowKey);
 			$values[] = "'".str_ireplace("'", '"', $rowVal)."'";
-			
 		}
 		
 		$sql = "INSERT INTO `".$this->getName()."` ( ".implode(', ', $cols)." ) 
@@ -94,25 +101,36 @@ class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
 			//die(__FILE__.': '.__LINE__);
 		}
 		
-		try {
-			$this->_db->query($sql);
-		} catch (Zend_Db_Adapter_Mysqli_Exception $e) {
-			throw new Zend_Exception("Cannot insert into ".$this->getName(), 500);
-		}
+		$this->_db->query($sql);
 		
-		//$this->insert($video);
 		
 		return true;
 		
 	}
 	
+	/**
+	 * 
+	 * @param  array $data
+	 * @return array
+	 */
+	public function create($data){
+	    
+	    return parent::createRow($data, $this->_defaultValues)->toArray();
+	    
+	}
+	
+	/**
+	 * 
+	 * @param  string $key
+	 * @return array
+	 */
 	public function fetch($key=null){
 		
 		$select = $this->select(false)
 			->from($this->getName())
 			->where("`rtvg_id`='$key'");
 		
-		return $this->fetchRow($select);
+		return $this->fetchRow($select)->toArray();
 		
 	}
 

@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: UserController.php,v 1.2 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: UserController.php,v 1.3 2013-03-04 17:57:38 developer Exp $
  *
  */
 
@@ -43,9 +43,21 @@ class UserController extends Xmltv_Controller_Action
         $form = new Xmltv_Form_Login();
         $formValidator = $this->_helper->getHelper('ValidateForm');
         $r = $this->getRequest();
+        
+        if (APPLICATION_ENV=='development'){
+            //var_dump($r->isPost());
+            //die(__FILE__.': '.__LINE__);
+        }
+        
         if ($r->isPost()) {
             $postData = $r->getPost();
-            if(($errors = $formValidator->direct( $form, $postData))===true) {  //i.e. no errors
+            
+            if (APPLICATION_ENV=='development'){
+            	//var_dump($formValidator->direct( $form, $postData));
+            	//die(__FILE__.': '.__LINE__);
+            }
+            
+            if(($errors = $formValidator->direct( $form, $postData))!==false) {  //i.e. no errors
                 
                 $this->requestParamsValid();
                 
@@ -69,9 +81,9 @@ class UserController extends Xmltv_Controller_Action
                 $result = $auth->authenticate($authAdapter);
                 
                 if (APPLICATION_ENV=='development'){
-                	//var_dump($result);
+                	var_dump($result);
                 	//var_dump($result->isValid());
-                	//die(__FILE__.': '.__LINE__);
+                	die(__FILE__.': '.__LINE__);
                 }
                 
                 if ($result->isValid()) {
@@ -80,9 +92,9 @@ class UserController extends Xmltv_Controller_Action
                 	$data = $authAdapter->getResultRowObject( null, 'hash' );
 
                 	if (APPLICATION_ENV=='development'){
-                		var_dump($identity);
-                		var_dump($data);
-                		die(__FILE__.': '.__LINE__);
+                		//var_dump($identity);
+                		//var_dump($data);
+                		//die(__FILE__.': '.__LINE__);
                 	}
                 		
                 	$auth->getStorage()->write( $data );
@@ -92,17 +104,15 @@ class UserController extends Xmltv_Controller_Action
                 	foreach ($result->getMessages() as $msg){
                 	    $this->_flashMessenger->addMessage($msg);
                 	}
+                	$this->_redirect( $this->errorUrl, array( 'exit'=>true ) );
                 }
             } else {
 	            foreach ($errors as $e) {
 	            	$this->_flashMessenger->addMessage($e);
 	            }
+	            $this->_redirect( $this->errorUrl, array( 'exit'=>true ) );
 	        }
             
-        } else {
-            foreach ($errors as $e) {
-            	$this->_flashMessenger->addMessage($e);
-            }
         }
         
     }
@@ -127,25 +137,24 @@ class UserController extends Xmltv_Controller_Action
         	    
         	    $auth = Zend_Auth::getInstance();
         	    $auth->clearIdentity();
+        	    $auth->getStorage()->clear();
         	    Zend_Session::destroy();
-        	    
-        	    Xmltv_Bootstrap_Auth::setCurrentUser( $this->usersModel->defaultUser() );
-        	    $this->user = $this->usersModel->defaultUser();
-        	    
-        	    if (APPLICATION_ENV=='development'){
-        	    	//var_dump($this->user);
-        	   		//die(__FILE__.': '.__LINE__);
-        	    }
-        	    
         	    $this->_redirect('/');
         	    
         	} else {
         	    foreach ($errors as $e) {
         	    	$this->_flashMessenger->addMessage($e);
         	    }
+        	    $this->_redirect( $this->errorUrl, array( 'exit'=>true ) );
         	}
         }
         
+        
+        
+    }
+    
+    public function errorAction(){
+    	
         
         
     }

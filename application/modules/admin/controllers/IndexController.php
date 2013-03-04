@@ -2,30 +2,22 @@
 /**
  * Index controller for admin backend
  * 
- * @author  toshihir
- * @package rutvgid
+ * @author     toshihir
  * @subpackage backend
- * @version $Id: IndexController.php,v 1.5 2012-12-16 15:18:26 developer Exp $
+ * @version    $Id: IndexController.php,v 1.6 2013-03-04 17:57:39 developer Exp $
  *
  */
 
-class Admin_IndexController extends Zend_Controller_Action
+class Admin_IndexController extends Xmltv_Controller_Action
 {
 
-
-	public function __call ($method, $arguments) {
-
-		header( 'HTTP/1.0 404 Not Found' );
-		$this->_helper->layout->setLayout( 'error' );
-		$this->view->render();
-	}
 
 	/**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
 	 */
 	public function init () {
-
+		parent::init();
 		$this->_helper->layout->setLayout( 'admin' );
 	}
 
@@ -35,7 +27,10 @@ class Admin_IndexController extends Zend_Controller_Action
 	 */
 	public function indexAction () {
 		
-		$this->_forward( 'tasks' );
+	    if (APPLICATION_ENV=='development'){
+	        var_dump(parent::$user);
+	        die(__FILE__.': '.__LINE__);
+	    }
 	}
 
 	/**
@@ -48,10 +43,7 @@ class Admin_IndexController extends Zend_Controller_Action
 		$this->_forward( 'tasks' );
 	}
 
-	/**
-	 * 
-	 * Enter description here ...
-	 */
+	
 	public function tasksAction () {
 
 		

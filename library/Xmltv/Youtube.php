@@ -351,11 +351,15 @@ class Xmltv_Youtube {
 			throw new Zend_Exception( 'Не указан $title для '.__METHOD__, 500);
 	
 		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
-		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)#]+/ui', 'replace'=>' '));
+		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)#&]+/ui', 'replace'=>' '));
 		$tolower	= new Zend_Filter_StringToLower();
 		$whitespace = new Zend_Filter_PregReplace( array("match"=>'/[\s+|-]+/', 'replace'=>'-'));
 		
 		$result = $tolower->filter( $whitespace->filter( $separator->filter( $cleanup->filter( $title))));
+		
+		if (!preg_match( Zend_Controller_Action_Helper_RequestValidator::ALIAS_REGEX, $result)){
+		    throw new Zend_Exception( Zend_Controller_Action_Helper_RequestValidator::ERR_WRONG_ALIAS.': '.$result);
+		}
 		
 		return $result;
 	

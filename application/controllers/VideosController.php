@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.16 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: VideosController.php,v 1.17 2013-03-04 17:57:38 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -68,59 +68,66 @@ class VideosController extends Xmltv_Controller_Action
 					//die(__FILE__.': '.__LINE__);
 				}
 				
-				if (parent::$videoCache===true){
-				    
-				    /* 
-				     * ################################################################################
-				     * Request cache model for main video data ( Xmltv_Model_Vcache::getVideo($rtvgId) )
-				     * ################################################################################
-				     */
-				    // 1. Query database cache for main video
-				    if (($cached = $this->vCacheModel->getVideo($rtvgId))!==false){
-				        
-				        $mainVideo = $cached;
-				        
-				    } else {
-				        
-				        if ($this->cache->enabled){
-				            
-				        	$this->cache->setLocation(ROOT_PATH.'/cache');
-				        	$f = '/Youtube/ShowVideo/Main';
-				        	$hash = md5( $ytId );
-				        	
-				        	// 2. Try to load main video data from file cache
-				        	if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
-				        	    $mainVideo = $cached;
-				        	} else { // If not found in file cache
-				        	    if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
-				        	        $mainVideo = $this->videosModel->parseYtEntry( $ytEntry);
-				        	        $this->cache->save( $mainVideo, $hash, 'Core', $f);
-				        	    } else {
-				        	        // Video not fount at youtube
-				        	        $this->render('video-not-found');
-				        	        return true;
-				        	    }
-				        	    
-				        	}
-				        } else {
-				            
-				            if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
-				            	$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
-				            } else {
-				            	$this->render('video-not-found');
-				            	return true;
-				            }
-				            
-				        }
-				    }
-				    
+				
+				/*
+				 * ################################################################################
+				 * Try to load current video from cache 
+				 * or fetch it from youtube.com if not found
+				 * in either database or file cache
+				 * ################################################################################
+				 */
+				if ($this->cache->enabled){
+				
+					$this->cache->setLocation(ROOT_PATH.'/cache');
+					$f = '/Youtube/ShowVideo/Main';
+					$hash = md5( $ytId );
+					 
+					// 1. Try to load main video data from file cache
+					if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
+						$mainVideo = $cached;
+					} else {
+					    
+					    $mainVideo = false;
+					    
+					    // If not found
+					    if (parent::$videoCache===true){
+					        // Query database cache (if it is enabled) for main video
+					        if (($cached = $this->vCacheModel->getVideo($rtvgId))!==false){
+					            $mainVideo = $cached;
+					        }
+					    }
+					    
+					    // If was not found in DB cache either
+					    if ($mainVideo===false){
+					        
+						    // Search Youtube service for video
+							if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
+								$mainVideo = $this->videosModel->parseYtEntry( $ytEntry);
+								$this->cache->save( $mainVideo, $hash, 'Core', $f);
+							} else {
+								// Video was not found at youtube
+								$this->render('video-not-found');
+								return true;
+							}
+					    }
+						
+						if (parent::$videoCache===true){
+							$this->vCacheModel->saveMainVideo($mainVideo);
+						}
+
+						$this->cache->save($mainVideo, $hash, 'Core', $f);
+						
+					}
+					 
 				} else {
+				
 					if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
-		            	$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
-		            } else {
-		            	$this->render('video-not-found');
-		            	return true;
-		            }
+						$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
+					} else {
+						$this->render('video-not-found');
+						return true;
+					}
+				
 				}
 				
 				if (APPLICATION_ENV=='development'){
@@ -131,82 +138,74 @@ class VideosController extends Xmltv_Controller_Action
 				$this->view->assign( 'main_video', $mainVideo );
 				
 				
-				/* 
-				 * ##################################################
-				 * 2. Related videos
-				 * ##################################################
+				/*
+				 * ################################################################################
+				 * Try to load related videos list from cache 
+				 * or fetch it from youtube.com if not found
+				 * in either database or file cache
+				 * ################################################################################
 				 */
 				$relatedAmt = (int)Zend_Registry::get('site_config')->videos->related->get('amount');
 				$relatedVideos = array();
 				
-				if (parent::$videoCache===true){
-					
-				    // 1. Query database cache for main video
-				    if (($cached = $this->videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
-				    	
-				        $relatedVideos = $cached;
-				         
-				    } else { 
-				        
-				        // 2. Try to load main video data from file cache
-				    	if ($this->cache->enabled){
-				            
-				            $this->cache->setLocation( ROOT_PATH.'/cache');
-				            $f = '/Youtube/ShowVideo/Main';
-				            $hash = Xmltv_Cache::getHash( 'relatedVideo_'.$ytId);
-				            
-				            // 3. Try to load main video data from file cache
-				            if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
-				                
-				            	$relatedVideos = $cached;
-				            	
-				            } else { 
-				                
-				                // 4. If was not found in file cache
-				            	if (($ytRelated = $youtube->fetchRelated( $ytId ))!==false) {
-					            	foreach ($ytRelated as $ytEntry){
-						    	    	if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
-						    	    		if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
-						    	    			$this->vCacheModel->saveRelatedVideo($ytEntry, $ytId);
-						    	    			$relatedVideos[] = $parsed;
-						    	    		}
-						    	    	}
-						    	    }
-				            		$this->cache->save( $relatedVideos, $hash, 'Core', $f);
-				            	} else {
-				            		// 5. Video was not found at youtube
-				            		$this->render('video-not-found');
-				            		return true;
-				            	}
-				            	 
-				            }
-				            
-				        } else {
-				            
-				            $result = $ytRelated = $youtube->fetchRelated( $ytId );
-				        	foreach ($ytRelated as $ytEntry){
-				    	    	if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
-				    	    		if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
-				    	    			$relatedVideos[] = $parsed;
-				    	    		}
-				    	    	}
-				    	    }
-				            
-				        }
-				    	 
-				    }
-				} else {
-				    
-				    $result = $youtube->fetchRelated( $ytId );
-				    foreach ($result as $v){
-				    	$relatedVideos[] = $this->videosModel->parseYtEntry( $v);
-				    }
-				    
-				}
+				if ($this->cache->enabled){
 				
-			    if (APPLICATION_ENV=='development'){
-					//var_dump($relatedVideos);
-					//die(__FILE__.': '.__LINE__);
+					$this->cache->setLocation( ROOT_PATH.'/cache');
+					$f = '/Youtube/ShowVideo/Related';
+					$hash = Xmltv_Cache::getHash( 'related_'.$ytId);
+				
+					// Try to load videos from file cache
+					if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
+						$relatedVideos = $cached;
+					} else {
+						
+					    // If was not found in file cache
+					    $relatedVideos = false;
+					    
+					    // If DB cache is enabled
+					    if (parent::$videoCache===true){
+					        // Try to search DB cache
+					        if (($cached = $this->videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
+					        	$relatedVideos = $cached;
+					        }
+					    }
+					    
+					    // If was not found in DB cache either
+					    if ($relatedVideos===false){
+					        
+							// Try to load related videos list from youtube
+							if (($ytRelated = $youtube->fetchRelated( $ytId ))!==false) {
+								foreach ($ytRelated as $ytEntry){
+									if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
+										if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>=256)) {
+										    if (parent::$videoCache===true){
+												$this->vCacheModel->saveRelatedVideo($ytEntry, $ytId);
+										    }
+											$relatedVideos[] = $parsed;
+										}
+									}
+								}
+								
+								$this->cache->save( $relatedVideos, $hash, 'Core', $f);
+								
+							} else {
+							    $relatedVideos = null;
+							}
+					    }
+				
+					}
+				
+				} else {
+				
+					$ytRelated = $youtube->fetchRelated( $ytId );
+					foreach ($ytRelated as $ytEntry){
+						if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
+							if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
+								$relatedVideos[] = $parsed;
+							}
+						}
+					}
+				
 				}
 				
 				$this->view->assign( 'related_videos', $relatedVideos );
@@ -236,7 +235,7 @@ class VideosController extends Xmltv_Controller_Action
 			 * Данные для модуля популярных каналов
 			 * #####################################################################
 			 */
-			$this->view->assign('featured_channels', $this->getFeaturedChannels());
+			$this->view->assign('featured_channels', $this->getFeaturedChannels(36));
 			
 		}
 		

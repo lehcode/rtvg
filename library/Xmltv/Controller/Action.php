@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Action.php,v 1.9 2013-03-03 23:30:36 developer Exp $
+ * @version $Id: Action.php,v 1.10 2013-03-04 17:57:39 developer Exp $
  *
  */
 class Xmltv_Controller_Action extends Zend_Controller_Action
@@ -14,6 +14,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	protected static $bitlyKey = 'R_b37d5df77e496428b9403e236e672fdf';
 	protected static $userAgent='';
 	protected static $videoCache=false;
+	protected static $errorUrl;
 	protected $weekDays;
 	protected $kidsChannels=array();
 	
@@ -153,6 +154,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		
 		$this->initView();
 		
+		self::$errorUrl = $this->view->url( array(),  'default_error_index');
 		
 		$auth = Zend_Auth::getInstance();
 		if ($auth->getIdentity()===null){
@@ -160,7 +162,20 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		} else {
 		    self::$user = $auth->getIdentity();
 		}
+		
+		/*
+		if (APPLICATION_ENV=='development'){
+		    var_dump(self::$user->toArray());
+		    die(__FILE__.': '.__LINE__);
+		}
+		*/
+		
 		$this->view->assign('user', self::$user);
+		
+		if (!($this->_helper->getHelper('IsAllowed')->direct()===true)) {
+		    $this->_flashMessenger->addMessage("У вас нет доступа");
+		    $this->_redirect( self::$errorUrl, array('exit'=>true));
+		}
 		
 	}
 	
@@ -497,8 +512,8 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		
 		if ($this->cache->enabled){
 		    
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
-			$hash = Xmltv_Cache::getHash('featuredchannels_'.(int)$amt);
+		    $this->cache->setLocation( ROOT_PATH.'/cache' );
+			$hash = Xmltv_Cache::getHash( 'featuredchannels_'.(string)$amt );
 			$f = '/Channels/Featured';
 			if (($result = $this->cache->load($hash, 'Core', $f))===false) {
 				$result = $this->channelsModel->featuredChannels($amt);

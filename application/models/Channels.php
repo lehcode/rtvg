@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.17 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: Channels.php,v 1.18 2013-03-04 17:57:39 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -207,21 +207,16 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 		$result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
 		
-		if (!$result || empty($result)){
-		    return false;
-		}
-		
 		if (APPLICATION_ENV=='development'){
 	    	//Zend_Debug::dump($result);
 	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
-	    $view = new Zend_View();
-		foreach ($result as $k=>$row) {
-			$result[$k]['icon'] = $view->baseUrl('images/channel_logo/'.$row['icon']);
-		}
-		
-		return $result;
+	    if (!count($result)){
+	    	return false;
+	    }
+	    
+	    return $result;
 		
 	}
 	

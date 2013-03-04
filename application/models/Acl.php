@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.2 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: Acl.php,v 1.3 2013-03-04 17:57:38 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -22,6 +22,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	/* Singleton pattern */
 	protected function __construct()
 	{
+	    
 	    $this->addRole( new Zend_Acl_Role( self::ROLE_GUEST ));
 	    $this->addRole( new Zend_Acl_Role( self::ROLE_USER ), self::ROLE_GUEST );
 	    $this->addRole( new Zend_Acl_Role( self::ROLE_PUBLISHER ), self::ROLE_USER );
@@ -29,23 +30,43 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->addRole( new Zend_Acl_Role( self::ROLE_ADMIN ), self::ROLE_EDITOR );
 	    $this->addRole( new Zend_Acl_Role( self::ROLE_GOD ));
 	    
-	    try {
-	        $this->add( new Zend_Acl_Resource( 'default:user' ));
-	        $this->add( new Zend_Acl_Resource( 'default:user.auth' ), 'default:user' );
-	        $this->add( new Zend_Acl_Resource( 'default:user.list' ), 'default:user' );
-	    } catch (Zend_Acl_Exception $e) {
-	        throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-	    }
+	    $this->add( new Zend_Acl_Resource( 'default:' ));
+	    $this->add( new Zend_Acl_Resource( 'default:user' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:frontpage' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:frontpage.index' ), 'default:frontpage');
+	    $this->add( new Zend_Acl_Resource( 'default:frontpage.single-channel' ), 'default:frontpage');
+	    $this->add( new Zend_Acl_Resource( 'default:channels' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:channels.category' ), 'default:channels');
+	    $this->add( new Zend_Acl_Resource( 'default:channels.list' ), 'default:channels');
+	    $this->add( new Zend_Acl_Resource( 'default:channels.channel-week' ), 'default:channels');
+	    $this->add( new Zend_Acl_Resource( 'default:listings' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:listings.day-listing' ), 'default:listings');
+	    $this->add( new Zend_Acl_Resource( 'default:listings.day-date' ), 'default:listings.day-listing');
+	    $this->add( new Zend_Acl_Resource( 'default:listings.program-week' ), 'default:listings');
+	    $this->add( new Zend_Acl_Resource( 'default:listings.channel-week' ), 'default:listings');
+	    $this->add( new Zend_Acl_Resource( 'default:listings.category' ), 'default:listings');
+	    $this->add( new Zend_Acl_Resource( 'default:videos.show-video' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:user.login' ), 'default:user' );
+	    $this->add( new Zend_Acl_Resource( 'default:user.logout' ), 'default:user' );
+	    $this->add( new Zend_Acl_Resource( 'default:user.profile' ), 'default:user' );	    
+	    
+	    $adminModule = new Zend_Acl_Resource( 'admin:' );
+	    $this->add( $adminModule );
+	    $publisherModule = new Zend_Acl_Resource( 'publisher:' );
+	    $this->add( $publisherModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:index' ), 'admin:' );
+	    $this->add( new Zend_Acl_Resource( 'admin:index.index' ), 'admin:index' );
+	    $this->add( new Zend_Acl_Resource( 'admin:user' ), 'admin:' );
+	    $this->add( new Zend_Acl_Resource( 'admin:user.login' ), 'admin:user' );
+	    $this->add( new Zend_Acl_Resource( 'admin:user.profile' ), 'admin:user' );
+	    
+	    $this->allow( null, 'default:', null );
+	    $this->deny( array(self::ROLE_GUEST, self::ROLE_USER), $adminModule );
+	    $this->allow( self::ROLE_PUBLISHER, $publisherModule );
+	    $this->allow( self::ROLE_PUBLISHER, $adminModule, array( 'login', 'logout', 'publish') );
 	    
 	    
-	    $this->deny( null, 'default:user', array( 'profile' ));
-	    $this->allow( self::ROLE_GUEST, 'default:user.auth', array( 'login' ));
-	    $this->deny( array( self::ROLE_USER ), 'default:user.auth', array( 'login', 'profile' ));
-	    
-	    $moduleResource = new Zend_Acl_Resource( 'admin' );
-	    $this->add( $moduleResource );
-	    
-	    $this->allow( null, $moduleResource, array( 'login') );
+	    $this->allow( self::ROLE_GOD );
 	    
 	    return $this;
 	    

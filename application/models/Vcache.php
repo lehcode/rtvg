@@ -55,7 +55,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
                 
                 $video['published'] = new Zend_Date($video['published'], 'YYYY-MM-dd HH:mm:ss');
                 $video['duration']  = new Zend_Date($video['duration'], 'HH:mm:ss');
-                $video['thumbs']    = Zend_Json::decode($video['thumbs']);
+                $video['thumbs']    = unserialize($video['thumbs']);
                 
                 return $video;
             } 
@@ -70,28 +70,34 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
     /**
      * Save main video for listing item to database
      * 
-     * @param Zend_Gdata_YouTube_VideoEntry $video
+     * @param Zend_Gdata_YouTube_VideoEntry|array $video
      */
     public function saveMainVideo($video=null){
     	
         $vModel = new Xmltv_Model_Videos();
-        $newRow = $this->vcacheMainTable->createRow( $vModel->parseYtEntry($video));
-        $newRow->save();
-        return $newRow->toArray();
+        
+        if (is_a($video, 'Zend_Gdata_YouTube_VideoEntry')) {
+            $newRow = $this->vcacheMainTable->createRow( $vModel->parseYtEntry($video));
+        } elseif (is_array($video)) {
+            $newRow = $video;
+        } else {
+            throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+        }
+        
+        return $this->vcacheMainTable->store($newRow);
         
     }
     
     /**
      * Save program listing video to databasse cache
      * 
-     * @param  unknown_type $video
-     * @param  unknown_type $time_hash
+     * @param  array $video
      * @throws Zend_Exception
      * @return unknown
      */
-    public function saveListingVideo($video=null, $time_hash=null){
+    public function saveListingVideo($video=null){
     	
-        if (!is_array($video) || !$time_hash) {
+        if (!is_array($video)) {
             throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
         }
         
@@ -100,15 +106,14 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
             //die(__FILE__.': '.__LINE__);
         }
         
-        $row = $video;
-        $row['published'] = $video['published']->toString('YYYY-MM-dd HH:mm:ss');
-        $row['duration']  = $video['duration']->toString('HH:mm:ss');
-        $row['thumbs']    = Zend_Json::encode($video['thumbs']);
-        $row['delete_at'] = Zend_Date::now()->addHour(12)->toString("YYYY-MM-dd HH:mm:ss");
-        $row['hash'] = $time_hash;
-        $row = $this->vcacheListingsTable->createRow( $row);
+        $row = $this->vcacheListingsTable->createRow( $video );
+        $row->published = $video['published']->toString( 'YYYY-MM-dd HH:mm:ss' );
+        $row->duration  = $video['duration']->toString( 'HH:mm:ss' );
+        $row->thumbs    = Zend_Json::encode( $video['thumbs'] );
+        $row->delete_at = Zend_Date::now()->addHour(12)->toString("YYYY-MM-dd HH:mm:ss");
+        $row->hash      = $video['hash'];
         
-        foreach ($row as $rowK=>$rowVal){
+        foreach ($row->toArray() as $rowK=>$rowVal){
 	        $keys[]   = $this->db->quoteIdentifier($rowK);
 	        $values[] = "'".str_ireplace("'", '"', $rowVal)."'";
 	    }
@@ -183,6 +188,73 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
 	    return $row;
         
     }
+
+    /**
+     * Save video to sidebar DB cache table
+     * 
+     * @param  array  $video
+     * @param  int $channel_id
+     * @return boolean|array
+     */
+    public function saveSidebarVideo($video=null, $channel_id=null){
+    	
+        $vModel = new Xmltv_Model_Videos();
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump(func_get_args());
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        if (!$video || !$channel_id){
+            throw new Zend_Exception( parent::ERR_MISSING_PARAMS );
+        }
+        
+        if (is_a( $video, 'Zend_Gdata_YouTube_VideoEntry')){
+        	if (($row = $vModel->parseYtEntry($video))===false){
+	            return false;
+	        }
+        } elseif(is_array($video)) {
+            $row = $video;
+        } else {
+            return false;
+        }
+        
+        $row = $this->vcacheSidebarTable->createRow($row);
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump($row);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        $row->channel   = $channel_id;
+        $row->published = $video['published']->toString('YYYY-MM-dd HH:mm:ss');
+        $row->duration  = $video['duration']->toString('HH:mm:ss');
+        $row->thumbs    = Zend_Json::encode( $video['thumbs'] );
+        $row->delete_at = Zend_Date::now()->addDay(7)->toString( "YYYY-MM-dd HH:mm:ss" );
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump($row);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        foreach ($row->toArray() as $rowK=>$rowVal){
+	        $keys[]   = $this->db->quoteIdentifier($rowK);
+	        $values[] = "'".str_ireplace("'", '"', $rowVal)."'";
+	    }
+				    
+	    $sql = "INSERT INTO `".$this->vcacheSidebarTable->getName()."` ( ".implode(', ', $keys)." ) 
+	    VALUES (".implode(', ', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$row['delete_at']."'";
+        
+	    if (APPLICATION_ENV=='development'){
+	        Zend_Debug::dump($sql);
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    $this->db->query($sql);
+        
+	    return $row->toArray();
+        
+    }
     
     /**
      * Fetch related videos info from DB cache
@@ -228,6 +300,40 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         }
         
         return false;
+        
+    }
+    
+    /**
+     * Load sidebar videos from database cache
+     * 
+     * @param int $channel_id
+     */
+    public function sidebarVideos( $channel_id=null ){
+    	
+        if (!$channel_id){
+            throw new Zend_Exception( parent::ERR_MISSING_PARAMS );
+        }
+
+        if (!is_numeric($channel_id)){
+            throw new Zend_Exception( parent::ERR_WRONG_PARAMS );
+        }
+        
+        $select = $this->db->select()
+        	->from(array('vid'=>$this->vcacheSidebarTable->getName()), array(
+        		'yt_id',
+        		'rtvg_id',
+        		'title',
+        		'alias',
+        		'desc',
+        		'views',
+        		'duration',
+        		'duration',
+        	));
+        
+        if (APPLICATION_ENV=='development'){
+        	parent::debugSelect($select, __METHOD__);
+        	die(__FILE__.': '.__LINE__);
+        }
         
     }
     

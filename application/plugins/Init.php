@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.15 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: Init.php,v 1.16 2013-03-04 17:57:39 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -45,23 +45,41 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		
 	}
 
+	
 	protected function _initStats(){
 		
 		
 		
 	}
 
-	public function routeShutdown (Zend_Controller_Request_Abstract $request) {
+	/**
+	 * (non-PHPdoc)
+	 * @see Zend_Controller_Plugin_Abstract::routeShutdown()
+	 */
+	public function routeShutdown( Zend_Controller_Request_Abstract $request) {
 
-		$moduleName = $request->getModuleName();
+	    if (APPLICATION_ENV=='development'){
+	        //var_dump($request->getParams());
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
+		//$moduleName = $request->getModuleName();
 		
 		//var_dump($moduleName);
 		//die(__FILE__.": ".__LINE__);
 		/*
 		switch ($moduleName) {
 			case 'admin':
-				if( $request->getControllerName() == 'channels' ) 
-				$request->setControllerName( 'index' );
+			    if ($request->getActionName()===null){
+			        switch ($request->getControllerName()){
+			        	default:
+			        	case 'channels':
+			        	    $request->setControllerName( 'index' );
+			        	    break;
+			        }
+			        	
+			    }
+				
 			break;
 			default:
 				//$request->setControllerName( 'frontpage' );

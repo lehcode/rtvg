@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: ListingsController.php,v 1.24 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: ListingsController.php,v 1.25 2013-03-04 17:57:38 developer Exp $
  *
  */
 class ListingsController extends Xmltv_Controller_Action
@@ -54,12 +54,6 @@ class ListingsController extends Xmltv_Controller_Action
 		if (parent::requestParamsValid()){
 			
 			$this->view->assign( 'pageclass', 'day-listing' );
-			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($this->cache->enabled);
-				//var_dump(parent::$videoCache);
-				//die(__FILE__.': '.__LINE__);
-			}
 			
 			$channel = parent::channelInfo();
 			if (!isset($channel['id']) || empty($channel['id'])){
@@ -244,52 +238,73 @@ class ListingsController extends Xmltv_Controller_Action
 			 * 		Если найдено - сохранение в БД
 			 */
 			if (count($list) && ($list!==false)) {
-				if (parent::$videoCache){
-				    // Запрос в БД
-				    $dbCache = $this->videosModel->dbCacheListingRelatedVideos( $list, $channel['title'], $now );
-				    if (count($dbCache)) {
-				        $listingVideos = $dbCache;
-				    } else {
-				        // Если не найдено - запрос в файловый кэш
-				        if ($this->cache->enabled){
-				            $t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
-				            $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(300) ;
-				            $this->cache->setLocation(ROOT_PATH.'/cache');
-				            $f = '/Listings/Videos';
-				            $hash = Xmltv_Cache::getHash('listingVideo_'.$channel['title'].'-'.$now->toString('YYYY-MM-dd'));
-				            if (($listingVideos=$this->cache->load($hash, 'Core', $f) )===false){
-				                // Если не найдено - запрос к Yoututbe
-				                $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
-				                // Сохранение в файловый кэш
-				                $this->cache->save($listingVideos, $hash, 'Core', $f);
-				                
-				                foreach ($listingVideos as $k=>$vid){
-				                    if ($vid!==false){
-				                    	$this->vCacheModel->saveListingVideo( $vid, $k);
-				                    }
-				                }
-				                
-				            }
-				        } else {
-				            $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
-				            foreach ($listingVideos as $k=>$vid){
-				                if ($vid!==false){
-				            		$this->vCacheModel->saveListingVideo( $vid, $k);
-				                }
-				            }
-				        }
-				    }
-				    
-				} else {
-				   $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
-				}
+			    
+			    $listingVideos = array();
+			    
+			    // Запрос в файловый кэш
+			    if ($this->cache->enabled){
+			        
+			    	$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->listings->get( 'lifetime' );
+			    	$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
+			    	$this->cache->setLocation( ROOT_PATH.'/cache' );
+			    	$f = '/Listings/Videos';
+			    	$hash = Xmltv_Cache::getHash( 'listingVideo_'.$channel['title'].'-'.$now->toString( 'YYYY-MM-dd' ));
+			    	
+			    	// Если видео найдено в файловом кэше
+			    	if (($listingVideos=$this->cache->load( $hash, 'Core', $f) )!==false){
+			    	    // Сохраняем в кэш БД если он включен
+			    	    if (parent::$videoCache===true){
+			    	        foreach ($listingVideos as $vid) {
+			    	            if ($vid!==false){
+				    	            $this->vCacheModel->saveListingVideo( $vid );
+			    	            }
+			    	        }
+			    	    }
+			    	} else {
+			    	    
+			    	    // Если не видео не найдено в файловом кэше
+			    	    // Ищем его в кэше БД если он включен
+			    	    if (parent::$videoCache===true){
+			    	        $listingVideos = $this->videosModel->dbCacheListingRelatedVideos( $list, $channel['title'], $now );
+			    	    }
+			    	    
+			    	    if (!$listingVideos){
+			    	    	// Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
+			    	    	$listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
+			    	    }
+			    	    
+			    	    if (count($listingVideos)) {
+			    	        
+			    	        // Сохранение в файловый кэш
+			    	        $this->cache->save( $listingVideos, $hash, 'Core', $f);
+			    	        
+			    	        // Сохраняем в кэш БД если он включен
+			    	        if (parent::$videoCache===true){
+			    	        	foreach ($listingVideos as $vid) {
+			    	        		if ($vid!==false){
+			    	        		    $this->vCacheModel->saveListingVideo( $vid );
+			    	        		}
+			    	        	}
+			    	        }
+			    	        
+			    	        $this->cache->save($listingVideos, $hash, 'Core', $f);
+			    	        
+			    	    }
+			    	    
+			    	}
+			    } else {
+			        
+			        // Кэширование не используется 
+			        // запрос к Yoututbe
+			    	$listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $now );
+			    	foreach ($listingVideos as $k=>$vid){
+			    		if ($vid!==false){
+			    			$this->vCacheModel->saveListingVideo( $vid, $k);
+			    		}
+			    	}
+			    }
+			    
 			} 
-			
-			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
-				//var_dump($listingVideos);
-				//var_dump($this->view->listing_date->toString('dd-MM-YYYY'));
-				//die(__FILE__.': '.__LINE__);
-			}
 			$this->view->assign('listing_videos', $listingVideos);
 			
 			
@@ -313,11 +328,11 @@ class ListingsController extends Xmltv_Controller_Action
 			    if (count($dbCache) && is_array($dbCache)){
 			        $videos = $dbCache;
 			    } else {
-			        $videos = $this->videosModel->ytSidebarVideos( $channel, true );
+			        $videos = $this->_sidebarVideos( $channel );
 			    }
 			    
 			} else {
-			    $videos = $this->videosModel->ytSidebarVideos( $channel );
+			    $videos = $this->_sidebarVideos( $channel );
 			}
 			
 			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
@@ -341,7 +356,7 @@ class ListingsController extends Xmltv_Controller_Action
 				$curl->setOption(CURLOPT_TIMEOUT, 4);
 				$curl->setUrl($url);
 				$curl->setUserAgent(Zend_Registry::get('user_agent'));
-				$f = '/Torrents/Programs';
+				$f = '/Listings/Torrents';
 				$hash = Xmltv_Cache::getHash($url);
 				
 				if ($this->cache->enabled){
@@ -839,17 +854,77 @@ class ListingsController extends Xmltv_Controller_Action
 	 */
 	private function _sidebarVideos($channel){
 		
-	    if (parent::$videoCache){
-	    	 
-	    	$dbCache = $this->videosModel->dbCacheSidebarVideos( $channel );
-	    	if (count($dbCache) && is_array($dbCache)){
-	    		$videos = $dbCache;
-	    	} else {
-	    		$videos = $this->videosModel->ytSidebarVideos( $channel, true );
-	    	}
-	    	 
+	    $vc  = Zend_Registry::get('site_config')->videos->sidebar->right;
+	    $max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
+	    $ytConfig = array(
+	    	'order'=>$vc->get('order'),
+	    	'max_results'=>(int)$vc->get('max_results'),
+	    	'start_index'=>(int)$vc->get('start_index'),
+	    	'safe_search'=>$vc->get('safe_search'),
+	    	'language'=>'ru',
+	    );
+	    $videos = array();
+	    
+	    // If file cache is enabled
+	    if ($this->cache->enabled){
+	        
+	        $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
+	        $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
+	        $f = '/Youtube/SidebarRight';
+	        $this->cache->setLocation( ROOT_PATH.'/cache' );
+	        $hash = Xmltv_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
+	        
+	        if (parent::$videoCache){
+	            
+	        	if (($videos = $this->vCacheModel->sidebarVideos( $channel['id'] ))===false){
+	        	    
+	        	    if (($videos = $this->cache->load( $hash, 'Core', $f))!==false) {
+	        	    
+	        	    	if (parent::$videoCache==true){
+	        	    		foreach ($videos as $vid){
+	        	    			if ($vid!==false){
+	        	    				$this->vCacheModel->saveSidebarVideo( $vid, $channel['id'] );
+	        	    			}
+	        	    		}
+	        	    	}
+	        	    
+	        	    } else {
+	        	    
+	        	    	// Query database cache first if it is enabled
+	        	    	if (parent::$videoCache){
+	        	    		 
+	        	    		$videos = $this->vCacheModel->sidebarVideos( $channel['id'] );
+	        	    
+	        	    		if (APPLICATION_ENV=='development'){
+	        	    			var_dump($videos);
+	        	    			die(__FILE__.': '.__LINE__);
+	        	    		}
+	        	    
+	        	    	}
+	        	    
+	        	    	if ($videos===false){
+	        	    		$videos = $this->videosModel->ytSearch( 'канал '.Xmltv_String::strtolower($channel['title']), $ytConfig);
+	        	    	}
+	        	    
+	        	    	if (count($videos)){
+	        	    		if (parent::$videoCache){
+	        	    			foreach ($videos as $vid){
+	        	    				if ($vid!==false){
+	        	    					$this->vCacheModel->saveSidebarVideo( $vid, $channel['id'] );
+	        	    				}
+	        	    			}
+	        	    		}
+	        	    
+	        	    		$this->cache->save( $videos, $hash, 'Core', $f );
+	        	    	}
+	        	    	 
+	        	    }
+	        	    
+	        	}
+	        }
+	        
 	    } else {
-	    	$videos = $this->videosModel->ytSidebarVideos( $channel );
+	        $videos = $this->videosModel->ytSearch( 'канал '.Xmltv_String::strtolower( $channel['title'] ), $ytConfig);
 	    }
 	    
 	    return $videos;

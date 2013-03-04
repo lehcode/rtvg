@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.15 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: Videos.php,v 1.16 2013-03-04 17:57:39 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -81,8 +81,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			throw new Exception(parent::ERR_WRONG_FORMAT.__METHOD__, 500);
 		}
 		
-		$table  = new Xmltv_Model_DbTable_VcacheRelated();
-		return $table->createRow($v)->toArray();
+		return $v;
 		
 	}
 	
@@ -349,11 +348,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 						
 						$hash = Xmltv_Cache::getHash('related_'.$li['hash']);
 						if (($result[$li['hash']] = $this->cache->load($hash, 'Core', $f))===false) {
-							$result[$li['hash']] = $this->_ytSearch( Xmltv_String::strtolower($li['title']), $ytConfig);
+							$result[$li['hash']] = $this->ytSearch( Xmltv_String::strtolower($li['title']), $ytConfig);
 							$this->cache->save($result[$li['hash']], $hash, 'Core', $f);
 						}
 					} else {
-						$result[$li['hash']] = $this->_ytSearch( Xmltv_String::strtolower( $li['title'] ), $ytConfig);
+						$result[$li['hash']] = $this->ytSearch( Xmltv_String::strtolower( $li['title'] ), $ytConfig);
 					}
 				}
 				
@@ -423,14 +422,18 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	
 	}
 	
-	public function dbCacheListingRelatedVideos($list=array(), $channel_title, $date){
+	/**
+	 * Load listing-related videos for particular day 
+	 * from database cache
+	 * 
+	 * @param  array $list // Videos
+	 * @param  string $channel_title
+	 * @param  Zend_Date $date
+	 * @throws Zend_Exception
+	 */
+	public function dbCacheListingRelatedVideos( array $list=null, $channel_title, Zend_Date $date ){
 		
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump(func_get_args());
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-		if (empty($list) || !is_array($list)) {
+	    if (empty($list) || !is_array($list)) {
 			throw new Zend_Exception( parent::ERR_WRONG_PARAMS.__METHOD__, 500);
 		}
 		
@@ -449,8 +452,6 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			    }
 			}
 		}
-		
-		
 		
 		// Collect hashes
 		$hashes = array();
@@ -554,9 +555,10 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	/**
 	 * Fetch videos related for today's listing from Youtube
 	 * 
-	 * @param array $list
-	 * @param string $channel_title
-	 * @param Zend_Date $date
+	 * @param  array     $list
+	 * @param  string    $channel_title
+	 * @param  Zend_Date $date
+	 * @return array|boolean
 	 */
 	public function ytListingRelatedVideos( $list=array(), $channel_title, Zend_Date $date ){
 		
@@ -582,7 +584,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		    
 		    foreach ($list as $li){
 				$progTitle = Xmltv_String::strtolower($li['title']);
-				if (($ytParsed = $this->_ytSearch( $progTitle, $ytConfig))!==false){
+				if (($ytParsed = $this->ytSearch( $progTitle, $ytConfig))!==false){
 				    if (!empty($ytParsed) && $ytParsed!==false){
 						$result[$li['hash']] = $ytParsed[0];
 				    }
@@ -646,44 +648,22 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @param  bool  $file_cache
 	 * @return Zend_Gdata_YouTube_VideoFeed|false
 	 */
-	public function ytSidebarVideos($channel=array(), $file_cache=false){
+	public function ytSidebarVideos(array $channel=null, array $yt_config=null) {
 		
-		if (empty($channel))
+		if (empty($channel)) {
 			throw new Zend_Exception(parent::ERR_MISSING_PARAMS.__METHOD__, 500);
+		}
 		
-		$vc  = Zend_Registry::get('site_config')->videos->sidebar->right;
-		$max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
-		$ytConfig = array(
-				'order'=>$vc->get('order'),
-				'max_results'=>(int)$vc->get('max_results'),
-				'start_index'=>(int)$vc->get('start_index'),
-				'safe_search'=>$vc->get('safe_search'),
-				'language'=>'ru',
-		);
+		
 		
 		if (APPLICATION_ENV=='development'){
 			echo '<b>'.__METHOD__.'</b><br />';
 			Zend_Debug::dump($ytConfig);
+			die(__FILE__.': '.__LINE__);
 		}
 		
-		if ($file_cache===true){
-		    
-			$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
-			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
-			$f = '/Youtube/SidebarRight';
-			$this->cache->setLocation(ROOT_PATH.'/cache');
-			$hash = Xmltv_Cache::getHash('related_'.$channel['title']);
-			
-			if ( ($cached = $this->cache->load( $hash, 'Core', $f))!==false) {
-			    $result = $cached;
-			} else {
-			    $result = $this->_ytSearch( 'канал '.Xmltv_String::strtolower($channel['title']), $ytConfig);
-			    $this->cache->save( $result, $hash, 'Core', $f);
-			}
-			
-		} else {
-			$result = $this->_ytSearch( $channel['title'], $ytConfig);
-		}
+		
+		$result = $this->ytSearch( $channel['title'], $ytConfig);
 		
 		if (APPLICATION_ENV=='development'){
 			//var_dump($result);
@@ -696,12 +676,12 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		    $videos = array();
 		    $c=0;
 		    foreach($result as $k=>$v){
-				/* 
-		        if (APPLICATION_ENV=='development'){
-		        	var_dump($v);
-		        	die(__FILE__.': '.__LINE__);
+				
+				if (APPLICATION_ENV=='development'){
+		        	//var_dump($v);
+		        	//die(__FILE__.': '.__LINE__);
 		        }
-		         */
+		        
 		        if ($v!==false){
 		            $videos[$c] = $v;
 		        	$videos[$c]['published'] = new Zend_Date($v['duration'], 'YYYY_MM-dd HH:mm:ss');
@@ -719,34 +699,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			return $videos;
 		}
 		
-		/*
-		$videos = array();
-		if (count($result)>=1){
-			foreach($result as $k=>$v){
-				if ($v!==false){
-				    
-				    var_dump($v);
-				    die(__FILE__.': '.__LINE__);
-				    
-					$new = $v;
-				    $new['published'] = $v->toString();
-					$new['duration'] = new Zend_Date($v['duration'], 'HH:mm:ss');
-					$new['channel'] = (int)$channel['id'];
-					$this->vcacheSidebarTable->store( $new);
-					$videos[] = $new;
-				}
-			}
-			
-			if (empty($videos)){
-				return false;
-			} else {
-				return $videos;
-			}
-			
-		}
 		
-		return false;
-		*/
 		
 	}
 	
@@ -759,7 +712,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @return array
 	 * @final
 	 */
-	private function _ytSearch($search='', $config=array()){
+	public function ytSearch($search='', $config=array()){
 			
 		$result = array();
 		$yt = new Xmltv_Youtube($config);
