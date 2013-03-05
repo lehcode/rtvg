@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.18 2013-03-04 18:29:48 developer Exp $
+ * @version $Id: VideosController.php,v 1.19 2013-03-05 06:53:19 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -152,7 +152,7 @@ class VideosController extends Xmltv_Controller_Action
 				
 					$this->cache->setLocation( ROOT_PATH.'/cache');
 					$f = '/Youtube/ShowVideo/Related';
-					$hash = Xmltv_Cache::getHash( 'related_'.$ytId);
+					$hash = Rtvg_Cache::getHash( 'related_'.$ytId);
 				
 					// Try to load videos from file cache
 					if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){

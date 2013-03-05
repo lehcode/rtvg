@@ -43,15 +43,16 @@ $(document).ready(function(){
 	$.getJSON( '/channels/typeahead/format/json', function(response) {
 		var typeahead_items = new Array();
 		$.each(response, function(key, val) { $.each(val, function(name, channel){  typeahead_items.push(channel.title); }); });
-		$('input[name=fs]').typeahead({ source:typeahead_items });
-		$('#fastsearch-wrap').fadeIn(500, function(){
+		$('#searchinput').typeahead({ source:typeahead_items });
+		$('#searchinput').fadeIn(500, function(){
 			$('input[name=fs]').blur(function(){ 
 				if ($(this).val() != '') {
 					$('ul.typeahead li').click(function(){
 						$('.channellink').each(function(){
 							var r = new RegExp($('ul.typeahead li.active').attr('data-value'), 'i');
 							if (currentTitle = $(this).html().match(r)) {
-								$("html:not(:animated),body:not(:animated)").animate({ scrollTop: $(this).offset().top }, 1000);
+								$('#searchinput').val(currentTitle);
+								//$("html:not(:animated),body:not(:animated)").animate({ scrollTop: $(this).offset().top }, 1000);
 							}
 							
 						});

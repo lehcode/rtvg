@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package sosedionline
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/forms/Logout.php,v $
- * @version $Id: Logout.php,v 1.1 2013-03-03 23:33:51 developer Exp $
+ * @version $Id: Logout.php,v 1.2 2013-03-05 06:53:19 developer Exp $
  */
 class Xmltv_Form_Logout extends Zend_Form
 {
@@ -18,7 +18,7 @@ class Xmltv_Form_Logout extends Zend_Form
     private $class;
 
     /**
-     * Constructor
+     * Base logout form
      * 
      * @param array $options
      */
@@ -36,17 +36,7 @@ class Xmltv_Form_Logout extends Zend_Form
         $submit->setLabel( $label );
         $this->addElement( $submit );
         
-    }
-    
-    /**
-     * (non-PHPdoc)
-     * @see Zend_Form::init()
-     */
-	public function init() {
-		
-	    $this->setAttrib('id', 'logoutform');
-        $this->setDecorators(array( 'FormElements', 'Form' ));
-        
+        // Wrapper properties
         $props = array('tag'=>'div');
         if ($this->class!==null){
         	$props['class'] = $this->class;
@@ -56,6 +46,16 @@ class Xmltv_Form_Logout extends Zend_Form
         		'Form',
         		array(array('data'=>'HtmlTag'), $props),
         ));
+        
+    }
+    
+    /**
+     * (non-PHPdoc)
+     * @see Zend_Form::init()
+     */
+	public function init() {
 		
+	    $this->setAttrib('id', 'logoutform');
+        	
 	}
 }

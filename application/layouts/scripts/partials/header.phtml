@@ -3,16 +3,67 @@
  * Чердак страницы
  *
  * @author  Antony Repin
- * @version $Id: header.phtml,v 1.9 2013-03-04 17:57:38 developer Exp $
+ * @version $Id: header.phtml,v 1.10 2013-03-05 06:53:19 developer Exp $
  *
  */
-
-
-$this->inlineScript()
-	->appendScript('VK.Widgets.Like("vk_like", {type: "button", verb: 1, height: 18});');
-//$form = new Xmltv_Form_Login();
 ?>
 
+<?php 
+$this->inlineScript()
+	->appendScript( Rtvg_Compressor_JSMin::minify( 'VK.Widgets.Like("vk_like", {type: "button", verb: 1, height: 18});' ));
+?>
+
+<div class="container-fluid">
+
+	<div class="navbar span5">
+		<div class="navbar-inner">
+			<?php echo $this->nav_html; ?>
+		</div>
+	</div>
+	
+	<?php 
+	// Login form
+	if (isset($this->user) && $this->isAllowed('default:auth')){
+	    $wrapClass = 'span3';
+		if ($this->user->role == 'guest') {
+		    $form = new Xmltv_Form_Login( array(
+				'action'=>$this->url( array(), 'default_user_login'),
+				'wrap_class'=>$wrapClass,
+			));
+		} else {
+			$form = new Xmltv_Form_Logout(array(
+				'action'=>$this->url( array(), 'default_user_logout'),
+				'wrap_class'=>$wrapClass,
+			));
+		}
+		echo $form;
+	}
+	?>
+	
+	<div class="span2">
+		<div id="vk_like"></div>
+	</div>
+	
+	<?php 
+	if (isset($this->user) && $this->isAllowed()) { 
+	?>
+	<div class="span2">
+		<a href="javascript:void(0);" 
+			id="vklogin" 
+			class="vklogin" 
+			title="Нажмите чтобы войти через vkontakte">
+			<img src="/images/forms/vklogin.png" alt="Войти vkontakte" />
+		</a>
+	</div>
+	<?php 
+	} ?>
+	
+</div>
+
+
+
+<?php 
+/*
 <div class="row">
 	<div class="navbar span6">
 		<div class="navbar-inner">
@@ -23,11 +74,9 @@ $this->inlineScript()
 				<li><a href="<?php echo $this->url(array(), 'default_persons_actors') ?>">Актеры</a></li>
 				<li><a href="<?php echo $this->url(array(), 'default_rumors_recent') ?>">Новости</a></li>
 				<li class="divider-vertical"></li>
-				<?php /*
 				<li>
 					<a href="javascript:void(0);" id="vklogin" class="vklogin" title="Нажмите чтобы войти через vkontakte"><img src="/images/forms/vklogin.png" alt="Войти vkontakte" /></a>
 				</li>
-				*/ ?>
 			</ul>
 		</div>
 	</div>
@@ -44,14 +93,7 @@ $this->inlineScript()
 	</div>
 	
 </div>
-
-
-
-    
-
-<div class="span12" id="gcse-results">
-	<gcse:searchresults></gcse:searchresults> 
-</div>
+*/ ?>
 
 <?php /*
 <div id="MarketGidComposite35536">

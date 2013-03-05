@@ -4,7 +4,7 @@
  * Model for user management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Users.php,v 1.3 2013-03-04 17:57:39 developer Exp $
+ * @version $Id: Users.php,v 1.4 2013-03-05 06:53:19 developer Exp $
  */
 class Xmltv_Model_Users extends Xmltv_Model_Abstract
 {
@@ -19,7 +19,6 @@ class Xmltv_Model_Users extends Xmltv_Model_Abstract
     function __construct( $config=array() ){
         
         parent::__construct($config);
-        $this->initTables();
         
     }
     

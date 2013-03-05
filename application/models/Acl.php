@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.3 2013-03-04 17:57:38 developer Exp $
+ * @version $Id: Acl.php,v 1.4 2013-03-05 06:53:19 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -31,24 +31,31 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->addRole( new Zend_Acl_Role( self::ROLE_GOD ));
 	    
 	    $this->add( new Zend_Acl_Resource( 'default:' ));
-	    $this->add( new Zend_Acl_Resource( 'default:user' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:frontpage' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:frontpage.index' ), 'default:frontpage');
 	    $this->add( new Zend_Acl_Resource( 'default:frontpage.single-channel' ), 'default:frontpage');
 	    $this->add( new Zend_Acl_Resource( 'default:channels' ), 'default:');
-	    $this->add( new Zend_Acl_Resource( 'default:channels.category' ), 'default:channels');
-	    $this->add( new Zend_Acl_Resource( 'default:channels.list' ), 'default:channels');
-	    $this->add( new Zend_Acl_Resource( 'default:channels.channel-week' ), 'default:channels');
+	    $this->add( new Zend_Acl_Resource( 'default:channels.category' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:channels.list' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:channels.channel-week' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:channels.new-comments' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:channels.typeahead' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:listings' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-listing' ), 'default:listings');
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-date' ), 'default:listings.day-listing');
 	    $this->add( new Zend_Acl_Resource( 'default:listings.program-week' ), 'default:listings');
+	    $this->add( new Zend_Acl_Resource( 'default:listings.program-day' ), 'default:listings');
 	    $this->add( new Zend_Acl_Resource( 'default:listings.channel-week' ), 'default:listings');
 	    $this->add( new Zend_Acl_Resource( 'default:listings.category' ), 'default:listings');
+	    $this->add( new Zend_Acl_Resource( 'default:listings.premieres-week' ), 'default:listings');
 	    $this->add( new Zend_Acl_Resource( 'default:videos.show-video' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:user' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:user.login' ), 'default:user' );
 	    $this->add( new Zend_Acl_Resource( 'default:user.logout' ), 'default:user' );
 	    $this->add( new Zend_Acl_Resource( 'default:user.profile' ), 'default:user' );	    
+	    $this->add( new Zend_Acl_Resource( 'default:search' ), 'default:' );	    
+	    $this->add( new Zend_Acl_Resource( 'default:search.search' ), 'default:search' );	    
+	    $this->add( new Zend_Acl_Resource( 'default:auth' ), 'default:' );	    
 	    
 	    $adminModule = new Zend_Acl_Resource( 'admin:' );
 	    $this->add( $adminModule );
@@ -61,7 +68,10 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:user.profile' ), 'admin:user' );
 	    
 	    $this->allow( null, 'default:', null );
-	    $this->deny( array(self::ROLE_GUEST, self::ROLE_USER), $adminModule );
+	    $this->deny( array(self::ROLE_GUEST, self::ROLE_USER), array( 
+	    	$adminModule,
+	    	$publisherModule,
+	    ));
 	    $this->allow( self::ROLE_PUBLISHER, $publisherModule );
 	    $this->allow( self::ROLE_PUBLISHER, $adminModule, array( 'login', 'logout', 'publish') );
 	    

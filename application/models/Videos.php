@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.17 2013-03-04 18:29:48 developer Exp $
+ * @version $Id: Videos.php,v 1.18 2013-03-05 06:53:19 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -351,7 +351,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 							mkdir(ROOT_PATH.'/cache'.$f, 0777, true);
 						}
 						
-						$hash = Xmltv_Cache::getHash('related_'.$li['hash']);
+						$hash = Rtvg_Cache::getHash('related_'.$li['hash']);
 						if (($result[$li['hash']] = $this->cache->load($hash, 'Core', $f))===false) {
 							$result[$li['hash']] = $this->ytSearch( Xmltv_String::strtolower($li['title']), $ytConfig);
 							$this->cache->save($result[$li['hash']], $hash, 'Core', $f);
@@ -439,7 +439,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	public function dbCacheListingRelatedVideos( array $list=null, $channel_title, Zend_Date $date ){
 		
 	    if (empty($list) || !is_array($list)) {
-			throw new Zend_Exception( parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
 		}
 		
 		if (APPLICATION_ENV=='development'){
@@ -518,7 +518,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	public function dbCacheVideoRelatedVideos($yt_id=null, $amt=5){
 	    
 	    if (!$yt_id)
-	        throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+	        throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
 	    
 		$select = $this->db->select()
 			->from( array('rel'=>$this->vcacheRelatedTable->getName()), array(
@@ -614,7 +614,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	private function _storeListingVideo($video=array()){
 	    
 	    if (empty($video) && !is_array($video)){
-	        throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+	        throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
 	    }
 	    
 		if (APPLICATION_ENV=='development'){
@@ -635,7 +635,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	public function ytVideoRelatedVideos($yt_id=null, $file_cache=false){
 		
 		if (!$yt_id){
-			throw new Zend_Exception(parent::ERR_MISSING_PARAMS.__METHOD__, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM);
 		}
 		
 		if (APPLICATION_ENV=='development'){
@@ -656,7 +656,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	public function ytSidebarVideos(array $channel=null, array $yt_config=null) {
 		
 		if (empty($channel)) {
-			throw new Zend_Exception(parent::ERR_MISSING_PARAMS.__METHOD__, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM);
 		}
 		
 		
@@ -742,8 +742,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
 			$c=0;
 			foreach ($vids as $v){
-				$result[$c]=$this->parseYtEntry($v);
-				$c++;
+			    $r = $this->parseYtEntry($v);
+			    if ($r!==false){
+				    $result[$c]=$r;
+					$c++;
+			    }
 			}
 		}
 		

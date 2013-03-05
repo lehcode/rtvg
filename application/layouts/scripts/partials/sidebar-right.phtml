@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-right.phtml,v 1.6 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: sidebar-right.phtml,v 1.7 2013-03-05 06:53:19 developer Exp $
  *
  */
 ?>
@@ -22,7 +22,7 @@ if (count($this->videos) && $this->videos!==false) {
     }
     
     $channelTitle = $this->escape($this->channel['title']);
-	$this->headScript()->appendScript("$(function() { 
+	$this->headScript()->appendScript( Rtvg_Compressor_JSMin::minify("$(function() { 
 	var icons = { header: 'ui-icon-circle-arrow-e', activeHeader: 'ui-icon-circle-arrow-s' };
 	$( '#col_r .videos_sidebar' ).accordion({
 		header: 'h4',
@@ -33,7 +33,7 @@ if (count($this->videos) && $this->videos!==false) {
 			'header': 'ui-icon-plus',
 			'headerSelected': 'ui-icon-minus',
 		}
-	}); });");
+	}); });"));
 	?>
 	
 	<div class="module">

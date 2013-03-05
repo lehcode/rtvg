@@ -4,39 +4,41 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Zend_Form
- * @version $Id: Login.php,v 1.3 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: Login.php,v 1.4 2013-03-05 06:53:19 developer Exp $
  *
  */
 class Xmltv_Form_Login extends Zend_Form
 {
 	
-	protected $class;
+	protected static $submitText;
 	
 	/**
-	 * Constructor
+	 * Base login form
+	 * 
 	 * @param array $options
 	 */
 	public function __construct(array $options=null){
 	    
 	    parent::__construct($options);
 	    
-	    //var_dump($this);
-	    //die(__FILE__.': '.__LINE__);
+	    self::$submitText = isset($options['submit_text']) && !empty($options['submit_text']) ? $options['submit_text'] : 'Войти' ;
 	    
-	    $submit = new Zend_Form_Element_Submit('submit');
-	    $submit->setAttrib('id', 'submitbutton');
-	    $submit->setAttrib('class', 'btn btn-primary btn-mini');
-		$submit->setDecorators(array(
-			'ViewHelper',
-			'Description',
-			'Errors',
-			array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'pull-left' ) ),
-		));
-	    $label = isset($options['submit_text']) && !empty($options['submit_text']) ? $options['submit_text'] : 'Войти' ;
-	    $submit->setLabel( $label );
-	    $this->addElement( $submit );
+	    $this->setAttrib('name', 'userlogin');
+	    $this->setAttrib('id', 'userlogin');
+	    $this->setMethod('post');
+	    $class = isset($options['html_tag_class']) && !empty($options['html_tag_class']) ? $options['html_tag_class'] : null ;
 	    
-	    $this->class = isset($options['class']) && !empty($options['class']) ? $options['class'] : null ;
+	    $tagProps = array('tag'=>'div');
+	    $htmlTagClass = isset($options['class']) && !empty($options['class']) ? $options['class'] : null ;
+	    if ($htmlTagClass!==null){
+	    	$tagProps['class'] = $htmlTagClass;
+	    }
+	    
+	    $this->setDecorators(array(
+	    		'FormElements',
+	    		'Form',
+	    		array(array('data'=>'HtmlTag'), $tagProps),
+	    ));
 	    
 	}
 	
@@ -44,7 +46,7 @@ class Xmltv_Form_Login extends Zend_Form
 	 * (non-PHPdoc)
 	 * @see Zend_Form::init()
 	 */
-	public function init($options=array()) {
+	public function init() {
 		
 	    $login = new Zend_Form_Element_Text('openid');
 		$login->setAttribs( array(
@@ -83,22 +85,20 @@ class Xmltv_Form_Login extends Zend_Form
 		))
 		->setValidators( array( new Zend_Validate_Regex( '/^[\w\d]{6,32}$/ui' )));
 		
-		$this->addElement($login);
-		$this->addElement($password);
-		
-		$this->setAttrib('name', 'userlogin');
-		$this->setAttrib('id', 'userlogin');
-		$this->setMethod('post');
-		
-		$htmlTagProps = array('tag'=>'div');
-		if ($this->class!==null){
-			$htmlTagProps['class'] = $this->class;
-		}
-		$this->setDecorators(array(
-			'FormElements',
-			'Form',
-			array(array('data'=>'HtmlTag'), $htmlTagProps),
+		$submit = new Zend_Form_Element_Submit('submit');
+		$submit->setAttrib('id', 'submitbutton');
+		$submit->setAttrib('class', 'btn btn-primary btn-mini');
+		$submit->setDecorators(array(
+				'ViewHelper',
+				'Description',
+				'Errors',
+				array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'pull-left' ) ),
 		));
+		 
+		$submit->setLabel( self::$submitText );
+		
+		$this->addElements( array($login, $password, $submit));
+		
 		
     }
     

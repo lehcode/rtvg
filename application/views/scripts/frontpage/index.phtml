@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: index.phtml,v 1.5 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: index.phtml,v 1.6 2013-03-05 06:53:20 developer Exp $
  *
  */
 
@@ -14,15 +14,14 @@ $this->headMeta()
 	->appendName( 'description', Zend_Registry::get('site_config')->site->get('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.') );
 
 $this->headScript()
-	->appendScript('$(document).ready(function($){
+	->appendScript( Rtvg_Compressor_JSMin::minify('$(document).ready(function($){
 	$("#channel").change(function(e){
 		var selected = $("#channel :selected").val();
 		$.get( "'.$this->baseUrl('frontpage/single-channel/format/html/id/').'"+selected, function(reponseHtml) {
 			$("#listing").prepend(reponseHtml);
 		});
-		_gaq.push([\'_trackPageview\', \'//\']);
 	});
-});');
+});'));
 ?>
 
 <div class="page">
@@ -48,7 +47,11 @@ $this->headScript()
 	->removeDecorator('Label');
 	echo $dropdown;
 	?>
-		
+	
+	<div id="gcse-results" style="width: 640px; margin: 0 auto;">
+		<gcse:searchbox></gcse:searchbox>
+		<gcse:searchresults></gcse:searchresults>
+	</div>	
 	
 	<div id="listing">
 	<?php 

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: TorrentsController.php,v 1.5 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: TorrentsController.php,v 1.6 2013-03-05 06:53:19 developer Exp $
  *
  */
 class TorrentsController extends Xmltv_Controller_Action
@@ -19,7 +19,7 @@ class TorrentsController extends Xmltv_Controller_Action
 		
 		//var_dump($this->_getAllParams());
 		//die(__FILE__.': '.__LINE__);
-		
+		/*
 		if ($this->requestParamsValid()){
 		    
 			try {
@@ -63,43 +63,8 @@ class TorrentsController extends Xmltv_Controller_Action
 		} else {
 			throw new Zend_Exception(__METHOD__." - Неверные данные");
 		}
+		*/
 		
-		
-		
-	}
-	
-	/**
-	 * Validate nad filter request parameters
-	 *
-	 * @throws Zend_Exception
-	 * @throws Zend_Controller_Action_Exception
-	 * @return boolean
-	 */
-	protected function requestParamsValid(){
-	
-		// Validation routines
-		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
-		if ($this->input===false) {
-			if (APPLICATION_ENV=='development'){
-				//var_dump($this->_getAllParams());
-				die(__FILE__.': '.__LINE__);
-			} elseif(APPLICATION_ENV!='production'){
-				throw new Zend_Exception(self::ERR_INVALID_INPUT, 500);
-			}
-			$this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
-	
-		} else {
-	
-			foreach ($this->_getAllParams() as $k=>$v){
-				if (!$this->input->isValid($k)) {
-					throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
-				}
-			}
-	
-			return true;
-	
-		}
-	
 	}
 	
 }

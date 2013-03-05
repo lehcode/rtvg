@@ -8,7 +8,6 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	private $_vkPass  = "majordata";
 	
 	const CURL_USERAGENT  = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/0.2.153.1 Safari/525.19';
-	const ERR_MISSING_PARAM = "Пропущен необходимый параметр!";
 	
 	public function __construct(){
 		
@@ -127,99 +126,51 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	}
 	
 	/**
-	 * Авторязация приложения vkontakte
+	 * Авторизация приложения VK
 	 * 
 	 * @return string //VK.com token
 	 */
 	public function vkAuth(){
 		
-		//if (!$app_key || !$app_secret)
-		//throw new Zend_Exception("Не указан один или более параметров для ".__METHOD__, 500);
-		
 		$adapterConfig = array(
 			'adapter'=>'Zend_Http_Client_Adapter_Curl',
 			'curloptions'=>array(
 				CURLOPT_FOLLOWLOCATION=>false,
-				CURLOPT_CONNECTTIMEOUT=>15,
+				CURLOPT_CONNECTTIMEOUT=>5,
 				CURLOPT_COOKIEFILE=>ROOT_PATH.'/cookies/vk.jar',
 				CURLOPT_COOKIEJAR=>ROOT_PATH.'/cookies/vk.jar',
-				//CURLOPT_USERAGENT=>self::CURL_USERAGENT,
+				CURLOPT_USERAGENT=>self::CURL_USERAGENT,
 				//CURLOPT_HEADER=>true,
 				//CURLINFO_HEADER_OUT=>true,
 			)
 		);
 		
 		$this->_vkEmail = urlencode($this->_vkEmail);
+		
 		//$url = "http://api.vk.com/oauth/authorize?client_id={$this->_appKey}&redirect_uri=".urlencode("http://oauth.vk.com/blank.html")."&scope=16&display=wap&response_type=token";
 		//$url = "http://vkontakte.ru/login.php?app={$this->_appKey}&layout=popup&type=browser&settings=16";
-		
 		//$url = "https://api.vk.com/oauth/token?grant_type=client_credentials&client_id={$this->_appKey}&client_secret={$this->_appSecret}&username={$this->_vkEmail}&password={$this->_vkPass}&offline=1";
 		//$url = "https://oauth.vk.com/access_token?client_id={$this->_appKey}&client_secret={$this->_appSecret}&grant_type=client_credentials&offline=1'";
 		$url = "http://oauth.vk.com/authorize?client_id=2965316&scope=offline&redirect_uri=http://oauth.vk.com/blank.html&display=wap&response_type=token";
-		//var_dump($url);
+		
 		$client = new Zend_Http_Client($url, $adapterConfig);
-		$cache  = new Xmltv_Cache( array('location'=>'/cache/Comments') );
-		$hash = $cache->getHash( __FUNCTION__ );
+		$hash = Rtvg_Cache::getHash( __FUNCTION__ );
 		try {
-			if ( Xmltv_Config::getCaching() ){
-				if (!$cache->load($hash, 'Core', 'Comments')){
-					$response = $client->request('GET');
-					$cache->save( $response, $hash, 'Core', 'Comments' );
-				} else
-				$response = $client->request('GET');
-			}
-		} catch (Exception $e) {
-			echo $e->getMessage();
+			$response = $client->request('GET');
+		} catch (Zend_Http_Client_Exception $e) {
+			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
-			
+		/*	
 		if ($response->isError()) {
-			throw new Exception("Ошибка передачи данных.\n"."Ответ сервера vk: " . $response->getStatus() . " " . $response->getMessage() . "\n");
+			throw new Exception('(!)Ошибка передачи данных. Ответ сервера vk: ' . $response->getStatus() . ' ' . $response->getMessage() . "\n");
 		} else {
 			
 		}
-		
-		var_dump($response->getBody());
-		die(__FILE__.': '.__LINE__);
+		*/
 		
 		$response = json_decode( $response->getBody() );
-		
-		//var_dump($response);
-		//die(__FILE__.': '.__LINE__);
-		
 		return $response->access_token;
 		
-		//$dom  = new Zend_Dom_Query( $response->getBody(), "UTF-8" );
-		//$html = $dom->getDocument();
-		
-		//var_dump($html);
-		/*
-		die(__FILE__.': '.__LINE__);
-		
-		$adapterConfig = array(
-			'adapter'=>'Zend_Http_Client_Adapter_Curl',
-			'curloptions'=>array(
-				CURLOPT_FOLLOWLOCATION=>true,
-				CURLOPT_AUTOREFERER=>true,
-				CURLOPT_CONNECTTIMEOUT=>15,
-				CURLOPT_UNRESTRICTED_AUTH=>true,
-				CURLOPT_COOKIEFILE=>ROOT_PATH.'/cookies/vk.jar',
-				CURLOPT_COOKIEJAR=>ROOT_PATH.'/cookies/vk.jar',
-				CURLOPT_POSTFIELDS=>urlencode( implode('&', $formFields) ),
-				CURLOPT_USERAGENT=>self::CURL_USERAGENT,
-			)
-		);
-		
-		
-		$client   = new Zend_Http_Client($formParams['action'], $adapterConfig);
-		$response = $client->request("POST");
-		if ($response->isError()) {
-			throw new Exception( "Не могу отправить данные для авторизации на vk.com" );
-		}
-		$responseHtml =$response->getBody();
-		Xmltv_Filesystem_File::write( ROOT_PATH.'/log/vk-resp.html', $responseHtml);
-		//var_dump($responseHtml);
-		die(__FILE__.': '.__LINE__);
-		*/
 	}
 	
 	
@@ -338,7 +289,12 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 					
 					$comments[$c]['intro'] = strip_tags( html_entity_decode( $intro ));
 					$comments[$c]['link']  = $feed_item->getLink();
-					$comments[$c]['author'] = $this->_extractBlogAuthor( $feed_item->getLink() );
+					try {
+					    $comments[$c]['author'] = $this->_extractBlogAuthor( $feed_item->getLink() );
+					} catch (Zend_Exception $e) {
+					    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+					}
+					
 					if ($feed_item->getDateModified())
 					$comments[$c]['date'] = new Zend_Date($feed_item->getDateModified());
 					
@@ -388,13 +344,25 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 			
 		    $new = $li;
 		    $new['date_created'] = $li['date']->toString("YYYY-MM-dd HH:mm:ss");
-		    $new['src_url']	     = $li['link'];
-		    $new['parent_id']    = $parent_id;
-		    $new['author']       = $this->_extractBlogAuthor($row->src_url);
-		    $new['intro']        = $li['intro'];
-		    $row = $this->channelsCommentsTable->createRow($new);
-			$row->save();
-			return $new;
+		    $new['src_url'] = $li['link'];
+		    $new['parent_id'] = $parent_id;
+		    $new['intro'] = $li['intro'];
+		    
+		    try {
+		        $new['author'] = $this->_extractBlogAuthor( $li['link'] );
+		    } catch (Exception $e) {
+		        die(__METHOD__.': '.__LINE__);
+		    }
+		    
+		    try {
+	            $row = $this->channelsCommentsTable->createRow($new);
+	            $row->save();
+	        } catch (Zend_Db_Table_Row_Exception $e) {
+	            return false;
+	        }
+		    
+	        return $new;
+	        
 		}
 		
 	}
@@ -409,7 +377,7 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	private function _extractBlogAuthor($link=null){
 		
 		if (!$link)
-		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM_FOR.__METHOD__, 500);
 		
 		$trim = new Zend_Filter_StringTrim(' /\:.');
 		
@@ -476,7 +444,7 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	public function channelComments($id=null, $paginate=false){
 	
 		if (!$id)
-			throw new Zend_Exception( self::ERR_MISSING_PARAM, 500 );
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500 );
 		
 		$amt = (int)Zend_Registry::get('site_config')->channels->comments->get('amount');
 		$type = $type=='channel' ? 'c' : 'p';

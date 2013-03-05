@@ -4,7 +4,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.17 2013-03-04 18:29:48 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.18 2013-03-05 06:53:19 developer Exp $
  *
  */
 
@@ -78,7 +78,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
 			//->registerPlugin( new Xmltv_Plugin_Antibot( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-			->returnResponse( true )
+			->returnResponse( false )
 			->throwExceptions( false );
 		
 		

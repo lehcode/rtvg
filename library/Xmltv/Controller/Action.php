@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Action.php,v 1.10 2013-03-04 17:57:39 developer Exp $
+ * @version $Id: Action.php,v 1.11 2013-03-05 06:53:20 developer Exp $
  *
  */
 class Xmltv_Controller_Action extends Zend_Controller_Action
@@ -55,7 +55,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	 * Validator
 	 * @var Xmltv_Controller_Action_Helper_RequestValidator
 	 */
-	protected $validator;
+	protected $_validator;
 	/**
 	 *
 	 * Input filtering plugin
@@ -65,7 +65,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	
 	/**
 	 * Caching object
-	 * @var Xmltv_Cache
+	 * @var Rtvg_Cache
 	 */
 	protected $cache;
 	
@@ -93,12 +93,6 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
      * @var Xmltv_User
      */
     protected static $user;
-    
-	const ERR_INVALID_INPUT        = 'Неверные данные для ';
-	const ERR_MISSING_CHANNEL_INFO = "Не указаны данные канала для ";
-	const ERR_MISSING_CONTROLLER   = "Не указан контроллер для ";
-	const ERR_WRONG_PARAM          = "Неверный параметр для ";
-	
 	
 	/**
 	 * (non-PHPdoc)
@@ -113,7 +107,9 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 			$this->contextSwitch = $this->_helper->getHelper('ContextSwitch');
 		}
 		
-		$this->validator = $this->_helper->getHelper('RequestValidator');
+		$this->_validator = $this->_helper->getHelper('RequestValidator');
+		
+		$this->_initCache();
 		
 		self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		if (self::$videoCache){
@@ -127,8 +123,6 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		}
 		
 		$this->weekDays = $this->_helper->getHelper('WeekDays');
-		$this->cache = new Xmltv_Cache();
-		$this->cache->setLocation(ROOT_PATH.'/cache');
 		$this->channelsModel = new Xmltv_Model_Channels();
 		$this->programsModel = new Xmltv_Model_Programs();
 		$this->videosModel = new Xmltv_Model_Videos();
@@ -136,6 +130,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		$this->usersModel = new Xmltv_Model_Users();
 		
 		$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
+		
 		
 		$kc = Zend_Registry::get('site_config')->channels->kids;
 		if (stristr($kc, ',')){
@@ -199,7 +194,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		}
 		
 		// Validation routines
-		$this->input = $this->validator->direct( array('isvalidrequest', 'vars'=>$vars));
+		$this->input = $this->_validator->direct( array('isvalidrequest', 'vars'=>$vars));
 		if ($this->input===false) {
 			if (APPLICATION_ENV=='development'){
 				echo "Wrong input!";
@@ -302,7 +297,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 			$this->cache->setLocation(ROOT_PATH.'/cache');
 			$f = '/Tinyurl/Pages';
 			
-			$hash = Xmltv_Cache::getHash('tinyurl_'.implode(';', $parts).implode(';', $uniq));
+			$hash = Rtvg_Cache::getHash('tinyurl_'.implode(';', $parts).implode(';', $uniq));
 			if (($link = $this->cache->load($hash, 'Core', $f))===false) {
 				$link = trim($tinyurl->shorten( $url ));
 				$this->cache->save($link, $hash, 'Core', $f);
@@ -366,13 +361,33 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	 */
 	public function listingDate(){
 		
+	    $now = Zend_Date::now();
 		if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $this->input->getEscaped('date'))) {
-			return new Zend_Date( new Zend_Date( $this->input->getEscaped('date'), 'dd-MM-YYYY' ), 'dd-MM-YYYY' );
+			$d = new Zend_Date( new Zend_Date( $this->input->getEscaped('date'), 'dd-MM-YYYY' ), 'dd-MM-YYYY' );
 		} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $this->input->getEscaped('date'))) {
-			return new Zend_Date( new Zend_Date( $this->input->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
-		} else {
-			return new Zend_Date();
+			$d = new Zend_Date( new Zend_Date( $this->input->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
+			
 		}
+		
+		//var_dump($d->compare($now, 'DD'));
+		//die(__FILE__.': '.__LINE__);
+		
+		if (isset($d) && ($d->compare($now, 'DD')!=0)) {
+		    $date = $d->toString('YYYY-MM-dd');
+		    $time = $now->toString('HH:mm:ss');
+		    return new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
+		}
+		
+		if (!$d) {
+		    return $now;
+		}
+		
+		if ( APPLICATION_ENV=='development' ){
+		    //var_dump($d->toString());
+		    //die(__FILE__.': '.__LINE__);
+		}
+		
+		return $d;
 		
 	}
 	
@@ -404,7 +419,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		    $this->cache->setLifetime(600);
 		    $this->cache->setLocation(ROOT_PATH.'/cache');
 			$f = '/Listings/Top';
-			$hash = Xmltv_Cache::getHash('top'.$amt);
+			$hash = Rtvg_Cache::getHash('top'.$amt);
 			if (!$result = $this->cache->load($hash, 'Core', $f)) {
 				$result = $this->programsModel->topPrograms( $amt, $week_start, $week_end );
 				$this->cache->save($result, $hash, 'Core', $f);
@@ -425,7 +440,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		if ($this->cache->enabled){
 			$f = "/Channels";
 			$this->cache->setLocation(ROOT_PATH.'/cache');
-			$hash  = Xmltv_Cache::getHash("ProgramsCategories");
+			$hash  = Rtvg_Cache::getHash("ProgramsCategories");
 			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
 				$cats = $table->fetchAll();
 				$this->cache->save($cats, $hash, 'Core', $f);
@@ -438,7 +453,6 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	}
 	
 	
-	
 	/**
 	 * Channels categories
 	 */
@@ -448,7 +462,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		if ($this->cache->enabled){
 			$f = "/Channels";
 			$this->cache->setLocation(ROOT_PATH.'/cache');
-			$hash  = Xmltv_Cache::getHash("ChannelsCategories");
+			$hash  = Rtvg_Cache::getHash("ChannelsCategories");
 			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
 				$cats = $model->channelsCategories();
 				$this->cache->save($cats, $hash, 'Core', $f);
@@ -460,13 +474,22 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	
 	}
 	
+	
+	/**
+	 * Initialize cache
+	 */
 	protected function _initCache(){
 		
-		$this->cache = new Xmltv_Cache();
-		$this->cache->setLocation(ROOT_PATH.'/cache');
-		$this->cache->lifetime = (int)Zend_Registry::get('site_config')->cache->system->get('lifetime');
+	    $e = (bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' );
+	    if ($e===true){
+	        $this->cache = new Rtvg_Cache();
+	        $this->cache->enabled = true;
+	        $this->cache->setLocation( ROOT_PATH.'/cache' );
+	        $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
+	    }
 		
 	}
+	
 	
 	/**
 	 * Top channels programs listing
@@ -483,7 +506,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		
 		if ($this->cache->enabled){
 		    $this->cache->setLocation(ROOT_PATH.'/cache');
-			$hash = Xmltv_Cache::getHash('featuredchannels');
+			$hash = Rtvg_Cache::getHash('featuredchannels');
 			$f = '/Channels/Top';
 			if (($result = $this->cache->load($hash, 'Core', $f))===false) {
 				$result = $this->channelsModel->topChannels($amt);
@@ -513,7 +536,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		if ($this->cache->enabled){
 		    
 		    $this->cache->setLocation( ROOT_PATH.'/cache' );
-			$hash = Xmltv_Cache::getHash( 'featuredchannels_'.(string)$amt );
+			$hash = Rtvg_Cache::getHash( 'featuredchannels_'.(string)$amt );
 			$f = '/Channels/Featured';
 			if (($result = $this->cache->load($hash, 'Core', $f))===false) {
 				$result = $this->channelsModel->featuredChannels($amt);

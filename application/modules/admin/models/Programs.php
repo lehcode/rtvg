@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.25 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: Programs.php,v 1.26 2013-03-05 06:53:19 developer Exp $
  */
 
 class Admin_Model_Programs extends Xmltv_Model_Programs
@@ -110,9 +110,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		'/^([\d]{1,2})\+\s/ui',
 	) ;
 	
-	const ERR_MISSING_PARAMS = "Пропущен параметр для ";
-	const ERR_WRONG_TYPE     = "Неверный параметр для ";
-	const ERR_CANNOT_SAVE    = "Не могу сохранить запись!";
+	
 
 	/**
 	 * Model onstructor
@@ -1032,7 +1030,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		$table   = new Admin_Model_DbTable_Actors();
 		$tolower = new Zend_Filter_StringToLower( $this->_tolower_options );
 		$props   = new Admin_Model_DbTable_ProgramsProps();
-		$cache   = new Xmltv_Cache();
+		//$cache   = new Xmltv_Cache();
 		
 		//var_dump($credits);
 		//die(__FILE__.': '.__LINE__);
@@ -1433,9 +1431,9 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	public function saveProgram( $data=array()){
 		
 	    if (empty($data)) {
-	        throw new Zend_Exception(self::ERR_MISSING_PARAMS.__METHOD__, 500);
+	        throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
 	    } elseif(!is_array($data)){
-	        throw new Zend_Exception(self::ERR_WRONG_TYPE.__METHOD__, 500);
+	        throw new Zend_Exception( Rtvg_Message::ERR_WRONG_TYPE_FOR.__METHOD__, 500);
 	    } else {
 	        $data['actors']       = !isset($data['actors'])       || empty($data['actors'])       ? '' : $data['actors'] ;
 	        $data['directors']    = !isset($data['directors'])    || empty($data['directors'])    ? '' : $data['directors'] ;

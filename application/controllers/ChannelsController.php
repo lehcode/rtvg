@@ -4,7 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.20 2013-03-04 17:57:38 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.21 2013-03-05 06:53:19 developer Exp $
  *
  */
 class ChannelsController extends Xmltv_Controller_Action
@@ -58,7 +58,7 @@ class ChannelsController extends Xmltv_Controller_Action
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$this->view->assign('pageclass', 'allchannels');
 			if ($this->cache->enabled){
-				$hash = Xmltv_Cache::getHash('published_channels');
+				$hash = Rtvg_Cache::getHash('published_channels');
 				if (!$rows = $this->cache->load($hash, 'Core', $this->cacheRoot)) {
 					$rows = $this->channelsModel->getPublished();
 					$this->cache->save($rows, $hash, 'Core', $this->cacheRoot);
@@ -97,13 +97,14 @@ class ChannelsController extends Xmltv_Controller_Action
 				$category = $channelsCategories->fetchRow("`alias` LIKE '".$this->input->getEscaped('c')."'")->toArray();
 			}
 			
-			$this->channelsModel = new Xmltv_Model_Channels();
-			$hash = Xmltv_Cache::getHash( 'typeahead_all' );
+			$hash = Rtvg_Cache::getHash( 'typeahead_all' );
 			if ($this->cache->enabled) {
 			    $this->cache->setLocation(ROOT_PATH.'/cache');
-				if (($items = $this->cache->load( $hash, 'Core', $this->cacheRoot))===false){
+			    $this->cache->setLifetime(86400*7);
+			    $f = "/Channels";
+				if (($items = $this->cache->load( $hash, 'Core', $f))===false){
 					$items = $this->channelsModel->getTypeaheadItems( $category['id']);
-					$this->cache->save($items, $hash, 'Core', $this->cacheRoot);
+					$this->cache->save($items, $hash, 'Core', $f);
 				}
 			} else {
 				$items = $this->channelsModel->getTypeaheadItems( $category['id']);
@@ -206,7 +207,7 @@ class ChannelsController extends Xmltv_Controller_Action
 			
 			if ($this->cache->enabled){
 			    $this->cache->setLocation(ROOT_PATH.'/cache');
-				$hash = Xmltv_Cache::getHash('channel_'.$channel['alias'].'_week');
+				$hash = Rtvg_Cache::getHash('channel_'.$channel['alias'].'_week');
 				$f = '/Channels';
 				if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
 					$schedule = $this->channelsModel->getWeekSchedule($channel, $s, $e);
@@ -232,21 +233,16 @@ class ChannelsController extends Xmltv_Controller_Action
 		
 		if ($this->requestParamsValid()){
 			
-			foreach ($this->_getAllParams() as $k=>$v){
-				if (!$this->input->isValid($k)) {
-					throw new Zend_Controller_Action_Exception("Invalid ".$k.'!');
-				}
-			}
-				
 			// Channel properties
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$channelAlias = $this->input->getEscaped('channel');
 			if ($this->cache->enabled){
 			    $this->cache->setLocation(ROOT_PATH.'/cache');
-				$f    = '/Feeds/Yandex';
+			    $this->cache->setLifetime(3600*24*7);
+				$f  = '/Feeds/Yandex';
 				$hash = $this->cache->getHash('channel_'.$channelAlias);
 				if (($channel = $this->cache->load($hash, 'Core', $f))===false) {
-					$channel = $this->channelsModel->getByAlias($channelAlias);
+					$channel = $this->channelsModel->getByAlias( $channelAlias );
 					$this->cache->save($channel, $hash, 'Core', $f);
 				}
 			} else {
@@ -258,23 +254,14 @@ class ChannelsController extends Xmltv_Controller_Action
 			$commentsModel = new Xmltv_Model_Comments();
 			$feedData = $commentsModel->getYandexRss( array( 'телеканал "'.Xmltv_String::strtolower($channel['title']).'"') );
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($feedData);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
 			if ( ($new = $commentsModel->parseYandexFeed( $feedData ))!==false){
-				
-			    if (APPLICATION_ENV=='development'){
-			        //var_dump($new);
-			        //die(__FILE__.': '.__LINE__);
+				if (count($new)){
+				    try {
+				        $commentsModel->saveChannelComments($new, $channel['id']);
+				    } catch (Exception $e) {
+				    }
 			    }
-			    
-			    if (count($new)){
-				    $commentsModel->saveChannelComments($new, $channel['id']);
-			    }
-				
-			    $this->view->assign('items', $new);
+				$this->view->assign('items', $new);
 			    
 			}
 

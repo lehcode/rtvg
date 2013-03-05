@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: SearchController.php,v 1.4 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: SearchController.php,v 1.5 2013-03-05 06:53:19 developer Exp $
  *
  */
 class SearchController extends Xmltv_Controller_Action
@@ -43,19 +43,23 @@ class SearchController extends Xmltv_Controller_Action
      */
     public function searchAction () {
         
-        if ( parent::requestParamsValid() ){
-            
-            $search = $this->input->getEscaped('searchinput');
-            $type = $this->input->getEscaped('type');
-            $script = 'search/'.$this->input->getEscaped('type').'.phtml';
-            
-            if ($this->input->getEscaped('type')=='channel'){
-                $channelsModel = new Xmltv_Model_Channels();
-                $result = $channelsModel->searchChannel( $search);
-                $this->view->assign('result', $result);
-                $this->renderScript( 'search/channel.phtml' );
-            }
+        try {
+            parent::requestParamsValid();
+        } catch (Zend_Filter_Exception $e) {
+            throw new Zend_Exception($e->getMessage(), $e->getCode, $e);
         }
+        
+        $search = $this->input->getEscaped('searchinput');
+        $type = $this->input->getEscaped('type');
+        $script = 'search/'.$this->input->getEscaped('type').'.phtml';
+            
+        if ($this->input->getEscaped('type')=='channel'){
+            $channelsModel = new Xmltv_Model_Channels();
+            $result = $channelsModel->searchChannel( $search);
+            $this->view->assign('result', $result);
+            $this->renderScript( 'search/channel.phtml' );
+         }
+        
         
     }
     

@@ -8,7 +8,7 @@
   <h1>An error occurred</h1>
   <h2><?php echo $this->message ?></h2>
 
-  <?php if (isset($this->exception)): ?>
+  <?php if (isset($this->exception) && $this->display_exceptions===true){ ?>
   
   <h3>Exception information:</h3>
   <p>
@@ -20,10 +20,11 @@
   </pre>
 
   <h3>Request Parameters:</h3>
-  <pre><?php echo $this->escape(var_export($this->request->getParams(), true)) ?>
+  <pre><?php echo $this->escape( var_export($this->request->getParams(), true)) ?>
   </pre>
 
-  <?php endif ?>
+  <?php 
+} ?>
 
 </body>
 </html>

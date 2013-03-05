@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.18 2013-03-04 17:57:39 developer Exp $
+ * @version $Id: Channels.php,v 1.19 2013-03-05 06:53:19 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -40,7 +40,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function createUrl($channel=null, $baseUrl=null){
 		
 		if (!$channel || $baseUrl===null)
-			throw new Zend_Exception( self::ERR_WRONG_PARAMS.__METHOD__, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM.__METHOD__, 500);
 		
 		$channel['icon'] = $baseUrl.'/images/channel_logo/'.$channel['icon'];
 		return $channel;
@@ -160,7 +160,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function addHit($id=null){
 		
 		if (!$id || !is_int($id))
-			throw new Zend_Exception(self::ERR_WRONG_PARAMS, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
 		
 		$this->_hits_table = new Xmltv_Model_DbTable_ChannelsRatings();
 		$this->_hits_table->addHit($id);
@@ -170,7 +170,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function getDescription($id=null){
 		
 		if (!$id)
-		throw new Zend_Exception(self::ERR_WRONG_PARAMS, 500);
+		throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
 		
 		$props = $this->table->find($id)->current();
 		$desc['intro'] = $props->desc_intro;
@@ -190,7 +190,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function categoryChannels($cat_alias=null){
 	
 		if (!$cat_alias)
-			throw new Zend_Exception(self::ERR_WRONG_PARAMS, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
 		
 		
 		$select = $this->db->select()

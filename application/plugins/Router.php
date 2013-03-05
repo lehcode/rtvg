@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.13 2013-03-04 17:57:39 developer Exp $
+ * @version $Id: Router.php,v 1.14 2013-03-05 06:53:19 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -148,6 +148,15 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
 			'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)')) );
 			
+		$this->_router->addRoute( 'default_listings_premieres-week', 
+		new Zend_Controller_Router_Route( 'телепрограмма/премьеры/:timespan', 
+		array(
+			'module'=>'default',
+			'controller'=>'listings',
+			'action'=>'premieres-week',
+			'timespan'=>'сегодня|неделя|[\d]{2}-[\d]{2}-[\d]{4}',
+		)));
+			
 		
 		$this->_router->addRoute( 'default_videos_show-video',
 		new Zend_Controller_Router_Route( 'видео/онлайн/:alias/:id', 
@@ -155,8 +164,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'module'=>'default',
 			'controller'=>'videos',
 			'action'=>'show-video',
-			'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-			'id'=>'.+')));
+			'alias'=>'[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+',
+			'id'=>'[\w\d]{12}')));
 			
 		$this->_router->addRoute( 'default_error_missing-page', 
 		new Zend_Controller_Router_Route( 'горячие-новости',

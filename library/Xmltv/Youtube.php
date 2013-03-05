@@ -119,25 +119,16 @@ class Xmltv_Youtube {
 	public function fetchVideo($yt_id=null){
 		
 		if (!$yt_id) {
-			throw new Zend_Exception("Не указан ID видео для ".__METHOD__, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
 		}
 		
 		try {
 			$result = $this->client->getVideoEntry($yt_id);	
 		} catch (Zend_Gdata_App_Exception $e) {
-		    throw new Zend_Exception($e->getMessage(), 404);
+		    return false;
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		if (is_a($result, 'Zend_Gdata_YouTube_VideoEntry')) {
-			return $result;
-		}
-		
-		return false;
+		return $result;
 		
 	}
 	

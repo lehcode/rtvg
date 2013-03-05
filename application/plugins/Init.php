@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.16 2013-03-04 17:57:39 developer Exp $
+ * @version $Id: Init.php,v 1.17 2013-03-05 06:53:19 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -42,6 +42,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		$this->_initActionHelpers();
 		$this->_initAutoloader();
 		$this->_initUserAgent();
+		$this->_initNav();
 		
 	}
 
@@ -106,6 +107,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	protected function _initActionHelpers () {
 		
 		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Xmltv_Controller_Action_Helper' );
+		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Rtvg_Controller_Action_Helper' );
 		
 	}
 
@@ -224,6 +226,21 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	protected function _initPopupRand(){
 		
 	    Zend_Registry::set('popup_rand', floor(rand(0, 1)));
+	    
+	}
+	
+	/**
+	 * Initialize navigation
+	 * @throws Zend_Exception
+	 */
+	protected function _initNav(){
+	    
+    	$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/fp.xml', 'nav' ) );
+    	Zend_Registry::set('FpMenu', $menu);
+    	
+    	//$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/admin.xml', 'nav' ) );
+    	//Zend_Registry::set('AdminMenu', $menu);
+	    
 	    
 	}
 	

@@ -31,7 +31,7 @@ class Xmltv_Bootstrap_Auth extends Bootstrap
 	 * @param  Zend_Db_Adapter $db
 	 * @return Xmltv_User
 	 */
-	public static function getCurrentUser($db)
+	public static function getCurrentUser($db=null)
 	{
 	    
 	    if (APPLICATION_ENV=='development'){
@@ -40,7 +40,13 @@ class Xmltv_Bootstrap_Auth extends Bootstrap
 	    }
 	    
 		if (null === self::$_currentUser) {
-			$model = new Xmltv_Model_Users( array( 'db'=>$db ));
+		    
+		    if (isset($db)){ 
+				$model = new Xmltv_Model_Users( array( 'db'=>$db ));
+		    } else {
+		        $model = new Xmltv_Model_Users();
+		    }
+		    
 			self::setCurrentUser( $model->getUser() );
 		}
 		return self::$_currentUser;

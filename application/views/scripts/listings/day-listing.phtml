@@ -4,24 +4,27 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.21 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.22 2013-03-05 06:53:20 developer Exp $
  *
  */
 
 $channelTitle = $this->escape($this->channel['title']);
 $channelAlias = $this->escape($this->channel['alias']);
 
+APPLICATION_ENV=='production' ?
+	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.min.js')) :
+	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.js'));
+
 $this->headScript()
-	->appendFile($this->baseUrl()."/js/listing-day.js")
-	->appendScript("$('.top-position img').tooltip({ showURL: false });
-	$('.carousel').carousel('pause');
+	->appendFile( $this->baseUrl()."/js/listing-day.js")
+	->appendScript( Rtvg_Compressor_JSMin::minify( "$('.carousel').carousel('pause');
 	$(document).ready(function(){
-		$.ajax({ 
-			url: '/channels/new-comments/channel/".$channelAlias."/format/html', 
+		$('.top-position img').tooltip({ showURL: false });
+		$.ajax({ url: '/channels/new-comments/channel/".$channelAlias."/format/html', 
 			dataType: 'html',
 			success: function(html){ $(html).prependTo($('#comments')); }});
 	});
-");
+"));
 
 
 /*
@@ -40,10 +43,10 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 
 
 if ($this->is_today) {
-	$this->headScript()
-	->appendScript("$('a#carousel_onoff').click(function(){
-			_gaq.push(['_trackPageview', '".$this->url( array('channel'=>$channelAlias), 'default_listings_day-listing')."']);
-	});");
+	//$this->headScript()
+	//->appendScript("$('a#carousel_onoff').click(function(){
+	//		_gaq.push(['_trackPageview', '".$this->url( array('channel'=>$channelAlias), 'default_listings_day-listing')."']);
+	//});");
 	//META title
 	$this->headMeta()->setName('title', sprintf ('Программа телеканала %s на сегодня, %s. Видео записей программ.', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
 	//Browser window title
@@ -70,7 +73,13 @@ if ($this->is_today) {
 		} 
 		?>
 		<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
-		<?php echo $this->typeahead_form; ?>
+		<?php 
+		$form = new Xmltv_Form_TypeaheadForm(array(
+			'action'=>$this->url(array(), 'default_search_search'),
+			'btn_class'=>'btn btn-primary',
+		));
+		echo $form; 
+		?>
 	</div>
 	<div class="module" style="width: 30%; float: right;">
 		<?php echo new Xmltv_Form_TimezoneSwitch(array('label_class'=>'smallheading', 'time_shift'=>$this->timeshift)); ?>

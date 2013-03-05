@@ -111,9 +111,6 @@ abstract class Xmltv_Model_Abstract
 	        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
 	    }
 	    
-		// Init cache	
-		$this->cache = new Xmltv_Cache(array('location'=>'/'));
-		
 		// Init database
 		$this->dbConf = $config['db'];
 		$this->db = new Zend_Db_Adapter_Mysqli( $this->dbConf);

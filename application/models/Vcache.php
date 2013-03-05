@@ -81,7 +81,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         } elseif (is_array($video)) {
             $newRow = $video;
         } else {
-            throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAMS, 500);
         }
         
         return $this->vcacheMainTable->store($newRow);
@@ -98,7 +98,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
     public function saveListingVideo($video=null){
     	
         if (!is_array($video)) {
-            throw new Zend_Exception(parent::ERR_WRONG_PARAMS.__METHOD__, 500);
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
         }
         
         if (APPLICATION_ENV=='development'){
@@ -206,7 +206,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         }
         
         if (!$video || !$channel_id){
-            throw new Zend_Exception( parent::ERR_MISSING_PARAMS );
+            throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM );
         }
         
         if (is_a( $video, 'Zend_Gdata_YouTube_VideoEntry')){
@@ -311,11 +311,11 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
     public function sidebarVideos( $channel_id=null ){
     	
         if (!$channel_id){
-            throw new Zend_Exception( parent::ERR_MISSING_PARAMS );
+            throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM );
         }
 
         if (!is_numeric($channel_id)){
-            throw new Zend_Exception( parent::ERR_WRONG_PARAMS );
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM );
         }
         
         $select = $this->db->select()
