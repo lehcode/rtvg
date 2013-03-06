@@ -78,7 +78,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
      */
     public function saveMainVideo($video=null){
     	
-        if (null===$video){
+        if (!$video){
             throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
         }
         

@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.20 2013-03-06 04:54:51 developer Exp $
+ * @version $Id: Videos.php,v 1.21 2013-03-06 05:29:44 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -76,7 +76,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$v['thumbs']	= is_array($entry['thumbs']) ? $entry['thumbs'] : Zend_Json::decode($entry['thumbs']);
 			
 		} else {
-			throw new Exception(parent::ERR_WRONG_FORMAT.__METHOD__, 500);
+			throw new Exception( Rtvg_Message::ERR_WRONG_FORMAT );
 		}
 		
 		return $v;

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.20 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: VideosController.php,v 1.21 2013-03-06 05:29:00 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -94,34 +94,47 @@ class VideosController extends Xmltv_Controller_Action
 							if (($mainVideo = $this->cache->load( $hash, 'Core', $f))==false){
 					    		
 							    // Search Youtube service for video
-					            if (($ytEntry = $youtube->fetchVideo( $ytId ))===false) {
+					            if (false === ($ytEntry = $youtube->fetchVideo( $ytId ))) {
 					                // Video was not found at youtube
+					                $this->view->assign('hide_sidebar', 'right');
 					                return $this->render('video-not-found');
-					                //return true;
 					            } 
 					            
-					            $mainVideo = $this->videosModel->parseYtEntry( $ytEntry);
+					            if (false === ($mainVideo = $this->videosModel->parseYtEntry( $ytEntry))) {
+					                $this->view->assign('hide_sidebar', 'right');
+					                return $this->render('video-not-found');
+					            }
+					            
 					            $this->cache->save( $mainVideo, $hash, 'Core', $f);
+					            
 					        }
 					    }
 					    
-					    if (parent::$videoCache===true){
-							$this->vCacheModel->saveMainVideo($mainVideo);
-						}
+					    if ($mainVideo){
+						    if (parent::$videoCache===true){
+								$this->vCacheModel->saveMainVideo($mainVideo);
+							}
+					    }
 						
 					} else {
 					    
-						if (($mainVideo = $this->cache->load( $hash, 'Core', $f))==false){
+						if (false === ($mainVideo = $this->cache->load( $hash, 'Core', $f))){
 					    		
 						    // Search Youtube service for video
-				            if (($ytEntry = $youtube->fetchVideo( $ytId ))===false) {
+				            if (false === ($ytEntry = $youtube->fetchVideo( $ytId ))) {
+				                
 				                // Video was not found at youtube
+				                $this->view->assign('hide_sidebar', 'right');
 				                return $this->render('video-not-found');
-				                //return true;
-				            } 
+				            }
 				            
-				            $mainVideo = $this->videosModel->parseYtEntry( $ytEntry);
+				            if (false === ($mainVideo = $this->videosModel->parseYtEntry( $ytEntry))) {
+				                $this->view->assign('hide_sidebar', 'right');
+				            	return $this->render('video-not-found');
+				            }
+				            
 				            $this->cache->save( $mainVideo, $hash, 'Core', $f);
+				            
 				        }
 					    
 					}
