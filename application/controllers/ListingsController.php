@@ -4,10 +4,10 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: ListingsController.php,v 1.29 2013-03-06 04:54:50 developer Exp $
+ * @version $Id: ListingsController.php,v 1.30 2013-03-06 21:59:19 developer Exp $
  *
  */
-class ListingsController extends Xmltv_Controller_Action
+class ListingsController extends Rtvg_Controller_Action
 {
 	
 	/**
@@ -825,6 +825,27 @@ class ListingsController extends Xmltv_Controller_Action
 		
 	    $this->view->assign('hide_sidebar', 'right');
 	    
+	}
+	
+	/**
+	 * All series in the week
+	 */
+	public function seriesWeekAction(){
+	
+		$model = new Xmltv_Model_Programs();
+		$data['date'] = new Zend_Date(null, null, 'ru');
+		$weekStart = $this->_helper->WeekDays( array( 'method'=>'getStart', 'data'=>$data));
+		$data['date'] = new Zend_Date(null, null, 'ru');
+		$weekEnd = $this->_helper->WeekDays( array( 'method'=>'getEnd', 'data'=>$data));
+		$seriesList = $model->getCategoryForPeriod( $weekStart, $weekEnd, $this->categoriesMap['series'] );
+		//var_dump($weekStart->toString('YYYY-MM-dd'));
+		//var_dump($weekEnd->toString('YYYY-MM-dd'));
+	
+	
+		//var_dump($seriesList);
+		//die(__FILE__.': '.__LINE__);
+	
+		//$this->render('under-constriction');
 	}
 	
 	

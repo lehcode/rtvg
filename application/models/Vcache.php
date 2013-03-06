@@ -82,6 +82,11 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
             throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
         }
         
+        if (APPLICATION_ENV=='development'){
+            //var_dump($video);
+            //die(__FILE__.': '.__LINE__);
+        }
+        
         $model = new Xmltv_Model_Videos();
         
         if (is_a($video, 'Zend_Gdata_YouTube_VideoEntry')) {

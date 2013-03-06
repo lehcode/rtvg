@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.21 2013-03-06 05:29:44 developer Exp $
+ * @version $Id: Videos.php,v 1.22 2013-03-06 21:59:19 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -38,6 +38,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			try {
 			    $v['alias'] = Xmltv_Youtube::videoAlias( $v['title'] );
 			} catch (Zend_Exception $e) {
+			    return false;
 			}
 			
 			$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;

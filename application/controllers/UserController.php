@@ -4,11 +4,11 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: UserController.php,v 1.4 2013-03-04 18:29:48 developer Exp $
+ * @version $Id: UserController.php,v 1.5 2013-03-06 21:59:19 developer Exp $
  *
  */
 
-class UserController extends Xmltv_Controller_Action
+class UserController extends Rtvg_Controller_Action
 {
 
     //sesssion

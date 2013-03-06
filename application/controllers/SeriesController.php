@@ -4,10 +4,10 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: SeriesController.php,v 1.5 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: SeriesController.php,v 1.6 2013-03-06 21:59:19 developer Exp $
  *
  */
-class SeriesController extends Xmltv_Controller_Action
+class SeriesController extends Rtvg_Controller_Action
 {
 	public function init () {
 		//$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );

@@ -4,10 +4,10 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: TorrentsController.php,v 1.6 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: TorrentsController.php,v 1.7 2013-03-06 21:59:19 developer Exp $
  *
  */
-class TorrentsController extends Xmltv_Controller_Action
+class TorrentsController extends Rtvg_Controller_Action
 {
 	
 	/**

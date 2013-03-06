@@ -4,11 +4,11 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: FrontpageController.php,v 1.6 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: FrontpageController.php,v 1.7 2013-03-06 21:59:19 developer Exp $
  *
  */
 
-class FrontpageController extends Xmltv_Controller_Action
+class FrontpageController extends Rtvg_Controller_Action
 {
     
     const TOP_CHANNELS_AMT = 30;

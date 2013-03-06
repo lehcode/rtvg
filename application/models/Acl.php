@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.4 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Acl.php,v 1.5 2013-03-06 21:59:19 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -48,6 +48,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:listings.channel-week' ), 'default:listings');
 	    $this->add( new Zend_Acl_Resource( 'default:listings.category' ), 'default:listings');
 	    $this->add( new Zend_Acl_Resource( 'default:listings.premieres-week' ), 'default:listings');
+	    $this->add( new Zend_Acl_Resource( 'default:sitemap.sitemap' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:videos.show-video' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:user' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:user.login' ), 'default:user' );

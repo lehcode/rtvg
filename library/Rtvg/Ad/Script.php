@@ -57,7 +57,7 @@ class Rtvg_Ad_Script {
         
         if ($handle = opendir($folder)) {
             while (false !== ($entry = readdir($handle))) {
-	            if ($entry != "." && $entry != "..") {
+	            if ($entry != "." && $entry != ".." && !stristr($entry, "_")) {
 	                $this->_setData( file_get_contents($folder.'/'.$entry));
 		        }
             }

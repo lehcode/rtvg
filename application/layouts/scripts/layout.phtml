@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.30 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: layout.phtml,v 1.31 2013-03-06 21:59:19 developer Exp $
  *
  */
 
@@ -52,7 +52,6 @@ $this->jQuery()->enable() //enable jquery ;
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
 	->prependFile( $this->baseUrl( $this->baseUrl( 'js/less.min.js' )))
-	->appendFile( $this->baseUrl( 'js/g.js' ))
 	->appendFile( 'http://yandex.st/share/share.js' )
 	->appendFile( '//vk.com/js/api/openapi.js?75' );
 
@@ -67,7 +66,6 @@ $this->inlineScript()
 $("a[class^=\'mg_ad\']").remove();
 jQuery(document).ready(function(){
 	$("#footer .counter_logo").css({ display: "none" });
-	//if  ($("#col_r .da_adp_links")) { $("#col_r .da_adp_links").css({ display: "none" }); }
 });'));
 
 if (!$isFrontpage){
@@ -145,54 +143,14 @@ echo $this->headScript(), PHP_EOL;
 <?php 
 if (APPLICATION_ENV=='production') {
 ?>
-<script type="text/javascript">
-<?php echo Rtvg_Compressor_JSMin::minify('new Image().src = "//counter.yadro.ru/hit?r"+
+<script type="text/javascript">new Image().src = "//counter.yadro.ru/hit?r"+
 escape(document.referrer)+((typeof(screen)=="undefined")?"":
 ";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
 screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 ";h"+escape(document.title.substring(0,80))+
-";"+Math.random();'); ?>
-</script>
-<script type="text/javascript">
-<?php echo Rtvg_Compressor_JSMin::minify("var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-778789-8']);
-
-(function() {
-  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();"); ?>
-</script>
+";"+Math.random();</script>
 <?php
 } ?>
-<script type="text/javascript">
-<?php 
-$source = new Rtvg_Ad_Script(null, array(
-	'load_folder'=>true,
-	'folder'=>ROOT_PATH.'/public/js/ss/realtraf',
-));
-echo Rtvg_Compressor_JSMin::minify( $source->getFirst() );
-?>
-</script>
-<script type="text/javascript">
-<?php 
-$source = new Rtvg_Ad_Script(null, array(
-	'load_folder'=>true,
-	'folder'=>ROOT_PATH.'/public/js/ss/wizard',
-));
-echo Rtvg_Compressor_JSMin::minify( $source->pickRandom() );
-?>
-</script>
-<?php 
-/*
-echo Rtvg_Compressor_JSMin::minify("(function() {
-		var cx = '006526203727824860247:vdzpxf_4n5a';
-		var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
-		gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
-		'//www.google.ru/cse/cse.js?cx=' + cx;
-		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-})();")*/
-?>
 </head>
 <body>
 	
@@ -201,7 +159,6 @@ echo Rtvg_Compressor_JSMin::minify("(function() {
 	</div>
 	
 	<div id="content" class="row-fluid<?php echo $pageClass; ?>">
-		
 		<?php 
 		if (count($this->messages)) {
 			foreach ($this->messages as $text) {
@@ -215,7 +172,6 @@ echo Rtvg_Compressor_JSMin::minify("(function() {
 			}
 		}
 		?>
-		
 		<?php 
 		if ($isFrontpage) {
 			?>
@@ -226,23 +182,19 @@ echo Rtvg_Compressor_JSMin::minify("(function() {
 			<?php 
 		} else {
 			?>
-		
 			<?php if (!($this->hide_sidebar=='left')): ?>
 			<div class="span2" id="col_l">
 				<?php echo $this->placeholder('sidebar_left'); ?>
 			</div>
 			<?php endif; ?>
-			
 			<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
 				<?php echo $this->placeholder('maincontent'); ?>
-			</div>
-					
+			</div>	
 			<?php if (!($this->hide_sidebar=='right')): ?>
 			<div class="span4" id="col_r">
 				<?php echo $this->placeholder('sidebar_right'); ?>
 			</div>
 			<?php endif; ?>
-		
 		<?php 
 		} ?>
 		
@@ -261,55 +213,64 @@ echo Rtvg_Compressor_JSMin::minify("(function() {
 		<?php 
 		} 
 	} ?>
-	
 	<div class="row-fluid" id="footer">
 		<?php echo $this->placeholder('footer'); ?>
 	</div>
-
-
 <?php 
 if (APPLICATION_ENV=='production'){
-	?>
-	
-	<script type="text/javascript">
-	(function (d, w, c) {
-	    (w[c] = w[c] || []).push(function() {
-	        try {
-	            w.yaCounter16053280 = new Ya.Metrika({id:16053280, enableAll: true, webvisor:true});
-	        } catch(e) {}
-	    });
-	    
-	    var n = d.getElementsByTagName("script")[0],
-	        s = d.createElement("script"),
-	        f = function () { n.parentNode.insertBefore(s, n); };
-	    s.type = "text/javascript";
-	    s.async = true;
-	    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
-	
-	    if (w.opera == "[object Opera]") {
-	        d.addEventListener("DOMContentLoaded", f);
-	    } else { f(); }
-	})(document, window, "yandex_metrika_callbacks");
-	</script>
-	<noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-	<?php 
+?>
+<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify("(function() {
+var cx = '006526203727824860247:vdzpxf_4n5a';
+var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
+gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+'//www.google.ru/cse/cse.js?cx=' + cx;
+var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
+})();"); ?></script>
+<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify('(function (d, w, c) {
+(w[c] = w[c] || []).push(function() {
+try {
+w.yaCounter16053280 = new Ya.Metrika({id:16053280, enableAll: true, webvisor:true});
+} catch(e) {}
+});
+var n = d.getElementsByTagName("script")[0],
+s = d.createElement("script"),
+f = function () { n.parentNode.insertBefore(s, n); };
+s.type = "text/javascript";
+s.async = true;
+s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f); } 
+else { f(); }
+})(document, window, "yandex_metrika_callbacks");'); ?></script>
+<noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify("var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-778789-8']);
+_gaq.push(['_trackPageview']);
+(function() {
+var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();"); ?></script>
+<?php 
 }
 ?>
-
 <?php echo $this->inlineScript(); ?>
-
+<script type="text/javascript">
 <?php 
-/*
- * Marketgid code
- */
-
+$source = new Rtvg_Ad_Script(null, array(
+	'load_folder'=>true,
+	'folder'=>ROOT_PATH.'/public/js/ss/advmaker',
+));
+echo Rtvg_Compressor_JSMin::minify( $source->getFirst() );
 ?>
-<?php /*<script type="text/javascript">
-var MarketGidDate = new Date();
-document.write('<scr'+'ipt type="text/javascript" '
-+'src="http://jsc.dt00.net/r/u/rutvgid.ru.35536.js?t='+MarketGidDate.getYear()+MarketGidDate.getMonth()+MarketGidDate.getDay()+MarketGidDate.getHours() + '" charset="utf-8" ></scr'+'ipt>');
 </script>
-*/ ?>
-
+<script type="text/javascript">
+<?php 
+$source = new Rtvg_Ad_Script(null, array(
+	'load_folder'=>true,
+	'folder'=>ROOT_PATH.'/public/js/ss/wizard',
+));
+echo Rtvg_Compressor_JSMin::minify( $source->pickRandom() );
+?>
+</script>
 </body>
 </html>

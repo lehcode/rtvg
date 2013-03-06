@@ -4,10 +4,10 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.21 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.22 2013-03-06 21:59:19 developer Exp $
  *
  */
-class ChannelsController extends Xmltv_Controller_Action
+class ChannelsController extends Rtvg_Controller_Action
 {
 	
 	/**

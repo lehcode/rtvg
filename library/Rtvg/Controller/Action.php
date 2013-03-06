@@ -3,8 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: Action.php,v 1.1 2013-03-06 20:57:41 developer Exp $
+ * @version $Id: Action.php,v 1.2 2013-03-06 21:59:19 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action

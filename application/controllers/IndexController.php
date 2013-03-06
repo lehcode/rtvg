@@ -5,10 +5,10 @@
  * 
  * @author  Antony Repin
  * @uses    Zend_Controller_Action
- * @version $Id: IndexController.php,v 1.7 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: IndexController.php,v 1.8 2013-03-06 21:59:19 developer Exp $
  *
  */
-class IndexController extends Zend_Controller_Action
+class IndexController extends Rtvg_Controller_Action
 {
 
 	/**
