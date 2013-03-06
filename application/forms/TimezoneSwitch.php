@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: TimezoneSwitch.php,v 1.2 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: TimezoneSwitch.php,v 1.3 2013-03-06 04:54:51 developer Exp $
  *
  */
 class Xmltv_Form_TimezoneSwitch extends Zend_Form
@@ -50,7 +50,7 @@ class Xmltv_Form_TimezoneSwitch extends Zend_Form
 			array('key'=>'-3', 'value'=>'-3'),
 			array('key'=>'-2', 'value'=>'-2'),
 			array('key'=>'-1', 'value'=>'-1'),
-			array('key'=>'0', 'value'=>0),
+			array('key'=>'msk', 'value'=>'0'),
 			array('key'=>'1', 'value'=>'+1'),
 			array('key'=>'2', 'value'=>'+2'),
 			array('key'=>'3', 'value'=>'+3'),
@@ -66,22 +66,23 @@ class Xmltv_Form_TimezoneSwitch extends Zend_Form
 		);
 		$timezone = new Zend_Form_Element_Select('timezone');
 		$timezone->addMultiOptions($options);
-		$timezone->setValue($this->_timeShift);
+		$active = $this->_timeShift==0 ? 'msk' : $this->_timeShift ; 
+		$timezone->setValue( $active );
 		$labelText = $this->_timeShift==0 ? 'Часовой пояс (MSK)' : 'Часовой пояс (MSK '.$this->_timeShift.')' ;
 		$timezone->setAttribs(array(
-				'name'=>'tz',
-				'size'=>1,
-				'onchange'=>'document.forms.timezone.submit();',
-			))
-			->setLabel($labelText)
-			->setDecorators(array(
-				'ViewHelper',
-				'Description',
-				'Errors',
-				array( 'Label', array( 'tag'=>'div', 'class'=>$this->_labelClass ) ),
-				//array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'mediumheading' ) ),
-			))
-			->removeDecorator('HtmlTag');
+			'name'=>'tz',
+			'size'=>1,
+			'onchange'=>'document.forms.timezone.submit();',
+		))
+		->setLabel($labelText)
+		->setDecorators(array(
+			'ViewHelper',
+			'Description',
+			'Errors',
+			array( 'Label', array( 'tag'=>'div', 'class'=>$this->_labelClass ) ),
+			//array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'mediumheading' ) ),
+		))
+		->removeDecorator('HtmlTag');
 		
 			
 		$formAttribs = array(

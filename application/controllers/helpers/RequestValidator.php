@@ -4,17 +4,13 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.19 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.20 2013-03-06 04:54:51 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
 	
 	const ALIAS_REGEX='/^[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
 	const VIDEO_ALIAS_REGEX='/^[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
-	const ERR_WRONG_ACTION="Неверный Action";
-	const ERR_WRONG_MODULE="Неверный Module";
-	const ERR_WRONG_CONTROLLER="Неверный Controller";
-	const ERR_WRONG_ALIAS="Неверный Alias";
 	
 	/**
 	 * 
@@ -113,7 +109,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 								}
 								
 								if (!$this->getRequest()->isXmlHttpRequest()){
-									throw new Zend_Exception( "Неверный запрос к ".$controller.'.'.$action, 500 );
+									throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500 );
 								}
 								
 							break;
@@ -205,9 +201,9 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 								
 							break;
 								
-							case 'day-listing':
 							case 'day-date':
-								$validators['ts'] = array( new Zend_Validate_Digits());
+							case 'day-listing':
+								
 								//if ($this->getRequest()->getParam('date')) {
 									$d = $this->getRequest()->getParam('date');
 									if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d))
@@ -219,9 +215,14 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 
 								//}
 								
-								if ($this->getRequest()->getParam('tz')){
-									$validators['tz'] = array( new Zend_Validate_Regex( '/^-?[0-9]{1,2}$/u' ));
+								if ( null !== ($ts = $this->getRequest()->getParam('ts', null))) {
+								    $validators['ts'] = array( new Zend_Validate_Digits());
 								}
+									
+								//$tz = $this->getRequest()->getParam('tz', null);
+								//if ($tz && $tz!=0 && !empty($tz)) {
+									$validators['tz'] = array( new Zend_Validate_Regex( '/^msk|-?[0-9]{1,2}$/' ));
+								//}
 								
 							break;
 								

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: ListingsController.php,v 1.28 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: ListingsController.php,v 1.29 2013-03-06 04:54:50 developer Exp $
  *
  */
 class ListingsController extends Xmltv_Controller_Action
@@ -21,8 +21,6 @@ class ListingsController extends Xmltv_Controller_Action
 		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
 		$ajaxContext->addActionContext( 'update-comments', 'html' )
 			->initContext();
-
-		//var_dump($expression);
 		
 	}
 
@@ -111,53 +109,18 @@ class ListingsController extends Xmltv_Controller_Action
 			 * Detect timeshift and adjust listing time
 			 * ###################################################################
 			 */
-			$timeShift = (int)$this->input->getEscaped('tz', 0);
-			if ($timeShift!=0) {
-				$listingDate->addHour($timeShift);
-			}
-			$this->view->assign('timeshift', $timeShift);
-				
+			$timeShift = (int)$this->input->getEscaped( 'tz', 'msk' );
+			$listingDate = $timeShift!='msk' ? $listingDate->addHour( $timeShift ) : $listingDate ;
+			
 			if (APPLICATION_ENV=='development'){
 				//var_dump($listingDate->toString());
 				//var_dump($timeShift);
 				//die(__FILE__.': '.__LINE__);
 			}
 			
-			/*
-			 * #####################################################################
-			 * (2) Detect time
-			 * #####################################################################
-			 */
-			/*
-			if ($listingDate->isToday()===false){
-			    
-				if ((int)$listingDate->toString('H')>0){
-					do {
-						$listingDate->subHour(1);
-					} while ((int)$listingDate->toString('H')>0);
-				}
-					
-				if ((int)$listingDate->toString('m')>0){
-					do {
-						$listingDate->subMinute(1);
-					} while ((int)$listingDate->toString('m')>0);
-				}
-				if ((int)$listingDate->toString('s')>0){
-					do {
-						$listingDate->subSecond(1);
-					} while ((int)$listingDate->toString('m')>1);
-				}
-			} 
-			
-			$now = $listingDate;
-			
-			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
-				//var_dump($now->toString('dd-MM-YYYY'));
-				//die(__FILE__.': '.__LINE__);
-			}
-			*/
-			
+			$this->view->assign('timeshift', $timeShift);
 			$this->view->assign('listing_date', $listingDate);
+			
 			
 			/*
 			 * #####################################################################
@@ -206,10 +169,10 @@ class ListingsController extends Xmltv_Controller_Action
 			
 			$this->view->assign( 'programs', $list );
 			
-			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
+			if (APPLICATION_ENV=='development'){
 				//var_dump(count($list));
 				//var_dump($list);
-				//var_dump($currentProgram);
+				//var_dump($listingDate->toString());
 				//die(__FILE__.': '.__LINE__);
 			}
 			
@@ -229,18 +192,23 @@ class ListingsController extends Xmltv_Controller_Action
 			    if ($timeShift!=0){
 					foreach ($list as $item) {
 					    if (APPLICATION_ENV=='development'){
-					        //var_dump($item);
+					        //var_dump($item['start']->toString());
 					        //die(__FILE__.': '.__LINE__);
 					    }
 						$item['start'] = $item['start']->addHour($timeShift);
 						$item['end']   = $item['end']->addHour($timeShift);
 						$this->view->headMeta()->setName('robots', 'noindex,follow');
 					}
-					
+					/* 
 					if ($currentProgram){
+					    if (APPLICATION_ENV=='development'){
+					    	var_dump($currentProgram['start']->toString());
+					    	die(__FILE__.': '.__LINE__);
+					    }
 						$currentProgram['start'] = $currentProgram['start']->addHour($timeShift);
 						$currentProgram['end']   = $currentProgram['end']->addHour($timeShift);
 					}
+					 */
 			    }
 			}
 			
@@ -268,50 +236,46 @@ class ListingsController extends Xmltv_Controller_Action
 			    	$f = '/Listings/Videos';
 			    	$hash = Rtvg_Cache::getHash( 'listingVideo_'.$channel['title'].'-'.$listingDate->toString( 'YYYY-MM-dd' ));
 			    	
-			    	// Если видео найдено в файловом кэше
-			    	if (($listingVideos=$this->cache->load( $hash, 'Core', $f) )!==false){
+			    	if (parent::$videoCache===true){
 			    	    
-			    	    // Сохраняем в кэш БД если он включен
-			    	    if (parent::$videoCache===true){
-			    	        foreach ($listingVideos as $vid) {
-			    	            if ($vid!==false){
-				    	            $this->vCacheModel->saveListingVideo( $vid );
+			    	    // Ищем видео в кэше БД если он включен
+			    	    if (false === ($listingVideos = $this->vCacheModel->listingRelatedVideos( $list, $channel['title'], $listingDate ))){
+			    	        
+			    	        if (false === ($listingVideos=$this->cache->load( $hash, 'Core', $f) )){
+			    	        
+			    	            // Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
+			    	            $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $listingDate );
+			    	            
+			    	            if (!count($listingVideos) || ($listingVideos===false)) {
+			    	                return false;
 			    	            }
-			    	        }
+			    	            
+			    	            // Сохранение в файловый кэш
+			    	            $this->cache->save( $listingVideos, $hash, 'Core', $f);
+			    	            
+			    	        	// Сохраняем в кэш БД если он включен
+			    	        	if (parent::$videoCache===true){
+			    	        		foreach ($listingVideos as $vid) {
+			    	        			$this->vCacheModel->saveListingVideo( $vid );
+			    	        		}
+			    	        	}
+			    	        	
+			    	        } 
 			    	    }
 			    	    
 			    	} else {
 			    	    
-			    	    // Если не видео не найдено в файловом кэше
-			    	    // Ищем его в кэше БД если он включен
-			    	    if (parent::$videoCache===true){
-			    	        $listingVideos = $this->videosModel->dbCacheListingRelatedVideos( $list, $channel['title'], $listingDate );
-			    	    }
-			    	    
-			    	    if (!$listingVideos){
-			    	    	// Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
-			    	    	$listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $listingDate );
-			    	    }
-			    	    
-			    	    if (count($listingVideos)) {
+			    	    if (false === ($listingVideos=$this->cache->load( $hash, 'Core', $f) )){
+			    	        // Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
+			    	        $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $listingDate );
 			    	        
-			    	        // Сохранение в файловый кэш
-			    	        $this->cache->save( $listingVideos, $hash, 'Core', $f);
-			    	        
-			    	        // Сохраняем в кэш БД если он включен
-			    	        if (parent::$videoCache===true){
-			    	        	foreach ($listingVideos as $vid) {
-			    	        		if ($vid!==false){
-			    	        		    $this->vCacheModel->saveListingVideo( $vid );
-			    	        		}
-			    	        	}
+			    	        if (!count($listingVideos) || ($listingVideos===false)) {
+			    	        	return false;
 			    	        }
-			    	        
-			    	        $this->cache->save($listingVideos, $hash, 'Core', $f);
-			    	        
 			    	    }
 			    	    
 			    	}
+			    				    	
 			    } else {
 			        
 			        // Кэширование не используется 
@@ -330,7 +294,12 @@ class ListingsController extends Xmltv_Controller_Action
 			} 
 			$this->view->assign('listing_videos', $listingVideos);
 			
-			
+			if (APPLICATION_ENV=='development'){
+				//var_dump(count($list));
+				//var_dump($list);
+				//var_dump($listingDate->toString());
+				//die(__FILE__.': '.__LINE__);
+			}
 			
 			/*
 			 * ######################################################

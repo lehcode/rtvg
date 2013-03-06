@@ -373,4 +373,91 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         
     }
     
+    /**
+     * Load listing-related videos for particular day
+     * from database cache
+     *
+     * @param  array $list // Videos
+     * @param  string $channel_title
+     * @param  Zend_Date $date
+     * @throws Zend_Exception
+     */
+    public function listingRelatedVideos(array $list=null, $channel_title, Zend_Date $date){
+    	
+        if (empty($list) || !is_array($list)) {
+        	throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+        }
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump($date->Tostring('dd-MM-YYYY'));
+        	//var_dump(empty($list));
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        if ($date->isToday()){
+        	foreach ($list as $k=>$li){
+        		if ($li['now_showing']===false){
+        			unset($list[$k]);
+        		} else {
+        			break;
+        		}
+        	}
+        }
+        
+        // Collect hashes
+        $hashes = array();
+        foreach ($list as $k=>$prog){
+        	$hashes[] = $this->db->quote($prog['hash']);
+        }
+        
+        $select = $this->db->select()
+        ->from( array('video'=>$this->vcacheListingsTable->getName()), array(
+        		'rtvg_id',
+        		'yt_id',
+        		'title',
+        		'alias',
+        		'desc',
+        		'views',
+        		'published',
+        		'duration',
+        		'category',
+        		'thumbs',
+        		'delete_at',
+        		'hash',
+        ))
+        ->where( "`video`.`hash` IN ( \n".implode(",\n", $hashes)." )");
+        
+        if (APPLICATION_ENV=='development'){
+        	parent::debugSelect($select, __METHOD__);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        	
+        $cached = $this->db->fetchAll( $select, null, Zend_Db::FETCH_ASSOC);
+        
+        if (count($cached)){
+        
+        	$now = Zend_Date::now();
+        	foreach ($cached as $p){
+        		 
+        		$deleteAt = new Zend_Date( $p['delete_at'], 'YYYY-MM-dd HH:mm:ss' );
+        		if ($now->compare($deleteAt) == -1){ // now is earlier than deletion date
+        			$result[$p['hash']] = $p;
+        			$result[$p['hash']]['published'] = new Zend_Date( $p['published'], 'YYYY-MM-dd HH:mm:ss');
+        			$result[$p['hash']]['duration']  = new Zend_Date( $p['duration'], 'HH:mm:ss');
+        			$result[$p['hash']]['thumbs']	 = Zend_Json::decode( $p['thumbs']);
+        		} else { // delete from cache if now is later than deletion date
+        			$this->vcacheListingsTable->delete("`hash`='".$p['hash']."'");
+        		}
+        	}
+        }
+        	
+        if (APPLICATION_ENV=='development'){
+        	//var_dump($result);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        return $result;
+        
+    }
+    
 }

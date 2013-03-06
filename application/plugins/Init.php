@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.18 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: Init.php,v 1.19 2013-03-06 04:54:51 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -45,7 +45,6 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		$this->_initHttpClient();
 		
 	}
-
 	
 	/**
 	 * (non-PHPdoc)
@@ -61,7 +60,11 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	    if (!preg_match('/^[a-z0-9]+$/', $request->getControllerName())){
 	        throw new Zend_Exception( Rtvg_Message::ERR_WRONG_CONTROLLER );
 	    }
-	    
+	    /* 
+	    if ($request->getParam('tz')==0){
+	        $request->setParam('tz', null);
+	    }
+	     */
 		//$moduleName = $request->getModuleName();
 		
 		//var_dump($request->getControllerName());

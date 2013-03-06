@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.22 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: Programs.php,v 1.23 2013-03-06 04:54:51 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -204,6 +204,8 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 */
 	public function getProgramsForDay(Zend_Date $date=null, $channel_id=null){
 	    
+	    $d = new Zend_Date($date);
+	    
 	    if ($date->isToday()){
 			
 	        $select = $this->db->select()
@@ -248,8 +250,8 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		        	'channel_title'=>'title',
 		        	'channel_alias'=>'alias',
 		        ))
-		        ->where( "`prog`.`start` >= '".$date->toString('YYYY-MM-dd')." 00:00'")
-		        ->where( "`prog`.`start` <= '".$date->addDay(1)->toString('YYYY-MM-dd')." 00:00'")
+		        ->where( "`prog`.`start` >= '".$d->toString('YYYY-MM-dd')." 00:00'")
+		        ->where( "`prog`.`start` <= '".$d->addDay(1)->toString('YYYY-MM-dd')." 00:00'")
 		        ->where( "`prog`.`channel` = '$channel_id'")
 		        ->where( "`ch`.`published` = '1'")
 		        ->group( "prog.hash")
@@ -262,22 +264,24 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	        
 	        $rows = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
 	        
-	        if (!count($rows))
+	        if (!count($rows)) {
 				return null;
+	        }
 			
 		} else {
 		    
 		    $l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
 		    $maxAgo = new Zend_Date( Zend_Date::now()->subDay($l)->toString('U'), 'U' ) ;
 			
-			if ($date->compare($maxAgo)==-1){ //More than x days
-				$rows = $this->programsTable->fetchDayItems( $channel_id, $date->toString('yyyy-MM-dd'), $cats, true);
+			if ($d->compare($maxAgo)==-1){ //More than x days
+				return false;
 			} else { //Less or equal than x days
-				$rows = $this->programsTable->fetchDayItems( $channel_id, $date->toString('yyyy-MM-dd'), $cats);
+				$rows = $this->programsTable->fetchDayItems( $channel_id, $date->toString('yyyy-MM-dd'));
 			}
 			
-			if (!count($rows))
+			if (!count($rows)) {
 				return false;
+			}
 			
 		}
 		
@@ -294,7 +298,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		    foreach ($rows as $k=>$prog) {
 				
 		        $prog_start = isset($prog['start']) && !empty($prog['start']) ? new Zend_Date( $prog['start'], 'YYYY-MM-dd HH:mm:ss' ) : Zend_Date::now();
-			    $prog_end   = isset($prog['end']) && !empty($prog['end']) ? new Zend_Date( $prog['end'], 'YYYY-MM-dd HH:mm:ss' ) : Zend_Date::now();
+			    $prog_end = isset($prog['end']) && !empty($prog['end']) ? new Zend_Date( $prog['end'], 'YYYY-MM-dd HH:mm:ss' ) : Zend_Date::now();
 			    $compare_start = $prog_start->compare($now);
 			    $compare_end   = $prog_end->compare($now);
 			    
