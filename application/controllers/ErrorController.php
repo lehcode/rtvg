@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.10 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: ErrorController.php,v 1.11 2013-03-06 03:52:37 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -45,8 +45,8 @@ class ErrorController extends Zend_Controller_Action
         //Log exception, if logger available
         $logger = $this->getLog();
         if ($logger) {
-            $logger->log($this->view->message, $priority, $errors->exception);
-            $logger->log("Параметры запроса:\n".Zend_Debug::dump( $errors->request->getParams()), $priority);
+            $logger->log( $this->view->message, $priority, $errors->exception );
+            $logger->log("Параметры запроса:\n". sprintf("%s", $errors->request->getParams()), $priority);
         }
         
         $senderEmail='dev@egeshi.com';

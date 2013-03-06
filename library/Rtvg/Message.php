@@ -10,10 +10,16 @@ class Rtvg_Message {
     const ERR_NON_CYRILLIC = "Non-cyrillic entry: ";
     const ERR_PORN_ENTRY = "Порно: ";
     const ERR_WRONG_ACTION = "Неверный Action";
+    const ERR_WRONG_ALIAS="Неверный Alias";
     const ERR_WRONG_CONTROLLER = "Не указан контроллер";
-    const ERR_WRONG_PARAM = "Неверный параметр";
+    const ERR_WRONG_DATE_FORMAT = "Неверный формат даты";
+    const ERR_WRONG_DB_PREFIX = "Неверный префикс базы данных";
     const ERR_WRONG_ENTRY = "Wrong entry: ";
     const ERR_WRONG_FORMAT = "Неверный формат";
+    const ERR_WRONG_PARAM = "Неверный параметр";
     const ERR_WRONG_TYPE_FOR = "Неверный тип параметр для ";
-    const ERR_CANNOT_SAVE    = "Не могу сохранить запись!";
+    const ERR_CANNOT_SAVE = "Не могу сохранить запись";
+    
+    
+    
 }

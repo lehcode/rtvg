@@ -43,8 +43,7 @@ class Rtvg_Ad_Script {
     
     public function pickRandom(){
     	
-        $max = (count($this->_sources) - (1 * self::$ratio));
-        $src = $this->_sources[rand(0, $max)];
+        $src = $this->_sources[rand(0, count($this->_sources)-1)];
         return $src;
         
     }

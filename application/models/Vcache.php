@@ -44,24 +44,28 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
                 //die(__FILE__.': '.__LINE__);
             }
             
-            $video = $this->db->fetchRow($select, null, Zend_Db::FETCH_ASSOC);
-            if ($video) {
-                
-                $now = Zend_Date::now();
-                $deleteAt = new Zend_Date( $video['delete_at'], 'YYYY-MM-dd HH:mm:ss' );
-                if ($deleteAt->compare($now)>-1){
-                	$this->vcacheListingsTable->delete("`rtvg_id`='$rtvg_id'");
-                }
-                
-                $video['published'] = new Zend_Date($video['published'], 'YYYY-MM-dd HH:mm:ss');
-                $video['duration']  = new Zend_Date($video['duration'], 'HH:mm:ss');
-                $video['thumbs']    = unserialize($video['thumbs']);
-                
-                return $video;
-            } 
+            $result = $this->db->fetchRow($select);
             
-            return false;
+            if (!$result) {
+                return false;
+            }
             
+            if (APPLICATION_ENV=='development'){
+            	//var_dump($result);
+            	//die(__FILE__.': '.__LINE__);
+            }
+            
+            $now = Zend_Date::now();
+            $deleteAt = new Zend_Date( $result['delete_at'], 'YYYY-MM-dd HH:mm:ss' );
+            if ($deleteAt->compare($now)>-1){
+            	$this->vcacheListingsTable->delete("`rtvg_id`='$rtvg_id'");
+            }
+            
+            $result['published'] = new Zend_Date($result['published'], 'YYYY-MM-dd');
+            $result['duration']  = new Zend_Date($result['duration'], 'HH:mm:ss');
+            $result['thumbs']    = unserialize($result['thumbs']);
+            
+            return $result;
             
         }
         
@@ -74,14 +78,18 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
      */
     public function saveMainVideo($video=null){
     	
-        $vModel = new Xmltv_Model_Videos();
+        if (null===$video){
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+        }
+        
+        $model = new Xmltv_Model_Videos();
         
         if (is_a($video, 'Zend_Gdata_YouTube_VideoEntry')) {
-            $newRow = $this->vcacheMainTable->createRow( $vModel->parseYtEntry($video));
+            $newRow = $this->vcacheMainTable->createRow( $model->parseYtEntry($video));
         } elseif (is_array($video)) {
             $newRow = $video;
         } else {
-            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAMS, 500);
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
         }
         
         return $this->vcacheMainTable->store($newRow);
@@ -229,7 +237,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         $row->channel   = $channel_id;
         $row->published = $video['published']->toString('YYYY-MM-dd HH:mm:ss');
         $row->duration  = $video['duration']->toString('HH:mm:ss');
-        $row->thumbs    = Zend_Json::encode( $video['thumbs'] );
+        $row->thumbs    = serialize( $video['thumbs'] );
         $row->delete_at = Zend_Date::now()->addDay(7)->toString( "YYYY-MM-dd HH:mm:ss" );
         
         if (APPLICATION_ENV=='development'){
@@ -326,14 +334,42 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         		'alias',
         		'desc',
         		'views',
+        		'published',
         		'duration',
-        		'duration',
-        	));
+        		'category',
+        		'thumbs',
+        		'delete_at',
+        	))
+        	->where("`vid`.`channel`='$channel_id'");
         
         if (APPLICATION_ENV=='development'){
         	parent::debugSelect($select, __METHOD__);
-        	die(__FILE__.': '.__LINE__);
+        	//die(__FILE__.': '.__LINE__);
         }
+        
+        $result = $this->db->fetchAll( $select  );
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump($result);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        if (!count($result)){
+            return false;
+        }
+        
+        foreach ($result as $k=>$row) {
+            $result[$k]['published'] = new Zend_Date( $row['published'], 'YYYY-MM-dd' );
+            $result[$k]['duration']  = new Zend_Date( $row['duration'], 'HH:mm:ss' );
+            $result[$k]['thumbs']    = unserialize( $row['thumbs'] );
+        }
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump($result);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        return $result;
         
     }
     

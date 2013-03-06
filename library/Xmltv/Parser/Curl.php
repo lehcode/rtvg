@@ -133,7 +133,7 @@ class Xmltv_Parser_Curl
 			$vars[] = $k.'='.urlencode($var);
 		}
 		$post_vars = implode('&', $vars);
-		var_dump($post_vars);
+		//var_dump($post_vars);
  		curl_setopt($this->_session, CURLOPT_POSTFIELDS , $post_vars);
 	}
 	

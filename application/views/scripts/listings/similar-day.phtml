@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: similar-day.phtml,v 1.1 2013-03-05 06:51:08 developer Exp $
+ * @version $Id: similar-day.phtml,v 1.2 2013-03-06 03:52:37 developer Exp $
  *
  */
 ?>
@@ -31,7 +31,7 @@ if (isset($this->similar)) {
 				alt="<?php echo $single->channel_title ?>" />
 			
 			<span class="label">
-				<?php echo $single['start']->toString( 'dd MMMM') ?></span>&nbsp;<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?>
+				<?php echo $single['start']->toString( 'd MMMM') ?></span>&nbsp;<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?>
 			</span>
 			
 			<?php printf('<a href="%s">%s</a> на канале <a href="%s" title="Передачи %s сегодня">%s</a>', 

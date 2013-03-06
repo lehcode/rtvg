@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: ListingsController.php,v 1.27 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: ListingsController.php,v 1.28 2013-03-06 03:52:37 developer Exp $
  *
  */
 class ListingsController extends Xmltv_Controller_Action
@@ -337,7 +337,7 @@ class ListingsController extends Xmltv_Controller_Action
 			 * Комменты
 			 * ######################################################
 			 */
-			$this->view->assign('comments', $this->_yandexComments($channel));
+			$this->view->assign('comments', parent::yandexComments($channel) );
 			
 			
 			/* 
@@ -345,7 +345,7 @@ class ListingsController extends Xmltv_Controller_Action
 			 * Данные для модуля видео в правой колонке
 			 * ######################################################
 			 */
-			$this->view->assign('sidebar_videos', $this->_sidebarVideos($channel));
+			$this->view->assign('sidebar_videos', parent::sidebarVideos($channel) );
 			
 			
 			
@@ -539,7 +539,7 @@ class ListingsController extends Xmltv_Controller_Action
 			    * Комменты
 			    * ######################################################
 			    */
-			    //$this->view->assign('comments', $this->_yandexComments($channel));
+			    //$this->view->assign('comments', $this->($channel));
 			    
 			    /*
 			     * ######################################################
@@ -606,7 +606,7 @@ class ListingsController extends Xmltv_Controller_Action
 			 * Данные для модуля видео в правой колонке
 			 * ######################################################
 			 */
-			$this->view->assign('sidebar_videos', $this->_sidebarVideos($channel));
+			$this->view->assign('sidebar_videos', parent::sidebarVideos($channel));
 			
 		}
 		
@@ -846,138 +846,7 @@ class ListingsController extends Xmltv_Controller_Action
 		
 	}
 	
-	/**
-	 * Videos for right sidebar
-	 * 
-	 * @param  array $channel
-	 * @return array
-	 */
-	private function _sidebarVideos($channel){
-		
-	    $vc  = Zend_Registry::get('site_config')->videos->sidebar->right;
-	    $max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
-	    $ytConfig = array(
-	    	'order'=>$vc->get('order'),
-	    	'max_results'=>(int)$vc->get('max_results'),
-	    	'start_index'=>(int)$vc->get('start_index'),
-	    	'safe_search'=>$vc->get('safe_search'),
-	    	'language'=>'ru',
-	    );
-	    $videos = array();
-	    
-	    // If file cache is enabled
-	    if ($this->cache->enabled){
-	        
-	        $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
-	        $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
-	        $f = '/Youtube/SidebarRight';
-	        $this->cache->setLocation( ROOT_PATH.'/cache' );
-	        $hash = Rtvg_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
-	        
-	        if (parent::$videoCache){
-	            
-	        	if (($videos = $this->vCacheModel->sidebarVideos( $channel['id'] ))===false){
-	        	    
-	        	    if (($videos = $this->cache->load( $hash, 'Core', $f))!==false) {
-	        	    
-	        	    	if (parent::$videoCache==true){
-	        	    		foreach ($videos as $vid){
-	        	    			if ($vid!==false){
-	        	    				$this->vCacheModel->saveSidebarVideo( $vid, $channel['id'] );
-	        	    			}
-	        	    		}
-	        	    	}
-	        	    
-	        	    } else {
-	        	    
-	        	    	// Query database cache first if it is enabled
-	        	    	if (parent::$videoCache){
-	        	    		 
-	        	    		$videos = $this->vCacheModel->sidebarVideos( $channel['id'] );
-	        	    
-	        	    		if (APPLICATION_ENV=='development'){
-	        	    			//var_dump($videos);
-	        	    			//die(__FILE__.': '.__LINE__);
-	        	    		}
-	        	    
-	        	    	}
-	        	    
-	        	    	if ($videos===false){
-	        	    		$videos = $this->videosModel->ytSearch( 'канал '.Xmltv_String::strtolower($channel['title']), $ytConfig);
-	        	    	}
-	        	    
-	        	    	if (count($videos)){
-	        	    		if (parent::$videoCache){
-	        	    			foreach ($videos as $vid){
-	        	    				if ($vid!==false){
-	        	    					$this->vCacheModel->saveSidebarVideo( $vid, $channel['id'] );
-	        	    				}
-	        	    			}
-	        	    		}
-	        	    
-	        	    		$this->cache->save( $videos, $hash, 'Core', $f );
-	        	    	}
-	        	    	 
-	        	    }
-	        	    
-	        	}
-	        } else {
-	            
-	            // Database cache is disabled
-	            if (($videos = $this->cache->load( $hash, 'Core', $f))===false) {
-	                $videos = $this->videosModel->ytSearch( 'канал '.Xmltv_String::strtolower($channel['title']), $ytConfig);
-	                $this->cache->save( $videos, $hash, 'Core', $f );
-	            }
-	        }
-	        
-	    } else {
-	        $videos = $this->videosModel->ytSearch( 'канал '.Xmltv_String::strtolower( $channel['title'] ), $ytConfig);
-	    }
-	    
-	    return $videos;
-	    
-	}
 	
-	/**
-	 * Fetch blog entries from blogs.yandex.ru
-	 * 
-	 * @param  array $channel
-	 * @throws Zend_Exception
-	 * @return array
-	 */
-	private function _yandexComments($channel=array()){
-		
-	    if (empty($channel) && !is_array($channel)){
-	        throw new Zend_Exception(parent::ERR_WRONG_PARAM.__METHOD__, 500);
-	    }
-	    
-	    $e = (bool)Zend_Registry::get('site_config')->channels->comments->get('enabled');
-	    if ($e===true){
-	        
-	    	if ($this->cache->enabled){
-	    	    
-	    		$this->cache->setLocation(ROOT_PATH.'/cache');
-	    		$f = '/Feeds/Yandex';
-	    
-	    		if (APPLICATION_ENV=='development'){
-	    			$hash = 'channel_comments_'.$channel['id'];
-	    		} else {
-	    			$hash = Rtvg_Cache::getHash( 'channel_comments_'.$channel['alias']);
-	    		}
-	    
-	    		if (($channelComments = $this->cache->load( $hash, 'Core', $f))===false) {
-	    			$channelComments  = $this->commentsModel->channelComments( $channel['id'] );
-	    			$this->cache->save($channelComments, $hash, 'Core', $f);
-	    		}
-	    			
-	    	} else {
-	    		$channelComments = $this->commentsModel->channelComments( $channel['id'] );
-	    	}
-	    }
-	    
-	    return $channelComments;
-	    
-	}
 	
 	
 	/**

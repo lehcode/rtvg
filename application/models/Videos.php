@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.18 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Videos.php,v 1.19 2013-03-06 03:52:37 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -51,6 +51,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
 			$v['views']	   = (int)$entry->getVideoViewCount();
 			$v['category'] = $entry->getVideoCategory();
+			$v['category_ru'] = $this->getCatRu($v['vategory']);
 			
 			$d = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
 			$v['published'] = $d->addHour(3);
@@ -722,6 +723,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$result = array();
 		$yt = new Xmltv_Youtube($config);
 		//$yt->setUserAgent( Zend_Registry::get('user_agent') );
+		$yt->setAdapter( Zend_Registry::get('http_client') );
 		
 		if ( (bool)Zend_Registry::get('site_config')->proxy->get('active')) {
 			$yt->setProxy(array(
@@ -784,6 +786,41 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$props['category']  = $object->category;
 			return $props;
 		}
+	
+	}
+	
+	/**
+	 * Get Russian title for Youtube video category
+	 * 
+	 * @param  string $cat_en
+	 * @return string|Ambigous <string>|unknown
+	 */
+	public static function getCatRu($cat_en=''){
+	
+		//var_dump(func_get_args());
+	
+		if (empty($cat_en))
+			return '';
+	
+		$cats = array(
+				'film'=>'Кино',
+				'games'=>'Мультфильмы',
+				'education'=>'Образовательные',
+				'comedy'=>'Юмористические',
+				'tech'=>'Научные',
+				'people'=>'Общественные',
+				'music'=>'Музыкальные',
+				'news'=>'Новости',
+				'sports'=>'Спорт',
+				'entertainment'=>'Развлекательные',
+		);
+	
+		$tolower = strtolower($cat_en);
+	
+		if (array_key_exists($tolower, $cats))
+			return $cats[$tolower];
+		else
+			return $cat_en;
 	
 	}
 	

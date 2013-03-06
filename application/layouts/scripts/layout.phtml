@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.29 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: layout.phtml,v 1.30 2013-03-06 03:52:37 developer Exp $
  *
  */
 
@@ -52,7 +52,7 @@ $this->jQuery()->enable() //enable jquery ;
 $this->headScript()
 	->setAllowArbitraryAttributes(true)
 	->prependFile( $this->baseUrl( $this->baseUrl( 'js/less.min.js' )))
-	//->appendFile( $this->baseUrl( 'js/realt.js' ))
+	->appendFile( $this->baseUrl( 'js/g.js' ))
 	->appendFile( 'http://yandex.st/share/share.js' )
 	->appendFile( '//vk.com/js/api/openapi.js?75' );
 
@@ -169,37 +169,36 @@ _gaq.push(['_setAccount', 'UA-778789-8']);
 <?php 
 $source = new Rtvg_Ad_Script(null, array(
 	'load_folder'=>true,
-	'folder'=>ROOT_PATH.'/public/js/ss/wizard',
-));
-echo Rtvg_Compressor_JSMin::minify( $source->pickRandom() );
-
-$source = new Rtvg_Ad_Script(null, array(
-	'load_folder'=>true,
 	'folder'=>ROOT_PATH.'/public/js/ss/realtraf',
 ));
 echo Rtvg_Compressor_JSMin::minify( $source->getFirst() );
-
+?>
+</script>
+<script type="text/javascript">
+<?php 
+$source = new Rtvg_Ad_Script(null, array(
+	'load_folder'=>true,
+	'folder'=>ROOT_PATH.'/public/js/ss/wizard',
+));
+echo Rtvg_Compressor_JSMin::minify( $source->pickRandom() );
+?>
+</script>
+<?php 
+/*
 echo Rtvg_Compressor_JSMin::minify("(function() {
 		var cx = '006526203727824860247:vdzpxf_4n5a';
 		var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
 		gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
 		'//www.google.ru/cse/cse.js?cx=' + cx;
 		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-})();")
+})();")*/
 ?>
-</script>
 </head>
 <body>
 	
 	<div class="row-fluid" id="header">
 		<?php echo $this->placeholder('header'); ?>
 	</div>
-	
-	<?php  if (!$isFrontpage): ?>
-	<div class="row-fluid">
-		<gcse:searchresults></gcse:searchresults>
-	</div>
-	<?php endif; ?>
 	
 	<div id="content" class="row-fluid<?php echo $pageClass; ?>">
 		

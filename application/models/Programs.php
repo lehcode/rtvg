@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.21 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Programs.php,v 1.22 2013-03-06 03:52:37 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -614,7 +614,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 			->where( "`prog`.`start` >= '".$start->toString('YYYY-MM-dd')." 00:00'")
 			->where( "`prog`.`start` < '".$end->toString('YYYY-MM-dd')." 23:59'")
 			->where( "`prog`.`channel` = '$channel_id'")
-			->order( "prog.start ASC" );
+			->order( "prog.start DESC" );
 		
 		if (APPLICATION_ENV=='development'){
 			parent::debugSelect($select, __METHOD__);

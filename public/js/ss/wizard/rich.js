@@ -1,4 +1,4 @@
-   (function(w) {
+(function(w) {
      var script = document.createElement('script');
      var i = setInterval(function() {
        if (typeof w.document.body !== 'undefined') {

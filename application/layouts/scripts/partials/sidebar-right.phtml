@@ -4,14 +4,17 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-right.phtml,v 1.7 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: sidebar-right.phtml,v 1.8 2013-03-06 03:52:37 developer Exp $
  *
  */
 ?>
+
+<?php /*
 <div class="module">
 	<h4>Поиск по сайту</h4>
 	<gcse:searchbox></gcse:searchbox>
 </div>
+*/ ?>
 
 <?php
 if (count($this->videos) && $this->videos!==false) {
@@ -118,7 +121,7 @@ if (count($this->videos) && $this->videos!==false) {
 $this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').css({ display: 'block' }); });");
 ?>
 <div class="module" id="rumor-ads">
-	<h4 class="mediumheading">Желтая пресса</h4>
+	<?php /*<h4 class="mediumheading">Желтая пресса</h4>*/ ?>
 	<div class="content" id="DIV_DA_85753"></div>
 </div>
 

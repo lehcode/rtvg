@@ -4,14 +4,14 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses Xmltv_Db_Table_Abstract
- * @version $Id: VcacheMain.php,v 1.6 2013-03-04 17:57:39 developer Exp $
+ * @version $Id: VcacheMain.php,v 1.7 2013-03-06 03:52:37 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
 {
 
 	protected $_name    = 'vcache_main';
-	protected $_primary = 'yt_id';
+	protected $_primary = array('yt_id');
 	
 	/**
 	 * Constructor
@@ -28,22 +28,21 @@ class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
 	 */
 	protected function _setup(){
 	
+	    parent::_setup();
 	    $this->_defaultValues = array(
-				'rtvg_id'=>null,
-				'yt_id'=>null,
-				'title'=>null,
-				'alias'=>null,
-				'desc'=>null,
-				'views'=>0,
-				'published'=>1,
-				'duration'=>null,
-				'category'=>null,
-				'thumbs'=>'',
-				'delete_at'=>null
+			'rtvg_id'=>null,
+			'yt_id'=>null,
+			'title'=>null,
+			'alias'=>null,
+			'desc'=>null,
+			'views'=>0,
+			'published'=>1,
+			'duration'=>null,
+			'category'=>null,
+			'thumbs'=>'',
+			'delete_at'=>null
 		);
-		
-		parent::_setup();
-			
+					
 	}
 	
 	/**

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.15 2013-03-01 03:49:38 developer Exp $
+ * @version $Id: show-video.phtml,v 1.16 2013-03-06 03:52:37 developer Exp $
  *
  */
 
@@ -27,25 +27,16 @@ if (isset($this->main_video)){
     }
     
     $this->inlineScript()
-    	->appendFile("/js/swfobject/swfobject.js")
-    	->appendScript("var MarketGidDate = new Date();
-var min_width = '250';
-var min_height = '150';
-var overlay_interval = '40';
-var overlay_height = '55';
-var mg_opacity = '0.8';
-var mg_bgcolor = '#353535';
-document.write('<scr'+'ipt type=\"text/javascript\" '
-+'src=\"http://jsc.dt00.net/r/u/rutvgid.ru.35584.js?t='+MarketGidDate.getYear()+MarketGidDate.getMonth()+MarketGidDate.getDay()+MarketGidDate.getHours() + '\" charset=\"utf-8\" ></scr'+'ipt>');");
+    	->appendFile("/js/swfobject/swfobject.js");
     
-    $this->headScript()->appendScript("$(document).ready(function() {
+    $this->headScript()->appendScript( Rtvg_Compressor_JSMin::minify("$(document).ready(function() {
     		var descP = $('.video.thumbnails .span4 p.desc');
     		var descHeight = descP.prop('offsetHeight');
     		if (descHeight>150) { descP.css({ height:'8.4em' }).after('<button class=\"btn\" id=\"fulldesc\">Читать полностью</a>'); }
     		$('#fulldesc').click( function(e){ descP.css({ height:descHeight }); $(this).hide(500); });
     		$('#maincontent div.videos div.main div.player-wrap').val('');
     
-    });");
+    });"));
     ?>
     
 <div class="page videos">
@@ -106,25 +97,15 @@ document.write('<scr'+'ipt type=\"text/javascript\" '
 							alt="<?php echo $v['title'] ?>" />
 					</a>
 					
-					<?php /*<p class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></p>*/ ?>
+					<p class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></p>
 					
 					<p class="category">
-						<?php 
-						$catEn = $v['category'];
-						$catRu = Xmltv_Youtube::getCatRu($catEn); 
-						if ($catRu==$catEn) {
-						    printf("Категория: %s", $catEn ); 
-						} else {
-							?>
-							Категория: 
-							<a href="<?php echo $this->url( array('category'=>Xmltv_String::strtolower( $catRu )), 'default_channels_category'); ?>"
-								target="_self"
-								title="<?php echo $catRu ?> каналы телепрограмма">
-								<?php echo $catRu; ?>
-							</a>
-							<?php 
-						}?>
-						 
+						Категория: 
+						<a href="<?php echo $this->url( array('category'=>Xmltv_String::strtolower( $v['category_ru'] )), 'default_channels_category'); ?>"
+							target="_self"
+							title="<?php printf("%s каналы телепрограмма", $v['category_ru']) ?>">
+							<?php echo $v['category_ru']; ?>
+						</a>
 					</p>
 					
 					<p class="date">

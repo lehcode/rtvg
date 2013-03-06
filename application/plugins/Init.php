@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.17 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Init.php,v 1.18 2013-03-06 03:52:37 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -37,22 +37,16 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	 */
 	public function routeStartup (Zend_Controller_Request_Abstract $request) {
 
-		$this->_initACL();
 		$this->_initConfig();
 		$this->_initActionHelpers();
 		$this->_initAutoloader();
 		$this->_initUserAgent();
 		$this->_initNav();
+		$this->_initHttpClient();
 		
 	}
 
 	
-	protected function _initStats(){
-		
-		
-		
-	}
-
 	/**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Plugin_Abstract::routeShutdown()
@@ -64,10 +58,15 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	        //die(__FILE__.': '.__LINE__);
 	    }
 	    
+	    if (!preg_match('/^[a-z0-9]+$/', $request->getControllerName())){
+	        throw new Zend_Exception( Rtvg_Message::ERR_WRONG_CONTROLLER );
+	    }
+	    
 		//$moduleName = $request->getModuleName();
 		
-		//var_dump($moduleName);
+		//var_dump($request->getControllerName());
 		//die(__FILE__.": ".__LINE__);
+		
 		/*
 		switch ($moduleName) {
 			case 'admin':
@@ -103,7 +102,9 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 
 	
 
-
+	/**
+	 * Initialize controller helpers
+	 */
 	protected function _initActionHelpers () {
 		
 		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Xmltv_Controller_Action_Helper' );
@@ -111,49 +112,10 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		
 	}
 
-
-	protected function _initACL () {
-
-		$acl = new Zend_Acl();
-		
-		// Add groups to the Role registry using Zend_Acl_Role
-		// Guest does not inherit access controls
-		$acl->addRole( new Zend_Acl_Role( 'guest' ) );
-		// registered inherits from guest
-		$acl->addRole( new Zend_Acl_Role( 'registered' ), 'guest' );
-		// backend does not inherit access controls
-		
-
-		$acl->addRole( new Zend_Acl_Role( 'backend' ) );
-		// registered inherits from registered and backend
-		$acl->addRole( new Zend_Acl_Role( 'staff' ), 
-		array('backend', 'registered') );
-		// root does not inherit access controls
-		$acl->addRole( new Zend_Acl_Role( 'root' ) );
-		
-		$acl->addResource( new Zend_Acl_Resource( 'admin' ) );
-		$acl->addResource( new Zend_Acl_Resource( 'listings' ) );
-		
-		// Guest may only view content
-		$acl->allow( 'guest', array('listings'), 'view' );
-		// registered inherits view privilege from guest, but also needs additional
-		// privileges
-		$acl->allow( 'registered', null, 'view' );
-		
-		$acl->allow( 'backend', 'admin', array('view', 'submit', 'revise') );
-		// staff inherits view, edit, submit, and revise privileges from
-		// backend, but also needs additional privileges
-		$acl->allow( 'staff', null, 
-		array('publish', 'archive', 'delete') );
-		// root inherits nothing, but is allowed all privileges
-		$acl->allow( 'root' );
-		
-		//$is_allowed = $acl->isAllowed('guest', null, 'view') ? "allowed" : "denied";
-		//var_dump($is_allowed);
-		//die(__FILE__.': '.__LINE__);
-	}
-
 	
+	/**
+	 * Initialize 'site' and 'application' configuration
+	 */
 	protected function _initConfig () {
 
 		$c = new Zend_Config_Ini( APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV );
@@ -183,6 +145,9 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		
 	}
 	
+	/**
+	 * Autoload 3rd-party libraries
+	 */
 	protected function _initAutoloader(){
 		
 		//$autoloader = Zend_Loader_Autoloader::getInstance();
@@ -190,11 +155,15 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		
 	}
 	
+	
+	/**
+	 * Setup user agent
+	 */
 	protected function _initUserAgent(){
 		
 	    $nocacheAgents=array(
     		'yandex',
-    		'Googlebot',
+    		'googlebot',
     		'ahrefs',
     		'mail.ru',
     		'rambler',
@@ -212,20 +181,10 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	    }
 	    
 	    if ($nocache===false){
-	        Zend_Registry::set('user_agent', $ua);
+	        Zend_Registry::set( 'user_agent', $ua );
 	    } else {
-	        Zend_Registry::set('user_agent', false);
+	        Zend_Registry::set( 'user_agent', 'PHP/5.3' );
 	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump(Zend_Registry::get('user_agent'));
-	    }
-	    
-	}
-	
-	protected function _initPopupRand(){
-		
-	    Zend_Registry::set('popup_rand', floor(rand(0, 1)));
 	    
 	}
 	
@@ -241,6 +200,13 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
     	//$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/admin.xml', 'nav' ) );
     	//Zend_Registry::set('AdminMenu', $menu);
 	    
+	    
+	}
+	
+	protected function _initHttpClient(){
+		
+	    $client = new Zend_Http_Client_Adapter_Curl();
+	    Zend_Registry::set('http_client', $client);
 	    
 	}
 	

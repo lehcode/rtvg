@@ -92,14 +92,6 @@ abstract class Xmltv_Model_Abstract
     protected $programsRatingsTable;
     
     
-    const ERR_WRONG_PARAMS = "Неверный параметр!";
-    const ERR_NO_DB = "Не указана база данных!";
-    const ERR_MISSING_PARAMS = "Пропущен необходимый параметр!";
-    const ERR_WRONG_ENTRY = "Wrong entry: ";
-    const ERR_PORN_ENTRY = "Порно: ";
-    const ERR_NON_CYRILLIC = "Non-cyrillic entry: ";
-    const ERR_WRONG_FORMAT = "Неверный формат!";
-    
 	/**
      * Model constructor
      * 

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.22 2013-03-05 06:53:20 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.23 2013-03-06 03:52:37 developer Exp $
  *
  */
 
@@ -173,17 +173,25 @@ if ($this->is_today) {
 			</div>
 		</div>
 		
+		<div class="progtoday">
+			<a href="<?php echo $this->url( array(
+				'alias'=>$prog['alias'],
+				'channel'=>$channelAlias,
+				'timespan'=>'сегодня'), 'default_listings_program-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
+				Выпуски <?php echo $prog['title']; ?> сегодня
+			</a>
+		</div>
 		
 		<?php if (isset($prog['category_title']) && !empty($prog['category_title'])): ?>
 		<div class="category">
 			<a href="<?php echo $this->url( array(
 				'category'=>$prog['category_alias'],
-				'timespan'=>'неделя'), 'deault_listings_category'); ?>" title="Передачи на неделе">
+				'timespan'=>'неделя'), 'default_listings_category'); ?>" title="Передачи на неделе">
 				<?php echo $prog['category_title']; ?> на этой неделе
 			</a>
 			<a href="<?php echo $this->url( array(
 				'category'=>$prog['category_alias'],
-				'timespan'=>'сегодня'), 'deault_listings_category'); ?>" title="Передачи сегодня">
+				'timespan'=>'сегодня'), 'default_listings_category'); ?>" title="Передачи сегодня">
 				<?php echo $prog['category_title']; ?> сегодня
 			</a>
 		</div>

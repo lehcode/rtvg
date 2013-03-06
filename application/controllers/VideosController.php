@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.19 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: VideosController.php,v 1.20 2013-03-06 03:52:37 developer Exp $
  *
  */
 class VideosController extends Xmltv_Controller_Action
@@ -78,45 +78,52 @@ class VideosController extends Xmltv_Controller_Action
 				 */
 				if ($this->cache->enabled){
 				
+				    $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->main->get( 'lifetime' );
+				    $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
 					$this->cache->setLocation(ROOT_PATH.'/cache');
 					$f = '/Youtube/ShowVideo/Main';
-					$hash = md5( $ytId );
-					 
-					// 1. Try to load main video data from file cache
-					if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
-						$mainVideo = $cached;
-					} else {
+					$hash = Rtvg_Cache::getHash( $ytId );
+					
+					if (parent::$videoCache===true){
 					    
-					    $mainVideo = false;
-					    
-					    // If not found
-					    if (parent::$videoCache===true){
-					        // Query database cache (if it is enabled) for main video
-					        if (($cached = $this->vCacheModel->getVideo($rtvgId))!==false){
-					            $mainVideo = $cached;
+					    // Search in database cache if was not found in file cache
+					    // and if database cache is enabled
+					    if (($mainVideo = $this->vCacheModel->getVideo($rtvgId))===false){
+					        
+							// Try to load main video data from file cache
+							if (($mainVideo = $this->cache->load( $hash, 'Core', $f))==false){
+					    		
+							    // Search Youtube service for video
+					            if (($ytEntry = $youtube->fetchVideo( $ytId ))===false) {
+					                // Video was not found at youtube
+					                return $this->render('video-not-found');
+					                //return true;
+					            } 
+					            
+					            $mainVideo = $this->videosModel->parseYtEntry( $ytEntry);
+					            $this->cache->save( $mainVideo, $hash, 'Core', $f);
 					        }
 					    }
 					    
-					    // If was not found in DB cache either
-					    if ($mainVideo===false){
-					        
-						    // Search Youtube service for video
-							if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
-								$mainVideo = $this->videosModel->parseYtEntry( $ytEntry);
-								$this->cache->save( $mainVideo, $hash, 'Core', $f);
-							} else {
-								// Video was not found at youtube
-								$this->render('video-not-found');
-								return true;
-							}
-					    }
-						
-						if (parent::$videoCache===true){
+					    if (parent::$videoCache===true){
 							$this->vCacheModel->saveMainVideo($mainVideo);
 						}
-
-						$this->cache->save($mainVideo, $hash, 'Core', $f);
 						
+					} else {
+					    
+						if (($mainVideo = $this->cache->load( $hash, 'Core', $f))==false){
+					    		
+						    // Search Youtube service for video
+				            if (($ytEntry = $youtube->fetchVideo( $ytId ))===false) {
+				                // Video was not found at youtube
+				                return $this->render('video-not-found');
+				                //return true;
+				            } 
+				            
+				            $mainVideo = $this->videosModel->parseYtEntry( $ytEntry);
+				            $this->cache->save( $mainVideo, $hash, 'Core', $f);
+				        }
+					    
 					}
 					 
 				} else {
@@ -124,15 +131,10 @@ class VideosController extends Xmltv_Controller_Action
 					if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
 						$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
 					} else {
-						$this->render('video-not-found');
-						return true;
+						return $this->render('video-not-found');
+						//return true;
 					}
 				
-				}
-				
-				if (APPLICATION_ENV=='development'){
-					//var_dump($mainVideo);
-					//die(__FILE__.': '.__LINE__);
 				}
 				
 				$this->view->assign( 'main_video', $mainVideo );

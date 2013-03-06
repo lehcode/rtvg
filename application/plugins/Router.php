@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.14 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Router.php,v 1.15 2013-03-06 03:52:37 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -237,7 +237,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'controller'=>'torrents',
 			'action'=>'finder')));
 		
-		$this->_router->addRoute( 'deault_listings_category', 
+		$this->_router->addRoute( 'default_listings_category', 
 		new Zend_Controller_Router_Route( 'передачи/:category/:timespan', 
 		array(
 			'module'=>'default',
@@ -268,10 +268,11 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'action'=>'logout',
 		)));
 		
+		// @todo 
 		// Полный список программ в определенный день
 		// В отличие от используемого по умолчанию default_listings_day-date
 		/*
-		$this->_router->addRoute( 'deault_listings_day_complete', 
+		$this->_router->addRoute( 'default_listings_day_complete', 
 		new Zend_Controller_Router_Route( 'передачи/:channel/:date', 
 		array(
 			'module'=>'default',

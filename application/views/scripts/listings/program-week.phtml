@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.16 2013-02-26 21:58:56 developer Exp $
+ * @version $Id: program-week.phtml,v 1.17 2013-03-06 03:52:37 developer Exp $
  *
  */
 
@@ -54,8 +54,8 @@ foreach ($this->list as $single) {
 	
 	<p>
 		<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span>&nbsp;
-		<span><?php echo $single['start']->toString( 'd MMMM') ?></span>&nbsp;
-		<span><?php echo $single['start']->toString( 'HH:mm') ?></span>
+		<?php echo $single['start']->toString( 'd MMMM') ?>&nbsp;
+		<u><?php echo $single['start']->toString( 'HH:mm') ?></u>
 		<?php echo $single['category_title_single'] ?> 
 			<a href="<?php echo $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U") ?>"
 				title="<?php echo $single['title'] ?> <?php echo $single['start']->toString( 'dd MMM') ?> на канале <?php echo $single['channel_title'] ?>"
@@ -97,8 +97,8 @@ if (isset($this->similar) && !empty($this->similar)) {
 	<p>
 		<img src="<?php echo $channelIcon ?>" alt="<?php echo $single['channel_title'] ?>" />
 		<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span> 
-		<span class="label"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'dd MMMM')); ?></span> 
-		<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?></span> 
+		<?php echo Xmltv_String::ucfirst( $single['start']->toString( 'd MMMM')); ?>
+		<u><?php echo $single['start']->toString( 'HH:mm') ?></u> 
 		<?php echo $this->escape( $single['category_title_single'] ) ?>
 		<a href="<?php echo $programUrl ?>" 
 			title="<?php $this->escape( sprintf( 'Передача %s на канале %s', $single['title'], $channelTitle )) ?>">

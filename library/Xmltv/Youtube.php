@@ -16,6 +16,7 @@ class Xmltv_Youtube {
 	private $_cacheSubfolder='';
 	private $_operator='+';
 	private $_language='ru';
+	private $_userAgent;
 	
 	/**
 	 * HTTP client adatapter
@@ -71,10 +72,17 @@ class Xmltv_Youtube {
 			$this->_language = (string)$config['language'];	
 		
 		
-	    $this->adapter = new Zend_Http_Client_Adapter_Curl();
-	    $t = (int)Zend_Registry::get('site_config')->curl->get('timeout');
+	    
+		
+		if ($this->adapter===null){
+		    $this->setAdapter( new Zend_Http_Client_Adapter_Curl() );
+		}
+		
+		$t = (int)Zend_Registry::get('site_config')->curl->get('timeout');
 		if ($t>0){
-			$this->adapter->setCurlOption(CURLOPT_TIMEOUT, $t);
+		    if (is_a($this->adapter, 'Zend_Http_Client_Adapter_Curl')){
+				$this->adapter->setCurlOption(CURLOPT_TIMEOUT, $t);
+		    }
 		}
 		
 		$httpClient = new Zend_Http_Client();
@@ -208,59 +216,18 @@ class Xmltv_Youtube {
 	}
 	
 	
-	public static function getCatRu($cat_en=''){
-		
-		//var_dump(func_get_args());
-		
-		if (empty($cat_en))
-			return '';
-		
-		$cats = array(
-			'film'=>'Кино',
-			'games'=>'Мультфильмы',
-			'education'=>'Образовательные',
-			'comedy'=>'Юмористические',
-			'tech'=>'Научные',
-			'people'=>'Общественные',
-			'music'=>'Музыкальные',
-			'news'=>'Новости',
-			'sports'=>'Спорт',
-			'entertainment'=>'Развлекательные',
-		);
-		
-		$tolower = strtolower($cat_en);
-		
-		if (array_key_exists($tolower, $cats))
-			return $cats[$tolower];
-		else 
-			return $cat_en;
-		
-	}
 	
-	/*
-	public static function videoAlias($title=null){
-		
-		if (!$title)
-		throw new Zend_Exception("Не указан один или более параметров для ".__METHOD__, 500);
-		
-		$trim	   = new Zend_Filter_StringTrim(' -');
-		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
-		$regex	  = new Zend_Filter_PregReplace(array("match"=>'/["\'.,:;-\?\{\}\[\]\!`\/\(\)]+/', 'replace'=>' '));
-		$tolower	= new Zend_Filter_StringToLower();
-		$doubledash = new Zend_Filter_PregReplace(array("match"=>'/[-]+/', 'replace'=>'-'));
-		//$cyrlatin   = new Zend_Filter_PregReplace(array("match"=>'/[^\p{Latin}\p{Cyrillic}\p{N} -]+/ui', 'replace'=>''));
-		
-		$result = $tolower->filter( $trim->filter( $doubledash->filter( $separator->filter( $regex->filter($title)))));
-		
-		//if (preg_match('/[^\p{Latin}\p{Cyrillic}\p{N} -]+/ui', $result))
-		//$result = $cyrlatin->filter($result);
-		
-		return $result;
-		
-	}
-	*/
 	
-	public static function processLinks($text=null, $title='', $do='convert'){
+	
+	/**
+	 * Convert http://… links to actual links in some text
+	 * Add rel="nofollow" aatrinute to links
+	 * 
+	 * @param string $text
+	 * @param string $title
+	 * @param string $do // 'convert'|'add'
+	 */
+	public function processLinks($text=null, $title='', $do='convert'){
 		
 		if (!$text)
 			return '';
@@ -332,14 +299,16 @@ class Xmltv_Youtube {
 	/**
 	 *
 	 * Generate RTVG video alias
+	 * 
 	 * @param  string $title
 	 * @throws Zend_Exception
 	 * @return string
 	 */
 	public static function videoAlias( $title=null){
 	
-		if (!$title)
-			throw new Zend_Exception( 'Не указан $title для '.__METHOD__, 500);
+		if (!$title) {
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
+		}
 	
 		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
 		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)#&]+/ui', 'replace'=>' '));
@@ -349,7 +318,7 @@ class Xmltv_Youtube {
 		$result = $tolower->filter( $whitespace->filter( $separator->filter( $cleanup->filter( $title))));
 		
 		if (!preg_match( Zend_Controller_Action_Helper_RequestValidator::ALIAS_REGEX, $result)){
-		    throw new Zend_Exception( Zend_Controller_Action_Helper_RequestValidator::ERR_WRONG_ALIAS.': '.$result);
+		    throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ALIAS.': '.$result);
 		}
 		
 		return $result;
@@ -357,30 +326,49 @@ class Xmltv_Youtube {
 	}
 	
 	/**
-	 * @param string $userAgent
+	 * Set Curl Proxy
+	 * 
+	 * @param unknown_type $config
 	 */
-	/*
-	public function setUserAgent($userAgent) {
+	public function setCurlProxy($config=array()){
 		
-	    if ($userAgent) {
-			$this->userAgent = $userAgent;
-			$this->adapter->setCurlOption(CURLOPT_USERAGENT, $userAgent);
+	    if ($this->adapter && is_a($this->adapter, 'Zend_Http_Client_Adapter_Curl')){
+		    if (array_key_exists('host', $config)){
+	            $this->adapter->setCurlOption(CURLOPT_PROXY, $config['host']);
+	            if (array_key_exists('port', $config)){
+	                $this->adapter->setCurlOption(CURLOPT_PROXYPORT, $config['port']);
+	            }
+	        }
 	    }
-	    
 	}
-	*/
 	
-	public function setProxy($config=array()){
-		
-	    if (array_key_exists('host', $config)){
-            $this->adapter->setCurlOption(CURLOPT_PROXY, $config['host']);
-            if (array_key_exists('port', $config)){
-                $this->adapter->setCurlOption(CURLOPT_PROXYPORT, $config['port']);
-            }
-        }
-	    
-	    
+	
+	/**
+	 * Set HTTP adapter
+	 * 
+	 * @param Zend_Http_Client_Adapter_Curl $adapter
+	 */
+	public function setAdapter($adapter=null) {
+
+		$this->adapter = $adapter;
 	}
+	
+	
+	/**
+	 * Set user agent fro Youtube Client
+	 * 
+	 * @param string $agent // User agent string
+	 */
+	public function setUserAgent($agent=null) {
+
+		$this->_userAgent = $agent;
+		
+		if ($this->adapter && is_a($this->adapter, 'Zend_Http_Client_Adapter_Curl')){
+		    $this->adapter->setCurlOption(CURLOPT_USERAGENT, $agent);
+		}
+	}
+
+
 	
 	
 }

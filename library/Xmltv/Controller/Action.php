@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Action.php,v 1.11 2013-03-05 06:53:20 developer Exp $
+ * @version $Id: Action.php,v 1.12 2013-03-06 03:52:37 developer Exp $
  *
  */
 class Xmltv_Controller_Action extends Zend_Controller_Action
@@ -117,10 +117,6 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		}
 		
 		self::$userAgent = Zend_Registry::get('user_agent');
-		if (self::$userAgent===false){
-			self::$userAgent = 'PHP/5.3';
-			self::$videoCache = false;
-		}
 		
 		$this->weekDays = $this->_helper->getHelper('WeekDays');
 		$this->channelsModel = new Xmltv_Model_Channels();
@@ -157,13 +153,6 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		} else {
 		    self::$user = $auth->getIdentity();
 		}
-		
-		/*
-		if (APPLICATION_ENV=='development'){
-		    var_dump(self::$user->toArray());
-		    die(__FILE__.': '.__LINE__);
-		}
-		*/
 		
 		$this->view->assign('user', self::$user);
 		
@@ -359,7 +348,7 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 	/**
 	 * Current date from request variable
 	 */
-	public function listingDate(){
+	protected function listingDate(){
 		
 	    $now = Zend_Date::now();
 		if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $this->input->getEscaped('date'))) {
@@ -549,5 +538,133 @@ class Xmltv_Controller_Action extends Zend_Controller_Action
 		
 		return $result;
 		
+	}
+	
+	/**
+	 * Display offline page
+	 */
+	public function offlineAction(){
+		
+	}
+	
+	/**
+	 * Fetch blog entries from blogs.yandex.ru
+	 *
+	 * @param  array $channel
+	 * @throws Zend_Exception
+	 * @return array
+	 */
+	protected function yandexComments($channel=array()){
+	
+		if (empty($channel) && !is_array($channel)){
+			throw new Zend_Exception(parent::ERR_WRONG_PARAM.__METHOD__, 500);
+		}
+		 
+		$e = (bool)Zend_Registry::get('site_config')->channels->comments->get('enabled');
+		if ($e===true){
+			 
+			if ($this->cache->enabled){
+	
+				$this->cache->setLocation(ROOT_PATH.'/cache');
+				$f = '/Feeds/Yandex';
+				 
+				if (APPLICATION_ENV=='development'){
+					$hash = 'channel_comments_'.$channel['id'];
+				} else {
+					$hash = Rtvg_Cache::getHash( 'channel_comments_'.$channel['alias']);
+				}
+				 
+				if (($channelComments = $this->cache->load( $hash, 'Core', $f))===false) {
+					$channelComments  = $this->commentsModel->channelComments( $channel['id'] );
+					$this->cache->save($channelComments, $hash, 'Core', $f);
+				}
+	
+			} else {
+				$channelComments = $this->commentsModel->channelComments( $channel['id'] );
+			}
+		}
+		 
+		return $channelComments;
+		 
+	}
+	
+	/**
+	 * Videos for right sidebar
+	 *
+	 * @param  array $channel
+	 * @return array
+	 */
+	protected function sidebarVideos($channel){
+	
+		$vc  = Zend_Registry::get('site_config')->videos->sidebar->right;
+		$max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
+		$ytConfig = array(
+				'order'=>$vc->get('order'),
+				'max_results'=>(int)$vc->get('max_results'),
+				'start_index'=>(int)$vc->get('start_index'),
+				'safe_search'=>$vc->get('safe_search'),
+				'language'=>'ru',
+		);
+		$videos = array();
+		 
+		// If file cache is enabled
+		if ($this->cache->enabled){
+			 
+			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
+			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
+			$f = '/Youtube/SidebarRight';
+			$this->cache->setLocation( ROOT_PATH.'/cache' );
+			$hash = Rtvg_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
+			$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
+			 
+			if (self::$videoCache){
+
+			    // Query database cache for video
+				if (($videos = $this->vCacheModel->sidebarVideos( $channel['id'] ))===false){
+					
+				    // Query file cache
+				    // if video was not found inDB cache
+				    if (($videos = $this->cache->load( $hash, 'Core', $f))===false) {
+				    
+				        // Query Youtube if video was not found 
+				        // in neither DB cache nor file cache
+				        $videos = $this->videosModel->ytSearch( $ytSearch, $ytConfig);
+				        
+				        if (!count($videos) || $videos===false){
+				        	return false;
+				        }
+				    	
+				    }
+				    
+				    // Save to file cache
+				    $this->cache->save( $videos, $hash, 'Core', $f );
+				    
+			        // Save to database cache if it is enabled
+			        if (self::$videoCache==true){
+			        	foreach ($videos as $vid){
+			        		$this->vCacheModel->saveSidebarVideo( $vid, $channel['id'] );
+			        	}
+			        }
+			        
+				}
+				
+			} else {
+				 
+				// Database cache is disabled
+				// Try to fetch from file cache
+				if (($videos = $this->cache->load( $hash, 'Core', $f))===false) {
+					$videos = $this->videosModel->ytSearch( $ytSearch, $ytConfig);
+					$this->cache->save( $videos, $hash, 'Core', $f );
+				}
+			}
+			 
+		} else {
+		    
+		    // No caching
+			$videos = $this->videosModel->ytSearch( $ytSearch, $ytConfig);
+		}
+		 
+		return $videos;
+		 
 	}
 }

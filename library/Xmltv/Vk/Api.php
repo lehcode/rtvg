@@ -37,8 +37,8 @@ class Xmltv_Vk_Api
         );
         $r = $this->process($method, $data);
         
-        var_dump($r);
-        die( __FILE__.': '.__LINE__ );
+        //var_dump($r);
+        //die( __FILE__.': '.__LINE__ );
         
         if($r['response'] !== false)
         {
@@ -403,8 +403,8 @@ class Xmltv_Vk_Api
         
         $response = json_decode($response);
         
-        var_dump($response);
-        die(__FILE__.': '.__LINE__);
+        //var_dump($response);
+        //die(__FILE__.': '.__LINE__);
         
         $responseData = array();
         if(isset($response->error))
