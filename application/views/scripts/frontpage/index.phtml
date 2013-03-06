@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: index.phtml,v 1.6 2013-03-05 06:53:20 developer Exp $
+ * @version $Id: index.phtml,v 1.7 2013-03-06 05:05:11 developer Exp $
  *
  */
 
@@ -129,7 +129,7 @@ $this->headScript()
 	        		</p>
 	        		<?php endif; ?>
 	        		
-	        		<a href="<?php echo $this->url( array('category'=>$this->escape( $prog['category_alias'] ), 'timespan'=>'сегодня'), 'deault_listings_category' ) ?>"
+	        		<a href="<?php echo $this->url( array('category'=>$this->escape( $prog['category_alias'] ), 'timespan'=>'сегодня'), 'default_listings_category' ) ?>"
 		        		title="<?php printf("Все %s на канале «%s» сегодня", 
 		        			Xmltv_String::strtolower( $this->escape( $prog['category_title'] )),
 		        			$this->escape( $prog['channel_title'] )) ?>">
