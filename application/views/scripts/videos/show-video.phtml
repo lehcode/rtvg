@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.18 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: show-video.phtml,v 1.19 2013-03-08 06:50:09 developer Exp $
  *
  */
 
@@ -120,7 +120,7 @@ if (isset($this->main_video)){
 					
 				<div class="description">
 					<p>
-						<?php echo $desc = $this->truncateString( $v['desc'], 35, 'words' )===false ? '' : $desc ?>
+						<?php echo $this->truncateString( $v['desc'], 35, 'words' ) ?>
 					</p>
 				</div>
 				
