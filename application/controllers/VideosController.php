@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.22 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: VideosController.php,v 1.23 2013-03-08 04:06:13 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -113,8 +113,8 @@ class VideosController extends Rtvg_Controller_Action
 					    if ($mainVideo){
 						    if (parent::$videoCache===true){
 						        if (APPLICATION_ENV=='development'){
-						            var_dump($mainVideo);
-						            die(__FILE__.': '.__LINE__);
+						            //var_dump($mainVideo);
+						            //die(__FILE__.': '.__LINE__);
 						        }
 								$this->vCacheModel->saveMainVideo($mainVideo);
 							}

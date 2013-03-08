@@ -1,16 +1,26 @@
 <?php
 /**
- * Database table for channels comments
+ * Database table for the channels comments
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses Xmltv_Db_Table_Abstract
- * @version $Id: ChannelsComments.php,v 1.4 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: ChannelsComments.php,v 1.5 2013-03-08 04:06:13 developer Exp $
  */
 class Xmltv_Model_DbTable_ChannelsComments extends Xmltv_Db_Table_Abstract
 {
 
 	protected $_name = 'channels_comments';
     protected $_primary = 'id';
+    protected $_defaultValues = array(
+        'id'=>0,
+        'author'=>'',
+        'intro'=>'',
+        'created'=>null,
+        'added'=>null,
+        'published'=>1,
+        'src_url'=>'',
+        'parent_id'=>'',
+        'url_crc'=>'' );
     
     /**
      * (non-PHPdoc)
@@ -18,20 +28,43 @@ class Xmltv_Model_DbTable_ChannelsComments extends Xmltv_Db_Table_Abstract
      */
     public function init() {
     	
-        $this->_defaultValues = array(
-        		'id'=>null,
-        		'author'=>'',
-        		'intro'=>'',
-        		'fulltext'=>'',
-        		'date_created'=>null,
-        		'date_added'=>null,
-        		'published'=>1,
-        		'src_url'=>'',
-        		'feed_url'=>'',
-        		'parent_id'=>''
-        );
+        $this->_pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
+        if (!$this->_pfx){
+            throw new Zend_Exception(self::ERR_WRONG_DB_PREFIX);
+        }
+        $this->setName($this->_pfx.$this->_name);
         
-        parent::init();
+        $this->setRowClass( 'Rtvg_Comment_Item' );
+        $this->setRowsetClass( 'Rtvg_Comment_Collection' );
+        $this->_defaultValues['added'] = Zend_Date::now()->toString("YYYY-MM-dd HH:mm:ss");
+    	
+    }
+    
+    
+    
+    /**
+     * (non-PHPdoc)
+     * @see Zend_Db_Table_Abstract::createRow()
+     */
+    public function createRow(array $data=null){
+    	
+        $rowData = parent::createRow($data);
+        
+        foreach ($this->_defaultValues as $dK=>$dV){
+            if (!$rowData->$dK) {
+            	$rowData->$dK = $dV;
+            }
+        }
+        
+        $rowData->published = $this->_defaultValues['published'];
+        $rowData->url_crc = base64_encode( hash('crc32', $rowData->src_url, true));
+        
+        if (APPLICATION_ENV=='development'){
+            //var_dump($rowData);
+            //die(__FILE__.': '.__LINE__);
+        }
+        
+        return $rowData;
         
     }
 

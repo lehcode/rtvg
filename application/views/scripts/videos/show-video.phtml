@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.17 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: show-video.phtml,v 1.18 2013-03-08 04:06:13 developer Exp $
  *
  */
 
@@ -119,16 +119,9 @@ if (isset($this->main_video)){
 				</div>
 					
 				<div class="description">
-					<?php
-					$desc = $this->truncateString( $v['desc'], 35, 'words' );
-					if (!empty($desc)) {
-						?>
 					<p>
-						<?php echo $desc ?>
+						<?php echo $desc = $this->truncateString( $v['desc'], 35, 'words' )===false ? '' : $desc ?>
 					</p>
-						<?php 
-					} ?>
-					
 				</div>
 				
 			</div>
@@ -153,12 +146,13 @@ if (isset($this->main_video)){
 
 <div id="advm_block" style="display:none">
   <div id="advm_close">Закрыть [Х]</div>
-  <script type="text/javascript" src="http://c.am11.ru/code/bn/js.php?u=13073&f=1"></script>
+  <script type="text/javascript" src="http://c.am11.ru/code/bn/js.php?u=13073&f=3"></script>
   <div id="advm_box">
     <div>Осталось <span id="advm_timer"></span> сек.</div>
   </div>
 </div>
-<script type="text/javascript" src="http://c.am11.ru/code/mod/preloader5.js"></script>
+<script type="text/javascript" src="http://c.am11.ru/code/mod/bigpreloader5.js"></script>
+
 
 
 

@@ -4,7 +4,7 @@
  *
  * @uses Zend_Db_Table_Abstract
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Abstract.php,v 1.7 2013-03-03 23:30:36 developer Exp $
+ * @version $Id: Abstract.php,v 1.8 2013-03-08 04:06:13 developer Exp $
  */
 class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     
@@ -26,6 +26,13 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      */
     protected $_primary = 'id';
     
+    /**
+     * Container for default values to be used
+     * in newly created row
+     * @var array
+     */
+    protected $_defaultValues = array();
+    
     const FETCH_MODE = Zend_Db::FETCH_ASSOC;
     const ERR_PARAMETER_MISSING = "Пропущен параметр для ";
     const ERR_WRONG_DATE_FORMAT = "Неверный формат даты! ";
@@ -37,6 +44,8 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      * @param array $config
      */
     public function init(){
+        
+        //parent::init();
         
         $this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
         
@@ -78,11 +87,14 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     }
     
     /**
-     * (non-PHPdoc)
-     * @see Zend_Db_Table_Abstract::_setup()
+     * Get table prefix string
+     * 
+     * @return string
      */
-    protected function _setup(){
-    	parent::_setup();
+    protected function getPrefix(){
+    	
+        return $this->_pfx;
+        
     }
     
 }

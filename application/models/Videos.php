@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.22 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: Videos.php,v 1.23 2013-03-08 04:06:13 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -100,6 +100,10 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		if (!self::isRussian( $entry->getVideoTitle())) {
 			return false;
 		}
+
+		if (!self::isHack( $entry->getVideoTitle())) {
+			return false;
+		}
 		
 		return true;
 		
@@ -181,8 +185,26 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			return false;
 		}
 		
+	}
+	
+	/**
+	 * Check if title conyains hacking terms
+	 * 
+	 * @param  string $title
+	 * @return boolean
+	 */
+	public static function isHack($title=null){
 		
-		
+	    if (!Xmltv_String::stristr($title, 'взлом') || 
+	    	!Xmltv_String::stristr($title, 'хак')) {
+	    	return true;
+	    } else {
+	    	if (APPLICATION_ENV=='development'){
+	    		Zend_Debug::dump( Rtvg_Message::ERR_IS_HACK.$title);
+	    	}
+	    	return false;
+	    }
+	    
 	}
 	
 	/**
@@ -322,7 +344,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			foreach ($list as $li){
 				
 				if (APPLICATION_ENV=='development'){
-					//var_dump($li);
+					var_dump($li);
 					//var_dump($li['fetch_video']);
 					die(__FILE__.': '.__LINE__);
 				}
@@ -565,16 +587,14 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM);
 		}
 		
-		
-		
 		if (APPLICATION_ENV=='development'){
 			echo '<b>'.__METHOD__.'</b><br />';
-			Zend_Debug::dump($ytConfig);
+			Zend_Debug::dump($yt_config);
 			die(__FILE__.': '.__LINE__);
 		}
 		
 		
-		$result = $this->ytSearch( $channel['title'], $ytConfig);
+		$result = $this->ytSearch( $channel['title'], $yt_config);
 		
 		if (APPLICATION_ENV=='development'){
 			//var_dump($result);

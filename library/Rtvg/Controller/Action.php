@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.2 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: Action.php,v 1.3 2013-03-08 04:06:13 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -16,6 +16,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	protected static $errorUrl;
 	protected $weekDays;
 	protected $kidsChannels=array();
+	
+	/**
+	 * Javascript sources for inlineScript
+	 * @var Rtvg_Ad_Collection
+	 */
+	protected $adScripts;
 	
 	const FEATURED_CHANNELS_AMT=20;
 	
@@ -108,7 +114,10 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		
 		$this->_validator = $this->_helper->getHelper('RequestValidator');
 		
-		$this->_initCache();
+		$this->cache = new Rtvg_Cache();
+        $this->cache->enabled = (bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' );
+        $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
+        $this->cache->setLocation( ROOT_PATH.'/cache' );
 		
 		self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		if (self::$videoCache){
@@ -159,6 +168,8 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		    $this->_flashMessenger->addMessage("У вас нет доступа");
 		    $this->_redirect( self::$errorUrl, array('exit'=>true));
 		}
+		
+		$this->adScripts = new Rtvg_Ad_Collection();
 		
 	}
 	
@@ -464,22 +475,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	
 	
 	/**
-	 * Initialize cache
-	 */
-	protected function _initCache(){
-		
-	    $e = (bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' );
-	    if ($e===true){
-	        $this->cache = new Rtvg_Cache();
-	        $this->cache->enabled = true;
-	        $this->cache->setLocation( ROOT_PATH.'/cache' );
-	        $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
-	    }
-		
-	}
-	
-	
-	/**
 	 * Top channels programs listing
 	 * 
 	 * @param  int $amt
@@ -552,39 +547,23 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * @param  array $channel
 	 * @throws Zend_Exception
 	 * @return array
+	 * 
 	 */
 	protected function yandexComments($channel=array()){
 	
 		if (empty($channel) && !is_array($channel)){
-			throw new Zend_Exception(parent::ERR_WRONG_PARAM.__METHOD__, 500);
+			throw new Zend_Exception( parent::ERR_WRONG_PARAM.__METHOD__, 500);
 		}
-		 
-		$e = (bool)Zend_Registry::get('site_config')->channels->comments->get('enabled');
-		if ($e===true){
-			 
-			if ($this->cache->enabled){
-	
-				$this->cache->setLocation(ROOT_PATH.'/cache');
-				$f = '/Feeds/Yandex';
-				 
-				if (APPLICATION_ENV=='development'){
-					$hash = 'channel_comments_'.$channel['id'];
-				} else {
-					$hash = Rtvg_Cache::getHash( 'channel_comments_'.$channel['alias']);
-				}
-				 
-				if (($channelComments = $this->cache->load( $hash, 'Core', $f))===false) {
-					$channelComments  = $this->commentsModel->channelComments( $channel['id'] );
-					$this->cache->save($channelComments, $hash, 'Core', $f);
-				}
-	
-			} else {
-				$channelComments = $this->commentsModel->channelComments( $channel['id'] );
-			}
+		
+		$comments = $this->commentsModel->channelComments( $channel['id'] );
+		
+		if ($comments===false) {
+		    return false;
 		}
-		 
-		return $channelComments;
-		 
+		
+		
+		return $comments;
+		
 	}
 	
 	/**
@@ -604,8 +583,10 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 				'safe_search'=>$vc->get('safe_search'),
 				'language'=>'ru',
 		);
+		
 		$videos = array();
-		 
+		$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
+		
 		// If file cache is enabled
 		if ($this->cache->enabled){
 			 
@@ -614,7 +595,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			$f = '/Youtube/SidebarRight';
 			$this->cache->setLocation( ROOT_PATH.'/cache' );
 			$hash = Rtvg_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
-			$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
 			 
 			if (self::$videoCache){
 
@@ -666,4 +646,5 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		return $videos;
 		 
 	}
+	
 }

@@ -5,7 +5,7 @@
  * @author  toshihir
  * @package rutvgid
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.19 2013-02-25 11:40:40 developer Exp $
+ * @version $Id: ImportController.php,v 1.20 2013-03-08 04:06:13 developer Exp $
  *
  */
 
@@ -422,7 +422,7 @@ class Admin_ImportController extends Xmltv_Controller_Action
 			$prog['end']   = $end->toString("yyyy-MM-dd HH:mm:ss");
 			
 			//Calculate hash
-			$prog['hash']   = md5($prog['channel'].$prog['start'].$prog['end']);
+			$prog['hash'] = md5($prog['channel'].$prog['start'].$prog['end']);
 			
 			//debug breakpoint
 			if ($i<50){

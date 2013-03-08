@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: list.phtml,v 1.16 2013-03-05 06:53:20 developer Exp $
+ * @version $Id: list.phtml,v 1.17 2013-03-08 04:06:13 developer Exp $
  *
  */
 
@@ -27,7 +27,7 @@ APPLICATION_ENV=='production' ?
 
 
 $this->headScript()
-	->appendScript("$(function() { $('#fastsearch-wrap img').tooltip({ showURL: false });
+	->appendScript( Rtvg_Compressor_JSMin::minify( "$(function() { $('#fastsearch-wrap img').tooltip({ showURL: false });
 	$.getJSON( '/channels/typeahead/format/json/', function(response) {
 		var typeahead_items = new Array();
 		$.each(response, function(key, val) { 
@@ -52,7 +52,7 @@ $this->headScript()
 	
 	$( '#channels' ).accordion({ autoHeight:false, navigation:true, clearStyle:true, icons: false });
 	
-});");
+});"));
 
 ?>
 

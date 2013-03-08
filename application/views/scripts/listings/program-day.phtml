@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-day.phtml,v 1.10 2013-03-05 06:53:20 developer Exp $
+ * @version $Id: program-day.phtml,v 1.11 2013-03-08 04:06:13 developer Exp $
  *
  */
 ?>
@@ -34,14 +34,15 @@ if (!empty($this->programs)) {
 }
 $this->headMeta()->setName('keywords', implode(',', $kw) );
 
-//var_dump(count($this->programs));
-//var_dump($this->programs);
-//die(__FILE__.': '.__LINE__);
+if (APPLICATION_ENV=='development') {
+	//var_dump($this->current_program);
+	//die(__FILE__.': '.__LINE__);
+}
 
 if (!empty($this->programs)) {
 
-	$programTitle = $this->escape( $this->programs[0]->title );
-	$programAlias = $this->escape( $this->programs[0]->alias );
+	$programTitle = $this->escape( $this->current_program['title'] );
+	$programAlias = $this->escape( $this->current_program['alias'] );
 		
 	if ($this->is_today) {
 		//META title

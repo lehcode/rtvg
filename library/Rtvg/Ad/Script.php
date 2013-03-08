@@ -1,5 +1,8 @@
 <?php
-class Rtvg_Ad_Script {
+class Rtvg_Ad_Script extends Zend_Db_Table_Row_Abstract 
+{
+    
+    protected $_primary = array( 'id' );
     
     /**
      * Scripts to output
@@ -32,6 +35,8 @@ class Rtvg_Ad_Script {
 	        	$this->_sources[$k] = Rtvg_Compressor_JSMin::minify($js);
 	        }
         }
+        
+        parent::__construct(array());
         
     }
     
@@ -66,12 +71,21 @@ class Rtvg_Ad_Script {
         
     }
     
-    public function getData(){
+    /**
+     * Get script code
+     * 
+     * @return array:
+     */
+    public function getCodes(){
         
     	return $this->_sources;
     	
     }
 
+    /**
+     * 
+     * @return multitype:
+     */
     public function getFirst(){
         
     	return $this->_sources[0];

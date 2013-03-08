@@ -455,6 +455,10 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         		}
         	}
         }
+        
+        if (!count($result)){
+            return false;
+        }
         	
         if (APPLICATION_ENV=='development'){
         	//var_dump($result);

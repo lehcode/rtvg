@@ -4,7 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.22 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.23 2013-03-08 04:06:13 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -57,15 +57,33 @@ class ChannelsController extends Rtvg_Controller_Action
 			
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$this->view->assign('pageclass', 'allchannels');
+			
 			if ($this->cache->enabled){
-				$hash = Rtvg_Cache::getHash('published_channels');
-				if (!$rows = $this->cache->load($hash, 'Core', $this->cacheRoot)) {
+			    
+			    $this->cache->setLifetime(86400);
+			    $this->cache->setLocation(ROOT_PATH.'/cache');
+			    $f = '/Channels';
+				
+			    $hash = Rtvg_Cache::getHash('published_channels');
+				if (!$rows = $this->cache->load($hash, 'Core', $f)) {
 					$rows = $this->channelsModel->getPublished();
-					$this->cache->save($rows, $hash, 'Core', $this->cacheRoot);
+					foreach ($rows as $k=>$row) {
+					    $rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
+					}
+					$this->cache->save($rows, $hash, 'Core', $f);
 				}
 			} else {
 				$rows = $this->channelsModel->getPublished();
+				foreach ($rows as $row) {
+					$rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
+				}
 			}
+			
+			if (APPLICATION_ENV=='development'){
+			    //var_dump($rows);
+			    //die(__FILE__.': '.__LINE__);
+			}
+			
 			$this->view->assign('channels', $rows);
 			
 			/*
@@ -132,18 +150,22 @@ class ChannelsController extends Rtvg_Controller_Action
 			$this->view->assign('category', $catProps);
 			
 			if ($this->cache->enabled){
-			    $this->cache->setLocation(ROOT_PATH.'/cache');
+			    $this->cache->setLifetime(86400);
+			    $this->cache->setLocation(ROOT_PATH.'/cache/Channels');
 			    $f = "/Channels/Category";
 				$hash = md5('channels-categories_'.$catProps['alias']);
 				if (!$rows = $this->cache->load($hash, 'Core', $f)){
 					$rows = $this->channelsModel->categoryChannels($catProps['alias']);
 					foreach ($rows as $k=>$row) {
-						$rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
-					}
+				    	$rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
+				    }
 					$this->cache->save($rows, $hash, 'Core', $f);
 				}
 			} else {
 				$rows = $this->channelsModel->categoryChannels($catProps['alias']);
+				foreach ($rows as $k=>$row) {
+					$rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
+				}
 			}
 			$this->view->assign('channels', $rows);
 			
@@ -236,10 +258,13 @@ class ChannelsController extends Rtvg_Controller_Action
 			// Channel properties
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$channelAlias = $this->input->getEscaped('channel');
+			
 			if ($this->cache->enabled){
+			    
 			    $this->cache->setLocation(ROOT_PATH.'/cache');
-			    $this->cache->setLifetime(3600*24*7);
-				$f  = '/Feeds/Yandex';
+			    $this->cache->setLifetime(86400*7);
+				$f  = '/Channels';
+				
 				$hash = $this->cache->getHash('channel_'.$channelAlias);
 				if (($channel = $this->cache->load($hash, 'Core', $f))===false) {
 					$channel = $this->channelsModel->getByAlias( $channelAlias );
@@ -252,19 +277,27 @@ class ChannelsController extends Rtvg_Controller_Action
 			
 			//Attach comments model
 			$commentsModel = new Xmltv_Model_Comments();
-			$feedData = $commentsModel->getYandexRss( array( 'телеканал "'.Xmltv_String::strtolower($channel['title']).'"') );
-			
-			if ( ($new = $commentsModel->parseYandexFeed( $feedData ))!==false){
-				if (count($new)){
-				    try {
-				        $commentsModel->saveChannelComments($new, $channel['id']);
-				    } catch (Exception $e) {
-				    }
-			    }
-				$this->view->assign('items', $new);
+			if ($this->cache->enabled){
 			    
+			    $this->cache->setLocation(ROOT_PATH.'/cache');
+			    $this->cache->setLifetime(86400);
+			    $f  = '/Feeds/Yandex';
+			    
+			    $hash = $this->cache->getHash( 'comments_'.$channelAlias);
+			    if (($new = $this->cache->load( $hash, 'Core', $f))===false) {
+			    	$feedData = $commentsModel->getYandexRss( array( 'телеканал "'.Xmltv_String::strtolower($channel['title']).'"') );
+			    	if (false !== ($new = $commentsModel->parseYandexFeed( $feedData ))){
+			    		$commentsModel->saveChannelComments( $new, $channel['id']);
+			    		$this->cache->save( $new, $hash, 'Core', $f);
+			    	}
+			    }
+			} else {
+			    $feedData = $commentsModel->getYandexRss( array( 'телеканал "'.Xmltv_String::strtolower($channel['title']).'"') );
+			    $new = $commentsModel->parseYandexFeed( $feedData );
 			}
-
+			
+			$this->view->assign('items', $new);
+			
 		}
 		 
 	}

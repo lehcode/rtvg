@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.23 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.24 2013-03-08 04:06:13 developer Exp $
  *
  */
 
@@ -464,7 +464,9 @@ if (isset($this->comments)) {
 <div id="comments">
 
 	<?php
-	foreach ($this->comments as $comment) {
+	if (isset($this->comments) && (bool)$this->comments!==false) {
+	    
+		foreach ($this->comments as $comment) {
 	    
 		//var_dump($comment);
 		//die(__FILE__.': '.__LINE__);
@@ -509,6 +511,7 @@ if (isset($this->comments)) {
 		
 	</div>
 		<?php 
+		}
 	}
 	?>
 	<a href="<?php //echo $this->url(array(), 'default_comments_create'); ?>">Добавить комментарий</a>

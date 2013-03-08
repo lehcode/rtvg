@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.19 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Channels.php,v 1.20 2013-03-08 04:06:13 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -11,7 +11,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         
         $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
         parent::__construct($config);
-        
+        //$this->db->setFetchMode(Zend_Db::FETCH_OBJ);
         $this->table = new Xmltv_Model_DbTable_Channels();
         
     }
@@ -23,10 +23,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function getPublished(){
 		
 	    $rows = $this->channelsTable->fetchAll("`published`='1'", 'title ASC');
-		$view = new Zend_View();
-		foreach ($rows as $row) {
-			$row->icon = $view->baseUrl('images/channel_logo/'.$row->icon);
-		}
 		return $rows->toArray();
 		
 	}
@@ -205,15 +201,15 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		    //die(__FILE__.': '.__LINE__);
 		}
 		
-		$result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
+		$result = $this->db->fetchAll($select);
 		
-		if (APPLICATION_ENV=='development'){
-	    	//Zend_Debug::dump($result);
-	    	//die(__FILE__.': '.__LINE__);
+		if ($result===false || empty($result)){
+	    	return false;
 	    }
 	    
-	    if (!count($result)){
-	    	return false;
+	    if (APPLICATION_ENV=='development'){
+	    	//Zend_Debug::dump($result);
+	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
 	    return $result;
