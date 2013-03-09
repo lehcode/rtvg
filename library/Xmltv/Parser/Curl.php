@@ -1,5 +1,5 @@
 <?php
-class Parser_Curl 
+class Xmltv_Parser_Curl extends Xmltv_Parser_StringParser
 {
 	/**
 	 * @var string
@@ -25,6 +25,7 @@ class Parser_Curl
 	    curl_setopt($this->_session, CURLOPT_RETURNTRANSFER, true); 
 		curl_setopt($this->_session, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($this->_session, CURLOPT_AUTOREFERER, false);
+		
 		if (isset($url) && !empty($url)) {
 			curl_setopt($this->_session, CURLOPT_URL, $url);
 		}
