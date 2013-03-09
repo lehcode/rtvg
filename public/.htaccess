@@ -36,6 +36,9 @@ RewriteBase /
 
 RewriteRule apple-touch-icon-precomposed.png /images/icons/apple-touch-icon-precomposed.png [R=301,L]
 RewriteRule apple-touch-icon.png /images/icons/apple-touch-icon.png [R=301,L]
+RewriteRule apple-touch-icon-114x114-precomposed.png /images/icons/apple-touch-icon-114x114-precomposed.png [R=301,L]
+RewriteRule apple-touch-icon-114x114.png /images/icons/apple-touch-icon-114x114.png [R=301,L]
+RewriteRule index.php/(.*) /$1 [R=301,L]
 
 #RewriteCond %{HTTP_HOST} !^rutvgid\.ru [NC]
 #RewriteCond %{SERVER_PORT} 80
