@@ -1,5 +1,5 @@
 <?php
-class Xmltv_Parser_Curl 
+class Parser_Curl 
 {
 	/**
 	 * @var string
@@ -17,12 +17,6 @@ class Xmltv_Parser_Curl
 	 * @var int
 	 */
 	const PAGE_DOM  = 2;
-	/**
-	 * @var int
-	 */
-	const PAGE_HTML  = 3;
-	
-	protected $_url='';
 	
 	public function __construct($url=null) {
 			
@@ -30,11 +24,11 @@ class Xmltv_Parser_Curl
 		curl_setopt($this->_session, CURLOPT_HEADER, false); 
 	    curl_setopt($this->_session, CURLOPT_RETURNTRANSFER, true); 
 		curl_setopt($this->_session, CURLOPT_FOLLOWLOCATION, true);
-		//curl_setopt($this->_session, CURLOPT_AUTOREFERER, false);
+		curl_setopt($this->_session, CURLOPT_AUTOREFERER, false);
 		if (isset($url) && !empty($url)) {
 			curl_setopt($this->_session, CURLOPT_URL, $url);
 		}
-		$this->_userAgent =@ $_SERVER['HTTP_USER_AGENT'];
+		$this->_userAgent = $_SERVER['HTTP_USER_AGENT'];
 		curl_setopt($this->_session, CURLOPT_USERAGENT, $this->_userAgent);
 		
 	}
@@ -76,9 +70,10 @@ class Xmltv_Parser_Curl
 	 */
 	public function setOption($option=null, $value=null){
 		
-		if (!$option)
-			return false;
+		if (!$option || !$value)
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM );
 		
+		$option = strtoupper($option);
 		curl_setopt($this->_session, $option, $value);
 		
 	}
@@ -89,8 +84,7 @@ class Xmltv_Parser_Curl
 	 * @param string $url
 	 */
 	public function setUrl( $url ) {
-		$this->_url = $url;
-		curl_setopt($this->_session, CURLOPT_URL, $this->_url);
+		curl_setopt($this->_session, CURLOPT_URL, $url);
 	}
 	
 	/**
@@ -101,7 +95,6 @@ class Xmltv_Parser_Curl
 	public function setCookiePath( $file='' ){
 		curl_setopt($this->_session, CURLOPT_COOKIEJAR, $file);
 		curl_setopt($this->_session, CURLOPT_COOKIEFILE, $file);
-		
 	}
 	
 	/**
@@ -127,14 +120,12 @@ class Xmltv_Parser_Curl
 	 * @param array $post_vars
 	 */
 	public function setPostVars( $post_vars=array() ){
-		
 		$vars = array();
 		foreach ($post_vars as $k=>$var) {
-			$vars[] = $k.'='.urlencode($var);
+			$vars[]="$k:".urlencode($var);
 		}
-		$post_vars = implode('&', $vars);
-		//var_dump($post_vars);
- 		curl_setopt($this->_session, CURLOPT_POSTFIELDS , $post_vars);
+		$vars = implode('&', $vars);
+ 		curl_setopt($this->_session, CURLOPT_POSTFIELDS , $vars);
 	}
 	
 	/**
@@ -142,20 +133,10 @@ class Xmltv_Parser_Curl
 	 * Process POST request
 	 * @return mixed
 	 */
-	public function post( $url=null, $params=array() ){
-		
-		if (isset($url) && !empty($url))
-			curl_setopt($this->_session, CURLOPT_URL, $url);
+	public function post(){
 		
 		curl_setopt($this->_session, CURLOPT_POST , true);
-		$this->setPostVars( $params );
-		return $this->fetch( self::PAGE_DOM );
-		
-	}
-	
-	public function getInfo(){
-		
-		return curl_getinfo($this->_session);
+		return $this->fetch();
 		
 	}
 	
@@ -203,6 +184,7 @@ class Xmltv_Parser_Curl
 	 */
 	public function fetch($method=self::PAGE_DOM) {
 		
+		
 		$data = curl_exec($this->_session);
 		if($data) {
 			switch($method) {
@@ -210,15 +192,7 @@ class Xmltv_Parser_Curl
 					$data = json_decode($data);
 					break;
 				case self::PAGE_DOM:
-					/**
-					 * 
-					 * Returns
-					 * @var Zend_Dom_Query
-					 */
 					$data = new Zend_Dom_Query($data);
-					break;
-				case self::PAGE_HTML:
-					return $data;
 					break;
 				default: break;
 			}
