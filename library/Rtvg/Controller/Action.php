@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.4 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: Action.php,v 1.5 2013-03-10 03:02:15 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -195,10 +195,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         
         	if ($this->userAgent->getBrowserType()=='mobile'){
         	    //Collect stats to log
+        	    /*
         	    $logger = new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/mobile.log' );
         	    if ($logger){
         	        $logger->log( serialize($this->userDevice), Zend_Log::INFO );
         	    }
+        	    */
         	}
         	
         } catch (Exception $e) {
