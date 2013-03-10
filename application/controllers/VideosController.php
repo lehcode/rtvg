@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.23 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: VideosController.php,v 1.24 2013-03-10 02:45:15 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -38,7 +38,7 @@ class VideosController extends Rtvg_Controller_Action
 	public function showVideoAction(){
 		
 		
-		if ($this->requestParamsValid()){
+		if ( parent::validateRequest()){
 			
 			$this->view->assign( 'pageclass', 'show-video' );
 			$conf = Zend_Registry::get('site_config')->videos->get(related);
@@ -84,7 +84,7 @@ class VideosController extends Rtvg_Controller_Action
 					$f = '/Youtube/ShowVideo/Main';
 					$hash = Rtvg_Cache::getHash( $ytId );
 					
-					if (parent::$videoCache===true){
+					if (parent::$videoCache===true && $this->acl->isAllowed()){
 					    
 					    // Search in database cache if was not found in file cache
 					    // and if database cache is enabled

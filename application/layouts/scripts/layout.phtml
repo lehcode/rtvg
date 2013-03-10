@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: layout.phtml,v 1.32 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: layout.phtml,v 1.33 2013-03-10 02:45:15 developer Exp $
  *
  */
 
@@ -25,12 +25,18 @@ $this->headMeta()
 $this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND');
 $this->headLink()
 	->prependStylesheet( $this->baseUrl('css/base.css'))
+	->appendStylesheet($this->baseUrl('css/fonts.css'))
 	->appendStylesheet( $this->baseUrl('js/tip/jquery.tooltip.css'));
 
 /*
  * Check browser
  */
 $browser = $this->userAgent()->getUserAgent();
+if (APPLICATION_ENV=='development'){
+    //var_dump($this->userAgent());
+    //die(__FILE__.': '.__LINE__);
+    
+}
 $browserMsie = false;
 if (strstr($browser, 'MSIE')) {
 	$browserMsie = true;
@@ -125,8 +131,7 @@ $this->headStyle()
 
 if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
 	$this->inlineScript()
-	//->appendFile("http://code.directadvert.ru/show.cgi?adp=85979&div=DIV_DA_85979")  //directadvert rollin
-	->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
+		->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
 }
 ?>
 
@@ -154,6 +159,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 </head>
 <body>
 <div class="row-fluid" id="header">
+<!-- Rating@Mail.ru counter --><div style="position:absolute;left:-10000px;"><img src="http://d8.c6.b3.a2.top.mail.ru/counter?id=2320499" style="border:0;" height="1" width="1" alt="Рейтинг@Mail.ru" /></div><!-- //Rating@Mail.ru counter -->
 <?php echo $this->placeholder('header'); ?>
 </div>
 	
@@ -215,13 +221,15 @@ if ($pageClass=='show-video'){
 <div class="row-fluid" id="footer">
 	<?php echo $this->placeholder('footer'); ?>
 </div>
-<?php if (APPLICATION_ENV=='production'){ ?><script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify("(function() {
+<?php if (APPLICATION_ENV=='production'){ ?>
+<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify("(function() {
 var cx = '006526203727824860247:vdzpxf_4n5a';
 var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
 gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
 '//www.google.ru/cse/cse.js?cx=' + cx;
 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-})();"); ?></script><script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify('(function (d, w, c) {
+})();"); ?></script>
+<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify('(function (d, w, c) {
 (w[c] = w[c] || []).push(function() {
 try {
 w.yaCounter16053280 = new Ya.Metrika({id:16053280, enableAll: true, webvisor:true});
@@ -235,7 +243,8 @@ s.async = true;
 s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
 if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f); } 
 else { f(); }
-})(document, window, "yandex_metrika_callbacks");'); ?></script><noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+})(document, window, "yandex_metrika_callbacks");'); ?></script>
+<noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify("var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-778789-8']);
 _gaq.push(['_trackPageview']);
@@ -243,16 +252,17 @@ _gaq.push(['_trackPageview']);
 var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
 ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();"); ?></script><?php } ?><?php echo $this->inlineScript(); ?>
-<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/wizard/rich.js')); ?></script>
-<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/advmaker/cu.js')); ?></script>
-<script type="text/javascript"><?php 
-$rand = array(
-	Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/wizard/rollin.js')),
-	Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/advmaker/sb.js')),
+})();"); ?></script>
+<?php 
+$scripts = array(
+	'<script type="text/javascript">'.Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/wizard/rich.js')).'</script>'."\n",
+	'<script language="javascript" type="text/javascript" src="http://contlist.com/7s7sp0lsgm43w9ntydg"></script>'."\n"
 );
-echo $rand[rand(0, count($rand)-1)];
+echo $scripts[rand( 0, count($scripts)-1 )];
 ?>
-</script>
+<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/advmaker/cu.js')); ?></script>
+<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/advmaker/sb.js')); ?></script>
+<?php } ?>
+<?php echo $this->inlineScript(); ?>
 </body>
 </html>

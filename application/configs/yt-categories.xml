@@ -1,44 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml version="1.0" encoding="UTF-8"?>
 <categories>
     <category>
-        <en>Film</en>
-        <ru>Кино</ru>
+        <en>film</en>
+        <ru>кино</ru>
     </category>
     <category>
-        <en>Games</en>
-        <ru>Мультфильмы</ru>
+        <en>movies</en>
+        <ru>кино</ru>
     </category>
     <category>
-        <en>Education</en>
-        <ru>Образовательные</ru>
+        <en>games</en>
+        <ru>мультфильмы</ru>
     </category>
     <category>
-        <en>Comedy</en>
-        <ru>Юмористические</ru>
+        <en>education</en>
+        <ru>образовательные</ru>
     </category>
     <category>
-        <en>Tech</en>
-        <ru>Научные</ru>
+        <en>comedy</en>
+        <ru>юмористические</ru>
     </category>
     <category>
-        <en>People</en>
-        <ru>Общественные</ru>
+        <en>tech</en>
+        <ru>научные</ru>
     </category>
     <category>
-        <en>Music</en>
-        <ru>Музыкальные</ru>
+        <en>people</en>
+        <ru>общественные</ru>
     </category>
     <category>
-        <en>News</en>
-        <ru>Новости</ru>
+        <en>music</en>
+        <ru>музыкальные</ru>
     </category>
     <category>
-        <en>Sports</en>
-        <ru>Спорт</ru>
+        <en>news</en>
+        <ru>новости</ru>
     </category>
     <category>
-        <en>Entertainment</en>
-        <ru>Развлекательные</ru>
+        <en>sports</en>
+        <ru>спорт</ru>
+    </category>
+    <category>
+        <en>entertainment</en>
+        <ru>развлекательные</ru>
+    </category>
+    <category>
+        <en>autos</en>
+        <ru>автомобили</ru>
+    </category>
+    <category>
+        <en>shows</en>
+        <ru>Сериалы</ru>
+    </category>
+    <category>
+        <en>travel</en>
+        <ru>Путешествия</ru>
+    </category>
+    <category>
+        <en>nonprofit</en>
+        <ru>Разное</ru>
+    </category>
+    <category>
+        <en>howto</en>
+        <ru>Разное</ru>
+    </category>
+    <category>
+        <en>animals</en>
+        <ru>Природа</ru>
     </category>
 </categories>

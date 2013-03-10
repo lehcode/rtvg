@@ -416,18 +416,23 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		    $new['author'] = $this->_extractBlogAuthor( $new['src_url'] );
 		    
 		    if (APPLICATION_ENV=='development'){
-		    	var_dump($new);
-		    	die(__FILE__.': '.__LINE__);
+		    	//var_dump($new);
+		    	//die(__FILE__.': '.__LINE__);
 		    }
 		    
 		    $row = $this->channelsCommentsTable->createRow($new);
 		    
             if (APPLICATION_ENV=='development'){
-            	var_dump($row);
-            	die(__FILE__.': '.__LINE__);
+            	//var_dump($row);
+            	//die(__FILE__.': '.__LINE__);
             }
             
-            $row->save();
+            try {
+                $row->save();
+            } catch (Exception $e) {
+                return false;
+            }
+            
 		    
 	        return $row->toArray();
 	        
@@ -543,26 +548,27 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		}
 		
 		if (APPLICATION_ENV=='development'){
-			var_dump($result);
-			die(__FILE__.': '.__LINE__);
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		foreach ($result as $r){
-			$r['published'] = (bool)$r->published;
-			$r['date_created'] = new Zend_Date( $r['date_created'] );
-			$r['date_added']   = new Zend_Date( $r['date_added'] );
+		foreach ($result as $k=>$r){
+			$result[$k]['published'] = (bool)$r['published'];
+			$result[$k]['date_created'] = new Zend_Date( $r['date_created'] );
+			$result[$k]['date_added']   = new Zend_Date( $r['date_added'] );
 		}
 			
 		if (APPLICATION_ENV=='development'){
-			var_dump($result);
-			die(__FILE__.': '.__LINE__);
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 			
 		return $result;
 		
 	}
 	
-	public function getToken(){
+	/*
+	public function getVkToken(){
 		
 		$json = new Zend_Json();
 		return $json->decode( $this->_curl("https://oauth.vk.com/access_token?client_id={$this->_appKey}&client_secret={$this->_appSecret}&grant_type=client_credentials") );
@@ -581,5 +587,6 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		return $this->_curl("https://api.vk.com/method/video.search?q=".rawurlencode($query)."&access_token={$token}");
 		
 	}
+	*/
 	
 }

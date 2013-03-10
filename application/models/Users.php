@@ -4,7 +4,7 @@
  * Model for user management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Users.php,v 1.4 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Users.php,v 1.5 2013-03-10 02:45:15 developer Exp $
  */
 class Xmltv_Model_Users extends Xmltv_Model_Abstract
 {
@@ -47,7 +47,7 @@ class Xmltv_Model_Users extends Xmltv_Model_Abstract
     	if ($auth->hasIdentity()) {
     		$user = $this->usersTable->fetchByOpenId( $auth->getIdentity()->email );
     	} else {
-    		$user = $this->usersTable->createRow();
+    		$user = $this->usersTable->createRow(array());
     		$user->role = 'guest';
     	}
     	
@@ -94,7 +94,7 @@ class Xmltv_Model_Users extends Xmltv_Model_Abstract
     
     public function defaultUser(){
         
-        return $this->usersTable->createRow();
+        return $this->usersTable->createRow(array());
         
     }
     

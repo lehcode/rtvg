@@ -4,7 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.23 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.24 2013-03-10 02:45:15 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -53,7 +53,7 @@ class ChannelsController extends Rtvg_Controller_Action
 	 */
 	public function listAction () {
 		
-		if ($this->requestParamsValid()) {
+		if (parent::validateRequest()) {
 			
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$this->view->assign('pageclass', 'allchannels');
@@ -108,7 +108,7 @@ class ChannelsController extends Rtvg_Controller_Action
 	 */
 	public function typeaheadAction () {
 		
-		if ($this->requestParamsValid()) {
+		if (parent::validateRequest()) {
 			
 			$channelsCategories = new Xmltv_Model_DbTable_ChannelsCategories();
 			if ($this->_getParam('c')) {
@@ -142,31 +142,56 @@ class ChannelsController extends Rtvg_Controller_Action
 	 */
 	public function categoryAction() {
 		
-		if (parent::requestParamsValid()) {
+		if (parent::validateRequest()) {
 		   
 			$this->view->assign('pageclass', 'category');
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$catProps = $this->channelsModel->category( $this->input->getEscaped('category') )->toArray();
 			$this->view->assign('category', $catProps);
 			
+			if (isset($_GET['RTVG_PROFILE'])){
+				//Zend_Debug::dump($this->cache->enabled);
+				//die(__FILE__.': '.__LINE__);
+			}
+			
 			if ($this->cache->enabled){
+			    
 			    $this->cache->setLifetime(86400);
-			    $this->cache->setLocation(ROOT_PATH.'/cache/Channels');
+			    $this->cache->setLocation(ROOT_PATH.'/cache');
 			    $f = "/Channels/Category";
-				$hash = md5('channels-categories_'.$catProps['alias']);
+			    
+				$hash = md5('category_'.$catProps['alias']);
 				if (!$rows = $this->cache->load($hash, 'Core', $f)){
 					$rows = $this->channelsModel->categoryChannels($catProps['alias']);
+					
+					if (isset($_GET['RTVG_PROFILE'])){
+						//Zend_Debug::dump($rows);
+						//die(__FILE__.': '.__LINE__);
+					}
+					
 					foreach ($rows as $k=>$row) {
 				    	$rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
 				    }
 					$this->cache->save($rows, $hash, 'Core', $f);
 				}
+				
+				if (isset($_GET['RTVG_PROFILE'])){
+					//Zend_Debug::dump($rows);
+					//die(__FILE__.': '.__LINE__);
+				}
+				
 			} else {
 				$rows = $this->channelsModel->categoryChannels($catProps['alias']);
 				foreach ($rows as $k=>$row) {
 					$rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
 				}
 			}
+			
+			if (isset($_GET['RTVG_PROFILE'])){
+			    //Zend_Debug::dump($rows);
+			    //die(__FILE__.': '.__LINE__);
+			}
+			
 			$this->view->assign('channels', $rows);
 			
 			/*
@@ -182,8 +207,11 @@ class ChannelsController extends Rtvg_Controller_Action
 			 * ######################################################
 			*/
 			if ($this->cache->enabled){
-				$f = "/Channels";
+			    
 				$this->cache->setLocation(ROOT_PATH.'/cache');
+				$this->cache->setLifetime(86400);
+				$f = "/Channels";
+				
 				$hash  = $this->cache->getHash("channelscategories");
 				if (!$cats = $this->cache->load($hash, 'Core', $f)) {
 					$cats = $this->channelsModel->channelsCategories();
@@ -210,7 +238,7 @@ class ChannelsController extends Rtvg_Controller_Action
 	public function channelWeekAction(){
 		
 		// Validation routines
-		if (parent::requestParamsValid()) {
+		if (parent::validateRequest()) {
 			
 			$this->view->assign('hide_sidebar', 'left');
 			//$this->view->assign('sidebar_videos', true);
@@ -253,7 +281,7 @@ class ChannelsController extends Rtvg_Controller_Action
 		 
 		$this->_helper->layout->disableLayout();
 		
-		if ($this->requestParamsValid()){
+		if (parent::validateRequest()){
 			
 			// Channel properties
 			$this->channelsModel = new Xmltv_Model_Channels();

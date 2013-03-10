@@ -2,17 +2,43 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.20 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: Channels.php,v 1.21 2013-03-10 02:45:15 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
+    
+    /**
+     * 
+     * @var Xmltv_Model_DbTable_Channels
+     */
+    protected $_table;
+    
+    /**
+     * 
+     * @var Xmltv_Model_DbTable_ChannelsRatings
+     */
+    protected $ratingsTable;
+
+    /**
+     * 
+     * @var Xmltv_Model_DbTable_ChannelsComments
+     */
+    protected $commentsTable;
+
+    /**
+     * 
+     * @var Xmltv_Model_DbTable_ChannelsCategories
+     */
+    protected $catgeoriesTable;
 
     public function __construct($config=array()){
         
         $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
         parent::__construct($config);
-        //$this->db->setFetchMode(Zend_Db::FETCH_OBJ);
         $this->table = new Xmltv_Model_DbTable_Channels();
+        $this->ratingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
+        $this->categoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
+        $this->commentsTable = new Xmltv_Model_DbTable_ChannelsComments();
         
     }
     
@@ -79,7 +105,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 			);
 	    
 	    // Breakpoint
-	    if (APPLICATION_ENV=='development'){
+	    if (APPLICATION_ENV=='development') {
 	        $this->debugSelect($select, __METHOD__);
 	        //die(__FILE__.': '.__LINE__);
 	    }
@@ -148,25 +174,33 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	}
 	
 	/**
-	 * Add hit to channel popularity
+	 * Add hit to channel rating
 	 * 
 	 * @param  int $id // channel ID
 	 * @throws Zend_Exception
 	 */
 	public function addHit($id=null){
 		
-		if (!$id || !is_int($id))
+		if (!$id || !is_numeric($id)) {
 			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+		}
 		
-		$this->_hits_table = new Xmltv_Model_DbTable_ChannelsRatings();
-		$this->_hits_table->addHit($id);
+		$this->ratingsTable->addHit($id);
 			
 	}
 	
+	
+	/**
+	 * Load channel description
+	 * 
+	 * @param  int $id
+	 * @throws Zend_Exception
+	 */
 	public function getDescription($id=null){
 		
-		if (!$id)
-		throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+		if (!$id) {
+			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+		}
 		
 		$props = $this->table->find($id)->current();
 		$desc['intro'] = $props->desc_intro;
@@ -174,6 +208,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		return $desc;
 		
 	}
+	
 	
 	/**
 	 * 

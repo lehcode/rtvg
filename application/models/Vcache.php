@@ -409,6 +409,9 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         	}
         }
         
+        if (!count($list) || $list==false || !$list){
+            return false;
+        }
         // Collect hashes
         $hashes = array();
         foreach ($list as $k=>$prog){

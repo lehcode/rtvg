@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: SearchController.php,v 1.6 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: SearchController.php,v 1.7 2013-03-10 02:45:15 developer Exp $
  *
  */
 class SearchController extends Rtvg_Controller_Action
@@ -17,23 +17,20 @@ class SearchController extends Rtvg_Controller_Action
     protected $cacheRoot='/Search';
     
     /**
+     * Model
+     * @var Xmltv_Model_Search
+     */
+    private $_searchModel;
+    
+    /**
      * (non-PHPdoc)
      * @see Zend_Controller_Action::init()
      */
     public function init () {
     	
         parent::init();
+        $this->_searchModel = new Xmltv_Model_Search();
         
-    	$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
-    	$ajaxContext->addActionContext( 'typeahead', 'json' )
-    		->initContext();
-    
-    	$this->validator = $this->_helper->getHelper( 'RequestValidator');
-    	parent::_initCache();
-    	$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
-    	$this->initView();
-    	
-    	$this->cache->setLocation($this->cacheRoot);
     }
     
     
@@ -43,22 +40,39 @@ class SearchController extends Rtvg_Controller_Action
      */
     public function searchAction () {
         
-        try {
-            parent::requestParamsValid();
-        } catch (Zend_Filter_Exception $e) {
-            throw new Zend_Exception($e->getMessage(), $e->getCode, $e);
+        if (parent::validateRequest()) {
+            
+            $search = $this->input->getEscaped('searchinput');
+            $type = $this->input->getEscaped('type');
+            $type = (!isset($type) || $type=='web') ? 'web' : 'channel' ;
+            $script = "search/$type.phtml";
+            
+            if ($this->input->getEscaped('type')=='channel'){
+                
+            	$channelsModel = new Xmltv_Model_Channels();
+            	$result = $channelsModel->searchChannel( $search);
+            	$this->view->assign('result', $result);
+            	$this->renderScript( 'search/channel.phtml' );
+            	
+            } else {
+                
+                $f = '/Search/Torrents';
+                $hash = Rtvg_Cache::getHash( $this->input->getEscaped('searchinput') );
+                
+                if ($this->cache->enabled){
+                	$this->cache->setLocation( ROOT_PATH.'/cache' );
+                	if (($html = $this->cache->load($hash, 'Core', $f))===false) {
+                		
+                		$this->cache->save($html, $hash, 'Core', $f);
+                	}
+                } else {
+                	$html = $curl->fetch(Xmltv_Parser_Curl::PAGE_HTML);
+                }
+            }
+            
         }
         
-        $search = $this->input->getEscaped('searchinput');
-        $type = $this->input->getEscaped('type');
-        $script = 'search/'.$this->input->getEscaped('type').'.phtml';
-            
-        if ($this->input->getEscaped('type')=='channel'){
-            $channelsModel = new Xmltv_Model_Channels();
-            $result = $channelsModel->searchChannel( $search);
-            $this->view->assign('result', $result);
-            $this->renderScript( 'search/channel.phtml' );
-         }
+        
         
         
     }

@@ -4,7 +4,7 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.20 2013-03-06 04:54:51 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.21 2013-03-10 02:45:15 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -240,7 +240,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					case 'videos':
 					    
 						$validators['alias'] = array( new Zend_Validate_Regex( self::VIDEO_ALIAS_REGEX ));
-						$validators['id']	= array( new Zend_Validate_Regex( '/^[a-z\d]+$/i' ));
+						$validators['id']	 = array( new Zend_Validate_Regex( '/^[a-z\d]+$/i' ));
 						
 					break;
 					

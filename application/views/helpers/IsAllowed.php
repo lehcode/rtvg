@@ -17,9 +17,9 @@ class Zend_View_Helper_IsAllowed extends Zend_View_Helper_Abstract
     protected $_acl;
     protected $_user;
 
-    public function isAllowed($resource = null, $privelege = null)
+    public function isAllowed($resource = null, $privilege = null)
     {
-        return (bool) $this->getAcl()->isAllowed( $this->getUser()->role, $resource, $privelege );
+        return (bool) $this->getAcl()->isAllowed( $this->getUser()->role, $resource, $privilege );
     }
 
     /**
@@ -28,7 +28,7 @@ class Zend_View_Helper_IsAllowed extends Zend_View_Helper_Abstract
     public function getAcl()
     {
         if (null === $this->_acl) {
-            $this->setAcl( Xmltv_Model_Acl::getInstance());
+            $this->setAcl( Zend_Registry::get('ACL') );
         }
         return $this->_acl;
     }
@@ -48,7 +48,7 @@ class Zend_View_Helper_IsAllowed extends Zend_View_Helper_Abstract
     public function getUser()
     {
         if (null === $this->_user) {
-            $this->setUser( Xmltv_Bootstrap_Auth::getCurrentUser());
+            $this->setUser( Xmltv_Bootstrap_Auth::getCurrentUser() );
         }
         return $this->_user;
     }

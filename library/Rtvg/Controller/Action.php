@@ -3,18 +3,55 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.3 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: Action.php,v 1.4 2013-03-10 02:45:15 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
 {
 	
+    /**
+     * @var string
+     */
 	protected static $bitlyLogin = 'rtvg';
+	
+	/**
+	 * @var string
+	 */
 	protected static $bitlyKey = 'R_b37d5df77e496428b9403e236e672fdf';
-	protected static $userAgent='';
+	
+	/**
+	 * User agent properties container
+	 * @var Zend_Http_UserAgent
+	 */
+	protected $userDevice;
+
+	/**
+	 * User agent properties container
+	 * @var Zend_Http_UserAgent
+	 */
+	protected $userAgent;
+	
+	/**
+	 * Youtube caching
+	 * @var boolean
+	 */
 	protected static $videoCache=false;
+	
+	/**
+	 * Url to redirect on error
+	 * @var string
+	 */
 	protected static $errorUrl;
+	
+	/**
+	 * Helper
+	 * @var Xmltv_Controller_Action_Helper_WeekDays
+	 */
 	protected $weekDays;
+	
+	/**
+	 * @var array
+	 */
 	protected $kidsChannels=array();
 	
 	/**
@@ -97,9 +134,24 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      * Current data
      * @var Xmltv_User
      */
-    protected static $user;
+    protected $user;
+    
+    /**
+     * Access checking action helper
+     * @var Zend_Controller_Action_Helper_IsAllowed
+     */
+    protected $isAllowed;
+    
+    /**
+     * Access checking action helper
+     * @var Xmltv_Model_Acl
+     */
+    protected $acl;
+    
+    
 	
-	/**
+	
+    /**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
 	 */
@@ -113,28 +165,59 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
 		
 		$this->_validator = $this->_helper->getHelper('RequestValidator');
+		$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
+		
+		$this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct();
 		
 		$this->cache = new Rtvg_Cache();
         $this->cache->enabled = (bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' );
         $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
         $this->cache->setLocation( ROOT_PATH.'/cache' );
-		
-		self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
+		 
+        try {
+        
+            /**
+             * @var Bootstrap
+             */
+            $bootstrap = $this->getInvokeArg('bootstrap');
+            
+        	/**
+        	 * @var Zend_Http_UserAgent
+        	 */
+        	$this->userAgent = $bootstrap->getResource('useragent');
+        
+        	/**
+        	 * @var Zend_Http_UserAgent_AbstractDevice
+        	 */
+        	$this->userDevice = $this->userAgent->getDevice();
+        
+        	$this->view->userDevice = $this->userDevice;
+        
+        	if ($this->userAgent->getBrowserType()=='mobile'){
+        	    //Collect stats to log
+        	    $logger = new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/mobile.log' );
+        	    if ($logger){
+        	        $logger->log( serialize($this->userDevice), Zend_Log::INFO );
+        	    }
+        	}
+        	
+        } catch (Exception $e) {
+        	return true;
+        }
+        
+        $this->acl = Zend_Registry::get( 'ACL' );
+        
+        self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		if (self::$videoCache){
 			$this->vCacheModel = new Xmltv_Model_Vcache();
 		}
-		
-		self::$userAgent = Zend_Registry::get('user_agent');
-		
+				
 		$this->weekDays = $this->_helper->getHelper('WeekDays');
 		$this->channelsModel = new Xmltv_Model_Channels();
 		$this->programsModel = new Xmltv_Model_Programs();
 		$this->videosModel = new Xmltv_Model_Videos();
 		$this->commentsModel = new Xmltv_Model_Comments();
 		$this->usersModel = new Xmltv_Model_Users();
-		
-		$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
-		
 		
 		$kc = Zend_Registry::get('site_config')->channels->kids;
 		if (stristr($kc, ',')){
@@ -152,22 +235,15 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
 		
 		$this->initView();
-		
-		self::$errorUrl = $this->view->url( array(),  'default_error_index');
-		
+			
 		$auth = Zend_Auth::getInstance();
-		if ($auth->getIdentity()===null){
-		    self::$user = $this->usersModel->defaultUser();
+		if (null === $auth->getIdentity()){
+		    $this->user = $this->usersModel->defaultUser();
 		} else {
-		    self::$user = $auth->getIdentity();
+		    $this->user = $auth->getIdentity();
 		}
 		
-		$this->view->assign('user', self::$user);
-		
-		if (!($this->_helper->getHelper('IsAllowed')->direct()===true)) {
-		    $this->_flashMessenger->addMessage("У вас нет доступа");
-		    $this->_redirect( self::$errorUrl, array('exit'=>true));
-		}
+		$this->view->assign('user', $this->user);
 		
 		$this->adScripts = new Rtvg_Ad_Collection();
 		
@@ -180,7 +256,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * @throws Zend_Controller_Action_Exception
 	 * @return boolean
 	 */
-	protected function requestParamsValid($options=array()){
+	protected function validateRequest($options=array()){
 	
 		if (!empty($options)){
 			foreach ($options as $o=>$v){
@@ -330,13 +406,17 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * Current channel
 	 * @return Ambigous <stdClass, mixed>
 	 */
-	public function channelInfo(){
+	protected function channelInfo(){
 		
 		$channelAlias = $this->input->getEscaped('channel');
 		$model = new Xmltv_Model_Channels();
+		
 		if ($this->cache->enabled){
-			$f = '/Channels';
-			$this->cache->setLocation(ROOT_PATH.'/cache');
+		    
+		    $this->cache->setLocation(ROOT_PATH.'/cache');
+		    $this->cache->setLifetime( 86400*7 );
+			$f = '/Channels/Info';
+			
 			$hash = $this->cache->getHash('channel_'.$channelAlias);
 			if (($channel = $this->cache->load($hash, 'Core', $f))===false) {
 				$channel = $model->getByAlias($channelAlias);
@@ -415,14 +495,17 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		$top   = $this->_helper->getHelper('Top');
 		
 		if ($this->cache->enabled){
-		    $this->cache->setLifetime(600);
+		    
+		    $this->cache->setLifetime(3600);
 		    $this->cache->setLocation(ROOT_PATH.'/cache');
 			$f = '/Listings/Top';
+			
 			$hash = Rtvg_Cache::getHash('top'.$amt);
 			if (!$result = $this->cache->load($hash, 'Core', $f)) {
 				$result = $this->programsModel->topPrograms( $amt, $week_start, $week_end );
 				$this->cache->save($result, $hash, 'Core', $f);
 			}
+			
 		} else {
 			$result = $this->programsModel->topPrograms( $amt, $week_start, $week_end );
 		}
@@ -437,9 +520,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	
 		$table = new Xmltv_Model_DbTable_ProgramsCategories();
 		if ($this->cache->enabled){
-			$f = "/Channels";
+			
+		    $f = "/Listings/Category";
+		    $this->cache->setLifetime(86400*30);
 			$this->cache->setLocation(ROOT_PATH.'/cache');
 			$hash  = Rtvg_Cache::getHash("ProgramsCategories");
+			
 			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
 				$cats = $table->fetchAll();
 				$this->cache->save($cats, $hash, 'Core', $f);
@@ -459,9 +545,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	
 		$model = new Xmltv_Model_Channels();
 		if ($this->cache->enabled){
+		    
 			$f = "/Channels";
 			$this->cache->setLocation(ROOT_PATH.'/cache');
-			$hash  = Rtvg_Cache::getHash("ChannelsCategories");
+			$this->cache->setLifetime(86400*30);
+			
+			$hash  = Rtvg_Cache::getHash("channels-categories");
 			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
 				$cats = $model->channelsCategories();
 				$this->cache->save($cats, $hash, 'Core', $f);
@@ -588,7 +677,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
 		
 		// If file cache is enabled
-		if ($this->cache->enabled){
+		if ($this->cache->enabled && $this->acl->isAllowed()){
 			 
 			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
 			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
@@ -645,6 +734,30 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		 
 		return $videos;
 		 
+	}
+	
+	protected function getChannel( $alias=null ){
+		
+	    if (!$alias){
+	        throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500 );
+	    }
+	    
+	    if ($this->cache->enabled){
+	    	 
+	    	$f = '/Channels';
+	    	$this->cache->setLifetime(86400);
+	    	$hash = $this->cache->getHash('channel_'.$alias);
+	    
+	    	if (false === ($result = $this->cache->load( $hash, 'Core', $f))) {
+	    		$result = $this->channelsModel->getByAlias( $alias );
+	    		$this->cache->save( $result, $hash, 'Core', $f);
+	    	}
+	    } else {
+	    	$result = $this->channelsModel->getByAlias($alias);
+	    }
+	    
+	    return $result;
+	    
 	}
 	
 }

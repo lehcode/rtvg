@@ -103,20 +103,57 @@ abstract class Xmltv_Model_Abstract
 	        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
 	    }
 	    
+	    if (is_array($config)) {
+	    	$this->setOptions($config);
+	    }
+	    
 		// Init database
 		$this->dbConf = $config['db'];
 		$this->db = new Zend_Db_Adapter_Mysqli( $this->dbConf);
 		
 		// Set table prefix
 		$pfx = $this->dbConf->get('tbl_prefix');
-		if( !empty($pfx)) {
-		    self::$tblPfx = $this->dbConf->get('tbl_prefix'); 
+		if(false !== (bool)$pfx) {
+		    self::$tblPfx = $pfx; 
 		}
 		
 		$this->initTables();
-				
 		
 	}
+	
+	
+	/**
+	 * Set row value
+	 * 
+	 * @param  string $name
+	 * @param  string $value
+	 * @throws Exception
+	 */
+	public function __set($name, $value)
+	{
+		$method = 'set' . $name;
+		if (('mapper' == $name) || !method_exists($this, $method)) {
+			throw new Exception('Invalid guestbook property');
+		}
+		$this->$method($value);
+	}
+	
+	/**
+	 * Get row value
+	 * 
+	 * @param  string $name
+	 * @throws Exception
+	 */
+	public function __get($name)
+	{
+		$method = 'get' . $name;
+		if (('mapper' == $name) || !method_exists($this, $method)) {
+			throw new Exception('Invalid guestbook property');
+		}
+		return $this->$method();
+	}
+	
+	
 	/**
 	 * @return the $tbl_pfx
 	 */
@@ -172,6 +209,17 @@ abstract class Xmltv_Model_Abstract
 	    
 	}
 
+	public function setOptions(array $options) {
+	    
+		$methods = get_class_methods($this);
+		foreach ($options as $key => $value) {
+			$method = 'set' . ucfirst($key);
+			if (in_array($method, $methods)) {
+				$this->$method($value);
+			}
+		}
+		return $this;
+	}
  
     
 }

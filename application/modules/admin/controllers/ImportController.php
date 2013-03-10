@@ -5,7 +5,7 @@
  * @author  toshihir
  * @package rutvgid
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.20 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: ImportController.php,v 1.21 2013-03-10 02:45:15 developer Exp $
  *
  */
 
@@ -114,12 +114,7 @@ class Admin_ImportController extends Xmltv_Controller_Action
 		ini_set('max_execution_time', 0);
 		ini_set('max_input_time', -1);
 		
-		//var_dump($this->_getAllParams());
-		//var_dump($xml_file);
-		//var_dump($this->requestParamsValid());
-		//die(__FILE__.': '.__LINE__);
-		
-		if ($this->requestParamsValid()){
+		if ( parent::validateRequest()){
 			
 			/*
 			 * Check if XML file exists
@@ -673,39 +668,6 @@ class Admin_ImportController extends Xmltv_Controller_Action
 		echo "Готово!";
 		die();
 		
-	}
-	
-	/**
-	 * Validate nad filter request parameters
-	 *
-	 * @throws Zend_Exception
-	 * @throws Zend_Controller_Action_Exception
-	 * @return boolean
-	 */
-	protected function requestParamsValid(){
-	
-		// Validation routines
-		$this->input = $this->validator->direct(array('isvalidrequest', 'vars'=>$this->_getAllParams()));
-		//var_dump($this->input->isValid('site'));
-		//var_dump($this->input->isValid('format'));
-		//die(__FILE__.': '.__LINE__);
-		if ($this->input===false) {
-			if (APPLICATION_ENV=='development') {
-				var_dump($this->_getAllParams());
-				die(__FILE__.': '.__LINE__);
-			}
-		} else {
-			
-			foreach ($this->_getAllParams() as $k=>$v){
-				if ($this->input->isValid($k)!==true) {
-					echo("Invalid ".$k.'!');
-				}
-			}
-			//die(__FILE__.': '.__LINE__);
-			return true;
-	
-		}
-	
 	}
 	
 }

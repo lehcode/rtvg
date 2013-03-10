@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: FrontpageController.php,v 1.7 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: FrontpageController.php,v 1.8 2013-03-10 02:45:15 developer Exp $
  *
  */
 
@@ -88,7 +88,7 @@ class FrontpageController extends Rtvg_Controller_Action
 	        throw new Zend_Exception(parent::ERR_INVALID_INPUT.__METHOD__, 500);
 	    }
 	    
-	    if (parent::requestParamsValid()){
+	    if (parent::validateRequest()){
 	        
 	        $channelId = $this->input->getEscaped('id');
 	        

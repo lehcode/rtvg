@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: UserController.php,v 1.5 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: UserController.php,v 1.6 2013-03-10 02:45:15 developer Exp $
  *
  */
 
@@ -59,7 +59,7 @@ class UserController extends Rtvg_Controller_Action
             
             if(($errors = $formValidator->direct( $form, $postData))!==false) {  //i.e. no errors
                 
-                $this->requestParamsValid();
+                parent::validateRequest();
                 
                 $openId = null;
                 if ((bool)$this->input->getEscaped('openid')===false) {
@@ -133,7 +133,7 @@ class UserController extends Rtvg_Controller_Action
         	$postData = $r->getPost();
         	if(($errors = $formValidator->direct( $form, $postData))===true) {  //i.e. no errors
         	    
-        	    $this->requestParamsValid();
+        	    parent::validateRequest();
         	    
         	    $auth = Zend_Auth::getInstance();
         	    $auth->clearIdentity();

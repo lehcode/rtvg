@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.11 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: ErrorController.php,v 1.12 2013-03-10 02:45:15 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -46,18 +46,24 @@ class ErrorController extends Zend_Controller_Action
         $logger = $this->getLog();
         if ($logger) {
             $logger->log( $this->view->message, $priority, $errors->exception );
-            $logger->log("Параметры запроса:\n". sprintf("%s", $errors->request->getParams()), $priority);
+            $msg = "Параметры запроса:\n";
+            $params = $errors->request->getParams();
+            foreach ( $errors->request->getParams() as $key=>$val){
+            	$msg .= $key.': '.$val."\n";
+            }
+            $logger->log($msg, $priority);
         }
         
         $senderEmail='dev@egeshi.com';
-        $mail = new Zend_Mail();
-        $mail->setBodyText( "Ошибка:\n".$errors->exception."\n\nПараметры запроса:\n".implode(', ', $errors->request->getParams()) );
+        $mail = new Zend_Mail('UTF-8');
+        $mail->setBodyText( "Ошибка:\n".$errors->exception."\n\n".$msg );
         $mail->setFrom( $senderEmail, 'Rutvgid Error');
-        $mail->addTo( 'bugs@egeshi.com', 'Bugs');
+        $mail->addTo( 'egeshisolutions@gmail.com', 'Bugs');
         $mail->setSubject( "Ошибка!");
+        $mail->setHeaderEncoding( Zend_Mime::ENCODING_BASE64 );
         
         if (APPLICATION_ENV=='production') {
-            $t = new Zend_Mail_Transport_Smtp('mail.egeshi.com', array(
+            $t = new Zend_Mail_Transport_Smtp('smtp.gmail.com', array(
             	'auth' => 'login',
             	'ssl' => 'ssl',
             	'port' => 465,
@@ -65,14 +71,16 @@ class ErrorController extends Zend_Controller_Action
             	'password' => '3k2mzE9bE2iheEMi9RqcVu5t'
             ));
         } else {
-            $t = new Zend_Mail_Transport_File(array('path'=>ROOT_PATH.'/log/mail'));
+            $t = new Zend_Mail_Transport_File(array(
+            	'path'=>ROOT_PATH.'/log/mail'
+            ));
         }
         
         //Send
 		$sent = true;
 		try {
-		    $mail->send( $t);
-		} catch (Exception $e) {
+		    $mail->send($t);
+		} catch (Zend_Mail_Exception $e) {
 		    $logger->log( $e->getMessage(), Zend_log::CRIT );
 		}
  
@@ -111,17 +119,18 @@ class ErrorController extends Zend_Controller_Action
     }
     
     public function missingPageAction(){
-    	
+        $this->getResponse()->setHttpResponseCode( 404 );
+        $this->view->assign('hide_sidebar', 'right');
     }
     
     public function invalidInputAction(){
-    	
+        $this->getResponse()->setHttpResponseCode( 500 );
+        $this->view->assign('hide_sidebar', 'right');
     }
 
-    public function noAccessAction(){
-        
+    public function accessDeniedAction(){
+        $this->getResponse()->setHttpResponseCode( 401 );
     	$this->view->assign('hide_sidebar', 'right');
-    	
     }
 
 }

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.24 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.25 2013-03-10 02:45:15 developer Exp $
  *
  */
 
@@ -65,35 +65,33 @@ if ($this->is_today) {
 ?>
 
 <div class="top-position">
-	<div class="module" style="float: left; width: 68%;">
-		<?php 
-		$tip = "Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.";
-		if ($this->category) {
-		  $tip .=" Если канала нет в категории <i>".$this->category['title']."</i>, наберите его название или часть названия и нажмите Перейти.";  
-		} 
-		?>
-		<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
-		<?php 
-		$form = new Xmltv_Form_TypeaheadForm(array(
-			'action'=>$this->url(array(), 'default_search_search'),
-			'btn_class'=>'btn btn-primary',
-		));
-		echo $form; 
-		?>
-	</div>
-	<div class="module" style="width: 30%; float: right;">
-		<?php echo new Xmltv_Form_TimezoneSwitch(array('label_class'=>'smallheading', 'time_shift'=>$this->timeshift)); ?>
-	</div>
+<div class="module" style="float: left; width: 68%;">
+	<?php 
+	$tip = "Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.";
+	if ($this->category) {
+	  $tip .=" Если канала нет в категории <i>".$this->category['title']."</i>, наберите его название или часть названия и нажмите Перейти.";  
+	} 
+	?>
+	<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
+	<?php 
+	$form = new Xmltv_Form_TypeaheadForm(array(
+		'action'=>$this->url(array(), 'default_search_search'),
+		'btn_class'=>'btn btn-primary',
+	));
+	echo $form; 
+	?>
+</div>
+<div class="module" style="width: 30%; float: right;">
+	<?php echo new Xmltv_Form_TimezoneSwitch(array('label_class'=>'smallheading', 'time_shift'=>$this->timeshift)); ?>
+</div>
 </div>
 
-<h1>
-	<?php
-	if ($this->is_today){
-		printf('Программа «%s» сегодня', $channelTitle); 
-	} else {
-		printf('Программа «%s» %s', $channelTitle, $this->listing_date->toString('d MMMM YYYY'));
-	}?>
-</h1>
+<h1><?php
+if ($this->is_today){
+	printf('«%s» сегодня', $channelTitle); 
+} else {
+	printf('«%s» %s', $channelTitle, $this->listing_date->toString('d MMMM YYYY'));
+}?></h1>
 
 <?php if ($this->is_today) : ?>
 <strong><?php echo Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?></strong>
@@ -136,9 +134,7 @@ if ($this->is_today) {
 	<div class="item<?php echo $active; ?> programcontainer">
 		
 		<?php  if ($active==' active') : ?>
-		<p class="label label-warning">
-			Сейчас в эфире
-		</p>
+		<p class="label label-warning">Сейчас в эфире</p>
 		<?php endif; ?>
 		
 		

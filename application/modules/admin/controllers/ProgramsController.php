@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/controllers/ProgramsController.php,v $
- * @version $Id: ProgramsController.php,v 1.5 2013-01-12 09:06:22 developer Exp $
+ * @version $Id: ProgramsController.php,v 1.6 2013-03-10 02:45:15 developer Exp $
  */
 
 class Admin_ProgramsController extends Xmltv_Controller_Action
@@ -49,7 +49,7 @@ class Admin_ProgramsController extends Xmltv_Controller_Action
      */
     public function deleteProgramsAction(){
 	
-        if (parent::requestParamsValid()){
+        if ( parent::validateRequest() ){
             
             ini_set('max_execution_time', 0);
             	

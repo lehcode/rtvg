@@ -4,7 +4,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.18 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.19 2013-03-10 02:45:15 developer Exp $
  *
  */
 
@@ -69,14 +69,13 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		/*
 		 * Front controller
 		 */
-		$router    = new Xmltv_Plugin_Router( APPLICATION_ENV );
+		$router = new Xmltv_Plugin_Router( APPLICATION_ENV );
 		$fc = Zend_Controller_Front::getInstance()
 			->setParam( 'useDefaultControllerAlways', true )
 			->setParam( 'bootstrap', $this )
 			->registerPlugin( $router )
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
-			//->registerPlugin( new Xmltv_Plugin_Antibot( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
 			->returnResponse( false )
 			->throwExceptions( false );
@@ -265,7 +264,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    
 		$acl = Xmltv_Model_Acl::getInstance();
 		Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl( $acl );
-		
 		Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole( Xmltv_Bootstrap_Auth::getCurrentUser($db)->role );
 		
 		Zend_Registry::set('ACL', $acl);

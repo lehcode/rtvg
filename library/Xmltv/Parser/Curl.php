@@ -17,6 +17,10 @@ class Xmltv_Parser_Curl extends Xmltv_Parser_StringParser
 	 * @var int
 	 */
 	const PAGE_DOM  = 2;
+	/**
+	 * @var int
+	 */
+	const PAGE_HTML  = 3;
 	
 	public function __construct($url=null) {
 			
@@ -194,6 +198,9 @@ class Xmltv_Parser_Curl extends Xmltv_Parser_StringParser
 					break;
 				case self::PAGE_DOM:
 					$data = new Zend_Dom_Query($data);
+					break;
+				case self::PAGE_HTML:
+					return $data;
 					break;
 				default: break;
 			}

@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.23 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: Videos.php,v 1.24 2013-03-10 02:45:15 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -44,7 +44,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
 			$v['views']	   = (int)$entry->getVideoViewCount();
 			$v['category'] = $entry->getVideoCategory();
-			$v['category_ru'] = $this->getCatRu($v['vategory']);
+			$v['category_ru'] = $this->getCatRu($v['category']);
 			
 			$d = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
 			$v['published'] = $d->addHour(3);

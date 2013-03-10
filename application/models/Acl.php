@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.5 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: Acl.php,v 1.6 2013-03-10 02:45:15 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -56,7 +56,11 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:user.profile' ), 'default:user' );	    
 	    $this->add( new Zend_Acl_Resource( 'default:search' ), 'default:' );	    
 	    $this->add( new Zend_Acl_Resource( 'default:search.search' ), 'default:search' );	    
-	    $this->add( new Zend_Acl_Resource( 'default:auth' ), 'default:' );	    
+	    $this->add( new Zend_Acl_Resource( 'default:auth' ), 'default:' );
+	    // Dummy ACLs to avoid some minor routing error notices    
+	    $this->add( new Zend_Acl_Resource( 'default:fonts' ), 'default:' );	    
+	    $this->add( new Zend_Acl_Resource( 'default:images' ), 'default:' );	    
+	    $this->add( new Zend_Acl_Resource( 'default:img' ), 'default:' );	    
 	    
 	    $adminModule = new Zend_Acl_Resource( 'admin:' );
 	    $this->add( $adminModule );
@@ -68,11 +72,21 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:user.login' ), 'admin:user' );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.profile' ), 'admin:user' );
 	    
-	    $this->allow( null, 'default:', null );
+	    $this->deny( self::ROLE_GUEST, array(
+	    	'default:fonts',
+	    	'default:images',
+	    	'default:img',
+	    ));
+	    
+	    $this->allow( self::ROLE_GUEST, 'default:', null );
+	    
+	    $this->allow( null, null, null, new Rtvg_Acl_IsNotBotAssertion() );
+	    
 	    $this->deny( array(self::ROLE_GUEST, self::ROLE_USER), array( 
 	    	$adminModule,
 	    	$publisherModule,
 	    ));
+	    
 	    $this->allow( self::ROLE_PUBLISHER, $publisherModule );
 	    $this->allow( self::ROLE_PUBLISHER, $adminModule, array( 'login', 'logout', 'publish') );
 	    
@@ -118,4 +132,6 @@ class Xmltv_Model_Acl extends Zend_Acl
 	
 	
 }
+
+
 

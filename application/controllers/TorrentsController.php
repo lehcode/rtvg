@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: TorrentsController.php,v 1.7 2013-03-06 21:59:19 developer Exp $
+ * @version $Id: TorrentsController.php,v 1.8 2013-03-10 02:45:15 developer Exp $
  *
  */
 class TorrentsController extends Rtvg_Controller_Action
@@ -20,7 +20,7 @@ class TorrentsController extends Rtvg_Controller_Action
 		//var_dump($this->_getAllParams());
 		//die(__FILE__.': '.__LINE__);
 		/*
-		if ($this->requestParamsValid()){
+		if (parent::validateRequest()){
 		    
 			try {
 				$url = 'http://torrent-poisk.com/search.php?q='.urlencode($this->_getParam('w'));
