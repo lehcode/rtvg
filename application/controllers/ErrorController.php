@@ -4,16 +4,24 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.12 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: ErrorController.php,v 1.13 2013-03-11 13:55:37 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
 {
 
+    /**
+     * FlashMessenger
+     *
+     * @var Zend_Controller_Action_Helper_FlashMessenger
+     */
+    protected $_flashMessenger = null;
+    
 	public function init(){
 		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
 		$ajaxContext->addActionContext( 'ajax-error', 'json' )
 			->initContext();
+		$this->_flashMessenger = $this->_helper->getHelper( 'FlashMessenger' );
 	}
 	
 	public function errorAction()
@@ -42,24 +50,24 @@ class ErrorController extends Zend_Controller_Action
                 break;
         }
         
+        $msg = "Параметры запроса:\n";
+        $params = $errors->request->getParams();
+        foreach ( $errors->request->getParams() as $key=>$val){
+        	$msg .= $key.': '.$val."\n";
+        }
+        
         //Log exception, if logger available
         $logger = $this->getLog();
         if ($logger) {
-            $logger->log( $this->view->message, $priority, $errors->exception );
-            $msg = "Параметры запроса:\n";
-            $params = $errors->request->getParams();
-            foreach ( $errors->request->getParams() as $key=>$val){
-            	$msg .= $key.': '.$val."\n";
-            }
-            $logger->log($msg, $priority);
+            $logger->log( $msg, $priority, $errors->exception );
         }
         
         $senderEmail='dev@egeshi.com';
         $mail = new Zend_Mail('UTF-8');
-        $mail->setBodyText( "Ошибка:\n".$errors->exception."\n\n".$msg );
+        $mail->setBodyText( $errors->exception."\n\n".$msg );
         $mail->setFrom( $senderEmail, 'Rutvgid Error');
         $mail->addTo( 'egeshisolutions@gmail.com', 'Bugs');
-        $mail->setSubject( "Ошибка!");
+        $mail->setSubject( $errors->exception->getMessage() );
         $mail->setHeaderEncoding( Zend_Mime::ENCODING_BASE64 );
         
         if (APPLICATION_ENV=='production') {
@@ -89,6 +97,8 @@ class ErrorController extends Zend_Controller_Action
             $this->view->exception = $errors->exception;
             $this->view->request = $errors->request;
         }
+        
+        $this->view->assign( 'messages', $this->_flashMessenger->getMessages() );
         
         
     }

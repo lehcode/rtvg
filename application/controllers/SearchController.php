@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: SearchController.php,v 1.7 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: SearchController.php,v 1.8 2013-03-11 13:55:37 developer Exp $
  *
  */
 class SearchController extends Rtvg_Controller_Action
@@ -57,6 +57,7 @@ class SearchController extends Rtvg_Controller_Action
             } else {
                 
                 $f = '/Search/Torrents';
+                die("Not implemented");
                 $hash = Rtvg_Cache::getHash( $this->input->getEscaped('searchinput') );
                 
                 if ($this->cache->enabled){

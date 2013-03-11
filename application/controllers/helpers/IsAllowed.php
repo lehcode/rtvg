@@ -3,7 +3,7 @@
  * Check if enough priviliges to access resource
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: IsAllowed.php,v 1.3 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: IsAllowed.php,v 1.4 2013-03-11 13:55:37 developer Exp $
  *
  */
 class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Helper_Abstract
@@ -29,7 +29,10 @@ class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Hel
             $action = $params['action'];
         }
         
-        $acl = Zend_Registry::get('ACL');
+        $front = Zend_Controller_Front::getInstance();
+	    $bs = $front->getParam('bootstrap');
+	    $acl = $bs->getResource('acl');
+	    
     	$auth = Zend_Auth::getInstance();
     	$role = isset($auth->getIdentity()->role) ? $auth->getIdentity()->role : 'guest';
     	
@@ -51,23 +54,15 @@ class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Hel
     		}
     	}
     	
-    	return (bool) $this->getAcl()->isAllowed( $role, $resource, $privilege );
-    	
-    	
-    	/* 
     	if (APPLICATION_ENV=='development'){
-    	    var_dump($params);
-    	    var_dump($resource);
-    	    var_dump($acl->isAllowed( $role, $resource, $privilege ));
-    	    die(__FILE__.': '.__LINE__);
+    		//var_dump($params);
+    		//var_dump($resource);
+    		//var_dump($acl->isAllowed( $role, $resource, $privilege ));
+    		//die(__FILE__.': '.__LINE__);
     	}
-    	 */
-    	/* 
-    	if ( false === $acl->isAllowed( $role, $resource, $privilege )){
-    		return false;
-    	}
-    	return true;
-    	 */
+    	
+    	return (bool)$this->getAcl()->isAllowed( $role, $resource, $privilege );
+    	
     }
 	
     /**
@@ -85,8 +80,14 @@ class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Hel
     private function getAcl()
     {
     	if (null === $this->_acl) {
-    		$this->setAcl( Zend_Registry::get('ACL') );
+    	    
+    	    $front = Zend_Controller_Front::getInstance();
+    	    $bs = $front->getParam('bootstrap');
+    	    $acl = $bs->getResource('acl');
+    		$this->setAcl( $acl );
+    		
     	}
+    	
     	return $this->_acl;
     }
     

@@ -4,7 +4,7 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.21 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.22 2013-03-11 13:55:37 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -398,6 +398,26 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							default: 
 								throw new Zend_Exception(self::ERR_WRONG_ACTION, 404);
 						}
+						
+					break;
+					
+					case 'auth':
+					    
+					    switch ($action){
+					    	case 'login':
+					    		$validators['openid'] = array( new Zend_Validate_Regex( Rtvg_Regex::EMAIL_REGEX ));
+					    		$validators['passwd'] = array( new Zend_Validate_Regex( Rtvg_Regex::PASSWORD_REGEX ));
+					    		$validators['submit'] = array( new Zend_Validate_Regex( '/\p{Cyrillic}+/u' ));
+					    	break;
+					    	
+					    	default:
+					    	case 'logout':
+					    	    $validators['submit'] = array( new Zend_Validate_Regex( '/\p{Cyrillic}+/u' ));
+					    	    break;
+					    	    
+					    }
+					    
+					    break;
 					
 				}
 				

@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/models/DbTable/Users.php,v $
- * @version $Id: Users.php,v 1.4 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: Users.php,v 1.5 2013-03-11 13:55:37 developer Exp $
  */
 class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
 {
@@ -43,9 +43,9 @@ class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
      * (non-PHPdoc)
      * @see Zend_Db_Table_Abstract::createRow()
      */
-    public function createRow(array $data=null){
+    public function createRow(array $data=null, $defautSource=null){
     	 
-    	$rowData = parent::createRow($data);
+    	$rowData = parent::createRow($data, $defautSource);
     	
     	foreach ($this->_defaultValues as $dK=>$dV){
     		if (!$rowData->$dK) {

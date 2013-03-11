@@ -1,1 +1,22 @@
 <?php 
+/**
+ * Admin login screen view script
+ */
+
+// Login form
+$wrapClass = 'span3';
+if (!isset($this->user) || $this->user->role == 'guest') {
+    $form = new Xmltv_Form_Login( array( 
+    	'action'=>$this->baseUrl('admin/auth/login'),
+    	'submit_text'=>'Вход',
+    ));
+} else {
+    $form = new Xmltv_Form_Logout(array( 
+    	'action'=>$this->baseUrl('admin/auth/logout'),
+    	'submit_text'=>'Выход',
+    ));
+}
+
+echo $form;
+	
+?>

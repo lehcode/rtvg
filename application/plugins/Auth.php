@@ -41,8 +41,12 @@ class Xmltv_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 	public function preDispatch( Zend_Controller_Request_Abstract $request)
 	{
 	    
-	    $this->_identity = Xmltv_Bootstrap_Auth::getCurrentUser(  Zend_Registry::get('db_local') );
-		$this->_acl      = Xmltv_Model_Acl::getInstance();
+	    //$this->_identity = Bootstrap_Auth::getCurrentUser(  Zend_Registry::get('db_local') );
+		
+	    $front = Zend_Controller_Front::getInstance();
+	    $bs = $front->getParam('bootstrap');
+	    $this->_acl = $bs->getResource('acl');
+	    $this->_identity = $bs->getResource('user');
 
 		if (!empty($this->_identity)) {
 			$role = $this->_identity->role;
@@ -55,7 +59,7 @@ class Xmltv_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 		$action     = $request->action;
 
 		//go from more specific to less specific
-		$moduleLevel = 'mvc:'.$module;
+		$moduleLevel = 'default:'.$module;
 		$controllerLevel = $moduleLevel . '.' . $controller;
 		$privelege = $action;
 

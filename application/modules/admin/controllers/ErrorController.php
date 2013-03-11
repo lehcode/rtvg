@@ -3,9 +3,28 @@
 class Admin_ErrorController extends Zend_Controller_Action
 {
 
-    public function errorAction()
+/**
+     * FlashMessenger
+     *
+     * @var Zend_Controller_Action_HelperflashMessenger
+     */
+    protected $_flashMessenger = null;
+    
+	public function init(){
+	    $this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct();
+        $this->_helper->layout->setLayout( 'admin' );
+        $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
+	}
+	
+	public function errorAction()
     {
         $errors = $this->_getParam('error_handler');
+        
+        $messages = $this->_flashMessenger->getMessages();
+        if (!empty($messages)){
+        	$this->view->assign('messages', $messages);
+        	return $this->render();
+        }
         
         if (!$errors || !$errors instanceof ArrayObject) {
             $this->view->message = 'You have reached the error page';
@@ -19,38 +38,85 @@ class Admin_ErrorController extends Zend_Controller_Action
                 // 404 error -- controller or action not found
                 $this->getResponse()->setHttpResponseCode(404);
                 $priority = Zend_Log::NOTICE;
-                $this->view->message = 'Page not found';
+                $this->view->message = 'Страница не найдена';
                 break;
             default:
                 // application error
                 $this->getResponse()->setHttpResponseCode(500);
                 $priority = Zend_Log::CRIT;
-                $this->view->message = 'Application error';
+                $this->view->message = 'Ошибка приложения';
                 break;
         }
         
-        // Log exception, if logger available
-        if ($log = $this->getLog()) {
-            $log->log($this->view->message, $priority, $errors->exception);
-            $log->log('Request Parameters', $priority, $errors->request->getParams());
+        $msg = "Параметры запроса:\n";
+        $params = $errors->request->getParams();
+        foreach ( $errors->request->getParams() as $key=>$val){
+        	$msg .= $key.': '.$val."\n";
         }
         
-        // conditionally display exceptions
-        if ($this->getInvokeArg('displayExceptions') == true) {
+        //Log exception, if logger available
+        $logger = $this->getLog();
+        if ($logger) {
+            $logger->log( $msg, $priority, $errors->exception );
+        }
+        
+        $senderEmail='dev@egeshi.com';
+        $mail = new Zend_Mail('UTF-8');
+        $mail->setBodyText( $errors->exception."\n\n".$msg );
+        $mail->setFrom( $senderEmail, 'Rutvgid Error');
+        $mail->addTo( 'egeshisolutions@gmail.com', 'Bugs');
+        $mail->setSubject( $errors->exception->getMessage() );
+        $mail->setHeaderEncoding( Zend_Mime::ENCODING_BASE64 );
+        
+        if (APPLICATION_ENV=='production') {
+            $t = new Zend_Mail_Transport_Smtp('smtp.gmail.com', array(
+            	'auth' => 'login',
+            	'ssl' => 'ssl',
+            	'port' => 465,
+            	'username' => $senderEmail,
+            	'password' => '3k2mzE9bE2iheEMi9RqcVu5t'
+            ));
+        } else {
+            $t = new Zend_Mail_Transport_File(array(
+            	'path'=>ROOT_PATH.'/log/mail'
+            ));
+        }
+        
+        //Send
+		$sent = true;
+		try {
+		    $mail->send($t);
+		} catch (Zend_Mail_Exception $e) {
+		    $logger->log( $e->getMessage(), Zend_log::CRIT );
+		}
+ 
+		// conditionally display exceptions
+        if ($this->getInvokeArg('displayExceptions')==true) {
             $this->view->exception = $errors->exception;
+            $this->view->request = $errors->request;
         }
         
-        $this->view->request   = $errors->request;
     }
-
+    
+    /**
+     *
+     * @return Zend_Log
+     */
     public function getLog()
     {
-        $bootstrap = $this->getInvokeArg('bootstrap');
-        if (!$bootstrap->hasResource('Log')) {
-            return false;
-        }
-        $log = $bootstrap->getResource('Log');
-        return $log;
+    	if (!$bootstrap = $this->getInvokeArg('bootstrap'))
+    		return false;
+    	 
+    	if (!$bootstrap->hasResource('Log')) {
+    		return false;
+    	}
+    	/**
+    	 *
+    	 * @var Zend_Log
+    	 */
+    	$log = $bootstrap->getResource('Log');
+    	return $log;
+    
     }
 
 

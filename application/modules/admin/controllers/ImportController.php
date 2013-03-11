@@ -5,13 +5,13 @@
  * @author  toshihir
  * @package rutvgid
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.21 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: ImportController.php,v 1.22 2013-03-11 13:55:37 developer Exp $
  *
  */
 
 
 
-class Admin_ImportController extends Xmltv_Controller_Action
+class Admin_ImportController extends Rtvg_Controller_Action
 {
 	
 	private $_progressBar;

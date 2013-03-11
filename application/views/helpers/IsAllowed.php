@@ -1,14 +1,11 @@
 <?php 
 /**
- * SM's code library
+ * View helper to check if user is alowed to access
+ * particular parts of view script output
  * 
- * @category    
- * @package     
- * @subpackage  
- * @copyright   Copyright (c) 2009 Pavel V Egorov
- * @author      Pavel V Egorov
- * @link        http://epavel.ru/
- * @since       08.09.2009
+ * @version $Id: IsAllowed.php,v 1.3 2013-03-11 13:55:49 developer Exp $
+ * @version $Id: IsAllowed.php,v 1.3 2013-03-11 13:55:49 developer Exp $
+ * 
  */
 
 
@@ -19,7 +16,7 @@ class Zend_View_Helper_IsAllowed extends Zend_View_Helper_Abstract
 
     public function isAllowed($resource = null, $privilege = null)
     {
-        return (bool) $this->getAcl()->isAllowed( $this->getUser()->role, $resource, $privilege );
+        return (bool)$this->getAcl()->isAllowed( $this->getUser()->role, $resource, $privilege );
     }
 
     /**
@@ -28,7 +25,10 @@ class Zend_View_Helper_IsAllowed extends Zend_View_Helper_Abstract
     public function getAcl()
     {
         if (null === $this->_acl) {
-            $this->setAcl( Zend_Registry::get('ACL') );
+            $front = Zend_Controller_Front::getInstance();
+            $bs = $front->getParam('bootstrap');
+            $acl = $bs->getResource('acl');
+            $this->setAcl( $acl );
         }
         return $this->_acl;
     }
@@ -48,7 +48,7 @@ class Zend_View_Helper_IsAllowed extends Zend_View_Helper_Abstract
     public function getUser()
     {
         if (null === $this->_user) {
-            $this->setUser( Xmltv_Bootstrap_Auth::getCurrentUser() );
+            $this->setUser( Bootstrap_Auth::getCurrentUser() );
         }
         return $this->_user;
     }

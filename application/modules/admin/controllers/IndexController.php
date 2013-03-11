@@ -4,13 +4,12 @@
  * 
  * @author     toshihir
  * @subpackage backend
- * @version    $Id: IndexController.php,v 1.6 2013-03-04 17:57:39 developer Exp $
+ * @version    $Id: IndexController.php,v 1.7 2013-03-11 13:55:37 developer Exp $
  *
  */
 
-class Admin_IndexController extends Xmltv_Controller_Action
+class Admin_IndexController extends Rtvg_Controller_Action
 {
-
 
 	/**
 	 * (non-PHPdoc)
@@ -23,14 +22,15 @@ class Admin_IndexController extends Xmltv_Controller_Action
 
 	/**
 	 * 
-	 * Controller index page
+	 * Redirect to login
 	 */
 	public function indexAction () {
 		
-	    if (APPLICATION_ENV=='development'){
-	        var_dump(parent::$user);
-	        die(__FILE__.': '.__LINE__);
+	    if ( $this->isAllowed !== true) {
+	    	return $this->_forward('login');
 	    }
+	    
+	    return $this->_forward('tasks');
 	}
 
 	/**
@@ -39,8 +39,14 @@ class Admin_IndexController extends Xmltv_Controller_Action
 	 */
 	public function loginAction () {
 
-		$this->_helper->layout->setLayout( 'adminLogin' );
-		$this->_forward( 'tasks' );
+	    if ( $this->isAllowed !== true){
+	        return $this->render('login');
+	    }
+	    
+	    return $this->_forward('tasks');
+	    
+		//$this->_helper->layout->setLayout( 'adminLogin' );
+		//$this->_forward( 'tasks' );
 	}
 
 	

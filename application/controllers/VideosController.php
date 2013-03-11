@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.24 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: VideosController.php,v 1.25 2013-03-11 13:55:37 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -84,7 +84,7 @@ class VideosController extends Rtvg_Controller_Action
 					$f = '/Youtube/ShowVideo/Main';
 					$hash = Rtvg_Cache::getHash( $ytId );
 					
-					if (parent::$videoCache===true && $this->acl->isAllowed()){
+					if (parent::$videoCache===true && parent::isAllowed===true){
 					    
 					    // Search in database cache if was not found in file cache
 					    // and if database cache is enabled

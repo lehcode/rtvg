@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.5 2013-03-10 03:02:15 developer Exp $
+ * @version $Id: Action.php,v 1.6 2013-03-11 13:55:37 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -41,7 +41,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * Url to redirect on error
 	 * @var string
 	 */
-	protected static $errorUrl;
+	protected $errorUrl;
 	
 	/**
 	 * Helper
@@ -58,7 +58,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * Javascript sources for inlineScript
 	 * @var Rtvg_Ad_Collection
 	 */
-	protected $adScripts;
+	//protected $adScripts;
 	
 	const FEATURED_CHANNELS_AMT=20;
 	
@@ -98,6 +98,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * @var Xmltv_Controller_Action_Helper_RequestValidator
 	 */
 	protected $_validator;
+	
 	/**
 	 *
 	 * Input filtering plugin
@@ -128,7 +129,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      *
      * @var Zend_Controller_Action_Helper_FlashMessenger
      */
-    protected $_flashMessenger = null;
+    protected $_flashMessenger;
 	
     /**
      * Current data
@@ -141,12 +142,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      * @var Zend_Controller_Action_Helper_IsAllowed
      */
     protected $isAllowed;
-    
-    /**
-     * Access checking action helper
-     * @var Xmltv_Model_Acl
-     */
-    protected $acl;
     
     
 	
@@ -173,15 +168,18 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         $this->cache->enabled = (bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' );
         $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
         $this->cache->setLocation( ROOT_PATH.'/cache' );
-		 
+		
+        $this->errorUrl = $this->view->url( array(), 'default_error_error' );
+        
+        /**
+         * Load bootstrap
+         * @var Bootstrap
+         */
+        $bootstrap = $this->getInvokeArg('bootstrap');
+        
         try {
         
             /**
-             * @var Bootstrap
-             */
-            $bootstrap = $this->getInvokeArg('bootstrap');
-            
-        	/**
         	 * @var Zend_Http_UserAgent
         	 */
         	$this->userAgent = $bootstrap->getResource('useragent');
@@ -190,24 +188,15 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         	 * @var Zend_Http_UserAgent_AbstractDevice
         	 */
         	$this->userDevice = $this->userAgent->getDevice();
-        
-        	$this->view->userDevice = $this->userDevice;
-        
-        	if ($this->userAgent->getBrowserType()=='mobile'){
-        	    //Collect stats to log
-        	    /*
-        	    $logger = new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/mobile.log' );
-        	    if ($logger){
-        	        $logger->log( serialize($this->userDevice), Zend_Log::INFO );
-        	    }
-        	    */
-        	}
+        	$this->view->assign( 'user_device', $this->userDevice );
         	
         } catch (Exception $e) {
-        	return true;
+        	
         }
         
-        $this->acl = Zend_Registry::get( 'ACL' );
+        $this->user = $bootstrap->getResource('user');
+        $this->view->assign('user', $this->user);
+        
         
         self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		if (self::$videoCache){
@@ -237,19 +226,13 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
 		
 		$this->initView();
-			
-		$auth = Zend_Auth::getInstance();
-		if (null === $auth->getIdentity()){
-		    $this->user = $this->usersModel->defaultUser();
-		} else {
-		    $this->user = $auth->getIdentity();
-		}
 		
-		$this->view->assign('user', $this->user);
-		
-		$this->adScripts = new Rtvg_Ad_Collection();
+		//$this->adScripts = new Rtvg_Ad_Collection();
 		
 	}
+	
+	
+	
 	
 	/**
 	 * Validate and filter request parameters
@@ -679,7 +662,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
 		
 		// If file cache is enabled
-		if ($this->cache->enabled && $this->acl->isAllowed()){
+		if ($this->cache->enabled && ($this->isAllowed===true)) {
 			 
 			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
 			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;

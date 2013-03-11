@@ -19,11 +19,10 @@ class Rtvg_Message {
     const ERR_WRONG_DB_PREFIX = "Неверный префикс базы данных";
     const ERR_WRONG_ENTRY = "Wrong entry: ";
     const ERR_WRONG_FORMAT = "Неверный формат";
+    const ERR_WRONG_LOGIN = "Неверный логин";
     const ERR_WRONG_MODULE = "Неверный модуль";
     const ERR_WRONG_PARAM = "Неверный параметр";
     const ERR_WRONG_TYPE_FOR = "Неверный тип параметр для ";
     const ERR_CANNOT_SAVE = "Не могу сохранить запись";
-    
-    
-    
 }
+

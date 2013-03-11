@@ -2,9 +2,8 @@
 /**
  * Programs listings display
  * 
- * @author  Antony Repin
- * @uses    Xmltv_Controller_Action
- * @version $Id: ListingsController.php,v 1.32 2013-03-10 02:45:15 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: ListingsController.php,v 1.33 2013-03-11 13:55:37 developer Exp $
  *
  */
 class ListingsController extends Rtvg_Controller_Action
@@ -62,7 +61,7 @@ class ListingsController extends Rtvg_Controller_Action
 			}
 			$this->view->assign('channel', $channel );
 			
-			if (isset($_GET['RTVG_PROFILE'])){
+			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
 			    //var_dump($channel);
 			    //die(__FILE__.': '.__LINE__);
 			}
@@ -85,6 +84,8 @@ class ListingsController extends Rtvg_Controller_Action
 			
 			if (APPLICATION_ENV=='development'){
 				//var_dump($listingDate->toString());
+				//var_dump($this->user);
+				//var_dump($this->isAllowed);
 				//die(__FILE__.': '.__LINE__);
 			}
 			
@@ -203,16 +204,6 @@ class ListingsController extends Rtvg_Controller_Action
 						$item['end']   = $item['end']->addHour($timeShift);
 						$this->view->headMeta()->setName('robots', 'noindex,follow');
 					}
-					/* 
-					if ($currentProgram){
-					    if (APPLICATION_ENV=='development'){
-					    	var_dump($currentProgram['start']->toString());
-					    	die(__FILE__.': '.__LINE__);
-					    }
-						$currentProgram['start'] = $currentProgram['start']->addHour($timeShift);
-						$currentProgram['end']   = $currentProgram['end']->addHour($timeShift);
-					}
-					 */
 			    }
 			}
 			
@@ -228,12 +219,22 @@ class ListingsController extends Rtvg_Controller_Action
 			 * 		Если найдено - сохранение в БД
 			 */
 			
+			if ($_GET['RTVG_PROFILE']){
+				var_dump($this->isAllowed);
+				die(__FILE__.': '.__LINE__);
+			}
+			
 			if (count($list) && ($list!==false)) {
 			    
 			    $listingVideos = array();
 			    
+			    if ($_GET['RTVG_PROFILE']){
+			        var_dump($this->isAllowed);
+			        die(__FILE__.': '.__LINE__);
+			    }
+			    
 			    // Запрос в файловый кэш
-			    if ($this->cache->enabled && $this->acl->isAllowed()){
+			    if ($this->cache->enabled){
 			        
 			    	$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->listings->get( 'lifetime' );
 			    	$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
@@ -241,7 +242,7 @@ class ListingsController extends Rtvg_Controller_Action
 			    	$f = '/Listings/Videos';
 			    	$hash = Rtvg_Cache::getHash( 'listingVideo_'.$channel['title'].'-'.$listingDate->toString( 'YYYY-MM-dd' ));
 			    	
-			    	if (parent::$videoCache) {
+			    	if (parent::$videoCache && $this->isAllowed) {
 			    	    
 			    	    // Ищем видео в кэше БД если он включен
 			    	    if (false === ($listingVideos = $this->vCacheModel->listingRelatedVideos( $list, $channel['title'], $listingDate ))){

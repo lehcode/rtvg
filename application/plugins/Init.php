@@ -3,8 +3,8 @@
 /**
  * Application initialization plugin
  *
- * @uses Zend_Controller_Plugin_Abstract
- * @version $Id: Init.php,v 1.20 2013-03-10 02:45:15 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: Init.php,v 1.21 2013-03-11 13:55:37 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -87,6 +87,9 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	            
 	        } elseif($controllerName=='%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE'){
 	            $request->setControllerName('videos');
+	            if ($request->getActionName()=='%D1%82%D0%B5%D0%BC%D0%B0'){
+	                throw new Zend_Exception( Rtvg_Message::ERR_WRONG_CONTROLLER, 404 );
+	            }
 	            $request->setActionName('show-video');
 	        } elseif($controllerName=='видео'){
 	            $request->setControllerName('videos');
@@ -97,47 +100,6 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_CONTROLLER, 404 );
 	        }
 	    }
-	    
-	    
-	    /* 
-	    if ($request->getParam('tz')==0){
-	        $request->setParam('tz', null);
-	    }
-	     */
-		//$moduleName = $request->getModuleName();
-		
-		//var_dump($request->getControllerName());
-		//die(__FILE__.": ".__LINE__);
-		
-		/*
-		switch ($moduleName) {
-			case 'admin':
-			    if ($request->getActionName()===null){
-			        switch ($request->getControllerName()){
-			        	default:
-			        	case 'channels':
-			        	    $request->setControllerName( 'index' );
-			        	    break;
-			        }
-			        	
-			    }
-				
-			break;
-			default:
-				//$request->setControllerName( 'frontpage' );
-		}
-		
-		if( $request->getModuleName() == 'admin' ) {
-			if( $request->getControllerName() == 'channels' ) 
-			$request->setControllerName( 'index' );
-		} else {
-			//$request->setControllerName( 'frontpage' );
-		}
-		*/
-		
-		//var_dump($request->getModuleName());
-		//var_dump($request->getControllerName());
-		//var_dump($request->getActionName());
 		
 	}
 
@@ -183,7 +145,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		$viewRenderer->initView();
 		 
 		//add the global helper directory path
-		$viewRenderer->view->addHelperPath(ROOT_PATH.'/library/Xmltv/View/Helper/');
+		$viewRenderer->view->addHelperPath(APPLICATION_PATH.'/../library/views/helpers/');
 		
 	}
 	

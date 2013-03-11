@@ -4,7 +4,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.19 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.20 2013-03-11 13:55:37 developer Exp $
  *
  */
 
@@ -225,29 +225,25 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		        		$user->last_login = Zend_Date::now()->toString('YYYY-MM-dd HH:mm:ss');
 		        		$user->save();
 		        	}
-		        }
-		        
-		        if (APPLICATION_ENV=='development'){
-		        	//var_dump($openId);
-		        	//var_dump($user);
-		        	//die(__FILE__.': '.__LINE__);
-		        }
-		        
-		        Xmltv_Bootstrap_Auth::setCurrentUser($user);
+		        } 
 		        
 		    } catch (Zend_Exception $e) {
 		        throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		    }
 		}
 		
-		$user = Xmltv_Bootstrap_Auth::getCurrentUser($db);
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($user);
-			//die(__FILE__.': '.__LINE__);
+		if (isset($user) && ($user !== false)) {
+		    
+		    if (APPLICATION_ENV=='development'){
+		    	//var_dump($openId);
+		    	//var_dump($user);
+		    	//die(__FILE__.': '.__LINE__);
+		    }
+		    
+		    return Bootstrap_Auth::setCurrentUser($user);
 		}
 		
-		return $user;
+		return Bootstrap_Auth::getCurrentUser($db);
 		
 	}
 	
@@ -264,9 +260,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    
 		$acl = Xmltv_Model_Acl::getInstance();
 		Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl( $acl );
-		Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole( Xmltv_Bootstrap_Auth::getCurrentUser($db)->role );
+		Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole( Bootstrap_Auth::getCurrentUser($db)->role );
 		
-		Zend_Registry::set('ACL', $acl);
+		//Zend_Registry::set('ACL', $acl);
 		
 		return $acl;
 	}
@@ -275,4 +271,67 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 }
 
 
+/**
+ * 
+ *
+ * @author takeshi
+ * @uses   Bootstrap
+ *
+ */
+class Bootstrap_Auth extends Bootstrap
+{
+	/**
+	 * @var Xmltv_User
+	 */
+	protected static $_currentUser;
 
+	/**
+	 *
+	 * @param unknown_type $application
+	 */
+	public function __construct($application)
+	{
+		parent::__construct($application);
+	}
+
+	public static function setCurrentUser( Xmltv_User $user)
+	{
+		self::$_currentUser = $user;
+	}
+
+	/**
+	 * @return Xmltv_Model_User
+	 * @param  Zend_Db_Adapter $db
+	 * @return Xmltv_User
+	 */
+	public static function getCurrentUser($db=null)
+	{
+	  
+		if (APPLICATION_ENV=='development'){
+			//var_dump(self::$_currentUser);
+			//die(__FILE__.': '.__LINE__);
+		}
+	  
+		if (null === self::$_currentUser) {
+
+			if (isset($db)){
+				$model = new Xmltv_Model_Users( array( 'db'=>$db ));
+			} else {
+				$model = new Xmltv_Model_Users();
+			}
+
+			self::setCurrentUser( $model->getUser() );
+		}
+		return self::$_currentUser;
+	}
+
+	/**
+	 * @return App_Model_User
+	 */
+	public static function getCurrentUserId()
+	{
+		$user = self::getCurrentUser();
+		return $user->getId();
+	}
+
+}

@@ -6,10 +6,10 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/controllers/ProgramsController.php,v $
- * @version $Id: ProgramsController.php,v 1.6 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: ProgramsController.php,v 1.7 2013-03-11 13:55:37 developer Exp $
  */
 
-class Admin_ProgramsController extends Xmltv_Controller_Action
+class Admin_ProgramsController extends Rtvg_Controller_Action
 {
 
     /**

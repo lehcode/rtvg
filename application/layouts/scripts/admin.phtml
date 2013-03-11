@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: admin.phtml,v 1.6 2013-02-15 00:44:02 developer Exp $
+ * @version $Id: admin.phtml,v 1.7 2013-03-11 13:55:37 developer Exp $
  *
  */
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
@@ -39,15 +39,44 @@ echo $this->headStyle();
 </head>
 <body>
 <div class="container">
+
+	<?php 
+	if (count($this->messages)) {
+		foreach ($this->messages as $text) {
+			if (is_array($text)) {
+				foreach ($text as $string) {
+					echo $this->showMessage( $string );
+				}
+			} else {
+				echo $this->showMessage( $text );
+			}
+		}
+	}
+	?>
+
+	<?php if ($this->isAllowed('admin:auth')) {
+	    ?>
 	<div id="nav">
-		<?php echo $mainNav; ?>
+		<?php 
+		$form = new Xmltv_Form_Logout(array(
+			'action'=>$this->baseUrl('admin/auth/logout'),
+			'submit_text'=>'Выход',
+		));
+		echo $form;
+		
+		echo $mainNav;
+		?>
 	</div>
+	
 	<h4>
 		APPLICATION_ENV: <?php echo APPLICATION_ENV ?><br />
 		memory_limit: <?php echo ini_get('memory_limit') ?><br />
 		error_reporting: <?php echo ini_get('error_reporting') ?><br />
 		display_errors: <?php echo ini_get('display_errors') ?><br />
 	</h4>
+		<?php 
+	} ?>
+	
 	<div class="span12">
 		<?php echo $this->layout()->content; ?>
 	</div>
