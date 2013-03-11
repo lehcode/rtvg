@@ -31,45 +31,38 @@ class Rtvg_Acl_IsNotBotAssertion implements Zend_Acl_Assert_Interface
 	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
+	    $allowedTypes = array( 'desktop', 'mobile', 'validator', 'feed' );
 	    $bots=array(
-	    	'google',
-	    	'yandex',
-	    	'mail.ru',
-	    	'ahrefs',
-	    	'wget',
-	    	'php',
+    		'google',
+    		'yandex',
+    		'mail.ru',
+    		'ahrefs',
+    		'rambler',
+    		'wget',
+    		'php',
+    		'zend',
+    		'spider',
+    		'bot',
+    		'crawler',
 	    );
-	    foreach ($bots as $name){
-	    	if ( stristr( $this->_userAgent->getUserAgent(), $name )){
-	    	    return false;
+	    
+	    $userAgent = $this->_userAgent->getUserAgent();
+	    foreach ($bots as $string){
+	    	if (stristr($userAgent, $string)) {
+	    	    //die(__FILE__.': '.__LINE__);
+	    		return false;
 	    	}
 	    }
 	    
-	    
-	    switch ($this->_userAgent->getBrowserType()){
-	        
-	    	case 'desktop':
-	    	case 'mobile':
-	    	case 'validator':
-	    	case 'feed':
-	    	    return true;
-	    	break;
-	    	
-	    	case 'bot':
-	    	case 'checker':
-	    	case 'spam':
-	    	    return false;
-	    	break;
-	    	    
-	    	
+	    $browserType = $this->_userAgent->getBrowserType();
+	    if ( in_array($browserType, $allowedTypes) ){
+	        //die(__FILE__.': '.__LINE__);
+	        return true;
 	    }
-		
-		return true;
+	    
+	    //die(__FILE__.': '.__LINE__);
+	    return false;
 
 	}
 
-	protected function _userAgentIsBot()
-	{
-		// ...
-	}
 }
