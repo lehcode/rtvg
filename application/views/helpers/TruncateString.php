@@ -3,7 +3,7 @@
 class Zend_View_Helper_TruncateString extends Zend_View_Helper_Abstract
 {
 
-	public function truncateString ($string, $length=10, $mode='letters') {
+	public function truncateString ($string, $length=10, $mode='letters', $end='…') {
 				
 		switch ($mode) {
 			case 'words':
@@ -14,7 +14,7 @@ class Zend_View_Helper_TruncateString extends Zend_View_Helper_Abstract
 						unset($parts[$c]);
 						$c--;
 					} while (count($parts)>$length);
-					return implode(' ', $parts).'…';
+					return rtrim( implode(' ', $parts), '.–;:?,!').$end;
 				} else {
 					return $string;
 				}
