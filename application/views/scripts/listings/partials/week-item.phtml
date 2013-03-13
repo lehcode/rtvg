@@ -1,0 +1,35 @@
+<?php 
+/**
+ * Partial to render ListingsController::programDayAction() listing item
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: week-item.phtml,v 1.1 2013-03-13 16:58:36 developer Exp $
+ *
+ */
+if (APPLICATION_ENV=='development'){
+    //var_dump($this->item);
+    //die(__FILE__.': '.__LINE__);
+}
+
+$programTitle = $this->escape( $this->item['title'] );
+$programAlias = $this->escape( $this->item['alias'] );
+$channelTitle = $this->escape( $this->item['channel_title'] );
+$channelAlias = $this->escape( $this->item['channel_alias'] );
+$category = $this->escape( $this->item['category_title_single'] );
+?>
+<p>
+	<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $this->item['start']->toString( 'EEEE' )); ?></span>&nbsp;
+	<?php echo $this->item['start']->toString( 'd MMMM') ?>&nbsp;
+	<u><?php echo $this->item['start']->toString( 'HH:mm') ?></u>
+	<?php echo $category; ?> 
+	<a href="<?php echo $this->url( array(
+			'channel'=>$channelAlias,
+			'date'=>$this->item['start']->toString("dd-MM-YYYY")),
+			'default_listings_day-date' ).'?ts='.$this->item['start']->toString("U") ?>"
+		title="<?php sprintf("«%s» %s на канале «%s»", $programTitle, $this->item['start']->toString( 'dd MMM'), $channelTitle); ?>"
+		target="_blank">
+		<em><?php echo $programTitle ?></em>
+	</a> на канале <?php echo $channelTitle ?>
+	<?php echo isset($single['live']) && ((bool)$this->item['live'] === true) ? 'в прямом эфире' : '' ; ?>
+	<?php echo isset($single['premiere']) && ((bool)$this->item['premiere'] === true) ? '. Премьера!' : '' ; ?>
+</p>
