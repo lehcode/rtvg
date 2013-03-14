@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.25 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.26 2013-03-14 06:09:55 developer Exp $
  *
  */
 
@@ -169,29 +169,28 @@ if ($this->is_today){
 			</div>
 		</div>
 		
-		<div class="progtoday">
+		<div class="links">
 			<a href="<?php echo $this->url( array(
 				'alias'=>$prog['alias'],
 				'channel'=>$channelAlias,
 				'timespan'=>'сегодня'), 'default_listings_program-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
 				Выпуски <?php echo $prog['title']; ?> сегодня
 			</a>
-		</div>
-		
-		<?php if (isset($prog['category_title']) && !empty($prog['category_title'])): ?>
-		<div class="category">
-			<a href="<?php echo $this->url( array(
+			<?php if (isset($prog['category_title']) && !empty($prog['category_title'])): ?>
+			<br /><a href="<?php echo $this->url( array(
 				'category'=>$prog['category_alias'],
 				'timespan'=>'неделя'), 'default_listings_category'); ?>" title="Передачи на неделе">
 				<?php echo $prog['category_title']; ?> на этой неделе
 			</a>
-			<a href="<?php echo $this->url( array(
+			<br /><a href="<?php echo $this->url( array(
 				'category'=>$prog['category_alias'],
 				'timespan'=>'сегодня'), 'default_listings_category'); ?>" title="Передачи сегодня">
 				<?php echo $prog['category_title']; ?> сегодня
 			</a>
-		</div>
 		<?php endif; ?>
+		</div>
+		
+		
 		
 		
 		<?php if (isset($prog['rating']) && $prog['rating']>0) : ?>
@@ -266,33 +265,29 @@ if ($this->is_today){
 				$videoUrl = $this->url(array('alias'=>$videoAlias, 'id'=>$videoId), 'default_videos_show-video');
 				?>
 				
-				<?php 
-				if (isset($vid['thumbs']) && !empty($vid['thumbs'])){
+				<?php if (isset($vid['thumbs']) && !empty($vid['thumbs'])){
+				    
 					$wrapStyle = empty($videoDesc) ? 'width: 100%;' : 'float:left; width:120px; margin: 0 1em 0.25em 0;' ;
+					
 					?>
 				<div style="<?php echo $wrapStyle ?>"> 
 					<?php 
-					foreach ($vid['thumbs'] as $thumb){
-						if (APPLICATION_ENV=='development'){
-							//var_dump($thumb);
-							//die(__FILE__.': '.__LINE__);
-						}
-						$thW = (int)Zend_Registry::get('site_config')->videos->listing->get('thumb_width');
-						?>
-						<a href="<?php echo $videoUrl ?>"
-							title="Видео, похожие на <?php echo $videoTitle ?>">
-							<img src="<?php echo $thumb['url'] ?>" 
-								width="<?php echo (int)$thW>1 ? (int)$thW : 240;  ?>" 
-								alt="<?php echo $videoTitle ?>" />
-						</a>
-						<?php 
-					}
+					
+					$thW = (int)Zend_Registry::get('site_config')->videos->listing->get('thumb_width');
+					//var_dump($vid['thumbs']);
+					//var_dump($vid['thumbs'][0]['url']);
+					//die();
+					
 					?>
+					<a href="<?php echo $videoUrl ?>"
+						title="Видео, похожие на <?php echo $videoTitle ?>">
+						<img src="<?php echo $vid['thumbs'][rand(0, count($vid['thumbs'])-1)]['url']; ?>" 
+							width="<?php echo (int)$thW>1 ? (int)$thW : 240;  ?>" 
+							alt="<?php echo $videoTitle ?>" />
+					</a>
 				</div>
-					<?php 
-				}
-				?>
-				
+				<?php 
+				} ?>
 				<h4 class="title">
 					<?php echo $videoTitle ?>
 				</h4>

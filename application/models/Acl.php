@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.7 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: Acl.php,v 1.8 2013-03-14 06:09:55 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -78,15 +78,19 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:user' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.login' ), 'admin:user' );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.profile' ), 'admin:user' );
+	    $this->add( new Zend_Acl_Resource( 'admin:listings' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:channels' ), $adminModule );
 	    
 	    
 	    $this->deny( self::ROLE_GUEST, null, null );
 	    $this->allow( self::ROLE_GUEST, $default, null, new Rtvg_Acl_IsNotBotAssertion() );
+	    $this->allow( self::ROLE_GUEST, array( 
+	    	'admin:auth.login',
+	    	'default:user.login',
+	    ), null);
 	    $this->allow( null, 'admin:auth', array( 'index', 'login', 'logout') );
 	    $this->allow( self::ROLE_PUBLISHER, $publisherModule );
 	    $this->allow( self::ROLE_PUBLISHER, $adminModule, array( 'index', 'login', 'logout') );
-	    
-	    
 	    $this->allow( self::ROLE_GOD );
 	    
 	    return $this;

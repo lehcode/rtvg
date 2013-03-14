@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.6 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: Action.php,v 1.7 2013-03-14 06:07:38 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -141,7 +141,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      * Access checking action helper
      * @var Zend_Controller_Action_Helper_IsAllowed
      */
-    protected $isAllowed;
+    protected static $isAllowed;
     
     
 	
@@ -465,7 +465,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * @return array
 	 */
 	protected function topPrograms($amt=20){
-		
+		/*
 	    $now = Zend_Date::now();
 	    $topAmt = (int)Zend_Registry::get('site_config')->top->listings->get('amount');
 	    $week_start = $this->weekDays->getStart( $now);
@@ -481,7 +481,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		
 		if ($this->cache->enabled){
 		    
-		    $this->cache->setLifetime(3600);
+		    $this->cache->setLifetime(43200);
 		    $this->cache->setLocation(ROOT_PATH.'/cache');
 			$f = '/Listings/Top';
 			
@@ -495,7 +495,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			$result = $this->programsModel->topPrograms( $amt, $week_start, $week_end );
 		}
 		return $result;
-	
+		*/
 	}
 	
 	/**
@@ -662,15 +662,15 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
 		
 		// If file cache is enabled
-		if ($this->cache->enabled && ($this->isAllowed===true)) {
+		if ($this->cache->enabled) {
 			 
 			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
 			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
 			$f = '/Youtube/SidebarRight';
 			$this->cache->setLocation( ROOT_PATH.'/cache' );
 			$hash = Rtvg_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
-			 
-			if (self::$videoCache){
+			/*  
+			if (self::$videoCache && $this->isAllowed){
 
 			    // Query database cache for video
 				if (($videos = $this->vCacheModel->sidebarVideos( $channel['id'] ))===false){
@@ -702,14 +702,14 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 				}
 				
 			} else {
-				 
+			 */	 
 				// Database cache is disabled
 				// Try to fetch from file cache
 				if (($videos = $this->cache->load( $hash, 'Core', $f))===false) {
 					$videos = $this->videosModel->ytSearch( $ytSearch, $ytConfig);
 					$this->cache->save( $videos, $hash, 'Core', $f );
 				}
-			}
+			//}
 			 
 		} else {
 		    

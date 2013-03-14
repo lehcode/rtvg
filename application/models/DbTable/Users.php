@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/models/DbTable/Users.php,v $
- * @version $Id: Users.php,v 1.5 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: Users.php,v 1.6 2013-03-14 06:09:55 developer Exp $
  */
 class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
 {
@@ -18,6 +18,7 @@ class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
 		'email'=>'',
 		'display_name'=>'',
 		'real_name'=>'',
+		'online'=>0,
 		'last_login'=>null,
 		'login_source'=>'site',
 		'hash'=>'',
@@ -82,6 +83,13 @@ class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
         }
         
         return false;
+        
+    }
+    
+    public function setOnline(array $userdata=null){
+    	
+        $userdata['online'] = 1;
+        $this->update( $userdata, "`id`='".(int)$userdata['id']."'" );
         
     }
 

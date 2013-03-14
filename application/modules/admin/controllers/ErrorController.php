@@ -12,7 +12,7 @@ class Admin_ErrorController extends Zend_Controller_Action
     
 	public function init(){
 	    $this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct();
-        $this->_helper->layout->setLayout( 'admin' );
+        $this->_helper->layout->setLayout( 'error' );
         $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
 	}
 	
@@ -23,7 +23,7 @@ class Admin_ErrorController extends Zend_Controller_Action
         $messages = $this->_flashMessenger->getMessages();
         if (!empty($messages)){
         	$this->view->assign('messages', $messages);
-        	return $this->render();
+        	//return $this->render();
         }
         
         if (!$errors || !$errors instanceof ArrayObject) {
@@ -38,13 +38,13 @@ class Admin_ErrorController extends Zend_Controller_Action
                 // 404 error -- controller or action not found
                 $this->getResponse()->setHttpResponseCode(404);
                 $priority = Zend_Log::NOTICE;
-                $this->view->message = 'Страница не найдена';
+                $this->view->assign('message', 'Страница не найдена');
                 break;
             default:
                 // application error
                 $this->getResponse()->setHttpResponseCode(500);
                 $priority = Zend_Log::CRIT;
-                $this->view->message = 'Ошибка приложения';
+                $this->view->assign('message', 'Ошибка приложения');
                 break;
         }
         
@@ -89,11 +89,16 @@ class Admin_ErrorController extends Zend_Controller_Action
 		} catch (Zend_Mail_Exception $e) {
 		    $logger->log( $e->getMessage(), Zend_log::CRIT );
 		}
+		
+		if (APPLICATION_ENV=='development'){
+			var_dump($this->getInvokeArg('displayExceptions')==true);
+			die(__FILE__.': '.__LINE__);
+		}
  
 		// conditionally display exceptions
         if ($this->getInvokeArg('displayExceptions')==true) {
-            $this->view->exception = $errors->exception;
-            $this->view->request = $errors->request;
+            $this->view->assign('exception', $errors->exception);
+            $this->view->assign('request', $errors->request);
         }
         
     }

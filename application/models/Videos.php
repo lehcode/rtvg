@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.24 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: Videos.php,v 1.25 2013-03-14 06:09:55 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -21,7 +21,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * Convert Zend_Gdata_YouTube_VideoEntry data to array
 	 * @param Zend_Gdata_YouTube_VideoEntry|array $entry
 	 */
-	public function parseYtEntry($entry){
+	public function parseYtEntry($entry, $img_width=120){
 		
 		
 		if (!self::okToOutput($entry)){
@@ -51,16 +51,12 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$d = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
 			$v['duration'] = $d;
 			
-			$thumbWidth = Zend_Registry::get('site_config')->videos->sidebar->right->get('thumb_width');
-			if (!$thumbWidth){
-				$thumbWidth = 120;
-			}
 			$thumbs = $entry->getVideoThumbnails();
 			$i=0;
 			$v['thumbs'] = array();
 			foreach($thumbs as $th) {
-				if ( $th['width']==$thumbWidth) {
-					if (preg_match('/.+[\d]+\.jpg$/', $th['url'])) {
+				if ( $th['width'] == (int)$img_width ) {
+					if ( stristr($th['url'], '.jpg') ) {
 						$v['thumbs'][$i]['time']  = new Zend_Date($th['time'], 'HH:mm:ss.S');
 						$v['thumbs'][$i]['height'] = (int)$th['height'];
 						$v['thumbs'][$i]['width']  = (int)$th['width'];
@@ -657,7 +653,9 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			));
 		}
 		
+		$img_width = isset($config['img_width']) && !empty($config['img_width']) ? (int)$config['img_width'] : 120 ;
 		$search = preg_replace('/[^\p{Cyrillic}\p{Latin}\d\s]+/ui', ' ', $search);
+		$search = preg_replace('/\s+/ui', ' ', $search);
 		
 		if (APPLICATION_ENV=='development'){
 			echo '<b>'.__METHOD__.'</b><br />';
@@ -669,7 +667,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
 			$c=0;
 			foreach ($vids as $v){
-			    $r = $this->parseYtEntry($v);
+			    $r = $this->parseYtEntry($v, $img_width);
 			    if ($r!==false){
 				    $result[$c]=$r;
 					$c++;

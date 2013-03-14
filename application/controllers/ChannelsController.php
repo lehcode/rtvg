@@ -4,7 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.24 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.25 2013-03-14 06:09:55 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -67,16 +67,10 @@ class ChannelsController extends Rtvg_Controller_Action
 			    $hash = Rtvg_Cache::getHash('published_channels');
 				if (!$rows = $this->cache->load($hash, 'Core', $f)) {
 					$rows = $this->channelsModel->getPublished();
-					foreach ($rows as $k=>$row) {
-					    $rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
-					}
 					$this->cache->save($rows, $hash, 'Core', $f);
 				}
 			} else {
-				$rows = $this->channelsModel->getPublished();
-				foreach ($rows as $row) {
-					$rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
-				}
+				$rows = $this->channelsModel->getPublished( $this->view );
 			}
 			
 			if (APPLICATION_ENV=='development'){
@@ -98,7 +92,8 @@ class ChannelsController extends Rtvg_Controller_Action
 			 * Данные для модуля самых популярных программ
 			 * #####################################################################
 			 */
-			$this->view->assign('top_programs', $this->topPrograms());
+			$top = $this->topPrograms();
+			$this->view->assign('top_programs', $top);
 		}
 		
 	}

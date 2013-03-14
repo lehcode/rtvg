@@ -1,3 +1,17 @@
+<?php
+/**
+ * Frontpage error view script
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: error.phtml,v 1.6 2013-03-14 06:09:55 developer Exp $
+ */ 
+?>
+<?php
+/*
+ * #### Footer ####
+ */
+$this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -5,18 +19,40 @@
 <title>Произошла ошибка</title>
 </head>
 <body>
-<h1>Ошибка</h1>
-<h2><?php echo $this->message ?></h2>
-<?php if (isset($this->exception)){ ?><h3>Exception information:</h3>
-<p>
-<b>Message:</b> <?php echo $this->exception->getMessage() ?>
-</p>
 
-<h3>Stack trace:</h3>
-<pre><?php echo $this->exception->getTraceAsString() ?>
-</pre>
-<h3>Request Parameters:</h3>
-<pre><?php echo $this->escape(var_export($this->request->getParams(), true)) ?>
-</pre><?php } ?>
+<div id="content" class="row-fluid error">
+<?php 
+if (count($this->messages)) {
+	foreach ($this->messages as $text) {
+		if (is_array($text)) {
+			foreach ($text as $string) {
+				echo $this->showMessage( $string );
+			}
+		} else {
+			echo $this->showMessage( $text );
+		}
+	}
+}
+?>
+
+	<div class="span12" id="maincontent">
+		<h1>Ошибка</h1>
+		<h2><?php echo $this->message ?></h2>
+		<?php if (isset($this->exception)){ ?><h3>Exception information:</h3>
+		<p>
+		<b>Message:</b> <?php echo $this->exception->getMessage() ?>
+		</p>
+		
+		<h3>Stack trace:</h3>
+		<pre><?php echo $this->exception->getTraceAsString() ?>
+		</pre>
+		<h3>Request Parameters:</h3>
+		<pre><?php echo $this->escape(var_export($this->request->getParams(), true)) ?>
+		</pre><?php } ?>
+	</div>
+
+</div>
+
+
 </body>
 </html>

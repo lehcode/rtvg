@@ -124,11 +124,11 @@ body{
 }
 body > * {
 	font-family: @baseFont;
-	
+	behavior: url("/css/PIE.htc");
 }
 
 input {
-	behavior:url('/css/PIE.htc');
+	
 }
 
 [class*="span"] {
@@ -385,87 +385,7 @@ li.lastcol:after {
 	}
 }
 
-#maincontent div.programcontainer {
-		
-	height: auto;
-    overflow: hidden;
-    padding: 1em 0;
-	
-	div.programtitle{
-		margin-top: 4em;
-		
-		h3{
-			font-family: @openSansCondBold;
-			border-top: 4px dashed @gray;
-			border-bottom: 4px dashed @gray;
-			padding: 0.25em 0 0.6em 0.3em;
-			&:hover{
-				border-top-color: @lightGray;
-				border-bottom-color: @lightGray;
-				background-color: @white;
-			}
-		
-			a{
-				font-size: 2em;
-   				line-height: 1.2em;
-				color: @orange;
-				&:hover{ text-decoration: none; }
-			}
-		}
-		
-	}
-	
-	div.program-video{
-		h4{
-			font-family: @openSansCondBold;
-			font-size: 1.5em;
-		}
-		p.video-desc{
-			font-size: .8em;
-			margin-top: 2em;
-		}
-		a.btn{
-			.orangeButton;
-		}
-	}
-	
-	div.category{
-		margin: 0.5em 0 1.5em;
-		a{
-			display: block;
-			color: @black;
-			text-decoration: underline;
-			padding: 0.2em 0;
-			&:after{ .clearAll; }
-		}
-		
-	}
-	
-	div.program-times {
-		width: 36%;
-		&:after { .clearAll; }
-		
-		div.time {
-			color: #B2B2B2;
-			font-size: 1.6em;
-			line-height: 2.4em;
-			margin-bottom: 0.5em;
-		}
-		div.start {
-			width: 50%;
-			float: left;
-		}
-		div.end {
-			width: 50%;
-			float: right;
-			text-align: right;
-		}
-		span{
-			padding: .5em;
-		}
-	}
-	
-}
+
 
 #maincontent.program-week{
 	
@@ -507,7 +427,7 @@ ul#fpnav {
 		    -moz-radius: 6px;
 		    -webkit-radius: 6px;
 		    -o-radius: 6px;
-		    behavior: url("/css/PIE.htc");
+		    
 		    display: block;
 		    font-size: 1em;
 		    line-height: 2em;
@@ -656,7 +576,7 @@ ul#channels_categories {
     box-shadow:  0px 0px 8px 2px rgba(125, 125, 125, 0.3);
 	background-color: @yellow;
 	border-radius: 4px 4px 4px 4px;
-	behavior: url("/css/PIE.htc");
+	
 	li {
 		line-height: 22px;
 	}
@@ -681,15 +601,12 @@ ul#channels_categories {
 	    margin-right: 4px;
 	    padding: 2px;
 	    width: 18px;
-		behavior: url("/css/PIE.htc");
+		
 	}
 }
 	
 	
 
-/*
- * ������ ������
- */	
 
 #rumor-ads, #tmedia {
 	
@@ -703,21 +620,25 @@ ul#channels_categories {
 	    padding: 0.5em;
 		-webkit-box-shadow:  0px 0px 2px 2px rgba(150, 150, 150, 0.15);
         box-shadow:  0px 0px 2px 2px rgba(150, 150, 150, 0.15);
+		
 		&:first-child {
 			a {
 				background-color: @yellow;
 				color: @black;
+				
 			}
 		}
 		&:last-child {
 			border-bottom: 0;
 		    height: 8em;
+			
 		}
 		
 		img{
 			border: 1px solid @veryDarkGray;
 		    border-radius: 8px 8px 8px 8px;
 		    overflow: hidden;
+			
 		}
 		
 		p { 
@@ -764,9 +685,6 @@ ul#channels_categories {
 }
 
 
-
-
-
 #content{
 	/* -webkit-box-shadow:  0px 0px 6px 1px rgba(128, 128, 128, 0.15);
     box-shadow:  0px 0px 6px 1px rgba(128, 128, 128, 0.15); */
@@ -774,6 +692,123 @@ ul#channels_categories {
 	padding: 0 0.5em;
 	margin-top: 1em;
 	border-radius: 0;
+}
+
+#content.program-week,
+#content.program-day {
+	#maincontent{
+		h3, h4{
+			line-height: 1.5em;
+			color: @lightGray;
+			font-family: "OpenSans Condensed Bold",Verdana,Helvetica,sans-serif;
+			a{
+				color: @orange;
+				text-decoration:underline;
+			}
+		}
+		h3{
+			border-bottom: 2px dashed #999999;
+		    border-top: 2px dashed #999999;
+			font-size: 22px;
+		}
+		p{
+			margin: 0 0 0.4em;
+			font-size: 12px;
+			img.logo{
+				width: 26px;
+				border-radius: 4px;
+				border: 1px solid @lightGray;
+			}
+		}
+		p > *{
+			font-size: 12px;
+		}
+	}
+}
+
+#content.day-listing{
+	
+	div.programcontainer {
+			
+		height: auto;
+	    overflow: hidden;
+	    padding: 1em 0;
+		
+		div.programtitle{
+			margin-top: 4em;
+			
+			h3{
+				font-family: @openSansCondBold;
+				border-top: 4px dashed @gray;
+				border-bottom: 4px dashed @gray;
+				padding: 0.25em 0 0.6em 0.3em;
+				&:hover{
+					border-top-color: @lightGray;
+					border-bottom-color: @lightGray;
+					background-color: @white;
+				}
+			
+				a{
+					font-size: 2em;
+	   				line-height: 1.2em;
+					color: @orange;
+					&:hover{ text-decoration: none; }
+				}
+			}
+			
+		}
+		
+		div.program-video{
+			h4{
+				font-family: @openSansCondBold;
+				font-size: 1.5em;
+			}
+			p.video-desc{
+				font-size: .8em;
+				margin-top: 2em;
+			}
+			a.btn{
+				.orangeButton;
+			}
+		}
+		
+		div.category{
+			margin: 0.5em 0 1.5em;
+			a{
+				display: block;
+				color: @black;
+				text-decoration: underline;
+				padding: 0.2em 0;
+				&:after{ .clearAll; }
+			}
+			
+		}
+		
+		div.program-times {
+			width: 36%;
+			&:after { .clearAll; }
+			
+			div.time {
+				color: #B2B2B2;
+				font-size: 1.6em;
+				line-height: 2.4em;
+				margin-bottom: 0.5em;
+			}
+			div.start {
+				width: 50%;
+				float: left;
+			}
+			div.end {
+				width: 50%;
+				float: right;
+				text-align: right;
+			}
+			span{
+				padding: .5em;
+			}
+		}
+		
+	}
 }
 
 #content.frontpage {
@@ -972,7 +1007,7 @@ ul#daynav {
 
 	a {
 		position: absolute;
-	    behavior: url("/css/PIE.htc");
+	    
 	}
 	
 	a.right {

@@ -4,110 +4,40 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.17 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: program-week.phtml,v 1.18 2013-03-14 06:09:55 developer Exp $
  *
  */
 
-$programTitle = $this->list[0]['title'];
+$programTitle = $this->escape( $this->list[0]['title'] );
 $programAlias = $this->escape( $this->list[0]['alias'] );
 $channelTitle = isset($this->channel['title']) ? $this->escape( $this->channel['title'] ) : null ;
 $channelAlias = isset($this->channel['alias']) ? $this->escape( $this->channel['alias'] ): null ;
 
-
-
 if ($programTitle){
 	$this->headMeta()->setName( 'title', "$programTitle, $channelTitle" );
-	$this->headTitle( $this->escape( sprintf ('Программа «%s» на этой неделе на канале «%s» :: rutvgid.ru', $programTitle, $channelTitle )));
+	$this->headTitle( $this->escape( sprintf ('«%s» на этой неделе на канале «%s» :: Всегда на rutvgid.ru', $programTitle, $channelTitle )));
 }
 ?>
+<h1><?php if ($programTitle) {
+    printf("«%s» на канале «%s»", $programTitle, $channelTitle);
+} else {
+    echo 'Результаты поиска программы';
+} ?></h1>
 
-<h1>
-	<?php if ($programTitle) : ?>
-	<?php echo $this->escape( '«'.$programTitle.'»' ); ?> на канале <?php echo $channelTitle ?>
-	<?php else : ?>
-	Результаты поиска программы
-	<?php endif; ?>
-</h1>
-
-<p>
-	<?php echo Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') ) ?> - <?php echo Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') ); ?>
-</p>
-
-
-<h4>
-	<a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_listings_day-listing' ) ?>">
+<p><?php 
+$ws = Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') );
+$we = Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') );
+printf( "%s - %s", $ws, $we ); ?></p>
+<h4><a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_listings_day-listing' ) ?>">
 		Передачи <?php echo $channelTitle; ?> сегодня
-	</a>
-</h4>
-<h4>
-	<a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_channels_channel-week' ) ?>">
-		Телепрограмма <?php echo $channelTitle; ?> на текущую неделю
-	</a>
-</h4>
-
-<?php  
-foreach ($this->list as $single) {
-    
-    //var_dump($single);
-    //die(__FILE__.': '.__LINE__);
-	?>
-	
-	<p>
-		<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span>&nbsp;
-		<?php echo $single['start']->toString( 'd MMMM') ?>&nbsp;
-		<u><?php echo $single['start']->toString( 'HH:mm') ?></u>
-		<?php echo $single['category_title_single'] ?> 
-			<a href="<?php echo $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U") ?>"
-				title="<?php echo $single['title'] ?> <?php echo $single['start']->toString( 'dd MMM') ?> на канале <?php echo $single['channel_title'] ?>"
-				target="_blank">
-				<em><?php echo $single['title'] ?></em>
-		</a> на канале <?php echo $single['channel_title'] ?>
-		<?php echo isset($single['live']) && ((bool)$single['live']==-true) ? 'в прямом эфире' : '' ; ?>
-		<?php echo isset($single['premiere']) && ((bool)$single['premiere']===true) ? '. Премьера!' : '' ; ?>
-		
-	</p>
-<?php 
-}
-?>
+	</a></h4>
+<h4><a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_channels_channel-week' ) ?>">Телепрограмма <?php echo $channelTitle; ?> на текущую неделю</a></h4>
+<?php
+echo $this->partial( 'listings/partials/week-item.phtml', array( 'items'=>$this->list ));
 
 
-
-<?php 
-$oldChannelTitle=null;
 if (isset($this->similar) && !empty($this->similar)) {
-    
-    foreach ($this->similar as $single) {
-        
-        $channelUrl   = $this->url( array( 'channel'=>$single['channel_alias'] ), 'default_listings_day-listing' );
-        $channelTitle = $this->escape( $single['channel_title'] );
-        
-        if (!$oldChannelTitle || ($channelTitle!=$oldChannelTitle)) {
-        	$oldChannelTitle=$channelTitle;
-        	printf( '<h3>Похожие передачи в другое время на этой неделе на канале <a href="%s" title="Передачи телеканала %s сегодня"><strong>%s</strong></a></h3>', $channelUrl, $oldChannelTitle, $oldChannelTitle);
-        }
-        
-        $channelIcon = $this->baseUrl('images/channel_logo/'.$single['channel_icon']);
-        $date = $single['start']->toString("dd-MM-yyyy");
-        $programUrl = $this->url( array(
-        	'channel'=>$this->escape( $single['channel_alias']),
-        	'alias'=>$this->escape( $single['alias']),
-        	'date'=>$date), 'default_listings_program-date');
-		?>
-		
-	<p>
-		<img src="<?php echo $channelIcon ?>" alt="<?php echo $single['channel_title'] ?>" />
-		<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span> 
-		<?php echo Xmltv_String::ucfirst( $single['start']->toString( 'd MMMM')); ?>
-		<u><?php echo $single['start']->toString( 'HH:mm') ?></u> 
-		<?php echo $this->escape( $single['category_title_single'] ) ?>
-		<a href="<?php echo $programUrl ?>" 
-			title="<?php $this->escape( sprintf( 'Передача %s на канале %s', $single['title'], $channelTitle )) ?>">
-			<em><?php echo $single['title'] ?></em>
-		</a>
-	</p>
-		<?php 
-    }
-    
+    echo $this->partial( 'listings/partials/week-similar.phtml', array( 'items'=>$this->similar ));
 }
 ?>
 

@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.24 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: Programs.php,v 1.25 2013-03-14 06:09:55 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -109,84 +109,11 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    
 	    $d = new Zend_Date($date);
 	    
-	    if ($date->isToday()){
-			
-	        $select = $this->db->select()
-		        ->from( array( 'prog'=>$this->table->getName()), array(
-		        	'id',
-		        	'title',
-		        	'sub_title',
-		        	'alias',
-		        	'channel',
-		        	'start',
-		        	'end',
-		        	'category',
-		        	'rating',
-		        	'new',
-		        	'live',
-		        	'image',
-		        	'last_chance',
-		        	'country',
-		        	'actors',
-		        	'directors',
-		        	//'writers',
-		        	//'adapters',
-		        	//'producers',
-		        	//'composers',
-		        	//'editors',
-		        	//'presenters',
-		        	//'commentators',
-		        	//'guests',
-		        	'episode_num',
-		        	'premiere',
-		        	'date',
-		        	'length',
-		        	'desc',
-		        	'hash',
-		        ))
-		        ->joinLeft( array( 'cat'=>$this->categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array( 
-		        	'category_title'=>'title',
-		        	'category_title_single'=>'title_single',
-		        	'category_alias'=>'alias',
-		        ))
-		        ->join( array( 'ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
-		        	'channel_title'=>'title',
-		        	'channel_alias'=>'alias',
-		        ))
-		        ->where( "`prog`.`start` >= '".$d->toString('YYYY-MM-dd')." 00:00'")
-		        ->where( "`prog`.`start` <= '".$d->addDay(1)->toString('YYYY-MM-dd')." 00:00'")
-		        ->where( "`prog`.`channel` = '$channel_id'")
-		        ->where( "`ch`.`published` = '1'")
-		        ->group( "prog.hash")
-		        ->order( "prog.start", "ASC");
-	        
-	        if (APPLICATION_ENV=='development'){
-	            parent::debugSelect($select, __METHOD__);
-	            //die(__FILE__.': '.__LINE__);
-	        }
-	        
-	        $rows = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
-	        
-	        if (!count($rows)) {
-				return null;
-	        }
-			
-		} else {
-		    
-		    $l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
-		    $maxAgo = new Zend_Date( Zend_Date::now()->subDay($l)->toString('U'), 'U' ) ;
-			
-			if ($d->compare($maxAgo)==-1){ //More than x days
-				return false;
-			} else { //Less or equal than x days
-				$rows = $this->programsTable->fetchDayItems( $channel_id, $date->toString('yyyy-MM-dd'));
-			}
-			
-			if (!count($rows)) {
-				return false;
-			}
-			
+	    $rows = $this->programsTable->fetchDayItems( $channel_id, $date );
+		if (!count($rows)) {
+			return false;
 		}
+		
 		
 		if (APPLICATION_ENV=='development'){
 			//var_dump(count($rows));
@@ -243,17 +170,18 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	public function getProgramForDay ($alias=array(), array $channel=null, Zend_Date $date, $limit=false) {
 		
 
-	    if (!$alias || !$channel)
+	    if (!$alias) {
 	    	throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
+	    }
 	     
-	    $progStart = new Zend_Date( $date->toString() );
+	    $progStart = is_a($date, 'Zend_Date') ? new Zend_Date( $date->toString() ) : Zend_Date::now() ;
 	    $where = array(
 	    		"`prog`.`alias` LIKE '%$alias%'",
 	    		"`prog`.`start` >= '".$date->toString('YYYY-MM-dd')." 00:00'",
 	    		"`prog`.`start` < '".$date->toString('YYYY-MM-dd')." 23:59'",
 	    );
 	    
-	    if ($channel){
+	    if ($channel!==null && is_array($channel)){
 	    	$where[] = "`prog`.`channel`='".$channel['id']."'";
 	    }
 	    
@@ -292,7 +220,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    		'desc',
 	    		'hash',
 	    ))
-	    ->join( array('ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
+	    ->joinLeft( array('ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
 	    		'channel_id'=>'id',
 	    		'channel_title'=>'title',
 	    		'channel_alias'=>'alias',
@@ -307,7 +235,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    ->where( $where)
 	    ->order( 'start DESC');
 	    
-	    if ($limit){
+	    if ($limit===true){
 	    	$select->limit($limit);
 	    }
 	    
@@ -327,19 +255,23 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    	return false;
 	    }
 	    
-	    if ($result) {
-	    	$result['start'] = new Zend_Date($result['start'], 'YYYY-MM-dd HH:mm:ss');
-	    	$result['end'] = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
-	    	$result['new'] = (bool)$result['new'];
-	    	$result['live'] = (bool)$result['live'];
-	    	$result['premiere'] = (bool)$result['premiere'];
-	    	$result['date'] = $result['date']!==null ? new Zend_Date( $result['date'], 'YYYY-MM-dd HH:mm:ss') : null ;
-	    	$result['length'] = $result['length']!==null ? new Zend_Date( $result['length'], 'HH:mm:ss') : null ;
+	    foreach ($result as $idx=>$row){
+	    	$result[$idx]['start'] = new Zend_Date($result['start'], 'YYYY-MM-dd HH:mm:ss');
+	    	$result[$idx]['end'] = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
+	    	$result[$idx]['new'] = (bool)$result['new'];
+	    	$result[$idx]['live'] = (bool)$result['live'];
+	    	$result[$idx]['premiere'] = (bool)$result['premiere'];
+	    	$result[$idx]['date'] = $result['date']!==null ? new Zend_Date( $result['date'], 'YYYY-MM-dd HH:mm:ss') : null ;
+	    	$result[$idx]['length'] = $result['length']!==null ? new Zend_Date( $result['length'], 'HH:mm:ss') : null ;
 	    }
 	    
 	    if (APPLICATION_ENV=='development') {
 	    	//var_dump($result);
 	    	//die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    if ($limit===1){
+	        return $result[0];
 	    }
 	    
 	    return $result;

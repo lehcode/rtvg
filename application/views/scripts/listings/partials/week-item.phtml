@@ -3,33 +3,49 @@
  * Partial to render ListingsController::programDayAction() listing item
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: week-item.phtml,v 1.1 2013-03-13 16:58:36 developer Exp $
+ * @version $Id: week-item.phtml,v 1.2 2013-03-14 06:09:55 developer Exp $
  *
  */
-if (APPLICATION_ENV=='development'){
-    //var_dump($this->item);
-    //die(__FILE__.': '.__LINE__);
-}
 
-$programTitle = $this->escape( $this->item['title'] );
-$programAlias = $this->escape( $this->item['alias'] );
-$channelTitle = $this->escape( $this->item['channel_title'] );
-$channelAlias = $this->escape( $this->item['channel_alias'] );
-$category = $this->escape( $this->item['category_title_single'] );
+$newDate=null;
+foreach ($this->items as $single) {
+    
+    if (APPLICATION_ENV=='development'){
+    	//var_dump($single);
+    	//die(__FILE__.': '.__LINE__);
+    }
+    
+    $programTitle = $this->escape( $single['title'] );
+    $programAlias = $this->escape( $single['alias'] );
+    $channelTitle = $this->escape( $single['channel_title'] );
+    $channelAlias = $this->escape( $single['channel_alias'] );
+    $category = $this->escape( $single['category_title_single'] );
+    
+    if (null === $newDate || ($single['start']->toString("DDD") !== $newDate)) {
+        $day = Xmltv_String::ucfirst( $single['start']->toString( 'EEEE' ));
+        $startDay  = $single['start']->toString( 'd MMMM');
+        $startTime = $single['start']->toString( 'H:mm' );
+        $dateString = sprintf( '<span class="label label-info">%s</span> %s в %s', $day, $startDay, $startTime );
+    } else {
+        $dateString = ' в <u>'.$this->item['start']->toString( 'H:mm' ).'</u>';
+    }
+    
+    $linkAttrHref = $this->url( array(
+		'channel'=>$channelAlias,
+		'date'=>$single['start']->toString("dd-MM-YYYY")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U");
+    
+    $linkAttrTitle = sprintf("«%s» %s на канале «%s»", $programTitle, $single['start']->toString( 'dd MMM'), $channelTitle);
+    $live = isset($single['live']) && ((bool)$single['live'] === true) ? '<br />в прямом эфире' : '' ;
+    $premiere = isset($single['premiere']) && ((bool)$single['premiere'] === true) ? '<br />Премьера' : '' ;
 ?>
 <p>
-	<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $this->item['start']->toString( 'EEEE' )); ?></span>&nbsp;
-	<?php echo $this->item['start']->toString( 'd MMMM') ?>&nbsp;
-	<u><?php echo $this->item['start']->toString( 'HH:mm') ?></u>
+	<?php echo $dateString; ?>
 	<?php echo $category; ?> 
-	<a href="<?php echo $this->url( array(
-			'channel'=>$channelAlias,
-			'date'=>$this->item['start']->toString("dd-MM-YYYY")),
-			'default_listings_day-date' ).'?ts='.$this->item['start']->toString("U") ?>"
-		title="<?php sprintf("«%s» %s на канале «%s»", $programTitle, $this->item['start']->toString( 'dd MMM'), $channelTitle); ?>"
-		target="_blank">
+	<a href="<?php echo $linkAttrHref ?>" title="<?php echo $linkAttrTitle ?>" target="_blank">
 		<em><?php echo $programTitle ?></em>
 	</a> на канале <?php echo $channelTitle ?>
-	<?php echo isset($single['live']) && ((bool)$this->item['live'] === true) ? 'в прямом эфире' : '' ; ?>
-	<?php echo isset($single['premiere']) && ((bool)$this->item['premiere'] === true) ? '. Премьера!' : '' ; ?>
+	<?php echo $live ?>
+	<?php echo $premiere ?>
 </p>
+<?php 
+} ?>

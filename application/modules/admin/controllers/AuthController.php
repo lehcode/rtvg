@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: AuthController.php,v 1.1 2013-03-11 13:54:36 developer Exp $
+ * @version $Id: AuthController.php,v 1.2 2013-03-14 06:09:55 developer Exp $
  *
  */
 
@@ -185,6 +185,7 @@ class Admin_AuthController extends Rtvg_Controller_Admin
         	    $auth = Zend_Auth::getInstance();
         	    $auth->clearIdentity();
         	    $auth->getStorage()->clear();
+        	    $this->_flashMessenger->addMessage( Rtvg_Message::MSG_LOGGED_OUT );
         	    Zend_Session::destroy();
         	    $this->_redirect( $this->view->baseUrl( 'admin' ) );
         	    

@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses Xmltv_Db_Table_Abstract
- * @version $Id: Programs.php,v 1.18 2013-03-03 23:34:13 developer Exp $
+ * @version $Id: Programs.php,v 1.19 2013-03-14 06:09:55 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
@@ -109,63 +109,93 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 		
 		$categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
 		
+		$d = new Zend_Date( $date->toString("U"), 'U');
+		$channelsTable = new Xmltv_Model_DbTable_Channels();
+		$categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
 		/**
 		 * Create SQL query
 		 * @var Zend_Db_Select
 		 */
 		$select = $this->_db->select()
-			->from( array('prog'=>$this->getName()), array(
+			->from( array( 'prog'=>$this->getName()), array(
+				'id',
 				'title',
 				'sub_title',
 				'alias',
 				'channel',
 				'start',
 				'end',
+				'category',
+				'rating',
+				'new',
+				//'live',
+				'image',
+				'last_chance',
+				'country',
+				'actors',
+				'directors',
+				//'writers',
+				//'adapters',
+				//'producers',
+				//'composers',
+				//'editors',
+				//'presenters',
+				//'commentators',
+				//'guests',
 				'episode_num',
+				//'premiere',
+				'date',
+				'length',
+				'desc',
 				'hash',
-				'rating'
 			))
-			->join( array('cat'=>$categoriesTable->getName()), "`prog`.`category` = `cat`.`id`", array(
-				'category_id'=>'id',
+			->joinLeft( array( 'cat'=>$categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array( 
 				'category_title'=>'title',
+				'category_title_single'=>'title_single',
 				'category_alias'=>'alias',
 			))
-			->where( "`prog`.`start` >= '$date 00:00'" )
-			->where( "`prog`.`start` < '$date 23:59'" )
-			->where( "`prog`.`channel` = '$channel_id'" )
-			->group( "prog.start" )
-			->order( "prog.start ASC" );
-
-		if (APPLICATION_ENV=='development'){
-		    parent::debugSelect($select, __METHOD__);
-			//die(__FILE__.": ".__LINE__);
-		}
+			->join( array( 'ch'=>$channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
+				'channel_title'=>'title',
+				'channel_alias'=>'alias',
+			))
+			->where( "`prog`.`start` >= '".$d->toString('YYYY-MM-dd')." 00:00'")
+			->where( "`prog`.`start` < '".$d->addDay(1)->toString('YYYY-MM-dd')." 00:00'")
+			->where( "`prog`.`channel` = '$channel_id'")
+			->where( "`ch`.`published` = '1'")
+			->group( "prog.hash")
+			->order( "prog.start", "ASC");
 		
-		$result = $this->_db->query( $select )->fetchAll( Zend_Db::FETCH_ASSOC );
+		if (APPLICATION_ENV=='development'){
+			parent::debugSelect($select, __METHOD__);
+			//die(__FILE__.': '.__LINE__);
+		}
+			
+		
+		$result = $this->_db->fetchAll($select, null, Zend_Db::FETCH_ASSOC );
 		
 		$actorsTable	= new Xmltv_Model_DbTable_Actors();
 		$directorsTable = new Xmltv_Model_DbTable_Directors();
 		foreach ($result as $k=>$row) {
 			
-			$result[$k]['start'] = new Zend_Date($row['start']);
-			$result[$k]['end']   = new Zend_Date($row['end']);
+			$result[$k]['start'] = new Zend_Date( $row['start'] );
+			$result[$k]['end']   = new Zend_Date( $row['end'] );
 			
-			if (!empty($result[$k]->actors)) {
-				if( !is_array($result[$k]->actors) ){
-					$where = "`id` IN ( ".$result[$k]['actors']." )";
+			if (isset($row['actors']) && !empty($row['actors'])) {
+				if( !is_array($row['actors']) ){
+					$where = "`id` IN ( ".$row['actors']." )";
 				}
-				$result[$k]->actors = $actorsTable->fetchAll($where)->toArray();
+				$result[$k]['actors'] = $actorsTable->fetchAll($where)->toArray();
 			}
 			
-			if (!empty($result[$k]->directors)) {
-				if( !is_array($result[$k]['directors']) ){
-					$where = "`id` IN ( ".$result[$k]['directors']." )";
+			if (isset($row['directors']) && !empty($row['directors'])) {
+				if( !is_array($row['directors']) ){
+					$where = "`id` IN ( ".$row['directors']." )";
 				}
 				$result[$k]['directors'] = $directorsTable->fetchAll($where)->toArray();
 			}
 			
-			$result[$k]['premiere'] = (bool)$result[$k]['premiere'];
-			$result[$k]['live']	 = (bool)$result[$k]['live'];
+			$result[$k]['premiere'] = isset($row['premiere']) ? (bool)$row['premiere'] : false ;
+			$result[$k]['live']	    = isset($row['live']) ? (bool)$row['live'] : false ;
 			
 		}
 		

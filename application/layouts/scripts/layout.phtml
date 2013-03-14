@@ -2,9 +2,8 @@
 /**
  * Common layout
  * 
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: layout.phtml,v 1.33 2013-03-10 02:45:15 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: layout.phtml,v 1.34 2013-03-14 06:09:55 developer Exp $
  *
  */
 
@@ -19,36 +18,6 @@ if ($this->hide_sidebar=='right'){
 	$this->maincontent_width = 10;
 }
 
-$this->headMeta()
-	->prependHttpEquiv('Content-Type', 'text/html;charset=utf-8');
-
-$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND');
-$this->headLink()
-	->prependStylesheet( $this->baseUrl('css/base.css'))
-	->appendStylesheet($this->baseUrl('css/fonts.css'))
-	->appendStylesheet( $this->baseUrl('js/tip/jquery.tooltip.css'));
-
-/*
- * Check browser
- */
-$browser = $this->userAgent()->getUserAgent();
-if (APPLICATION_ENV=='development'){
-    //var_dump($this->userAgent());
-    //die(__FILE__.': '.__LINE__);
-    
-}
-$browserMsie = false;
-if (strstr($browser, 'MSIE')) {
-	$browserMsie = true;
-	$this->headLink()
-		->appendStylesheet($this->baseUrl('css/ie.css'))
-		->appendStylesheet($this->baseUrl('css/fonts-ie.css'));
-}
-
-$this->headTitle()
-	->setSeparator(' :: ');
-
-
 $this->jQuery()->enable() //enable jquery ;
 	//->setCdnSsl(true) if need to load from ssl location
 	->setVersion('1.8.3') //jQuery version, automatically 1.5 = 1.5.latest
@@ -56,16 +25,8 @@ $this->jQuery()->enable() //enable jquery ;
 	->uiEnable();
 
 $this->headScript()
-	->setAllowArbitraryAttributes(true)
-	->prependFile( $this->baseUrl( $this->baseUrl( 'js/less.min.js' )))
 	->appendFile( 'http://yandex.st/share/share.js' )
 	->appendFile( '//vk.com/js/api/openapi.js?75' );
-
-if (APPLICATION_ENV=='development'){
-    $this->headScript()->prependFile( $this->baseUrl( 'js/bootstrap.js' ));
-} else {
-    $this->headScript()->prependFile( $this->baseUrl( 'js/bootstrap.min.js' ));
-}
 
 $this->inlineScript()
 ->appendScript( Rtvg_Compressor_JSMin::minify('VK.init({apiId: 2963750, onlyWidgets: true});

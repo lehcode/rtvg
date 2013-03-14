@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.25 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: VideosController.php,v 1.26 2013-03-14 06:09:55 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -84,7 +84,12 @@ class VideosController extends Rtvg_Controller_Action
 					$f = '/Youtube/ShowVideo/Main';
 					$hash = Rtvg_Cache::getHash( $ytId );
 					
-					if (parent::$videoCache===true && parent::isAllowed===true){
+					if (APPLICATION_ENV=='development'){
+					    //var_dump(parent::$videoCache);
+					    //var_dump($this->isAllowed);
+					}
+					
+					if (parent::$videoCache && $this->isAllowed){
 					    
 					    // Search in database cache if was not found in file cache
 					    // and if database cache is enabled
@@ -236,11 +241,12 @@ class VideosController extends Rtvg_Controller_Action
 			
 			
 			/*
-			 * #############################################################
+			 * #####################################################################
 			 * Данные для модуля самых популярных программ
-			 * #############################################################
+			 * #####################################################################
 			 */
-			$this->view->assign('top_programs', $this->topPrograms());
+			$top = $this->topPrograms();
+			$this->view->assign('top_programs', $top);
 			
 			/*
 			 * #####################################################################

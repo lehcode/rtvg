@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+/**
+ * 
+ * Main menu for backend
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: main.xml,v 1.1 2013-03-14 06:09:13 developer Exp $
+ */
+ -->
+<config>
+	<nav>
+	
+		<home>
+            <label>КП</label>
+            <module>admin</module>
+            <controller>index</controller>
+            <!-- <action>index</action> -->
+            <resource>admin:index</resource>
+        </home>
+        
+		<listings>
+            <label>Программы</label>
+            <uri>#</uri>
+            <resource>admin:listings</resource>
+	       	<privilege>index</privilege>
+	       	
+	       	<listingsindex>
+	       		<label>Список</label>
+	       		<module>admin</module>
+            	<controller>listings</controller>
+            	<action>index</action>
+	       	</listingsindex>
+	       	
+        </listings>
+        
+        <channels>
+            <label>Каналы</label>
+            <module>admin</module>
+            <controller>channels</controller>
+            <action>index</action>
+            <resource>admin:channels</resource>
+        </channels>
+        
+	</nav>
+</config>

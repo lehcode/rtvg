@@ -6,7 +6,7 @@ defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', 
  * Cache
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Cache.php,v 1.1 2013-03-05 06:52:27 developer Exp $
+ * @version $Id: Cache.php,v 1.2 2013-03-14 06:07:37 developer Exp $
  *
  */
 class Rtvg_Cache {
@@ -90,7 +90,7 @@ class Rtvg_Cache {
 		}
 		
 		if ($sub_folder) {
-			$this->setLocation( $this->_location.$sub_folder );
+			$this->setLocation( ROOT_PATH.'/cache'.$sub_folder );
 		}
 		
 		if (APPLICATION_ENV=='development'){

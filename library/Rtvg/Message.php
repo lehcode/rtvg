@@ -24,5 +24,6 @@ class Rtvg_Message {
     const ERR_WRONG_PARAM = "Неверный параметр";
     const ERR_WRONG_TYPE_FOR = "Неверный тип параметр для ";
     const ERR_CANNOT_SAVE = "Не могу сохранить запись";
+    const MSG_LOGGED_OUT = "Вы вышли из системы";
 }
 

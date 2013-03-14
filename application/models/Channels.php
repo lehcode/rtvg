@@ -2,7 +2,7 @@
 /**
  * Channels model
  *
- * @version $Id: Channels.php,v 1.21 2013-03-10 02:45:15 developer Exp $
+ * @version $Id: Channels.php,v 1.22 2013-03-14 06:09:55 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -46,10 +46,18 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 * 
 	 * Load all published channels
 	 */
-	public function getPublished(){
+	public function getPublished( Zend_View &$view=null ){
 		
+	    if (!$view){
+	        throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500 );
+	    }
+	    
 	    $rows = $this->channelsTable->fetchAll("`published`='1'", 'title ASC');
-		return $rows->toArray();
+		$rows = $rows->toArray();
+		foreach ($rows as $k=>$row) {
+			$rows[$k]['icon'] = $view->baseUrl('images/channel_logo/'.$row['icon']);
+		}
+		return $rows;
 		
 	}
 	

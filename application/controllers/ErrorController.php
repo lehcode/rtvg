@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.13 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: ErrorController.php,v 1.14 2013-03-14 06:09:55 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -22,6 +22,7 @@ class ErrorController extends Zend_Controller_Action
 		$ajaxContext->addActionContext( 'ajax-error', 'json' )
 			->initContext();
 		$this->_flashMessenger = $this->_helper->getHelper( 'FlashMessenger' );
+		$this->_helper->layout->setLayout( 'error' );
 	}
 	
 	public function errorAction()

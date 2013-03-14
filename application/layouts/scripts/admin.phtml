@@ -4,14 +4,14 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: admin.phtml,v 1.7 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: admin.phtml,v 1.8 2013-03-14 06:09:55 developer Exp $
  *
  */
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
 $this->headScript()->setAllowArbitraryAttributes(true);
 $this->jQuery()
 	->enable()
-	->setVersion('1.7.1')
+	->setVersion('1.8.3')
 	->setUiVersion('1.8.18')
 	->addStylesheet('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css')
 	->uiEnable();
@@ -20,7 +20,20 @@ $this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/tem
 
 $request    = Zend_Controller_Front::getInstance()->getRequest();
 $controller = $request->getControllerName();
-$mainNav    = $this->mainNav($controller);
+
+/*
+ * #### Header ####
+*/
+//$this->navigation()->setDefaultProxy('navigationMenu');
+//$this->navigation()->findHelper('navigationMenu')->menu()->setMaxDepth(2);
+$this->placeholder('header')->set( $this->partial('partials/admin/header.phtml', array(
+	'nav_html'=>$this->navigation()
+		->findHelper('navigationMenu')->menu()
+		->setMaxDepth(2)
+		->renderMenu( Zend_Registry::get('AdminMenu'), array('ulClass' => 'nav')),
+)));
+
+//$mainNav    = $this->mainNav($controller);
 ?>
 <?php echo $this->doctype(); ?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
@@ -29,58 +42,53 @@ $mainNav    = $this->mainNav($controller);
 echo $this->headMeta();
 echo $this->headTitle();
 echo $this->jQuery();
-echo $this->headScript()
-	->prependFile($this->baseUrl().'/js/bootstrap.min.js')
-	->prependFile($this->baseUrl($this->baseUrl('js/less.min.js')));
-echo $this->headLink()
-	->prependStylesheet($this->baseUrl().'/css/base.css');
+echo $this->headLink();
 echo $this->headStyle();
+echo $this->headScript();
 ?>
 </head>
 <body>
 <div class="container">
-
-	<?php 
-	if (count($this->messages)) {
-		foreach ($this->messages as $text) {
-			if (is_array($text)) {
-				foreach ($text as $string) {
-					echo $this->showMessage( $string );
-				}
-			} else {
-				echo $this->showMessage( $text );
+<?php 
+// Messages
+if (count($this->messages)) {
+	foreach ($this->messages as $text) {
+		if (is_array($text)) {
+			foreach ($text as $string) {
+				echo $this->showMessage( $string );
 			}
+		} else {
+			echo $this->showMessage( $text );
 		}
 	}
+}
+?>
+<?php if ($this->isAllowed('admin:auth.logout')) { ?>
+<div id="nav">
+	<?php 
+	$form = new Xmltv_Form_Logout(array(
+		'action'=>$this->baseUrl('admin/auth/logout'),
+		'submit_text'=>'Выход',
+	));
+	echo $form;
+	
+	echo $this->placeholder('header');
 	?>
+</div>
+<h6>
+	APPLICATION_ENV: <?php echo APPLICATION_ENV ?><br />
+	memory_limit: <?php echo ini_get('memory_limit') ?><br />
+	error_reporting: <?php echo ini_get('error_reporting') ?><br />
+	display_errors: <?php echo ini_get('display_errors') ?><br />
+</h6>
+<?php 
+}?>
 
-	<?php if ($this->isAllowed('admin:auth')) {
-	    ?>
-	<div id="nav">
-		<?php 
-		$form = new Xmltv_Form_Logout(array(
-			'action'=>$this->baseUrl('admin/auth/logout'),
-			'submit_text'=>'Выход',
-		));
-		echo $form;
-		
-		echo $mainNav;
-		?>
-	</div>
-	
-	<h4>
-		APPLICATION_ENV: <?php echo APPLICATION_ENV ?><br />
-		memory_limit: <?php echo ini_get('memory_limit') ?><br />
-		error_reporting: <?php echo ini_get('error_reporting') ?><br />
-		display_errors: <?php echo ini_get('display_errors') ?><br />
-	</h4>
-		<?php 
-	} ?>
-	
-	<div class="span12">
-		<?php echo $this->layout()->content; ?>
-	</div>
-	
+<?php if ($this->isAllowed('admin:auth.login')) { ?>
+<div class="span12">
+	<?php echo $this->layout()->content; ?>
+</div>
+<?php } ?>
 </div>
 <?php echo $this->inlineScript(); ?>
 </body>

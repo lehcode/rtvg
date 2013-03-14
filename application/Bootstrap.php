@@ -4,7 +4,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.20 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.21 2013-03-14 06:09:55 developer Exp $
  *
  */
 
@@ -18,18 +18,20 @@
  * @todo http://riw.ru/riw.rss //новости RSS
  * 
  */
+
 mb_internal_encoding('UTF-8');
-//mysqli_set_charset('utf8');
 
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
 
 	public $debug = false;
 
-	function run() {
+	function run() 
+	{
 		
-		if (APPLICATION_ENV=='testing')
+		if (APPLICATION_ENV=='testing') {
 			Zend_Session::$_unitTestEnabled = true;
+		}
 		
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
@@ -130,7 +132,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	/**
 	 * 
 	 */
-	protected function _initConfig(){
+	protected function _initConfig()
+	{
 		
 		$appConfig = new Zend_Config_Ini( APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV );
 		Zend_Registry::set('app_config', $appConfig);
@@ -143,7 +146,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	/**
 	 * @return Zend_Log
 	 */
-	protected function _initLog(){
+	protected function _initLog()
+	{
 		
 	    if (APPLICATION_ENV=='testing'){
 	        $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/testing.log' ));
@@ -158,7 +162,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	 * 
 	 * @return Zend_Application_Module_Autoloader
 	 */
-	protected function _initAutoloader () {
+	protected function _initAutoloader () 
+	{
 
 		$front = $this->bootstrap( "frontController" )->frontController;
 		$modules = $front->getControllerDirectory();
@@ -177,7 +182,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	/**
 	 * Load jQuery libraries
 	 */
-	protected function _initJquery () {
+	protected function _initJquery () 
+	{
 
 		$this->bootstrap( 'view' );
 		$view = $this->getResource( 'view' );
@@ -223,6 +229,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		        if (($user = $users->searchByOpenId( $openId ))!==false) {
 		        	if ((time() - (int)strtotime($user->last_login)) > 60*5) {
 		        		$user->last_login = Zend_Date::now()->toString('YYYY-MM-dd HH:mm:ss');
+		        		$user->online=1;
 		        		$user->save();
 		        	}
 		        } 
@@ -232,18 +239,24 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		    }
 		}
 		
-		if (isset($user) && ($user !== false)) {
-		    
-		    if (APPLICATION_ENV=='development'){
-		    	//var_dump($openId);
-		    	//var_dump($user);
-		    	//die(__FILE__.': '.__LINE__);
-		    }
-		    
-		    return Bootstrap_Auth::setCurrentUser($user);
+		if (APPLICATION_ENV=='development'){
+			//var_dump($openId);
+			//var_dump($user);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
-		return Bootstrap_Auth::getCurrentUser($db);
+		if (isset($user) && ($user !== false)) {
+		    $user = Bootstrap_Auth::setCurrentUser($user);
+		    return $user;
+		}
+		
+		$user = Bootstrap_Auth::getCurrentUser($db);
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($openId);
+			//var_dump($user);
+			//die(__FILE__.': '.__LINE__);
+		}
 		
 	}
 	
@@ -254,17 +267,61 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	 */
 	protected function _initAcl()
 	{
-	    
 	    $db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
 	    $db->setFetchMode( Zend_DB::FETCH_OBJ );
-	    
 		$acl = Xmltv_Model_Acl::getInstance();
 		Zend_View_Helper_Navigation_HelperAbstract::setDefaultAcl( $acl );
-		Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole( Bootstrap_Auth::getCurrentUser($db)->role );
-		
-		//Zend_Registry::set('ACL', $acl);
-		
+		Zend_View_Helper_Navigation_HelperAbstract::setDefaultRole( Bootstrap_Auth::getCurrentUser($db)->role );		
 		return $acl;
+	}
+	
+	/**
+	 * Setup core HTML view configuration
+	 * @param array $config
+	 */
+	protected function _initViewsettings()
+	{	
+	    $this->bootstrap('view');
+	    $view = $this->getResource('view');
+	    $view->doctype( 'HTML5' );
+	    $view->setEncoding( 'UTF-8' );
+	    $view->headMeta()->prependHttpEquiv( 'Content-Type', 'text/html;charset=utf-8' );
+	    $view->headTitle()->setSeparator(' :: ' );
+	    
+	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND');
+	    $view->headLink()
+	    	->prependStylesheet( $view->baseUrl('css/base.css'))
+	    	->appendStylesheet($view->baseUrl('css/fonts.css'))
+	    	->appendStylesheet( $view->baseUrl('js/tip/jquery.tooltip.css'));
+
+	    $view->headScript()
+	    	->setAllowArbitraryAttributes(true)
+	    	->prependFile( $view->baseUrl( 'js/less.min.js' ));
+	    
+	    if (APPLICATION_ENV=='development'){
+	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bootstrap.js' ));
+	    } else {
+	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bootstrap.min.js' ));
+	    }
+	    
+	    
+	    // Get browser
+	    $browser = $view->userAgent()->getUserAgent();
+	    if (APPLICATION_ENV=='development'){
+	    	//var_dump($this->userAgent());
+	    	//die(__FILE__.': '.__LINE__);
+	    	 
+	    }
+	    // Check if browser is IE and add stylesheets
+	    $browserMsie = false;
+	    if (strstr($browser, 'MSIE')) {
+	    	$browserMsie = true;
+	    	$view->headLink()
+	    		->appendStylesheet( $view->baseUrl( 'css/ie.css' ))
+	    		->appendStylesheet( $view->baseUrl( 'css/fonts-ie.css' ));
+	    }
+	    
+	    
 	}
 	
 	
