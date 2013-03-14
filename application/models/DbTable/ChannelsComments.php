@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses Xmltv_Db_Table_Abstract
- * @version $Id: ChannelsComments.php,v 1.5 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: ChannelsComments.php,v 1.6 2013-03-14 06:47:08 developer Exp $
  */
 class Xmltv_Model_DbTable_ChannelsComments extends Xmltv_Db_Table_Abstract
 {
@@ -46,9 +46,9 @@ class Xmltv_Model_DbTable_ChannelsComments extends Xmltv_Db_Table_Abstract
      * (non-PHPdoc)
      * @see Zend_Db_Table_Abstract::createRow()
      */
-    public function createRow(array $data=null){
+    public function createRow(array $data = array(), $defaultSource = null){
     	
-        $rowData = parent::createRow($data);
+        $rowData = parent::createRow($data, $defaultSource);
         
         foreach ($this->_defaultValues as $dK=>$dV){
             if (!$rowData->$dK) {

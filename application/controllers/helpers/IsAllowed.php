@@ -3,11 +3,14 @@
  * Check if enough priviliges to access resource
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: IsAllowed.php,v 1.4 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: IsAllowed.php,v 1.5 2013-03-14 06:46:38 developer Exp $
  *
  */
 class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Helper_Abstract
 {
+    
+    private $_acl;
+    
 	/**
 	 * Check access rights
 	 * 

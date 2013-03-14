@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.7 2013-03-14 06:07:38 developer Exp $
+ * @version $Id: Action.php,v 1.8 2013-03-14 06:49:03 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -141,7 +141,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      * Access checking action helper
      * @var Zend_Controller_Action_Helper_IsAllowed
      */
-    protected static $isAllowed;
+    protected $isAllowed;
     
     
 	
