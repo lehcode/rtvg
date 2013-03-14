@@ -1,0 +1,29 @@
+<?php
+$oldChannelTitle=null;
+foreach ($this->items as $single){
+    
+	$channelUrl   = $this->url( array( 'channel'=>$single['channel_alias'] ), 'default_listings_day-listing' );
+	$channelTitle = $this->escape( $single['channel_title'] );
+
+	if (!$oldChannelTitle || ($channelTitle!=$oldChannelTitle)) {
+		$oldChannelTitle=$channelTitle;
+		printf( '<h3>Похожие передачи в другое время на этой неделе на канале <a href="%s" title="Передачи телеканала %s сегодня"><strong>%s</strong></a></h3>', $channelUrl, $oldChannelTitle, $oldChannelTitle);
+	}
+
+	$channelIcon = $this->baseUrl('images/channel_logo/'.$single['channel_icon']);
+	$date = $single['start']->toString("dd-MM-yyyy");
+	$programUrl = $this->url( array(
+		'channel'=>$this->escape( $single['channel_alias']),
+		'alias'=>$this->escape( $single['alias']),
+		'date'=>$date), 'default_listings_program-date');
+?>
+<p>
+<img src="<?php echo $channelIcon ?>" alt="<?php echo $single['channel_title']; ?>" class="logo" />
+<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span>&nbsp;
+<?php echo Xmltv_String::ucfirst( $single['start']->toString( 'd MMMM')); ?>&nbsp;<u><?php echo $single['start']->toString( 'HH:mm'); ?></u> 
+<?php echo Xmltv_String::strtolower( $this->escape( $single['category_title_single'] )); ?>
+<a href="<?php echo $programUrl ?>" 
+title="<?php $this->escape( sprintf( 'Передача «%s» на канале <i>%s</i>', $single['title'], $channelTitle )); ?>">
+<em><?php echo $single['title']; ?></em></a>
+</p>
+<?php } ?>
