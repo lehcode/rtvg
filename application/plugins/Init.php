@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Init.php,v 1.22 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: Init.php,v 1.23 2013-03-14 14:43:23 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -77,8 +77,10 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 				switch ($action){
 					
 					case '%25D0%25BE%25D0%25BD%25D0%25BB%25D0%25B0%25D0%25B9%25D0%25BD':
+					case '%25d0%25be%25d0%25bd%25d0%25bb%25d0%25b0%25d0%25b9%25d0%25bd':
 					case 'видео':
 					case '%D0%BE%D0%BD%D0%BB%D0%B0%D0%B9%D0%BD':
+					case '%d0%be%d0%bd%d0%bb%d0%b0%d0%b9%d0%bd':
 						$request->setActionName('show-video');
 					break;
 					

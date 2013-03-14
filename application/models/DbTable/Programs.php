@@ -3,7 +3,7 @@
 /**
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses Xmltv_Db_Table_Abstract
- * @version $Id: Programs.php,v 1.19 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: Programs.php,v 1.20 2013-03-14 14:43:23 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
@@ -180,6 +180,7 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 			$result[$k]['start'] = new Zend_Date( $row['start'] );
 			$result[$k]['end']   = new Zend_Date( $row['end'] );
 			
+			/*
 			if (isset($row['actors']) && !empty($row['actors'])) {
 				if( !is_array($row['actors']) ){
 					$where = "`id` IN ( ".$row['actors']." )";
@@ -193,6 +194,7 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 				}
 				$result[$k]['directors'] = $directorsTable->fetchAll($where)->toArray();
 			}
+			*/
 			
 			$result[$k]['premiere'] = isset($row['premiere']) ? (bool)$row['premiere'] : false ;
 			$result[$k]['live']	    = isset($row['live']) ? (bool)$row['live'] : false ;

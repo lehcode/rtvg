@@ -4,7 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.26 2013-03-14 11:43:11 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.27 2013-03-14 14:43:23 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -66,7 +66,7 @@ class ChannelsController extends Rtvg_Controller_Action
 				
 			    $hash = Rtvg_Cache::getHash('published_channels');
 				if (!$rows = $this->cache->load($hash, 'Core', $f)) {
-					$rows = $this->channelsModel->getPublished();
+					$rows = $this->channelsModel->getPublished( $this->view );
 					$this->cache->save($rows, $hash, 'Core', $f);
 				}
 			} else {
@@ -264,8 +264,8 @@ class ChannelsController extends Rtvg_Controller_Action
 			$this->view->assign('days', $schedule);
 			
 			if (APPLICATION_ENV=='development'){
-			    var_dump($channel);
-			    die(__FILE__.': '.__LINE__);
+			    //var_dump($channel);
+			    //die(__FILE__.': '.__LINE__);
 			}
 			
 			$this->channelsModel->addHit( $channel['id'] );

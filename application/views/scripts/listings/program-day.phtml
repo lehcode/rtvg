@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-day.phtml,v 1.12 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: program-day.phtml,v 1.13 2013-03-14 14:43:23 developer Exp $
  *
  */
 ?>
@@ -31,7 +31,7 @@ $kw = array(
 );
 if (count($this->programs)) {
 	foreach ($this->programs as $p) {
-		if (count($kw)<5) {
+		if (count($kw)<7) {
 		    $t = Xmltv_String::strtolower( htmlspecialchars( $p['title'], ENT_NOQUOTES, 'utf-8' ) );
 			if (!in_array($t, $kw)) {
 				$kw[] = $t;
@@ -75,14 +75,12 @@ if (!empty($this->programs)) {
 	
 	<h1><?php echo $programTitle ?> на <?php echo $channelTitle ?></h1>
 	
-	<?php if (!$this->channel['desc_intro']): ?>
-	<p><?php echo $this->truncateString( $this->escape( $this->channel['desc_intro'] ), 60, 'words', '.') ; ?></p> 
-	<?php endif; ?>
-	
-	<p><a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>">
-			<em>Программа <?php echo $channelTitle ?> на сегодня</em></a></p>
-	<p><a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>">
-			<em>Программа <?php echo $channelTitle ?> на неделю</em></a></p>
+	<h2><a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>">
+		<em><?php printf("Программа «%s» на сегодня", $channelTitle) ?></em></a>
+	</h2>
+	<h3><a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>">
+		<em><?php printf("Программа «%s» на неделю", $channelTitle) ?></em></a>
+	</h3>
 	
 	<p class="label label-important">
 		<a href="/телепрограмма/<?php echo $channelAlias.'/'.$programAlias?>/неделя" title="<?php echo $this->escape( sprintf("Все выпуски программы «%s» на этой неделе", $programTitle)) ?>">
@@ -90,8 +88,14 @@ if (!empty($this->programs)) {
 		</a>
 	</p>
 	
-	<p><?php echo $this->truncateString( $this->channel['desc_intro'].$this->channel['desc_body'], 56, 'words' ) ; ?></p>
+	
 	<?php echo $this->partial( 'listings/partials/day-item.phtml', array( 'items'=>$this->programs )); ?>
+	
+	<h3><?php printf( "Про канал «%s»" ,$channelTitle); ?></h3>
+	<p>
+		<?php echo $this->truncateString( $this->channel['desc_intro'].$this->channel['desc_body'], 80, 'words' ) ; ?>
+	</p>
+	
 	<?php
 	
 } else {

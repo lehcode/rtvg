@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.19 2013-03-14 11:43:11 developer Exp $
+ * @version $Id: program-week.phtml,v 1.20 2013-03-14 14:43:23 developer Exp $
  *
  */
 
@@ -28,10 +28,10 @@ if ($programTitle){
 $ws = Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') );
 $we = Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') );
 printf( "%s - %s", $ws, $we ); ?></p>
-<h4><a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_listings_day-listing' ) ?>">
+<h2><a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_listings_day-listing' ) ?>">
 		Передачи <?php echo $channelTitle; ?> сегодня
-	</a></h4>
-<h4><a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_channels_channel-week' ) ?>">Телепрограмма <?php echo $channelTitle; ?> на текущую неделю</a></h4>
+	</a></h2>
+<h3><a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_channels_channel-week' ) ?>">Телепрограмма <?php echo $channelTitle; ?> на текущую неделю</a></h3>
 <?php
 echo $this->partial( 'listings/partials/week-item.phtml', array( 'items'=>$this->list ));
 

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-left.phtml,v 1.10 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: sidebar-left.phtml,v 1.11 2013-03-14 14:43:23 developer Exp $
  *
  */
 ?>
@@ -22,16 +22,14 @@ if (isset($this->cats) && !empty($this->cats)) {
 	foreach ($this->cats as $c) {
 		$catAlias = $this->escape( $c['alias'] );
 		$catTitle = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
+		$imgAttrAlt =  $this->escape( $c['title'] ).' лого';
+		$imgAttrSrc =  $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] ));
+		$linkAttrHref = $this->url(array('category'=>$catAlias), 'default_channels_category' );
 		?>
-		<li>
-			<a href="<?php echo $this->url(array('category'=>$catAlias), 'default_channels_category' ) ?>" 
-				title="<?php printf ("%s телеканалы", $catTitle) ?>"
-				target="_blank">
-				<img src="<?php echo $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] )); ?>" 
-					class="icon" />
-				<?php echo $catTitle ?>
-			</a>
-		</li>		
+		<li><a href="<?php echo $linkAttrHref ?>" target="_blank">
+			<img src="<?php echo $imgAttrSrc ?>" class="icon" alt="<?php echo $imgAttrAlt ?>" />
+			<?php echo $catTitle ?>
+		</a></li>		
 		<?php 
 	}
 	?>
@@ -70,7 +68,7 @@ if (isset($this->top_programs) && !empty($this->top_programs)) {
 		<li>
 			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$prog['channel_icon'] ) ?>" width="16" />
 			<a href="<?php echo $this->url( array('channel'=>$prog['channel_alias'], 'alias'=>$prog['alias']), 'default_listings_program-week'); ?>"
-				title="<?php echo $this->escape( sprintf("«%s» на канале %s на этой неделе", $prog['title'], $prog['channel_title'])) ?>"
+				title="<?php echo $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $prog['title'], $prog['channel_title'])) ?>"
 				target="_blank"><?php echo $this->truncateString( $prog['title'], 3, 'words') ?>
 			</a>
 		</li>

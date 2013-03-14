@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.27 2013-03-14 06:48:05 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.28 2013-03-14 14:43:23 developer Exp $
  *
  */
 
@@ -15,17 +15,22 @@ APPLICATION_ENV=='production' ?
 	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.min.js')) :
 	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.js'));
 
-$this->headScript()
-	->appendFile( $this->baseUrl()."/js/listing-day.js")
-	->appendScript( Rtvg_Compressor_JSMin::minify( "$('.carousel').carousel('pause');
+$js = "$('.carousel').carousel('pause');
 	$(document).ready(function(){
 		$('.top-position img').tooltip({ showURL: false });
 		$.ajax({ url: '/channels/new-comments/channel/".$channelAlias."/format/html', 
 			dataType: 'html',
 			success: function(html){ $(html).prependTo($('#comments')); }});
 	});
-"));
+";
+if (APPLICATION_ENV=='production'){
+    $js = Rtvg_Compressor_JSMin::minify( $js );
+}
+$this->headScript()
+	->appendFile( $this->baseUrl()."/js/listing-day.js")
+	->appendScript( $js );
 
+$this->headMeta()->setName('description', sprintf ('Передачи сегодня на канале «%s»', $channelTitle ));
 
 /*
  * Generate keywords
@@ -39,7 +44,8 @@ if (!empty($this->programs)) {
 		}
 	}
 }
-$this->headMeta()->setName('keywords', implode(',', $kw) );
+$this->headMeta()
+	->setName('keywords', implode(',', $kw) );
 
 
 if ($this->is_today) {
@@ -48,9 +54,9 @@ if ($this->is_today) {
 	//		_gaq.push(['_trackPageview', '".$this->url( array('channel'=>$channelAlias), 'default_listings_day-listing')."']);
 	//});");
 	//META title
-	$this->headMeta()->setName('title', sprintf ('Программа телеканала %s на сегодня, %s. Видео записей программ.', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
+	$this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на сегодня, %s. Видео записей программ.', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
 	//Browser window title
-	$this->headTitle( sprintf ('Телепрограмма %s на сегодня', $channelTitle ) );
+	$this->headTitle( sprintf ('Телепрограмма «%s» на сегодня', $channelTitle ) );
 } else {
 	$this->headScript()
 	->appendScript("$('a#carousel_onoff').click(function(){

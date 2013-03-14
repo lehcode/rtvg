@@ -5,19 +5,26 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: list.phtml,v 1.17 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: list.phtml,v 1.18 2013-03-14 14:43:23 developer Exp $
  *
  */
 
 $categoryTitle = isset($this->category['title']) && !empty($this->category['title']) ? $this->escape( $this->category['title'] ) : null ;
 $categoryAlias = isset($this->category['alias']) && !empty($this->category['alias']) ? $this->escape( $this->category['alias'] ) : null ;
+$keywords = Xmltv_String::strtolower($categoryTitle) . ',' . Zend_Registry::get('site_config')->site->get('keywords', 'телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв');
 
 if ($categoryTitle) {
-	$this->headTitle( $this->category['title'].' телеканалы: передачи сегодня и на текущей неделе.' );
-	$this->headMeta()->setName('title', 'Телепрограмма '.$this->category['title'].' каналов');
+	$this->headTitle( $categoryTitle.' телеканалы: передачи сегодня и на текущей неделе.' );
+	$this->headMeta()
+		->setName('title', $categoryTitle.' каналы передачи')
+		->setName('description', $categoryTitle.' каналы с телепрограммой. Расписание передач на сегодня и на неделю.')
+		->setName('keywords', $keywords );
 } else {
 	$this->headTitle( 'Программа всех каналов телевидения на сегодня и текущую неделю.' );
-	$this->headMeta()->setName('title', 'Телепрограмма всех каналов');
+	$this->headMeta()
+		->setName('title', 'Телепрограмма всех каналов')
+		->setName('description', 'Все каналы с телепрограммой. Расписание передач на сегодня и на неделю.')
+		->setName('keywords', $keywords );
 }
 
 
@@ -25,11 +32,9 @@ APPLICATION_ENV=='production' ?
 	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.min.js')) : 
 	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.js'));
 
-
-$this->headScript()
-	->appendScript( Rtvg_Compressor_JSMin::minify( "$(function() { $('#fastsearch-wrap img').tooltip({ showURL: false });
+$js = "$(function() { $('#fastsearch-wrap img').tooltip({ showURL: false });
 	$.getJSON( '/channels/typeahead/format/json/', function(response) {
-		var typeahead_items = new Array();
+		typeahead_items = new Array();
 		$.each(response, function(key, val) { 
 			$.each(val, function(name, channel){  typeahead_items.push(channel.title); }); 
 		});
@@ -52,11 +57,13 @@ $this->headScript()
 	
 	$( '#channels' ).accordion({ autoHeight:false, navigation:true, clearStyle:true, icons: false });
 	
-});"));
+});";
 
+if (APPLICATION_ENV=='production'){
+    $js = Rtvg_Compressor_JSMin::minify($js);
+}
+$this->headScript()->appendScript( $js );
 ?>
-
- 
 <div id="fastsearch-wrap">
 	<?php 
 	$tip = "Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.";
@@ -74,19 +81,16 @@ $this->headScript()
 	?>
 </div>
 
-
+<h2>Передачи сегодня и на неделе</h2>
 	
 <?php 
 if ( isset($this->category) && $this->category!==null) {
-	//img src="$this->baseUrl('images/categories/channels/'.$this->escape( $this->category['image']) ); " />
-	echo '<h2>'.$categoryTitle.' каналы'.'</h2>';
+	echo '<h1>'.$categoryTitle.' каналы'.'</h1>';
 	printf('<p class="label label-info">Телеканалы в категории «%s»: %d</p>', $categoryTitle, count($this->channels)) ;
 } else {
-	echo '<h2>Все каналы</h2>';
+	echo '<h1>Все каналы</h1>';
 	printf('<p class="label label-info">Всего %d</p>', count($this->channels)) ;
 } ?>
-
-
 
 <div id="channels">
 
@@ -123,7 +127,7 @@ if ( isset($this->category) && $this->category!==null) {
 			<?php echo $this->escape( strip_tags($channel['desc_intro']) ) ?>
 		</p>
 		<p>
-			<?php echo $this->truncateString( strip_tags($channel['desc_body']), 20, 'words'); ?>
+			<?php echo $this->truncateString( strip_tags($channel['desc_body']), 40, 'words'); ?>
 		</p>
 	</div>
 

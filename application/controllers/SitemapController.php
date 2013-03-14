@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: SitemapController.php,v 1.8 2013-03-14 11:43:11 developer Exp $
+ * @version $Id: SitemapController.php,v 1.9 2013-03-14 14:43:23 developer Exp $
  *
  */
 class SitemapController extends Rtvg_Controller_Action
@@ -40,22 +40,21 @@ class SitemapController extends Rtvg_Controller_Action
 		if ($this->cache->enabled){
 		    
 		    $this->cache->setLifetime(86400*7);
-		    $f = "/";
+		    $f = "/Listings";
 		    $hash = 'sitemap';
 		    
-		    if (($published = $this->cache->load( $hash, 'Core', $f ))===false) {
-		        $published = $channelsModel->getPublished( $this->view );
-		        $this->cache->save( $published, $hash, 'Core', $f );
+		    if (($list = $this->cache->load( $hash, 'Core', $f ))===false) {
+		        $list = $channelsModel->getPublished( $this->view );
+		        $this->cache->save( $list, $hash, 'Core', $f );
 		    }
 		} else {
-		    $published = $channelsModel->getPublished( $this->view );
+		    $list = $channelsModel->getPublished( $this->view );
 		}
 		
 		$aliases = array();
-		foreach ($published as $i) {
+		foreach ($list as $i) {
 			$aliases[]=Xmltv_String::strtolower( $i['alias'] );
 		}
-		
 		$this->view->assign( 'channel_aliases', $aliases );
 		
 		/**
@@ -73,7 +72,7 @@ class SitemapController extends Rtvg_Controller_Action
 		    $f = "/Listings";
 		    $hash = 'sitemap_e1';
 		    if (($list = $this->cache->load($hash, 'Core', $f))===false) {
-		    	$list = $this->_model->weekListing($weekStart, $weekEnd);
+		    	$list = $this->_model->weekListing( $weekStart, $weekEnd );
 		    	$this->cache->save( $list, $hash, 'Core', $f );
 		    }
 		} else {
