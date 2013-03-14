@@ -3,7 +3,7 @@
  * Programs listings display
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: ListingsController.php,v 1.34 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: ListingsController.php,v 1.35 2013-03-14 11:43:11 developer Exp $
  *
  */
 class ListingsController extends Rtvg_Controller_Action
@@ -648,13 +648,18 @@ class ListingsController extends Rtvg_Controller_Action
 			$this->view->assign( 'pageclass', 'program-week' );
 			$programAlias = $this->input->getEscaped('alias');
 			
-			$channel = parent::channelInfo();
+			$channel = parent::channelInfo( $this->input->getEscaped('channel') );
 			if (!isset($channel['id'])){
 				$this->view->assign('hide_sidebar', 'right');
 				$this->render('channel-not-found');
 				return true;
 			}
 			$this->view->assign( 'channel', $channel );
+			
+			if (APPLICATION_ENV=='development'){
+				//var_dump($channel);
+				//die(__FILE__.': '.__LINE__);
+			}
 			
 			$dg = $this->input->getEscaped('date');
 			if ($dg!='сегодня' && $dg!='неделя') {
@@ -691,19 +696,24 @@ class ListingsController extends Rtvg_Controller_Action
 			
 			/*
 			 * #####################################################################
-			* Данные для модуля категорий каналов
-			* #####################################################################
-			*/
+			 * Данные для модуля категорий каналов
+			 * #####################################################################
+			 */
 			$cats = $this->getChannelsCategories();
 			$this->view->assign('channels_cats', $cats);
 			
+			/*
+			 * #####################################################################
+			 * Список передач
+			 * #####################################################################
+			 */
 			if ($this->cache->enabled){
 			    $this->cache->setLocation(ROOT_PATH.'/cache');
-				$f = '/Listings/Programs';
+				$f = '/Listings/Program/Week';
 				$hash = $this->cache->getHash('currentProgram_'.$programAlias.'_'.$channel['id']);
-				if (($list = $this->cache->load( $hash, 'Core', $f))===false) {
-					$list = $this->programsModel->getProgramThisWeek( $programAlias, $channel['id'], $weekStart, $weekEnd);
-					$this->cache->save($list, $hash, 'Core', $f);
+				if (!$list = $this->cache->load( $hash, 'Core', $f )) {
+					$list = $this->programsModel->getProgramThisWeek( $programAlias, $channel['id'], $weekStart, $weekEnd );
+					$this->cache->save($list, $hash, 'Core', $f );
 				}
 			} else {
 				$list = $this->programsModel->getProgramThisWeek( $programAlias, $channel['id'], $weekStart, $weekEnd);
@@ -715,13 +725,12 @@ class ListingsController extends Rtvg_Controller_Action
 			}
 			
 			$this->view->assign( 'list', $list );
-			$this->programsModel->addHit( $list[0] );
 			
-			
+			/*
 			if ($this->cache->enabled){
-			    $this->cache->setLocation(ROOT_PATH.'/cache');
+			    $this->cache->setLifetime(86400);
 				$f = '/Listings/Similar/Week';
-				$hash = $this->cache->getHash('similarPrograms_'.$programAlias.'_'.$channel['id']);
+				$hash = $this->cache->getHash( $programAlias.'_'.$channel['id'] );
 				if (($similarPrograms = $this->cache->load( $hash, 'Core', $f))===false) {
 					$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek( $programAlias, $weekStart, $weekEnd, $channel['id'] );
 					$this->cache->save($similarPrograms, $hash, 'Core', $f);
@@ -730,6 +739,7 @@ class ListingsController extends Rtvg_Controller_Action
 				$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek( $programAlias, $weekStart, $weekEnd, $channel['id'] );
 			}
 			$this->view->assign( 'similar', $similarPrograms );
+			*/
 			
 			if (APPLICATION_ENV=='development'){
 				//var_dump(count($list));
@@ -737,6 +747,7 @@ class ListingsController extends Rtvg_Controller_Action
 			}
 			
 			if( $list[0] && !empty($list[0])){
+			    $this->programsModel->addHit( $list[0] );
 				return $this->render('program-week');
 			} elseif(empty($list[0]) && !empty($similarPrograms)){
 				return $this->render('similar-week');

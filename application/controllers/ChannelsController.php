@@ -4,7 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.25 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.26 2013-03-14 11:43:11 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -262,6 +262,11 @@ class ChannelsController extends Rtvg_Controller_Action
 				$schedule = $this->channelsModel->getWeekSchedule($channel, $s, $e);
 			}
 			$this->view->assign('days', $schedule);
+			
+			if (APPLICATION_ENV=='development'){
+			    var_dump($channel);
+			    die(__FILE__.': '.__LINE__);
+			}
 			
 			$this->channelsModel->addHit( $channel['id'] );
 			

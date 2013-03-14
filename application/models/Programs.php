@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.25 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: Programs.php,v 1.26 2013-03-14 11:43:11 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -471,8 +471,9 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 */
 	public function getProgramThisWeek ($prog_alias=null, $channel_id=null, Zend_Date $start, Zend_Date $end) {
 		
-		if( !$prog_alias || !$channel_id || !$start || !$end )
-			return false;
+		if( !$prog_alias || !$channel_id || !$start || !$end ){
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500 );
+		}
 		
 		/**
 		 * @var Zend_Db_Select
@@ -486,8 +487,9 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 				'start',
 				'end',
 				'episode_num',
-				'hash'))
-			->join( array('channel'=>$this->channelsTable->getName() ), "`prog`.`channel`=`channel`.`id`", array(
+				'hash'
+			))
+			->joinLeft( array('channel'=>$this->channelsTable->getName() ), "`prog`.`channel`=`channel`.`id`", array(
 				'channel_title'=>'title',
 				'channel_alias'=>'LOWER(`channel`.`alias`)'))
 			->joinLeft( array('cat'=>$this->categoriesTable->getName() ), "`prog`.`category`=`cat`.`id`", array(
@@ -505,15 +507,20 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 			//die(__FILE__.': '.__LINE__);	
 		}
 
-		try {
-			$result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
-		} catch (Zend_Db_Adapter_Mysqli_Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		$result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
+		
+		if (!count($result)){
+		    return false;
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
 		foreach ($result as $k=>$item){
-			$result[$k]['start'] = new Zend_Date( $item['start'], 'yyyy-MM-dd HH:mm:ss');
-			$result[$k]['end']   = new Zend_Date( $item['end'], 'yyyy-MM-dd HH:mm:ss');
+			$result[$k]['start'] = isset($item['start']) && $item['start']!==null ? new Zend_Date( $item['start'], 'yyyy-MM-dd HH:mm:ss') : null ;
+			$result[$k]['end']   = isset($item['end']) && $item['end']!==null ? new Zend_Date( $item['end'], 'yyyy-MM-dd HH:mm:ss') : null ;
 		}
 		
 		if (APPLICATION_ENV=='development'){

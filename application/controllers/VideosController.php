@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.26 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: VideosController.php,v 1.27 2013-03-14 11:43:11 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -159,6 +159,11 @@ class VideosController extends Rtvg_Controller_Action
 				
 				}
 				
+				if (APPLICATION_ENV=='development'){
+				    //var_dump($mainVideo);
+				    //die(__FILE__.': '.__LINE__);
+				}
+				
 				$this->view->assign( 'main_video', $mainVideo );
 				
 				
@@ -174,7 +179,7 @@ class VideosController extends Rtvg_Controller_Action
 				
 				if ($this->cache->enabled){
 				
-					$this->cache->setLocation( ROOT_PATH.'/cache');
+					$this->cache->setLifetime( 86400 );
 					$f = '/Youtube/ShowVideo/Related';
 					$hash = Rtvg_Cache::getHash( 'related_'.$ytId);
 				
@@ -187,7 +192,7 @@ class VideosController extends Rtvg_Controller_Action
 					    $relatedVideos = false;
 					    
 					    // If DB cache is enabled
-					    if (parent::$videoCache===true){
+					    if ($this->isAllowed){
 					        // Try to search DB cache
 					        if (($cached = $this->videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
 					        	$relatedVideos = $cached;
@@ -217,6 +222,11 @@ class VideosController extends Rtvg_Controller_Action
 							}
 					    }
 				
+					}
+					
+					if (APPLICATION_ENV=='development'){
+						//var_dump($relatedVideos);
+						//die(__FILE__.': '.__LINE__);
 					}
 				
 				} else {

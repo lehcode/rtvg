@@ -1,43 +1,48 @@
 <?php echo '<?xml version="1.0" encoding="UTF-8"?>'; ?>
-
+<?php 
+$weekStart = $this->week_start->toString('YYYY-MM-dd');
+?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
 	<url>
 		<loc>http://rutvgid.ru/</loc>
 		<lastmod>2012-05-01</lastmod>
 		<changefreq>monthly</changefreq>
-		<priority>0.5</priority>
+		<priority>1</priority>
 	</url>
-
 	<url>
       <loc>http://rutvgid.ru/телепрограмма</loc>
       <lastmod>2012-05-01</lastmod>
       <changefreq>monthly</changefreq>
-      <priority>0.8</priority>
+      <priority>1</priority>
    </url>
-   
-   <?php 
-	//var_dump($this->channel_aliases);
-	//die(__FILE__.': '.__LINE__);
-	foreach ($this->channel_aliases as $i) {
-		?>
-		
-		<url>
-			<loc>http://rutvgid.ru/телепрограмма/<?php echo $i ?></loc>
-			<lastmod><?php echo $this->week_start ?></lastmod>
-		    <changefreq>daily</changefreq>
-		    <priority>0.9</priority>
-		</url>
-		
-		<url>
-			<loc>http://rutvgid.ru/телепрограмма/<?php echo $i ?>/неделя</loc>
-			<lastmod><?php echo $this->week_start ?></lastmod>
-		    <changefreq>weekly</changefreq>
-		    <priority>0.9</priority>
-		</url>
-		
-		<?php 
-	}
-   ?>
-	
+<?php 
+foreach ($this->channel_aliases as $a) {
+    $alias = $this->escape($a);
+    ?>
+	<url>
+		<loc>http://rutvgid.ru/телепрограмма/<?php echo $alias ?></loc>
+		<lastmod><?php echo $weekStart ?></lastmod>
+	    <changefreq>daily</changefreq>
+	    <priority>1</priority>
+	</url>
+	<url>
+		<loc>http://rutvgid.ru/телепрограмма/<?php echo $alias ?>/неделя</loc>
+		<lastmod><?php echo $weekStart ?></lastmod>
+	    <changefreq>weekly</changefreq>
+	    <priority>1</priority>
+	</url>
+<?php 
+} ?>
+<?php 
+foreach ($this->week_items as $i){
+    ?>
+    <url>
+		<loc>http://rutvgid.ru/телепрограмма/<?php echo $i['channel_alias'] ?>/<?php echo $i['alias'] ?>/неделя</loc>
+		<lastmod><?php echo $weekStart ?></lastmod>
+	    <changefreq>weekly</changefreq>
+	    <priority>0.8</priority>
+	</url>
+    <?php 
+}
+?>
 </urlset>

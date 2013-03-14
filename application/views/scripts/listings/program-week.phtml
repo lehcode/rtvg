@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.18 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: program-week.phtml,v 1.19 2013-03-14 11:43:11 developer Exp $
  *
  */
 
@@ -34,7 +34,6 @@ printf( "%s - %s", $ws, $we ); ?></p>
 <h4><a href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_channels_channel-week' ) ?>">Телепрограмма <?php echo $channelTitle; ?> на текущую неделю</a></h4>
 <?php
 echo $this->partial( 'listings/partials/week-item.phtml', array( 'items'=>$this->list ));
-
 
 if (isset($this->similar) && !empty($this->similar)) {
     echo $this->partial( 'listings/partials/week-similar.phtml', array( 'items'=>$this->similar ));

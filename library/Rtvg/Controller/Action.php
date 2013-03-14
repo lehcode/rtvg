@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.8 2013-03-14 06:49:03 developer Exp $
+ * @version $Id: Action.php,v 1.9 2013-03-14 11:43:11 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -389,26 +389,36 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 
 	/**
 	 * Current channel
-	 * @return Ambigous <stdClass, mixed>
+	 * 
+	 * @param  string $alias //channel alias
+	 * @return array
 	 */
-	protected function channelInfo(){
+	protected function channelInfo($alias=null){
 		
-		$channelAlias = $this->input->getEscaped('channel');
+	    if (!$alias) {
+			$alias = $this->input->getEscaped('channel');
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	        //var_dump($this->input->getEscaped('channel'));
+	        var_dump($alias);
+	        //die(__FILE__.': '.__LINE__);
+	    }
+	    
 		$model = new Xmltv_Model_Channels();
 		
 		if ($this->cache->enabled){
 		    
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
 		    $this->cache->setLifetime( 86400*7 );
 			$f = '/Channels/Info';
 			
-			$hash = $this->cache->getHash('channel_'.$channelAlias);
-			if (($channel = $this->cache->load($hash, 'Core', $f))===false) {
-				$channel = $model->getByAlias($channelAlias);
+			$hash = $this->cache->getHash( 'channel_'.$alias );
+			if (($channel = $this->cache->load( $hash, 'Core', $f))===false) {
+				$channel = $model->getByAlias( $alias );
 				$this->cache->save($channel, $hash, 'Core', $f);
 			}
 		} else {
-			$channel = $model->getByAlias($channelAlias);
+			$channel = $model->getByAlias( $alias );
 		}
 		
 		if (APPLICATION_ENV=='development'){
