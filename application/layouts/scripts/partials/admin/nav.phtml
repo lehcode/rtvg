@@ -1,0 +1,20 @@
+<?php
+
+//var_dump($this->container);
+//die(__FILE__.': '.__LINE__);
+
+foreach ($this->container as $page) {
+    
+    var_dump($page);
+    die(__FILE__.': '.__LINE__);
+    
+  $active = $page->isActive(true);
+  if (count($page->getPages())) {
+    foreach ($page->getPages() as $subPage) {
+      $active = $subPage->isActive(true);
+      echo '<div class="item">';
+        echo '<a class="'. ($active ? 'active' : '') .'" href="' . $this->baseUrl($subPage->getHref()) . '">' . $subPage->getLabel() . '</a>';
+      echo '</div>';      
+    }
+  }
+}
