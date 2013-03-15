@@ -139,9 +139,13 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
 	        //die(__FILE__.': '.__LINE__);
 	    }
 	    
-	    $this->db->query($sql);
+	    try {
+	        $this->db->query($sql);
+	    } catch (Exception $e) {
+	        return $video;
+	    }
 	    
-        return $video;
+	    return $video;
         
     }
     

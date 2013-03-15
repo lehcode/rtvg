@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.8 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: Acl.php,v 1.9 2013-03-15 04:16:39 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -61,7 +61,9 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    // Dummy ACLs to avoid some minor routing error notices    
 	    $this->add( new Zend_Acl_Resource( 'default:fonts' ));	    
 	    $this->add( new Zend_Acl_Resource( 'default:images' ));	    
-	    $this->add( new Zend_Acl_Resource( 'default:img' ));	    
+	    $this->add( new Zend_Acl_Resource( 'default:img' ));
+	    $allDenied = new Zend_Acl_Resource( 'default:%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE.%25D0%25BE%25D0%25BD%25D0%25BB%25D0%25B0%25D0%25B9%25D0%25BD' );	    
+	    
 	    
 	    $adminModule = new Zend_Acl_Resource( 'admin:' );
 	    $this->add( $adminModule );
@@ -81,7 +83,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:listings' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:channels' ), $adminModule );
 	    
-	    
+	    $this->deny( null, $allDenied, null );
 	    $this->deny( self::ROLE_GUEST, null, null );
 	    $this->allow( self::ROLE_GUEST, $default, null, new Rtvg_Acl_IsNotBotAssertion() );
 	    $this->allow( self::ROLE_GUEST, array( 
