@@ -4,7 +4,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.23 2013-03-16 14:22:04 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.24 2013-03-16 20:07:11 developer Exp $
  *
  */
 
@@ -35,6 +35,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
+		Zend_Registry::set('rtvg_version', 'beta5');
 		
 		date_default_timezone_set( Zend_Registry::get('site_config')->site->get( 'timezone', 'Europe/Moscow' ) );
 		

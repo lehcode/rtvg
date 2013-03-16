@@ -1,34 +1,62 @@
 <?php
 /**
- * @uses Zend_Navigation_Page_Mvc
+ * Backend navigation partial
+ * 
+ * @uses Zend_Navigation_Page
  */
+//var_dump($this->width);
+//var_dump($this->user);
 //var_dump($this->container);
-//die(__FILE__.': '.__LINE__);
 ?>
-<ul class="nav nav-pills">
+<div class="navbar<?php echo $this->width; ?>">
+	<div class="navbar-inner">
+		<ul class="nav nav-pills">
 <?
 foreach ($this->container as $page) {
     
-	if (count($page->getPages())) {
-	    foreach ($page->getPages() as $subPage) {
-			if ($this->isAllowed( $subPage->getResource() )){
+	if ($this->isAllowed( $page->getResource() )){
+			
+		$dropdown = false;
+		if ($page->get( 'uri', null )===null){
+			$linkAttrHref = $this->baseUrl( $page->get( 'module' ) .'/'. $page->get( 'controller' ) .'/'. $page->get( 'action' ));
+		} else {
+			$linkAttrHref = $this->baseUrl( $page->get( 'uri', '#' ) ) ;
+		}
+		
+		$isActive = $page->isActive() ? true : false ;
+		$aClass = ($isActive===false) ? ' class="dropdown-toggle"' : ' class="dropdown-toggle active"' ;
+		$dataToggle = count($page->getPages())>0 ? ' data-toggle="dropdown"' : false ;
+		$liClass = $dataToggle===false ? '' : ' class="dropdown"' ;
+		
+		?><li<?php echo $liClass; ?>>
+	    	<a href="<?php echo $linkAttrHref; ?>"<?php echo $aClass.$dataToggle; ?>><?php echo $page->getLabel() ?>
+	    	<?php echo ($dataToggle===false ? '' : '<b class="caret"></b>'); ?></a>
+	    	<?php 
+			if (count($page->getPages())) {
 				?>
-				<li class="<?php echo ($subPage->isActive(true) ? 'active' : '') ?>">
-					<a href="<?php echo $this->baseUrl( $subPage->getHref() ) ?>"><?php echo $subPage->getLabel() ?></a>
-				</li>
+				<ul class="dropdown-menu">
 				<?php 
-			}
-		}
-	} else {
-		if ($this->isAllowed( $page->getResource() )){
-			$linkAttrHref = $this->baseUrl( $page->get('module').'/'.$page->get('controller').'/'.$page->get('action'));
-		?>
-	    <li class="<?php echo ($page->isActive(true) ? 'active' : '') ?>">
-	    	<a href="<?php echo $linkAttrHref; ?>"><?php echo $page->getLabel() ?></a>
-	    </li>
-		<?php 
-		}
+			    foreach ($page->getPages() as $subPage) {
+			    	//var_dump($this->isAllowed( $subPage->getResource() ));
+					if ($this->isAllowed( $subPage->getResource() )){
+						$class = $subPage->isActive() ? ' class="active"' : '';
+						?><li<?php echo $class; ?>>
+						<a href="<?php echo $this->baseUrl( $page->get( 'module' ) .'/'. $page->get( 'controller' ) .'/'. $page->get( 'action' ) ) ?>">
+							<?php echo $subPage->getLabel() ?></a>
+					</li><?php 
+					}
+				}
+				?>
+				</ul>
+				<?php 
+			} ?>
+	    </li><?php 
+	    
+		
+	    
 	}
+	
 }
-?>
-</ul>
+?>		</ul>
+	</div>
+</div>

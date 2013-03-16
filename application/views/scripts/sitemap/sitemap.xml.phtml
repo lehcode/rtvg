@@ -1,16 +1,16 @@
-<?php echo '<?xml version="1.0" encoding="UTF-8"?>'; ?>
 <?php 
+echo '<?xml version="1.0" encoding="UTF-8"?>'; 
 $weekStart = $this->week_start->toString('YYYY-MM-dd');
 ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
-		<loc>http://rutvgid.ru/</loc>
+		<loc>http://rutvgid.ru<?php echo $this->baseUrl(); ?></loc>
 		<lastmod>2012-05-01</lastmod>
-		<changefreq>monthly</changefreq>
+		<changefreq>always</changefreq>
 		<priority>1</priority>
 	</url>
 	<url>
-      <loc>http://rutvgid.ru/телепрограмма</loc>
+      <loc>http://rutvgid.ru<?php echo $this->url( array(), 'default_channels_list'); ?></loc>
       <lastmod>2012-05-01</lastmod>
       <changefreq>monthly</changefreq>
       <priority>1</priority>
@@ -20,29 +20,34 @@ foreach ($this->channel_aliases as $a) {
     $alias = $this->escape($a);
     ?>
 	<url>
-		<loc>http://rutvgid.ru/телепрограмма/<?php echo $alias ?></loc>
+		<loc>http://rutvgid.ru<?php echo $this->url( array('channel'=>$alias), 'default_listings_day-listing'); ?></loc>
 		<lastmod><?php echo $weekStart ?></lastmod>
 	    <changefreq>daily</changefreq>
-	    <priority>1</priority>
+	    <priority>0.5</priority>
 	</url>
 	<url>
-		<loc>http://rutvgid.ru/телепрограмма/<?php echo $alias ?>/неделя</loc>
+		<loc>http://rutvgid.ru<?php echo $this->url( array('channel'=>$alias), 'default_channels_channel-week'); ?></loc>
 		<lastmod><?php echo $weekStart ?></lastmod>
 	    <changefreq>weekly</changefreq>
-	    <priority>1</priority>
+	    <priority>0.5</priority>
 	</url>
 <?php 
 } ?>
 <?php 
 foreach ($this->week_items as $i){
+	$url = $this->url( array(
+    	'channel'=>$i['channel_alias'],
+    	'alias'=>$i['alias'] ), 'default_listings_program-week');
+	if ( strlen($url)<=2048 ) {
     ?>
     <url>
-		<loc>http://rutvgid.ru/телепрограмма/<?php echo $i['channel_alias'] ?>/<?php echo $i['alias'] ?>/неделя</loc>
+		<loc>http://rutvgid.ru<?php echo $url; ?></loc>
 		<lastmod><?php echo $weekStart ?></lastmod>
 	    <changefreq>weekly</changefreq>
-	    <priority>1</priority>
+	    <priority>0.5</priority>
 	</url>
     <?php 
+	}
 }
 ?>
 </urlset>

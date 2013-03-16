@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.10 2013-03-16 14:22:04 developer Exp $
+ * @version $Id: Acl.php,v 1.11 2013-03-16 20:03:36 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -83,6 +83,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:programs' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:channels' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:content' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:content.articles' ), 'admin:content' );
 	    
 	    // Deny acces to denied (wrong) resources to all
 	    $this->deny( null, array(

@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: IndexController.php,v 1.8 2013-03-16 12:46:19 developer Exp $
+ * @version    $Id: IndexController.php,v 1.9 2013-03-16 20:03:36 developer Exp $
  *
  */
 
@@ -29,7 +29,7 @@ class Admin_IndexController extends Rtvg_Controller_Admin
 	    	return $this->_forward('login');
 	    }
 	    
-	    return $this->_forward('tasks');
+	    return $this->_forward('control-panel');
 	}
 
 	/**
@@ -42,14 +42,14 @@ class Admin_IndexController extends Rtvg_Controller_Admin
 	        return $this->render('login');
 	    }
 	    
-	    return $this->_forward('tasks');
+	    return $this->_forward('control-panel');
 	    
 		//$this->_helper->layout->setLayout( 'adminLogin' );
 		//$this->_forward( 'tasks' );
 	}
 
 	
-	public function tasksAction () {
+	public function controlPanelAction () {
 
 		
 	}

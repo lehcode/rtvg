@@ -1,51 +1,32 @@
 <?php
-/*
-try {
-    $this->nav
-    ->findHelper('navigationMenu')->menu()
-    ->setMaxDepth(2);
-} catch (Exception $e) {
-    throw new Zend_Exception($e->getMessage(), $e->getCode());
-}
-*/
+/**
+ * Backend header view script
+ */
+?>
 
-if (APPLICATION_ENV=='development'){
-	//var_dump($this->user);
-	//die(__FILE__.': '.__LINE__);
-}
+<div id="header">
+<?php 
+// Navigation HTML
+$options = array(
+	'width'=>' span6',
+	'user'=>$this->user,
+);
 
-$options = array('ulClass' => 'nav nav-tabs nav-stacked');
+$this->navigation()->menu( $this->mainmenu )
+	->setPartial( array('partials/admin/nav.phtml', 'admin'));
 echo $this->navigation()
+	->setInjectTranslator(false)
 	->setMaxDepth(2)
-	->menu( $this->mainmenu )
-	->setUlClass('nav nav-tabs nav-stacked')
-	->setPartial( array('partials/admin/nav.phtml', array('user'=>$this->user)) );
+	->menu();
 
-/* 
-$partial = array('partials/admin/nav.phtml', 'default');
-$this->navigation()->menu()
-  ->setMinDepth(0)
-  ->setMaxDepth(2)
-  //->setRenderParents(false)
-  //->setOnlyActiveBranch(true)
-  ->setPartial($partial);
+// Logout form
+$form = new Xmltv_Form_Logout(array(
+	'action'=>$this->baseUrl('admin/auth/logout'),
+	'submit_text'=>'Выход',
+));
+echo $form;
+?>
+</div>
 
-//var_dump($this->navigation()->menu());
-//die(__FILE__.': '.__LINE__);
 
-$this->navigation()->menu()->render();
- */
-/* 
-foreach ($this->navigation() as $page) {
-	$active = $page->isActive(true);
-	if (count($page->getPages())) {
-		foreach ($page->getPages() as $subPage) {
-			$active = $subPage->isActive(true);
-			echo '<div class="item">';
-			echo '<a class="'. ($active ? 'active' : '') .'" href="' . $this->baseUrl($subPage->getHref()) . '">' . $subPage->getLabel() . '</a>';
-			echo '</div>';
-		}
-	}
-}
- */
-//echo $this->nav->renderMenu( Zend_Registry::get('AdminMenu'), array('ulClass' => 'nav'));
+
