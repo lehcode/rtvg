@@ -1,12 +1,11 @@
 <?php
 /**
  * 
- * Helper to display notice/alert/error message
+ * View helper to display system info
  * 
- * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package sosedionline
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/views/helpers/Sysinfo.php,v $
- * @version $Id: Sysinfo.php,v 1.1 2013-03-16 21:18:38 developer Exp $
+ * @author     Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version    $Id: Sysinfo.php,v 1.2 2013-03-16 23:40:42 developer Exp $
  */
 class Admin_View_Helper_Sysinfo extends Zend_View_Helper_Abstract
 {
