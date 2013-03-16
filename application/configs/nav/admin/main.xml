@@ -5,7 +5,7 @@
  * Main menu for backend
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: main.xml,v 1.2 2013-03-16 14:22:04 developer Exp $
+ * @version $Id: main.xml,v 1.3 2013-03-16 20:03:36 developer Exp $
  */
  -->
 <config>
@@ -13,46 +13,52 @@
 	
 		<home>
             <label>КП</label>
-            <module>admin</module>
-            <controller>index</controller>
-            <action>index</action>
             <resource>admin:index</resource>
-            <class>list-item</class>
-            <encode_url>false</encode_url>
+            <module>admin</module>
+           	<controller>index</controller>
+            
         </home>
         
+        <channels>
+        	
+        	<label>Каналы</label>
+        	<resource>admin:channels</resource>
+        	<privilege>index</privilege>
+        	<module>admin</module>
+           	<controller>channels</controller>
+           	<action>list</action>
+        	
+        </channels>
+        
 		<listings>
+			
             <label>Программы</label>
-            <!-- <uri>#</uri> -->
             <resource>admin:programs</resource>
 	       	<privilege>index</privilege>
 	       	<module>admin</module>
-	       	<controller>listings</controller>
-	       	<action>index</action>
-	       	
-	       	<listingsindex>
-	       		<label>Список</label>
-	       		<module>admin</module>
-            	<controller>listings</controller>
-            	<action>index</action>
-	       	</listingsindex>
+           	<controller>programs</controller>
+           	<action>index</action>
 	       	
         </listings>
         
-        <channels>
-            <label>Каналы</label>
-            <module>admin</module>
-            <controller>channels</controller>
-            <action>index</action>
-            <resource>admin:channels</resource>
-        </channels>
-        
         <content>
+        
         	<label>Контент</label>
-            <module>admin</module>
-            <controller>content</controller>
-            <action>index</action>
             <resource>admin:content</resource>
+            <!-- <privilege>index</privilege>  -->
+            <module>admin</module>
+           	<controller>content</controller>
+           	<action>articles</action>
+            <pages>
+	            <content_articles>
+	            	<label>Статьи</label>
+	            	<resource>admin:content.articles</resource>
+		            <privilege>index</privilege>
+		            <module>admin</module>
+		           	<controller>content</controller>
+		           	<action>articles</action>
+	            </content_articles>
+            </pages>
         </content>
         
 	</nav>

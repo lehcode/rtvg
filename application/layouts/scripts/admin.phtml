@@ -2,9 +2,9 @@
 /**
  * Administrator control panel layout
  * 
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: admin.phtml,v 1.9 2013-03-16 14:22:04 developer Exp $
+ * @author     Antony Repin
+ * @subpackage backend
+ * @version    $Id: admin.phtml,v 1.10 2013-03-16 20:03:36 developer Exp $
  *
  */
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
@@ -70,26 +70,30 @@ if (count($this->messages)) {
 	}
 }
 ?>
-<?php if ($this->isAllowed('admin:auth') && $this->user['role']!='guest') { ?>
-<div id="nav">
-	<?php 
-	$form = new Xmltv_Form_Logout(array(
-		'action'=>$this->baseUrl('admin/auth/logout'),
-		'submit_text'=>'Выход',
-	));
-	echo $form;
+
+<?php 
+if ($this->isAllowed('admin:auth') && $this->user['role']!='guest') {
 	
 	echo $this->placeholder('header');
-	?>
-</div>
+	
+	$forbiddenRoles = array(
+		Xmltv_Model_Acl::ROLE_GUEST,
+		Xmltv_Model_Acl::ROLE_USER,
+		Xmltv_Model_Acl::ROLE_PUBLISHER,
+		Xmltv_Model_Acl::ROLE_EDITOR,
+	);
+	if (!in_array($this->user->role, $forbiddenRoles)) {
+		?>
 <h6>
 	APPLICATION_ENV: <?php echo APPLICATION_ENV ?><br />
 	memory_limit: <?php echo ini_get('memory_limit') ?><br />
 	error_reporting: <?php echo ini_get('error_reporting') ?><br />
 	display_errors: <?php echo ini_get('display_errors') ?><br />
 </h6>
-<?php 
-}?>
+		<?php 
+	}
+} 
+?>
 
 <?php 
 if ($this->user->role!='guest'){
