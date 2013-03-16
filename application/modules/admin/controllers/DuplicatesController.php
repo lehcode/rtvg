@@ -2,32 +2,17 @@
 /**
  * Duplicates Controller
  * 
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: DuplicatesController.php,v 1.5 2012-04-07 09:08:30 dev Exp $
+ * @author     Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version    $Id: DuplicatesController.php,v 1.6 2013-03-16 12:46:19 developer Exp $
  *
  */
-class Admin_DuplicatesController extends Zend_Controller_Action
+class Admin_DuplicatesController extends Rtvg_Controller_Admin
 {
 	
     public function init()
     {
-    	$this->_helper->layout->setLayout('admin');
-	    $request = $this->_request->getParams();
-			$filters = array('*'=>'StringTrim', '*'=>'StringToLower');
-	    	$validators = array(
-	    		'module'=>array(
-	    			new Zend_Validate_Regex('/^[a-z]+$/u')),
-	    		'controller'=>array(
-	    			new Zend_Validate_Regex('/^[a-z]+$/')),
-	    		'action'=>array(
-	    			new Zend_Validate_Regex('/^[a-z-]+$/')),	
-	    	);
-	    	$input = new Zend_Filter_Input($filters, $validators, $request);
-	    	if (!$input->isValid())
-	    	return false;
-	    	
-	    	$this->view->setScriptPath(APPLICATION_PATH . '/modules/admin/views/scripts/');
+    	parent::init();
     }
 
     public function indexAction()

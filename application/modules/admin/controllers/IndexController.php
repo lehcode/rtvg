@@ -2,13 +2,13 @@
 /**
  * Index controller for admin backend
  * 
- * @author     toshihir
+ * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: IndexController.php,v 1.7 2013-03-11 13:55:37 developer Exp $
+ * @version    $Id: IndexController.php,v 1.8 2013-03-16 12:46:19 developer Exp $
  *
  */
 
-class Admin_IndexController extends Rtvg_Controller_Action
+class Admin_IndexController extends Rtvg_Controller_Admin
 {
 
 	/**
@@ -17,7 +17,6 @@ class Admin_IndexController extends Rtvg_Controller_Action
 	 */
 	public function init () {
 		parent::init();
-		$this->_helper->layout->setLayout( 'admin' );
 	}
 
 	/**

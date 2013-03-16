@@ -4,7 +4,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.21 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.22 2013-03-16 12:45:50 developer Exp $
  *
  */
 
@@ -111,10 +111,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		    		}
 		    	}
 		    }
-		} catch (Zend_Exception $e) {
+		} catch (Exception $e) {
 		    
 		    if( APPLICATION_ENV == 'development' ) {
-		        throw new Exception($e->getMessage(), $e->getCode());
+		        //throw new Zend_Exception( $e->getMessage(), $e->getCode() );
+		    	die($e->getMessage());
 		    	//die("Response exception in ". __CLASS__."!");
 		    } else {
 		        $log->log( $e->getMessage(), Zend_Log::CRIT, $e->getTraceAsString() );

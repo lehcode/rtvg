@@ -2,16 +2,12 @@
 /**
  * Backend import controller
  * 
- * @author  toshihir
- * @package rutvgid
+ * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version $Id: ImportController.php,v 1.22 2013-03-11 13:55:37 developer Exp $
+ * @version    $Id: ImportController.php,v 1.23 2013-03-16 12:46:19 developer Exp $
  *
  */
-
-
-
-class Admin_ImportController extends Rtvg_Controller_Action
+class Admin_ImportController extends Rtvg_Controller_Admin
 {
 	
 	private $_progressBar;
@@ -52,6 +48,7 @@ class Admin_ImportController extends Rtvg_Controller_Action
 	   
 	    parent::init();
 	    
+	    /* 
 		$this->_helper->layout->setLayout('admin');
 		$ajaxContext = $this->_helper->getHelper('AjaxContext');
 		$ajaxContext->addActionContext('xml-parse-channels', 'html')
@@ -69,7 +66,7 @@ class Admin_ImportController extends Rtvg_Controller_Action
 		
 		$this->programsModel = new Admin_Model_Programs();
 		$this->programsCategoriesList = $this->programsModel->getCategoriesList();
-		
+		 */
 		
 	}
 

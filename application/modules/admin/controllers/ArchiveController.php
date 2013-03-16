@@ -2,50 +2,23 @@
 /**
  * 
  * Controller for archiving tasks
- * @uses Zend_Controller_Action
- * @version $Id: ArchiveController.php,v 1.5 2012-12-25 02:14:18 developer Exp $
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version $Id: ArchiveController.php,v 1.6 2013-03-16 12:46:19 developer Exp $
  *
  */
-class Admin_ArchiveController extends Zend_Controller_Action
+class Admin_ArchiveController extends Rtvg_Controller_Admin
 {
-	/**
-	 * 
-	 * Request validation universal helper
-	 * @var Xmltv_Controller_Action_Helper_RequestValidator
-	 */
-	protected $validator;
-	
-	/**
-	 * 
-	 * Input filtering plugin
-	 * @var Zend_Filter_Input
-	 */
-	protected $input;
-	
-	
-	/**
-	 * (non-PHPdoc)
-	 * @see Zend_Controller_Action::__call()
-	 */
-	public function __call ($method, $arguments) {
-		throw new Zend_Exception($method." не найден");
-	}
-	
 	
 	/**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
 	 */
-	public function init() {
-		
-        $this->_helper->layout->setLayout('admin');
-        $ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
-		$ajaxContext->addActionContext( 'archive', 'html' )
-			->initContext();
-		
-		$this->validator = $this->_helper->getHelper('RequestValidator');
-		
-    }
+	public function init() 
+	{
+	    parent::init();
+	}
 
     /**
      * 

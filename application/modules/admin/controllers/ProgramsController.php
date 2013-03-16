@@ -1,15 +1,14 @@
 <?php
 /**
  *
- * Programs model for Admin module
+ * Manage listing programs
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package rutvgid
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/controllers/ProgramsController.php,v $
- * @version $Id: ProgramsController.php,v 1.7 2013-03-11 13:55:37 developer Exp $
+ * @subpackage backend
+ * @version $Id: ProgramsController.php,v 1.8 2013-03-16 12:46:19 developer Exp $
  */
 
-class Admin_ProgramsController extends Rtvg_Controller_Action
+class Admin_ProgramsController extends Rtvg_Controller_Admin
 {
 
     /**
@@ -19,9 +18,7 @@ class Admin_ProgramsController extends Rtvg_Controller_Action
     public function init() {
         
         parent::init();
-        
-        $this->_helper->layout->setLayout('admin');
-        
+                
 		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
 		$ajaxContext->addActionContext( 'delete-programs', 'json' )
 			->initContext();

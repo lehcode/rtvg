@@ -1,22 +1,17 @@
 <?php
-
-
-
-class Admin_MoviesController extends Zend_Controller_Action
-	{
+/**
+ *
+ * Backend movies management
+ *
+ * @author     Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version    $Id: MoviesController.php,v 1.2 2013-03-16 12:46:19 developer Exp $
+ */
+class Admin_MoviesController extends Rtvg_Controller_Admin
+{
 		
-	private $_siteConfig;
-	private $_debug;
-	private $_sites;
-
 	public function init () {
-		$this->view->setScriptPath(APPLICATION_PATH . '/modules/admin/views/scripts/');
-		$this->_helper->layout->setLayout( 'admin' );
-		$this->_siteConfig = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', 'development', 
-		array('nestSeparator'=>':') );
-		$this->_debug = (bool)$this->_siteConfig->get( 'site.debug', false ) === true ? (bool)$this->_siteConfig->get( 
-		'site.debug' ) : false;
-		$this->_sites = $this->_getActiveSites();
+	    parent::init();
 	}
 
 

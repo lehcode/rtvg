@@ -1,5 +1,12 @@
 <?php
-
+/**
+ *
+ * Backend errors management
+ *
+ * @author     Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version    $Id: ErrorController.php,v 1.4 2013-03-16 12:46:19 developer Exp $
+ */
 class Admin_ErrorController extends Zend_Controller_Action
 {
 

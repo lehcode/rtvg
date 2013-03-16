@@ -1,34 +1,18 @@
 <?php
-
 /**
- * Grabbing Controller
+ * Manage listings grabbing
  * 
- * @author  Antony Repin
- * @package rutvgid
- * @version $Id: GrabController.php,v 1.4 2012-04-07 09:08:30 dev Exp $
+ * @author     Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version    $Id: GrabController.php,v 1.5 2013-03-16 12:46:19 developer Exp $
  *
  */
-class Admin_GrabController extends Zend_Controller_Action
+class Admin_GrabController extends Rtvg_Controller_Admin
 {
 	
-	protected $site_config;
-	private $_debug=false;
-	
-	public function __call($method, $arguments) {
-		$this->_forward('index', 'grab', 'admin');
-	}
-
-    public function init()
+	public function init()
     {
-        $this->_helper->layout->setLayout('admin');
-        $ajaxContext = $this->_helper->getHelper('AjaxContext');
-		$ajaxContext->addActionContext('grab-listings', 'json')
-			->initContext();
-		
-		$this->view->setScriptPath(APPLICATION_PATH . '/modules/admin/views/scripts/');
-			
-		$this->site_config = Xmltv_Config::getConfig('site')->site;
-		$this->_debug = (bool)$this->site_config->site->debug;
+        parent::init();
     }
 
 

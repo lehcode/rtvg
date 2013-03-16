@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: AuthController.php,v 1.2 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: AuthController.php,v 1.3 2013-03-16 12:46:19 developer Exp $
  *
  */
 
@@ -14,16 +14,8 @@ class Admin_AuthController extends Rtvg_Controller_Admin
     //sesssion
     protected $_storage;
     
-    /**
-     * FlashMessenger
-     *
-     * @var Zend_Controller_Action_Helper_FlashMessenger
-     */
-    protected $_flashMessenger;
-    
     public function init()
     {
-        $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
         parent::init();
     }
     
