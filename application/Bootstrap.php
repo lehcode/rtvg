@@ -1,22 +1,10 @@
 <?php
-
 /**
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.24 2013-03-16 20:07:11 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.25 2013-03-16 21:19:14 developer Exp $
  *
- */
-
-/**
- * @todo http://yandex.ru/yandsearch?text=%22365+%D0%B4%D0%BD%D0%B5%D0%B9%22&tld=ua&lr=143&filter=mobile_apps //мобильные приложения на Яндексе
- * @todo http://help.yandex.ru/webmaster/?id=1116426 //микроразметка видео
- * @todo http://help.yandex.ru/webmaster/?id=1122760 //микроразметка картинок
- * @todo http://tv-mania.narod.ru/actordb.htm //база данных актеров
- * @todo http://wap.filmz.ru/ //фильмы
- * @todo http://www.filmz.ru/films/0/ //фильмы
- * @todo http://riw.ru/riw.rss //новости RSS
- * 
  */
 
 mb_internal_encoding('UTF-8');
@@ -35,26 +23,18 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
-		Zend_Registry::set('rtvg_version', 'beta5');
+		Zend_Registry::set( 'rtvg_version', 'beta5' );
 		
-		date_default_timezone_set( Zend_Registry::get('site_config')->site->get( 'timezone', 'Europe/Moscow' ) );
+		date_default_timezone_set( Zend_Registry::get( 'site_config' )->site->get( 'timezone', 'Europe/Moscow' ) );
 		
-		$db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
+		$db = $this->bootstrap( 'multidb' )->getResource( 'multidb' )->getDb( 'local' );
 		$db->setFetchMode( Zend_DB::FETCH_OBJ );
-		Zend_Registry::set( 'db_local', $db);
+		Zend_Registry::set( 'db_local', $db );
 		
-		$db = $this->bootstrap( 'multidb')->getResource('multidb')->getDb('archive');
-		$db->setFetchMode( Zend_DB::FETCH_OBJ);
-		Zend_Registry::set( 'db_archive', $db);
+		$db = $this->bootstrap( 'multidb')->getResource( 'multidb' )->getDb( 'archive' );
+		$db->setFetchMode( Zend_DB::FETCH_OBJ );
+		Zend_Registry::set( 'db_archive', $db );
 		
-		/* 
-		$options = array(
-			'layout' => 'foo',
-			'layoutPath' => '/path/to/layouts',
-			'contentKey' => 'CONTENT', // игнорируется, если не используется MVC
-		);
-		Zend_Layout::startMvc($options);
-		 */
 		Zend_Layout::startMvc();
 		
 		/*
@@ -288,7 +268,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    $view = $this->getResource('view');
 	    $view->doctype( 'HTML5' );
 	    $view->setEncoding( 'UTF-8' );
-	    $view->headMeta()->prependHttpEquiv( 'Content-Type', 'text/html;charset=utf-8' );
+	    $view->headMeta()
+	    	->setHttpEquiv( 'Content-Type', 'text/html;charset=utf-8' )
+	    	->setName('viewport', 'width=device-width, initial-scale=1.0');
 	    $view->headTitle()->setSeparator(' :: ' );
 	    
 	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND');
