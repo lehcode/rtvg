@@ -1,0 +1,12 @@
+@CHARSET "UTF-8";
+.admin.container-fluid {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+#header{
+	
+}
+.row-fluid {
+    margin: 0;
+}
