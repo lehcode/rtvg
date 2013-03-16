@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.9 2013-03-14 11:43:11 developer Exp $
+ * @version $Id: Action.php,v 1.10 2013-03-16 14:22:04 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -162,7 +162,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		$this->_validator = $this->_helper->getHelper('RequestValidator');
 		$this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
 		
-		$this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct();
+		$this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct( 'grantAccess', array(
+			'privilege'=>$this->_getParam('action', 'index'),
+			'module'=>'default',
+			'controller'=>$this->_getParam('controller', 'index'),
+			'action'=>$this->_getParam('action', 'index'),
+			) );
 		
 		$this->cache = new Rtvg_Cache();
         $this->cache->enabled = (bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' );
@@ -226,6 +231,11 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
 		
 		$this->initView();
+		
+		if (APPLICATION_ENV=='development'){
+		    //var_dump($this->isAllowed);
+		    //die(__FILE__.': '.__LINE__);
+		}
 		
 		//$this->adScripts = new Rtvg_Ad_Collection();
 		
@@ -753,6 +763,14 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	    
 	    return $result;
 	    
+	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see Zend_Controller_Action::__call()
+	 */
+	public function __call ($method, $arguments) {
+		throw new Zend_Exception( Rtvg_Message::ERR_METHOD_NOT_FOUND, 404);
 	}
 	
 }

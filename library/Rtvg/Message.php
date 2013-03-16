@@ -5,6 +5,7 @@ class Rtvg_Message {
     const ERR_INVALID_INPUT = "Введены неверные данные";
     const ERR_IS_HACK = "Хак: ";
     const ERR_LOCATION_UNREACHABLE = "Папка '%s' не существует!";
+    const ERR_METHOD_NOT_FOUND = "Неверный запрос!";
     const ERR_MISSING_CHANNEL_INFO = "Не указаны данные канала";
     const ERR_MISSING_CONTROLLER = "Не указан контроллер";
     const ERR_MISSING_PARAM = "Не указан параметр";

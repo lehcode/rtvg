@@ -25,7 +25,6 @@ Crawl-delay: 1
 User-agent: Mail.Ru
 Crawl-delay: 1
 
-
 User-agent: AhrefsBot
 Disallow: /
 

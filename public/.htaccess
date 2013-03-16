@@ -40,6 +40,9 @@ RewriteEngine On
 Options +FollowSymLinks
 RewriteBase /
 
+RewriteCond %{ENV:REDIRECT_STATUS} !^$
+RewriteRule .* - [L]
+
 RewriteRule apple-touch-icon-precomposed.png /images/icons/apple-touch-icon-precomposed.png [R=301,L]
 RewriteRule apple-touch-icon.png /images/icons/apple-touch-icon.png [R=301,L]
 RewriteRule apple-touch-icon-114x114-precomposed.png /images/icons/apple-touch-icon-114x114-precomposed.png [R=301,L]

@@ -1,2 +1,51 @@
 <?php
-echo $this->nav_html;
+/*
+try {
+    $this->nav
+    ->findHelper('navigationMenu')->menu()
+    ->setMaxDepth(2);
+} catch (Exception $e) {
+    throw new Zend_Exception($e->getMessage(), $e->getCode());
+}
+*/
+
+if (APPLICATION_ENV=='development'){
+	//var_dump($this->user);
+	//die(__FILE__.': '.__LINE__);
+}
+
+$options = array('ulClass' => 'nav nav-tabs nav-stacked');
+echo $this->navigation()
+	->setMaxDepth(2)
+	->menu( $this->mainmenu )
+	->setUlClass('nav nav-tabs nav-stacked')
+	->setPartial( array('partials/admin/nav.phtml', array('user'=>$this->user)) );
+
+/* 
+$partial = array('partials/admin/nav.phtml', 'default');
+$this->navigation()->menu()
+  ->setMinDepth(0)
+  ->setMaxDepth(2)
+  //->setRenderParents(false)
+  //->setOnlyActiveBranch(true)
+  ->setPartial($partial);
+
+//var_dump($this->navigation()->menu());
+//die(__FILE__.': '.__LINE__);
+
+$this->navigation()->menu()->render();
+ */
+/* 
+foreach ($this->navigation() as $page) {
+	$active = $page->isActive(true);
+	if (count($page->getPages())) {
+		foreach ($page->getPages() as $subPage) {
+			$active = $subPage->isActive(true);
+			echo '<div class="item">';
+			echo '<a class="'. ($active ? 'active' : '') .'" href="' . $this->baseUrl($subPage->getHref()) . '">' . $subPage->getLabel() . '</a>';
+			echo '</div>';
+		}
+	}
+}
+ */
+//echo $this->nav->renderMenu( Zend_Registry::get('AdminMenu'), array('ulClass' => 'nav'));

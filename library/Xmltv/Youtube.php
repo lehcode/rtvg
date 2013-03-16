@@ -87,8 +87,8 @@ class Xmltv_Youtube {
 		
 		$httpClient = new Zend_Http_Client();
 		$httpClient->setConfig( array('adapter'=>$this->adapter));
-		$this->client  = new Zend_Gdata_YouTube();
-		$this->client->setHttpClient($httpClient);
+		$this->client  =@ new Zend_Gdata_YouTube( $httpClient );
+		//$this->client->setHttpClient($httpClient);
 		$this->client->setMajorProtocolVersion(2);
 				
 	}

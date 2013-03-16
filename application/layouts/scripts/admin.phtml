@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: admin.phtml,v 1.8 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: admin.phtml,v 1.9 2013-03-16 14:22:04 developer Exp $
  *
  */
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
@@ -26,14 +26,21 @@ $controller = $request->getControllerName();
 */
 //$this->navigation()->setDefaultProxy('navigationMenu');
 //$this->navigation()->findHelper('navigationMenu')->menu()->setMaxDepth(2);
-$this->placeholder('header')->set( $this->partial('partials/admin/header.phtml', array(
-	'nav_html'=>$this->navigation()
-		->findHelper('navigationMenu')->menu()
-		->setMaxDepth(2)
-		->renderMenu( Zend_Registry::get('AdminMenu'), array('ulClass' => 'nav')),
-)));
+try {
+	$this->placeholder('header')->set( $this->partial('partials/admin/header.phtml', array(
+		'mainmenu'=>Zend_Registry::get('AdminMenu'),
+		'user'=>$this->user,
+	)));
+} catch (Exception $e) {
+    throw new Zend_Exception( $e->getMessage(), $e->getCode() );
+}
 
-//$mainNav    = $this->mainNav($controller);
+if (APPLICATION_ENV=='development'){
+	//var_dump($this->user);
+	//die(__FILE__.': '.__LINE__);
+}
+
+
 ?>
 <?php echo $this->doctype(); ?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
@@ -63,7 +70,7 @@ if (count($this->messages)) {
 	}
 }
 ?>
-<?php if ($this->isAllowed('admin:auth.logout')) { ?>
+<?php if ($this->isAllowed('admin:auth') && $this->user['role']!='guest') { ?>
 <div id="nav">
 	<?php 
 	$form = new Xmltv_Form_Logout(array(
@@ -84,7 +91,12 @@ if (count($this->messages)) {
 <?php 
 }?>
 
-<?php if ($this->isAllowed('admin:auth.login')) { ?>
+<?php 
+if ($this->user->role!='guest'){
+	echo $this->user->display_name.': ['.$this->user->role.']'; 
+}?>
+
+<?php if ($this->isAllowed('admin:auth') && $this->user['role']=='guest') { ?>
 <div class="span12">
 	<?php echo $this->layout()->content; ?>
 </div>

@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.9 2013-03-15 04:16:39 developer Exp $
+ * @version $Id: Acl.php,v 1.10 2013-03-16 14:22:04 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -62,37 +62,50 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:fonts' ));	    
 	    $this->add( new Zend_Acl_Resource( 'default:images' ));	    
 	    $this->add( new Zend_Acl_Resource( 'default:img' ));
-	    $allDenied = new Zend_Acl_Resource( 'default:%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE.%25D0%25BE%25D0%25BD%25D0%25BB%25D0%25B0%25D0%25B9%25D0%25BD' );	    
 	    
+	    // Deny errors for everyone
+	    $denied1 = new Zend_Acl_Resource( 'default:%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE.%25D0%25BE%25D0%25BD%25D0%25BB%25D0%25B0%25D0%25B9%25D0%25BD' );	    
+	    $this->add( $denied1 );
+	    $denied2 = new Zend_Acl_Resource( 'default:%C3%90%C2%BA%C3%90%C2%B0%C3%90%C2%BD%C3%90%C2%B0%C3%90%C2%BB%C3%91%E2%80%B9' );	    
+	    $this->add( $denied2 );
 	    
+	    // Admin resources
 	    $adminModule = new Zend_Acl_Resource( 'admin:' );
 	    $this->add( $adminModule );
-	    $publisherModule = new Zend_Acl_Resource( 'publisher:' );
-	    $this->add( $publisherModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:index' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:auth' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:index.index' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:auth.login' ), 'admin:auth' );
-	    $this->add( new Zend_Acl_Resource( 'admin:auth.logout' ), 'admin:auth' );
 	    $this->add( new Zend_Acl_Resource( 'admin:error.error' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:import.index' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:import.remote' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:user' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.login' ), 'admin:user' );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.profile' ), 'admin:user' );
-	    $this->add( new Zend_Acl_Resource( 'admin:listings' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:programs' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:channels' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:content' ), $adminModule );
 	    
-	    $this->deny( null, $allDenied, null );
-	    $this->deny( self::ROLE_GUEST, null, null );
+	    // Deny acces to denied (wrong) resources to all
+	    $this->deny( null, array(
+	    	$denied1,
+	    	$denied2,
+	    ));
+	    
+	    // Deny everything to guests
+	    $this->deny( self::ROLE_GUEST );
+	    
+	    // Conditionally allow parts to guests
 	    $this->allow( self::ROLE_GUEST, $default, null, new Rtvg_Acl_IsNotBotAssertion() );
-	    $this->allow( self::ROLE_GUEST, array( 
-	    	'admin:auth.login',
-	    	'default:user.login',
-	    ), null);
-	    $this->allow( null, 'admin:auth', array( 'index', 'login', 'logout') );
-	    $this->allow( self::ROLE_PUBLISHER, $publisherModule );
-	    $this->allow( self::ROLE_PUBLISHER, $adminModule, array( 'index', 'login', 'logout') );
+	    
+	    // Let humans can try to login/logout
+	    $this->allow( null,  'admin:auth', null, new Rtvg_Acl_IsNotBotAssertion() );
+	    
+	    // Publisher can access publishing parts
+	    // and backend login
+	    $this->allow( array(self::ROLE_EDITOR), array(
+	    	'admin:content',
+	    	'admin:auth',
+	    	'admin:index',
+	    ));
 	    $this->allow( self::ROLE_GOD );
 	    
 	    return $this;

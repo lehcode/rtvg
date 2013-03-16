@@ -4,7 +4,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.22 2013-03-16 12:45:50 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.23 2013-03-16 14:22:04 developer Exp $
  *
  */
 
@@ -241,23 +241,24 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		}
 		
 		if (APPLICATION_ENV=='development'){
-			//var_dump($openId);
-			//var_dump($user);
+			//var_dump(isset($user));
+			//var_dump($user !== false);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
 		if (isset($user) && ($user !== false)) {
 		    $user = Bootstrap_Auth::setCurrentUser($user);
-		    return $user;
+		} else {
+			$user = Bootstrap_Auth::getCurrentUser($db);
 		}
-		
-		$user = Bootstrap_Auth::getCurrentUser($db);
 		
 		if (APPLICATION_ENV=='development'){
 			//var_dump($openId);
 			//var_dump($user);
 			//die(__FILE__.': '.__LINE__);
 		}
+		
+		return $user;
 		
 	}
 	
@@ -355,6 +356,7 @@ class Bootstrap_Auth extends Bootstrap
 	public static function setCurrentUser( Xmltv_User $user)
 	{
 		self::$_currentUser = $user;
+		return $user;
 	}
 
 	/**

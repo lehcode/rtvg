@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Init.php,v 1.23 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: Init.php,v 1.24 2013-03-16 14:22:04 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -69,7 +69,8 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		
 		if (preg_match('/[^a-z0-9]+$/', $controllerName)){
 			
-			if ($controllerName=='%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE'){
+			if ($controllerName=='%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE' ||
+			$controllerName == '%25d0%25b2%25d0%25b8%25d0%25b4%25d0%25b5%25d0%25be'){
 				
 				$request->setControllerName('videos');
 				$action = $request->getActionName();

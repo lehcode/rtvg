@@ -5,7 +5,7 @@
  * Main menu for backend
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: main.xml,v 1.1 2013-03-14 06:09:13 developer Exp $
+ * @version $Id: main.xml,v 1.2 2013-03-16 14:22:04 developer Exp $
  */
  -->
 <config>
@@ -15,15 +15,20 @@
             <label>КП</label>
             <module>admin</module>
             <controller>index</controller>
-            <!-- <action>index</action> -->
+            <action>index</action>
             <resource>admin:index</resource>
+            <class>list-item</class>
+            <encode_url>false</encode_url>
         </home>
         
 		<listings>
             <label>Программы</label>
-            <uri>#</uri>
-            <resource>admin:listings</resource>
+            <!-- <uri>#</uri> -->
+            <resource>admin:programs</resource>
 	       	<privilege>index</privilege>
+	       	<module>admin</module>
+	       	<controller>listings</controller>
+	       	<action>index</action>
 	       	
 	       	<listingsindex>
 	       		<label>Список</label>
@@ -41,6 +46,14 @@
             <action>index</action>
             <resource>admin:channels</resource>
         </channels>
+        
+        <content>
+        	<label>Контент</label>
+            <module>admin</module>
+            <controller>content</controller>
+            <action>index</action>
+            <resource>admin:content</resource>
+        </content>
         
 	</nav>
 </config>

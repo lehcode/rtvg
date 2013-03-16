@@ -200,8 +200,8 @@ abstract class Xmltv_Model_Abstract
 	 */
 	protected static function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
 	    
-	    echo '<b>'.$method.'</b><br />';
-		Zend_Debug::dump($select->assemble());
+	    //echo '<b>'.$method.'</b><br />';
+		//Zend_Debug::dump($select->assemble());
         
 	}
 

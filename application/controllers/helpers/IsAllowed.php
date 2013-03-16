@@ -3,7 +3,7 @@
  * Check if enough priviliges to access resource
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: IsAllowed.php,v 1.5 2013-03-14 06:46:38 developer Exp $
+ * @version $Id: IsAllowed.php,v 1.6 2013-03-16 14:22:04 developer Exp $
  *
  */
 class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Helper_Abstract
@@ -19,7 +19,7 @@ class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Hel
 	 * @param string $controller
 	 * @param string $action
 	 */
-    public function grantAccess( $privilege='index', $module=null, $controller=null, $action=null ){
+    protected function grantAccess( $privilege='index', $module=null, $controller=null, $action=null ){
     	
 		$params = $this->getRequest()->getParams();
         if (!$module){
@@ -28,8 +28,13 @@ class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Hel
         if (!$controller){
             $controller = $params['controller'];
         }
-        if (!$action){
+        /*if (!$action){
             $action = $params['action'];
+        }*/
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump(func_get_args());
+        	//die(__FILE__.': '.__LINE__);
         }
         
         $front = Zend_Controller_Front::getInstance();
@@ -72,9 +77,9 @@ class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Hel
      * (non-PHPdoc)
      * @see Zend_Controller_Action_Helper_Url::direct()
      */
- 	public function direct()
+ 	public function direct( $method=null, array $params=null )
     {
-    	return $this->grantAccess();
+    	return call_user_func_array( __CLASS__.'::'.$method, $params );
     }
     
     /**

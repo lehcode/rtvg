@@ -18,13 +18,39 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
      */
     protected $input;
     
+    /**
+     * Current data
+     * @var Xmltv_User
+     */
+    protected $user;
+    
     public function init(){
         
-        $this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct();
+        $this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct( 'grantAccess', array( 'privilege'=>$this->_getParam('action'), 'module'=>'admin' ) );
         $this->errorUrl = $this->view->baseUrl( 'admin/error/error' );
         $this->_helper->layout->setLayout( 'admin' );
         $this->_validator = $this->_helper->getHelper('RequestValidator');
+        $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
+        
         $this->initView();
+        
+        /**
+         * Load bootstrap
+         * @var Bootstrap
+         */
+        $bootstrap = $this->getInvokeArg('bootstrap');
+        
+        $this->user = $bootstrap->getResource('user');
+        $this->view->assign('user', $this->user);
+        
+		if (APPLICATION_ENV=='development'){
+			//var_dump($this->user);
+			//die(__FILE__.': '.__LINE__);
+		}
+        
+        if ( $this->isAllowed !== true) {
+        	return false;
+        }
         
     }
     
@@ -87,6 +113,12 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
     
     }
     
-    
+    /**
+     * (non-PHPdoc)
+     * @see Zend_Controller_Action::__call()
+     */
+    public function __call ($method, $arguments) {
+    	throw new Zend_Exception( Rtvg_Message::ERR_METHOD_NOT_FOUND, 404);
+    }
     
 }

@@ -1,20 +1,34 @@
 <?php
-
+/**
+ * @uses Zend_Navigation_Page_Mvc
+ */
 //var_dump($this->container);
 //die(__FILE__.': '.__LINE__);
-
+?>
+<ul class="nav nav-pills">
+<?
 foreach ($this->container as $page) {
     
-    var_dump($page);
-    die(__FILE__.': '.__LINE__);
-    
-  $active = $page->isActive(true);
-  if (count($page->getPages())) {
-    foreach ($page->getPages() as $subPage) {
-      $active = $subPage->isActive(true);
-      echo '<div class="item">';
-        echo '<a class="'. ($active ? 'active' : '') .'" href="' . $this->baseUrl($subPage->getHref()) . '">' . $subPage->getLabel() . '</a>';
-      echo '</div>';      
-    }
-  }
+	if (count($page->getPages())) {
+	    foreach ($page->getPages() as $subPage) {
+			if ($this->isAllowed( $subPage->getResource() )){
+				?>
+				<li class="<?php echo ($subPage->isActive(true) ? 'active' : '') ?>">
+					<a href="<?php echo $this->baseUrl( $subPage->getHref() ) ?>"><?php echo $subPage->getLabel() ?></a>
+				</li>
+				<?php 
+			}
+		}
+	} else {
+		if ($this->isAllowed( $page->getResource() )){
+			$linkAttrHref = $this->baseUrl( $page->get('module').'/'.$page->get('controller').'/'.$page->get('action'));
+		?>
+	    <li class="<?php echo ($page->isActive(true) ? 'active' : '') ?>">
+	    	<a href="<?php echo $linkAttrHref; ?>"><?php echo $page->getLabel() ?></a>
+	    </li>
+		<?php 
+		}
+	}
 }
+?>
+</ul>
