@@ -1,0 +1,32 @@
+<?php 
+/**
+ * 
+ */
+
+$this->headScript()
+	->appendScript("
+	jQuery(function($){
+	$('.remote').click(function(){
+		$.ajax({
+			url: '".$this->url(array('site'=>'teleguide'), 'admin_import_remote')."',
+			data: 'format=html',
+			type: 'get',
+			dataType: 'html',
+			beforeSend: function(){
+				$('#result').css({ 'background':'lightYellow' }).html(\"<h3>Происходит импорт</h3>\");
+			},
+			success: function(response){
+				$('#result').css({ \"background-color\":\"lightGreen\" }).html(response);
+			},
+			error: function(XHR, textStatus, errorThrown){
+				$('#result').css({ \"background-color\":\"lightRed\" }).html(XHR.responseText);
+			}
+		});
+	});
+});
+	");
+?>
+<h1>Загрузка XML</h1>
+<?php echo $this->form ?>
+<a class="remote" id="teleguide" href="#">Загрузить файл с teleguide.info</a>
+<div id="result"></div>
