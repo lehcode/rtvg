@@ -1,0 +1,38 @@
+<?php
+/**
+ * Backend navigation partial
+ * 
+ * @uses Zend_Navigation_Page
+ */
+?>
+<ul class="nav nav-pills">
+<? foreach ($this->container as $page) {
+    	
+	if ($this->isAllowed( $page->getResource() )){
+			
+		$dropdown = false;
+		if ($page->get( 'uri', null )===null){
+			$linkAttrHref = $this->baseUrl( $page->get( 'module', 'admin' ) .'/'. $page->get( 'controller', 'index' ) .'/'. $page->get( 'action' ));
+		} else {
+			$linkAttrHref = $this->baseUrl( $page->get( 'uri', '#' ) ) ;
+		}
+		
+		$isActive = $page->isActive() ? true : false ;
+		$aClass = ($isActive===false) ? ' class="dropdown-toggle"' : ' class="dropdown-toggle active"' ;
+		$dataToggle = count($page->getPages())>0 ? ' data-toggle="dropdown"' : false ;
+		$liClass = $dataToggle===false ? '' : ' class="dropdown"' ;
+		
+		?><li<?php echo $liClass; ?>>
+	    	<a href="<?php echo $linkAttrHref; ?>"<?php echo $aClass.$dataToggle; ?>><?php echo $page->getLabel() ?>
+	    	<?php echo ($dataToggle===false ? '' : '<b class="caret"></b>'); ?></a>
+	    	<?php if (count($page->getPages())) {
+				?>
+				<ul class="dropdown-menu">
+				<?php 
+			    foreach ($page->getPages() as $subPage) {
+			    	if ($this->isAllowed( $subPage->getResource() )){
+						$class = $subPage->isActive() ? ' class="active"' : '';
+						?><li<?php echo $class; ?>>
+						<a href="<?php echo $this->baseUrl( $subPage->get( 'module', 'admin' ) .'/'. $subPage->get( 'controller', 'index' ) .'/'. $subPage->get( 'action' ) ) ?>">
+							<?php echo $subPage->getLabel() ?></a>
+					</li><?php }} ?></ul><?php } ?></li><?php }} ?></ul>

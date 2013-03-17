@@ -1,0 +1,33 @@
+<?php
+/**
+ * Backend header view script
+ */
+?>
+
+<div id="header" class="row-fluid">
+	<div class="navbar span11">
+		<div class="navbar-inner">
+<?php 
+$this->navigation()->menu( $this->mainmenu )
+	->setPartial( array('partials/admin/nav.phtml', 'admin'));
+echo $this->navigation()
+	->setMaxDepth(2)
+	->setInjectTranslator(false)
+	->menu();
+	?>
+		</div>
+	</div>
+	<?php 
+// Logout form
+$form = new Xmltv_Form_Logout(array(
+	'action'=>$this->baseUrl('admin/auth/logout'),
+	'submit_text'=>'Выход',
+	'form_class'=>'',
+	'html_tag_class'=>'span1',
+));
+echo $form;
+?>
+</div>
+
+
+
