@@ -4,7 +4,7 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.22 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.23 2013-03-17 00:06:12 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -68,11 +68,11 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 				
 				switch ($controller){
 					
-				    /*
-				     * ##############################################
-				     * Search frontend controller
-				     * ##############################################
-				     */
+					/*
+					 * ##############################################
+					 * Search frontend controller
+					 * ##############################################
+					 */
 					case 'search':
 						
 						switch ($action) {
@@ -97,9 +97,9 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					 * ##############################################
 					 */
 					case 'channels':
-					    
+						
 						switch ($action) {
-						    
+							
 							case 'list': break;
 							
 							case 'typeahead':
@@ -129,7 +129,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 								
 							case 'search':
 								
-							    $validators['id']	= array( new Zend_Validate_Regex( '/^[\w\d]+/u' ));
+								$validators['id']	= array( new Zend_Validate_Regex( '/^[\w\d]+/u' ));
 								$validators['alias'] = array( new Zend_Validate_Regex( self::VIDEO_ALIAS_REGEX ));
 								$filters['alias']	= 'StringToLower';
 								
@@ -216,7 +216,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 								//}
 								
 								if ( null !== ($ts = $this->getRequest()->getParam('ts', null))) {
-								    $validators['ts'] = array( new Zend_Validate_Digits());
+									$validators['ts'] = array( new Zend_Validate_Digits());
 								}
 									
 								//$tz = $this->getRequest()->getParam('tz', null);
@@ -238,7 +238,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					 * ##############################################
 					 */
 					case 'videos':
-					    
+						
 						$validators['alias'] = array( new Zend_Validate_Regex( self::VIDEO_ALIAS_REGEX ));
 						$validators['id']	 = array( new Zend_Validate_Regex( '/^[a-z\d]+$/i' ));
 						
@@ -320,9 +320,9 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					 * ##############################################
 					 */
 					case 'archive':
-					    
+						
 						switch ($action){
-						    
+							
 							case 'store';
 								$validators['start_date'] = array( new Zend_Validate_Date( array('format'=>'dd.MM.YYYY' )), 'presence'=>'required');
 								$validators['end_date']   = array( new Zend_Validate_Date( array('format'=>'dd.MM.YYYY' )), 'presence'=>'required');
@@ -345,7 +345,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					case 'import':
 						
 						switch ($action){
-						    
+							
 							case 'remote':
 								if ($this->getRequest()->getParam('site')) {
 									$validators['site'] = array( new Zend_Validate_Alnum());
@@ -362,9 +362,13 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 									$validators['xml_file'] = array( new Zend_Validate_File_Exists( $this->getRequest()->getParam('xml_file')));
 								}
 							break;
-								
+							
 							default:
-								throw new Zend_Exception(self::ERR_WRONG_ACTION, 404);
+							case 'upload':
+								break;
+								
+							//default:
+							//	throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
 								
 						}
 						
@@ -381,11 +385,11 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							
 							case 'delete-programs':
 								$validators['delete_start']   = array( new Zend_Validate_Regex( '/^[\d]{2}\.[\d]{2}\.[\d]{4}$/'));
-								$validators['delete_end']	 = array( new Zend_Validate_Regex( '/^[\d]{2}\.[\d]{2}\.[\d]{4}$/'));
+								$validators['delete_end']	  = array( new Zend_Validate_Regex( '/^[\d]{2}\.[\d]{2}\.[\d]{4}$/'));
 								$validators['deleteprograms'] = array( new Zend_Validate_Regex( '/^(0|1)$/'));
-								$validators['deleteinfo']	 = array( new Zend_Validate_Regex( '/^(0|1)$/'));
-								$validators['format']		 = array( new Zend_Validate_Regex( '/^(html|json)$/'));
-								$validators['submit']		 = array( new Zend_Validate_Regex( '/^Старт$/u'));
+								$validators['deleteinfo']	  = array( new Zend_Validate_Regex( '/^(0|1)$/'));
+								$validators['format']		  = array( new Zend_Validate_Regex( '/^(html|json)$/'));
+								$validators['submit']		  = array( new Zend_Validate_Regex( '/^Старт$/u'));
 								
 							break;
 							
@@ -396,31 +400,44 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							break;
 								
 							default: 
-								throw new Zend_Exception(self::ERR_WRONG_ACTION, 404);
+								throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
 						}
 						
 					break;
 					
 					case 'auth':
-					    
-					    switch ($action){
-					    	case 'login':
-					    		$validators['openid'] = array( new Zend_Validate_Regex( Rtvg_Regex::EMAIL_REGEX ));
-					    		$validators['passwd'] = array( new Zend_Validate_Regex( Rtvg_Regex::PASSWORD_REGEX ));
-					    		$validators['submit'] = array( new Zend_Validate_Regex( '/\p{Cyrillic}+/u' ));
-					    	break;
-					    	
-					    	default:
-					    	case 'logout':
-					    	    $validators['submit'] = array( new Zend_Validate_Regex( '/\p{Cyrillic}+/u' ));
-					    	    break;
-					    	    
-					    }
-					    
-					    break;
+						
+						switch ($action){
+							case 'login':
+								$validators['openid'] = array( new Zend_Validate_Regex( Rtvg_Regex::EMAIL_REGEX ));
+								$validators['passwd'] = array( new Zend_Validate_Regex( Rtvg_Regex::PASSWORD_REGEX ));
+								$validators['submit'] = array( new Zend_Validate_Regex( '/\p{Cyrillic}+/u' ));
+							break;
+							
+							default:
+							case 'logout':
+								$validators['submit'] = array( new Zend_Validate_Regex( '/\p{Cyrillic}+/u' ));
+								break;
+								
+						}
+						
+					break;
 					
+					case 'content':
+						switch ($action){
+							case 'articles': break;
+							case 'edit-article':
+								$validators['id'] = array( new Zend_Validate_Digits());	
+							break;
+							default:
+								throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
+						}
+					break;
 				}
-				
+			break;
+			
+			default:
+				throw new Zend_Exception( Rtvg_Message::ERR_WRONG_MODULE, 404);
 			break;
 		}
 				
