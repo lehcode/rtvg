@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin
  * @subpackage backend
- * @version    $Id: admin.phtml,v 1.11 2013-03-16 20:08:40 developer Exp $
+ * @version    $Id: admin.phtml,v 1.12 2013-03-17 18:34:58 developer Exp $
  *
  */
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
@@ -16,24 +16,11 @@ $this->jQuery()
 	->addStylesheet('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css')
 	->uiEnable();
 
-$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND');
+$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND')
+	->appendStylesheet( $this->baseUrl('css/admin-template.css'), 'screen');
 
 $request    = Zend_Controller_Front::getInstance()->getRequest();
 $controller = $request->getControllerName();
-
-/*
- * #### Header ####
-*/
-//$this->navigation()->setDefaultProxy('navigationMenu');
-//$this->navigation()->findHelper('navigationMenu')->menu()->setMaxDepth(2);
-try {
-	$this->placeholder('header')->set( $this->partial('partials/admin/header.phtml', array(
-		'mainmenu'=>Zend_Registry::get('AdminMenu'),
-		'user'=>$this->user,
-	)));
-} catch (Exception $e) {
-    throw new Zend_Exception( $e->getMessage(), $e->getCode() );
-}
 
 if (APPLICATION_ENV=='development'){
 	//var_dump($this->user);
@@ -55,58 +42,74 @@ echo $this->headScript();
 ?>
 </head>
 <body>
-<div class="container">
-<?php 
-// Messages
-if (count($this->messages)) {
-	foreach ($this->messages as $text) {
-		if (is_array($text)) {
-			foreach ($text as $string) {
-				echo $this->showMessage( $string );
-			}
-		} else {
-			echo $this->showMessage( $text );
-		}
-	}
-}
-?>
 
-<?php 
-if ($this->isAllowed('admin:auth') && $this->user['role']!='guest') {
+	<div class="admin container-fluid" id="topline">
+		<span class="label">Администрирование</span>
+		<?php if ($this->user->role!='guest'){
+			echo '<span class="label label label-important">'.
+			$this->escape( $this->user->display_name.': ['.
+			$this->user->role.']').'</span>&nbsp;<b>'.
+			$this->escape('<'.$this->user->email.'>' ).'</b>&nbsp;'.
+			'<span><a href="/" target="_blank">http://rutvgid.ru</a></span>'; 
+		} ?>
+	</div>
+
+	<div class="admin container-fluid">
+
+	<?php echo (count($this->messages)>0 ? $this->showMessages( $this->messages ) : null ); ?>
 	
-	echo $this->placeholder('header');
-	
-	$forbiddenRoles = array(
-		Xmltv_Model_Acl::ROLE_GUEST,
-		Xmltv_Model_Acl::ROLE_USER,
-		Xmltv_Model_Acl::ROLE_PUBLISHER,
-		Xmltv_Model_Acl::ROLE_EDITOR,
-	);
-	if (!in_array($this->user->role, $forbiddenRoles)) {
+	<?php if ($this->isAllowed('admin:auth') && $this->user['role']!='guest') {
+		// Header HTML
 		?>
-<h6>
-	APPLICATION_ENV: <?php echo APPLICATION_ENV ?><br />
-	memory_limit: <?php echo ini_get('memory_limit') ?><br />
-	error_reporting: <?php echo ini_get('error_reporting') ?><br />
-	display_errors: <?php echo ini_get('display_errors') ?><br />
-</h6>
+		<div id="header" class="row-fluid">
+			<div class="navbar span11">
+				<div class="navbar-inner">
+					<?php $this->navigation()->menu( Zend_Registry::get('AdminMenu') )
+						->setPartial( array('partials/nav.phtml', 'admin'));
+					echo $this->navigation()
+						->setMaxDepth(2)
+						->setInjectTranslator(false)
+						->menu();
+					?>
+				</div>
+			</div>
+			<?php 
+			// Logout form
+			$form = new Xmltv_Form_Logout(array(
+				'action'=>$this->baseUrl('admin/auth/logout'),
+				'submit_text'=>'Выход',
+				'form_class'=>'',
+				'html_tag_class'=>'span1',
+			));
+			echo $form;
+			?>
+		</div>
 		<?php 
-	}
-} 
-?>
+		if ($this->isAllowed('admin:sysinfo')){
+			// Some system info
+			echo $this->sysinfo();
+		}
+	} ?>
 
-<?php 
-if ($this->user->role!='guest'){
-	echo $this->user->display_name.': ['.$this->user->role.']'; 
-}?>
+	
+	<?php $bc = $this->navigation()->breadcrumbs( Zend_Registry::get('AdminMenu') )->setLinkLast(false)->setMinDepth(0)->render();
+	if (!empty($bc)){
+		?><div class="breadcrumb row-fluid"><?php printf("Вы здесь: %s", $bc); ?></div>
+	<?php } ?>
+	
 
-<?php if ($this->isAllowed('admin:auth') && $this->user['role']=='guest') { ?>
-<div class="span12">
-	<?php echo $this->layout()->content; ?>
-</div>
-<?php } ?>
-</div>
+	<div class="row-fluid" id="area">
+		<?php echo $this->layout()->content; ?>
+	</div>
+	
+	<div class=row-fluid>
+		<?php echo '&copy;egeshi.com '.Zend_Registry::get('rtvg_version'); ?>
+	</div>
+	
+	</div>
+
+
 <?php echo $this->inlineScript(); ?>
-<?php echo '&copy;egeshi.com '.Zend_Registry::get('rtvg_version'); ?>
+
 </body>
 </html>

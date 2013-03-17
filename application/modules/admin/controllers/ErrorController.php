@@ -5,7 +5,7 @@
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: ErrorController.php,v 1.4 2013-03-16 12:46:19 developer Exp $
+ * @version    $Id: ErrorController.php,v 1.5 2013-03-17 18:34:58 developer Exp $
  */
 class Admin_ErrorController extends Zend_Controller_Action
 {
@@ -18,7 +18,12 @@ class Admin_ErrorController extends Zend_Controller_Action
     protected $_flashMessenger = null;
     
 	public function init(){
-	    $this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct();
+	    $this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct( 'grantAccess', array(
+			'privilege'=>$this->_getParam('action', 'index'),
+			'module'=>'admin',
+			'controller'=>$this->_getParam('controller', 'index'),
+			'action'=>$this->_getParam('action', null),
+			));
         $this->_helper->layout->setLayout( 'error' );
         $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
 	}

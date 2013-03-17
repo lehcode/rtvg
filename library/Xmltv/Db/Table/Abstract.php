@@ -4,7 +4,7 @@
  *
  * @uses Zend_Db_Table_Abstract
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Abstract.php,v 1.8 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: Abstract.php,v 1.9 2013-03-17 18:34:58 developer Exp $
  */
 class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     
@@ -44,8 +44,6 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      * @param array $config
      */
     public function init(){
-        
-        //parent::init();
         
         $this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
         

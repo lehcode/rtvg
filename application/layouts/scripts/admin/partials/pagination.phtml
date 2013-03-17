@@ -4,12 +4,12 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version $Id: pagination.phtml,v 1.1 2013-03-17 17:01:25 developer Exp $
+ * @version $Id: pagination.phtml,v 1.2 2013-03-17 18:34:58 developer Exp $
  */
 ?>
 
 <?php if ($this->pageCount) { 
-	printf("Страницы с %d по %d :: Всего(%d)", $this->firstItemNumber, $this->lastItemNumber, $this->totalItemCount);
+	$this->escape( sprintf("%d - %d :: [%d]", $this->firstItemNumber, $this->lastItemNumber, $this->totalItemCount) );
 	?>
 	<div class="pagination">
 		<ul><?php 

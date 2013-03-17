@@ -2,11 +2,35 @@
 .admin.container-fluid {
     padding-left: 5%;
     padding-right: 5%;
-}
-
-#header{
-	
+    padding-bottom: 0.5em;
 }
 .row-fluid {
     margin: 0;
 }
+#topline{
+	padding: 1% 5%;
+	font-size: 12px;
+}
+#topline > * {
+	font-size: 12px;
+}
+#header{
+	
+}
+#header .navbar a {
+	font-size: 11px;
+}
+
+
+
+#area{
+	min-height:480px;
+}
+	#area h2.page_heading{
+		color: #666666;
+		font-size: 24px;
+	}
+	#area h3.action{
+		color: #666666;
+		font-size: 20px;
+	}

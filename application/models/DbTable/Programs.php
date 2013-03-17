@@ -1,9 +1,9 @@
 <?php
-
 /**
+ * Programs database table class
+ * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @uses Xmltv_Db_Table_Abstract
- * @version $Id: Programs.php,v 1.20 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: Programs.php,v 1.21 2013-03-17 18:34:58 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract

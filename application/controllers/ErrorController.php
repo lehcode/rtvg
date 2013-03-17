@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses	Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.15 2013-03-17 17:19:11 developer Exp $
+ * @version $Id: ErrorController.php,v 1.16 2013-03-17 18:34:58 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -30,7 +30,7 @@ class ErrorController extends Zend_Controller_Action
 		$errors = $this->_getParam('error_handler');
 		
 		if (!$errors || !$errors instanceof ArrayObject) {
-			$this->view->message = 'You have reached the error page';
+			$this->view->message = 'Ошибка';
 			return;
 		}
 		
@@ -40,8 +40,10 @@ class ErrorController extends Zend_Controller_Action
 			$msg .= $key.': '.$val."\n";
 		}
 		
-		$this->logMessage($msg);
-		$this->sendEmail($msg);
+		$this->logMessage( $msg );
+		$this->sendEmail( $msg, $errors->exception );
+		
+		//$this->view->setScriptPath(APPLICATION_PATH . '/layouts/scripts/');
 		
 		switch ($errors->type) {
 			
@@ -53,7 +55,7 @@ class ErrorController extends Zend_Controller_Action
 				$priority = Zend_Log::NOTICE;
 				$this->view->message = 'Страница не найдена';
 				$this->view->assign( 'messages', $this->_flashMessenger->getMessages() );
-				return $this->render( 'not-found' );
+				//$this->_helper->layout->setLayout( 'not-found' );
 			break;
 			
 			default:
@@ -62,7 +64,7 @@ class ErrorController extends Zend_Controller_Action
 				$priority = Zend_Log::CRIT;
 				$this->view->message = 'Ошибка приложения';
 				$this->view->assign( 'messages', $this->_flashMessenger->getMessages() );
-				return $this->render( 'app-error' );
+				//$this->_helper->layout->setLayout( 'app-error' );
 			break;
 			
 		}
@@ -115,9 +117,9 @@ class ErrorController extends Zend_Controller_Action
 		$this->view->assign('hide_sidebar', 'right');
 	}
 	
-	protected function logMessage($msg=null, $priority=null){
+	protected function logMessage($msg=null, $priority=Zend_Log::WARN){
 		
-	//Log exception, if logger available
+		//Log exception, if logger available
 		$logger = $this->getLog();
 		if ($logger) {
 			$logger->log( $msg, $priority, $errors->exception );
@@ -125,15 +127,18 @@ class ErrorController extends Zend_Controller_Action
 		
 	}
 	
-	protected function sendEmail($msg=null){
+	protected function sendEmail($msg=null, $exception=null){
 	
 		$senderEmail='dev@egeshi.com';
 		$mail = new Zend_Mail('UTF-8');
 		$mail->setBodyText( $errors->exception."\n\n".$msg );
 		$mail->setFrom( $senderEmail, 'Rutvgid Error');
 		$mail->addTo( 'egeshisolutions@gmail.com', 'Bugs');
-		$mail->setSubject( $errors->exception->getMessage() );
-		$mail->setHeaderEncoding( Zend_Mime::ENCODING_BASE64 );
+		if ($errors->exception){
+			$mail->setSubject( $errors->exception->getMessage() );
+		} else {
+			$mail->setSubject( "Внимание! Ошибка!" );
+		}
 		
 		if (APPLICATION_ENV=='production') {
 			$t = new Zend_Mail_Transport_Smtp('smtp.gmail.com', array(

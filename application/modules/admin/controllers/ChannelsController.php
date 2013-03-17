@@ -5,7 +5,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: ChannelsController.php,v 1.3 2013-03-16 12:46:19 developer Exp $
+ * @version    $Id: ChannelsController.php,v 1.4 2013-03-17 18:34:58 developer Exp $
  */
 class Admin_ChannelsController extends Rtvg_Controller_Admin
 {
@@ -22,7 +22,7 @@ class Admin_ChannelsController extends Rtvg_Controller_Admin
 
 	public function listAction()
     {
-        //
+        die(__FILE__.': '.__LINE__);
     }
 
 }

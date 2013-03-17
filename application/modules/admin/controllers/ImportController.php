@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: ImportController.php,v 1.23 2013-03-16 12:46:19 developer Exp $
+ * @version    $Id: ImportController.php,v 1.24 2013-03-17 18:34:58 developer Exp $
  *
  */
 class Admin_ImportController extends Rtvg_Controller_Admin
@@ -64,10 +64,10 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		$this->channelsModel = new Admin_Model_Channels();
 		$this->channelsList = $this->channelsModel->allChannels();
 		
-		$this->programsModel = new Admin_Model_Programs();
+		
 		$this->programsCategoriesList = $this->programsModel->getCategoriesList();
 		 */
-		
+		$this->programsModel = new Admin_Model_Programs();
 	}
 
 	/**
@@ -76,13 +76,8 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	 */
 	public function indexAction()
 	{
-		$this->_forward('upload');
-	}
-
-   	/**
-   	 * Handles XML file upload
-   	 */
-   	public function uploadAction() {
+		
+		parent::validateRequest();
 		
 		ini_set('max_execution_time', 0);
 		ini_set('max_input_time', -1);
@@ -100,13 +95,15 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				$this->view->assign('show_continue', true);
 				$this->render('xml');
 			} 
-		} 
+		}
 	}
+
+   	
 	
 	/**
    	 * Ajax action which handles channels parsing
    	 */
-	public function xmlParseChannelsAction($xml_file=null){
+	public function xmlParseChannels($xml_file=null){
 		
 		ini_set('max_execution_time', 0);
 		ini_set('max_input_time', -1);
@@ -211,19 +208,19 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 						$client->setAdapter($curl);
 						
 						if (!file_exists($bigPngFile)){
-							file_put_contents($gifFile, $client->request("GET")->getBody());
-							file_put_contents($bigPngFile, $this->_helper->getHelper('imageToPng')->imageToPng($gifFile, array(
+							file_put_contents( $gifFile, $client->request("GET")->getBody());
+							file_put_contents( $bigPngFile, $this->_helper->getHelper('imageToPng')->imageToPng( $gifFile, array(
 								'tmp_folder'=>ROOT_PATH.'/tmp',
 								'max_size'=>100)));
 						}
 				
 						if (!file_exists($pngFile)){
-							file_put_contents($gifFile, $client->request("GET")->getBody());
-							file_put_contents($pngFile, $this->_helper->getHelper('imageToPng')->imageToPng($gifFile, array(
+							file_put_contents( $gifFile, $client->request("GET")->getBody());
+							file_put_contents( $pngFile, $this->_helper->getHelper('imageToPng')->imageToPng( $gifFile, array(
 								'tmp_folder'=>ROOT_PATH.'/tmp',
 								'max_size'=>45)));
 						}
-						//var_dump($info);
+						
 						$channelsTable->update($info, "`id`='".$info['id']."'");
 						
 						unlink($gifFile);
@@ -233,15 +230,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 					}
 				}
 			}
-			
-			//var_dump( $allChannels);
-			//var_dump( $newChannels);
-			//var_dump( $newIcons);
-			//die(__FILE__.': '.__LINE__);
-			
-			$response['added'] = $newChannels;
-			$this->view->assign('response', $response);
-			
 		}
 		
 	}
@@ -251,7 +239,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	 * 
 	 * Ajax action which handles programs parsing
 	 */
-	public function xmlParseProgramsAction($xml_file=null){
+	public function xmlParsePrograms($xml_file=null){
 		
 		ini_set('max_execution_time', 0);
 		ini_set('max_input_time', -1);	
@@ -261,10 +249,10 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		 */
 		if (!$xml_file) {
 			$file = Xmltv_Filesystem_File::getName($this->_request->get('xml_file'));
-			$path	 = Xmltv_Filesystem_File::getPath($this->_request->get('xml_file'));
+			$path = Xmltv_Filesystem_File::getPath($this->_request->get('xml_file'));
 		} else {
 			$file = Xmltv_Filesystem_File::getName($xml_file);
-			$path	 = ROOT_PATH.$this->_parseFolder;			
+			$path = ROOT_PATH.$this->_parseFolder;			
 		}
 		if (!is_file($file = $path.$file)){
 			throw new Zend_Exception("XML file not found!");
@@ -278,26 +266,40 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			throw new Exception("Cannot load XML!");
 		}
 		
-		$programs   = $xml->getElementsByTagName('programme');
-		$model	  = new Admin_Model_Programs();
+		$programs = $xml->getElementsByTagName('programme');
+		$programsModel = new Admin_Model_Programs();
 		$i=0; //for debug
 		foreach ($programs as $node){
 			
-			$prog  = array('id'=>"'NULL'");
+			//$prog  = array('id'=>"'NULL'");
+			$prog = $programsModel->newProgram();
+			
+			if (APPLICATION_ENV=='development'){
+				//var_dump($prog);
+				//die(__FILE__.': '.__LINE__);
+			}
 			
 			//Process program title and detect some properties
-			$parsed = $model->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
-			$prog['title'] = $parsed['title'];
-			$prog['sub_title'] = $parsed['sub_title'];
-			$prog['rating'] = isset($parsed['rating']) ? $parsed['rating']   : null ;
-			$prog['premiere'] = isset($parsed['premiere']) || (int)$parsed['premiere']!=0 ? $parsed['premiere'] : 0 ;
-			$prog['live'] = isset($parsed['live']) ? $parsed['live']     : 0 ;
-			$prog['episode_num'] = isset($parsed['episode']) && $parsed['episode']!==null  ? (int)$parsed['episode'] : null;
+			$parsed = $programsModel->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
+			
+			if (APPLICATION_ENV=='development'){
+				if ($node->getElementsByTagName('title')->item(0)->nodeValue=='Биатлон. Кубок мира. Трансляция из Ханты-Мансийска'){
+					//var_dump($parsed);
+					//die(__FILE__.': '.__LINE__);
+				}
+			}
+			
+			$prog->title = $parsed['title'];
+			$prog->sub_title = $parsed['sub_title'];
+			$prog->rating = isset($parsed['rating']) ? $parsed['rating']   : null ;
+			$prog->premiere = isset($parsed['premiere']) || (int)$parsed['premiere']!=0 ? $parsed['premiere'] : 0 ;
+			$prog->live = isset($parsed['live']) ? $parsed['live']     : 0 ;
+			$prog->episode_num = isset($parsed['episode']) && $parsed['episode']!==null  ? (int)$parsed['episode'] : null;
 			
 			// Detect category ID
-			$prog['category'] = isset($parsed['category']) && (bool)$parsed['category']===true ? $parsed['category'] : $node->getElementsByTagName('category')->item(0)->nodeValue ;
-			if (!is_int($prog['category'])) {
-				$prog['category'] = $this->programsModel->catIdFromTitle( $prog['category']);
+			$prog->category = (isset($parsed['category']) && (bool)$parsed['category']===true) ? $parsed['category'] : $node->getElementsByTagName('category')->item(0)->nodeValue ;
+			if (!is_int($prog->category)) {
+				$prog['category'] = $programsModel->catIdFromTitle( $prog['category']);
 			}
 			
 			if (APPLICATION_ENV=='development'){
@@ -308,49 +310,45 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			//Parse description
 			if (@$node->getElementsByTagName('desc')->item(0)){
 				
-			    $parseDesc = $model->parseDescription( $node->getElementsByTagName('desc')->item(0)->nodeValue );
+			    $parseDesc = $programsModel->parseDescription( $node->getElementsByTagName('desc')->item(0)->nodeValue );
 				
-			    $prog['title'] = isset($parseDesc['title']) && !empty($parseDesc['title']) ?  $prog['title'].' '.$parseDesc['title'] : $prog['title'];
-				$prog['desc'] = isset($parseDesc['text']) ? $parseDesc['text'] : '' ;
+			    $prog->title = isset($parseDesc['title']) && !empty($parseDesc['title']) ?  $prog->title.' '.$parseDesc['title'] : $prog->title;
+				$prog->desc  = isset($parseDesc['text']) ? $parseDesc['text'] : '' ;
 				
 				if (!empty($parseDesc['actors'])) {
 					if (is_array($parseDesc['actors'])){
-					    $prog['actors'] = implode(',', $parseDesc['actors']);
+					    $prog->actors = implode(',', $parseDesc['actors']);
 					} elseif (is_numeric($parseDesc['actors'])) {
-					    $prog['actors'] = $parseDesc['actors'];
+					    $prog->actors = $parseDesc['actors'];
 					} elseif(stristr($parseDesc['actors'], ',')){
-					    $prog['actors'] = $parseDesc['actors'];
+					    $prog->actors = $parseDesc['actors'];
 					} else {
 					    var_dump($parseDesc['actors']);
 					    die(__FILE__.': '.__LINE__);
 					}
-				} else {
-				    $prog['actors'] = '';
 				}
 				
 				if (!empty($parseDesc['directors'])) {
 					if (is_array($parseDesc['directors'])){
-						$prog['directors'] = implode(',', $parseDesc['directors']);
+						$prog->directors = implode(',', $parseDesc['directors']);
 					} elseif (is_numeric($parseDesc['directors'])) {
-						$prog['directors'] = $parseDesc['directors'];
+						$prog->directors = $parseDesc['directors'];
 					} elseif(stristr($parseDesc['directors'], ',')){
-						$prog['directors'] = $parseDesc['directors'];
+						$prog->directors = $parseDesc['directors'];
 					} else {
 						var_dump($parseDesc['directors']);
 						die(__FILE__.': '.__LINE__);
 					}
-				} else {
-					$prog['actors'] = '';
 				}
 				
-				$prog['writers'] = isset($parseDesc['writers']) ? implode(',', $parseDesc['writers']) : '' ;
-				$prog['rating']  = isset($parseDesc['rating']) && (bool)$prog['rating']===false  ? $parseDesc['rating'] : $prog['rating'] ;
-				$prog['writers'] = isset($parseDesc['writers']) ? $parseDesc['writers'] : '' ;
-				$prog['country'] = isset($parseDesc['country']) ? $parseDesc['country'] : null ;
-				$prog['date'] = isset($parseDesc['year']) ? $parseDesc['year'] : null ;
-				$prog['episode_num'] = isset($parseDesc['episode']) && (int)$prog['episode_num']==0 ? (int)$parseDesc['episode'] : $prog['episode_num'];
-				$prog['country']  = isset($parseDesc['country']) ? $parseDesc['country'] : '' ;
-				$prog['category'] = isset($parseDesc['category']) && (bool)$prog['category']===false ? $parseDesc['category'] : $prog['category'] ;
+				$prog->writers = isset( $parseDesc['writers'] ) ? implode(',', $parseDesc['writers']) : '' ;
+				$prog->rating  = isset( $parseDesc['rating'] ) && (bool)$prog['rating']===false  ? $parseDesc['rating'] : (int)$prog->rating ;
+				$prog->writers = isset( $parseDesc['writers'] ) ? $parseDesc['writers'] : '' ;
+				$prog->country = isset( $parseDesc['country'] ) ? $parseDesc['country'] : null ;
+				$prog->date = isset( $parseDesc['year'] ) ? $parseDesc['year'] : null ;
+				$prog->episode_num = isset( $parseDesc['episode'] ) && (int)$prog->episode_num==0 ? (int)$parseDesc['episode'] : $prog->episode_num;
+				$prog->country  = isset( $parseDesc['country'] ) ? $parseDesc['country'] : '' ;
+				$prog->category = isset( $parseDesc['category'] ) && (bool)$prog->category===false ? $parseDesc['category'] : $prog->category ;
 				
 				if (APPLICATION_ENV=='development'){
 					//var_dump($prog);
@@ -360,10 +358,10 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			}
 			
 			// Alias
-			$prog['alias'] = $model->makeAlias( $prog['title'] );
+			$prog->alias = $programsModel->makeAlias( $prog->title );
 			
 			//Channel
-			$prog['channel'] = (int)$node->getAttribute('channel');
+			$prog->channel = (int)$node->getAttribute('channel');
 			
 			// Fix category if needed
 			/*
@@ -390,46 +388,56 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			 * mostly movies
 			 */
 			$splitTitles = array(100037);
-			if (in_array($prog['channel'], $splitTitles) && Xmltv_String::strlen($prog['sub_title'])){
-				$prog['title'] .= ' '.$prog['sub_title'];
-				$prog['sub_title'] = '';
+			if (in_array($prog->channel, $splitTitles) && Xmltv_String::strlen($prog->sub_title)){
+				$prog->title .= ' '.$prog->sub_title;
+				$prog->sub_title = '';
 			}
 			
-			$e = explode('. ', $prog['title']);
+			$e = explode('. ', $prog->title);
 			if (count($e)>2){
-				$prog['title'] = trim($e[0]).'. '.trim($e[1]).'.';
+				$prog->title = trim($e[0]).'. '.trim($e[1]).'.';
 				unset($e[0]);
 				unset($e[1]);
-				if (isset($prog['sub_title']))
-					$prog['sub_title'] .= implode('. ', $e);
+				if (isset($prog->sub_title))
+					$prog->sub_title .= implode('. ', $e);
 				else
-					$prog['sub_title'] = implode('. ', $e);
+					$prog->sub_title = implode('. ', $e);
 			}
 				
 			
 			//Start and end datetime
-			$start = $model->startDateFromAttr( $node->getAttribute('start') );
-			$end   = $model->endDateFromAttr( $node->getAttribute('stop') );
-			$prog['start'] = $start->toString("yyyy-MM-dd HH:mm:ss");
-			$prog['end']   = $end->toString("yyyy-MM-dd HH:mm:ss");
+			$start = $programsModel->startDateFromAttr( $node->getAttribute('start') );
+			$end   = $programsModel->endDateFromAttr( $node->getAttribute('stop') );
+			$prog->start = $start->toString("yyyy-MM-dd HH:mm:ss");
+			$prog->end   = $end->toString("yyyy-MM-dd HH:mm:ss");
 			
 			//Calculate hash
-			$prog['hash'] = md5($prog['channel'].$prog['start'].$prog['end']);
+			$prog->hash = substr( md5($prog->channel.$prog->start.$prog->end), 0, 16 ) ;
 			
 			//debug breakpoint
 			if ($i<50){
 				if (APPLICATION_ENV=='development'){
-					//var_dump($prog);
+					//echo $i;
+					//var_dump($prog->toArray());
 				}
 			} else {
 				//die(__FILE__.': '.__LINE__);
 			} 
 			
 			
-			//Save
+			// Check data validity
+			if (!isset($prog->alias) || empty($prog->alias)){
+				echo "Wrong parse!";
+				var_dump($node->getElementsByTagName('title')->item(0)->nodeValue);
+				var_dump($parsed);
+				die(__FILE__.': '.__LINE__);
+			}
 			
-			if (isset($prog['alias']) && !empty($prog['alias'])){
-			    $model->saveProgram($prog);
+			// Save
+			try {
+				$prog->save();
+			} catch (Exception $e) {
+				throw new Zend_Exception( $e->getMessage(), $e->getCode() );
 			}
 			
 			$i++;
@@ -648,8 +656,8 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				//var_dump($xmlFile);
 				//die(__FILE__.': '.__LINE__);
 				
-				$this->xmlParseChannelsAction($xmlFile);
-				$this->xmlParseProgramsAction($xmlFile);
+				$this->xmlParseChannels($xmlFile);
+				$this->xmlParsePrograms($xmlFile);
 				//die(__FILE__.': '.__LINE__);
 				
 				

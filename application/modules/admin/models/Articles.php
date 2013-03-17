@@ -1,4 +1,12 @@
 <?php
+/**
+ * Content articles backend model
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version $Id: Articles.php,v 1.2 2013-03-17 18:34:58 developer Exp $
+ *
+ */
 class Admin_Model_Articles {
 	
 	/**
@@ -14,17 +22,34 @@ class Admin_Model_Articles {
 	protected $db;
 	
 	/**
-	 * Articles database table class
+	 * Content articles database table
 	 * @var Admin_Model_DbTable_Articles
 	 */
 	protected $articlesTable;
 
 	/**
-	 * Articles database table class
-	 * @var Admin_Model_DbTable_Articles
+	 * Content categories database table
+	 * @var Admin_Model_DbTable_ContentCategories
 	 */
-	protected $articlesTable;
+	protected $contentCategoriesTable;
 	
+	/**
+	 * Content categories database table
+	 * @var Admin_Model_DbTable_ChannelsCategories
+	 */
+	protected $channelsCategoriesTable;
+	
+	/**
+	 * Content categories database table
+	 * @var Admin_Model_DbTable_ProgramsCategories
+	 */
+	protected $programsCategoriesTable;
+	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param array $config
+	 */
 	public function __construct(array $config=null){
 		
 		if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config')) {
@@ -45,8 +70,10 @@ class Admin_Model_Articles {
 		    self::$tblPfx = $pfx; 
 		}
 		
-		$this->articlesTable = new Admin_Model_DbTable_Articles();
-		$this->contentCategoriesTable = new Admin_Model_DbTable_ContentCategories();
+		$this->articlesTable           = new Admin_Model_DbTable_Articles();
+		$this->contentCategoriesTable  = new Xmltv_Model_DbTable_ContentCategories();
+		$this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
+		$this->programsCategoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
 		
 	}
 	
@@ -69,26 +96,48 @@ class Admin_Model_Articles {
 	
 	/**
 	 * Fetch all articles list with properties
-	 * @param int $amt
-	 * @param int $offset
 	 */
-	public function getList( $amt=null, $offset=0 ){
+	public function getList(){
 		
 		$select = $this->db->select()
-			->from(array('a'=>$this->articlesTable->getName()))
-			-join(array(), $pieces);
+			->from(array('a'=>$this->articlesTable->getName()), array(
+				'id',
+				'title',
+				'alias',
+				'intro',
+				'body',
+				'tags',
+				'metadesc',
+				'metakeys',
+			))
+			->join( array('content_cat'=>$this->contentCategoriesTable->getName()), "`a`.`content_cat`=`content_cat`.`id`", array(
+				'content_cat_id'=>'id',
+				'content_cat_title'=>'title',
+				'content_cat_alias'=>'alias',
+			))
+			->join( array('channel_cat'=>$this->channelsCategoriesTable->getName()), "`a`.`channel_cat`=`channel_cat`.`id`", array(
+				'channel_cat_id'=>'id',
+				'channel_cat_title'=>'title',
+				'channel_cat_alias'=>'alias',
+			))
+			->join( array('prog_cat'=>$this->programsCategoriesTable->getName()), "`a`.`channel_cat`=`prog_cat`.`id`", array(
+				'prog_cat_id'=>'id',
+				'prog_cat_title'=>'title',
+				'prog_cat_alias'=>'alias',
+			))
+			->where("`a`.`published`=1");
 			
 		if (APPLICATION_ENV=='development'){
-			self::debugSelect($select, __METHOD__);
-			die(__FILE__.': '.__LINE__);
+			//self::debugSelect($select, __METHOD__);
+			//die(__FILE__.': '.__LINE__);
 		}
 		
 		/**
 		 * @var Zend_Paginator
 		 */
-		$paginator = $this->getPaginator($select);
-		var_dump(Zend_Paginator);
-		die(__FILE__.': '.__LINE__);
+		$result = $this->getPaginator( $select );
+		
+		return $result;
 		
 	}
 	

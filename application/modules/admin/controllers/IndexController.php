@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: IndexController.php,v 1.9 2013-03-16 20:03:36 developer Exp $
+ * @version    $Id: IndexController.php,v 1.10 2013-03-17 18:34:58 developer Exp $
  *
  */
 
@@ -26,10 +26,11 @@ class Admin_IndexController extends Rtvg_Controller_Admin
 	public function indexAction () {
 		
 	    if ( $this->isAllowed !== true) {
-	    	return $this->_forward('login');
+	    	$this->_forward('login');
+	    	return;
 	    }
 	    
-	    return $this->_forward('control-panel');
+	    $this->_forward('control-panel');
 	}
 
 	/**
@@ -39,19 +40,18 @@ class Admin_IndexController extends Rtvg_Controller_Admin
 	public function loginAction () {
 
 	    if ( $this->isAllowed !== true){
-	        return $this->render('login');
+	        $this->render('login');
+	        return;
 	    }
 	    
-	    return $this->_forward('control-panel');
-	    
-		//$this->_helper->layout->setLayout( 'adminLogin' );
-		//$this->_forward( 'tasks' );
 	}
 
-	
-	public function controlPanelAction () {
-
-		
+	/**
+	 * Backend control panel
+	 */
+	public function controlPanelAction () 
+	{
+		//	
 	}
 
 }

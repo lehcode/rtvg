@@ -1,4 +1,81 @@
 <?php
-
+/**
+ * View script for paginated articles list
+ */
 ?>
-<h2 class="page_header">Статьи</h2>
+<h2 class="page_heading">Статьи</h2>
+
+<div class="table-menu">
+	<?php 
+	$this->navigation()->menu( $this->actions_menu )
+		->setPartial( array('partials/nav.phtml', 'admin'));
+	echo $this->navigation()
+		->setMaxDepth(2)
+		->setInjectTranslator(false)
+		->menu();
+	?>
+</div>
+
+<div class="items-table">
+<?php 
+//var_dump(count($this->list));
+if (count($this->list)){
+	?>
+	<table class="table table-striped table-bordered table-hover table-condensed"  style="font-size:x-small;">
+		<thead>
+			<tr>
+				<th width="2%"><input type="checkbox" id="checkAll" /></th>
+				<th width="2%">#</th>
+				<th width="40%">Заголовок</th>
+				<th style="text-align:center;" colspan="3">Длина</th>
+				<th style="text-align:center;" colspan="3" >Категории этой статьи</th>
+				<th width="20%">Теги</th>
+				<th>MT</th>
+				<th>MD</th>
+			</tr>
+			<tr>
+				<th colspan="3"></th>
+				<th style="text-align:center;">Заголовок</th>
+				<th style="text-align:center;">Лид</th>
+				<th style="text-align:center;">Текст</th>
+				<th style="text-align:center;">Статьи</th>
+				<th style="text-align:center;">Каналы</th>
+				<th style="text-align:center;">Программы</th>
+				<th colspan="3"></th>
+			</tr>
+		</thead>
+		<tbody>
+		<?php 
+		$c=0;
+		foreach ($this->list as $item){
+			?>
+			<tr>
+				<td><input type="checkbox" id="<?php printf('idx%s', $c); ?>" /></td>
+				<td><?php echo ($c+1); ?></td>
+				<td><a href="<?php echo $this->baseUrl('admin/content/edit/'.$item['id']); ?>"><?php echo $this->escape($item['title'].' ['.Xmltv_String::strlen($item['title']).']') ?></a></td>
+				<td><?php echo Xmltv_String::strlen($item['title']) ?></td>
+				<td><?php echo Xmltv_String::strlen($item['intro']) ?></td>
+				<td><?php echo Xmltv_String::strlen($item['body']) ?></td>
+				<td><?php echo $item['content_cat_title'] ?></td>
+				<td><?php echo $item['channel_cat_title'] ?></td>
+				<td><?php echo $item['program_cat_title'] ?></td>
+				<td><?php echo $item['tags'] ?></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<?php 
+			$c++;
+		} ?>
+		</tbody>
+		<tfoot>
+			<tr>
+				<td colspan="10" style="text-align:center;">
+					<?php echo $this->paginationControl( $this->pagenav, 'Sliding', 'partials/pagination.phtml', array() ); ?>
+				</td>
+			</tr>
+		</tfoot>
+	</table>
+	<?php 
+}
+?>
+</div>

@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.26 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: Programs.php,v 1.27 2013-03-17 18:34:58 developer Exp $
  */
 
 class Admin_Model_Programs extends Xmltv_Model_Programs
@@ -354,17 +354,12 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 			//die(__FILE__.': '.__LINE__);
 		}
 		
-		if (preg_match('/^(.+)\s+\((.+)\)$/ui', $result['title'], $m)){
-			$result['title']	 = trim($m[1]);
-			$result['sub_title'] = trim($m[2]);
-		}
-		
-		
 		//Название с восклицательным знаком
 		if (strstr($result['title'], '!')){
-			$r = explode('!', $result['title']);
-			$result['title']	 = trim($r[0]);
-			$result['sub_title'] = trim($r[1]);
+			$trim = new Zend_Filter_StringTrim( array('charlist'=>'" ') );
+			$r = explode( '!', $result['title'] );
+			$result['title']	 = $trim->filter( $r[0] ).'!';
+			$result['sub_title'] = Xmltv_String::ucfirst( $trim->filter($r[1]) );
 		}
 		
 		// Смесь кирилицы и латинницы (бывает)
@@ -375,17 +370,18 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		}
 		
 		//"Кто хочет стать миллионером?" с Дмитрием Дибровым
-		if (preg_match('/^(.+)\s+((с|со)\s\w+\s\w+[\.-]*)$/ui', $result['title'], $m)){
-			$result['title']	 = trim( $m[1], '" ');
-			$result['sub_title'] = trim( Xmltv_String::ucfirst( trim($m[2])), '" ');
+		if (preg_match('/^([\p{Common}\p{Cyrillic}\p{Latin}]+)\s+((с|со)\s\w+\s\w+[\.-]*)$/u', $result['title'], $m)){
+			
+			$trim = new Zend_Filter_StringTrim( array('charlist'=>'" ') );
+			$result['title']	 = $trim->filter( $m[1]);
+			$result['sub_title'] = $trim->filter( Xmltv_String::ucfirst( $trim->filter($m[2])), '" ');
 		}
-		
 		
 		if (Xmltv_String::stristr($result['title'], '+')){
 			$result['title'] = Xmltv_String::str_ireplace('+', 'плюс', $result['title']);
 		}
 		
-		if (preg_match('/^"([\w\s\d]+)"\.\s+(.+)$/ui', $result['title'], $m)){
+		if (preg_match('/^"([\p{Common}\p{Cyrillic}\p{Latin}]+)"\.\s+(.+)$/ui', $result['title'], $m)){
 		    if (APPLICATION_ENV=='development'){
 		    	//var_dump($m);
 		    	//die(__FILE__.': '.__LINE__);
@@ -398,6 +394,11 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		$trim = new Zend_Filter_StringTrim(array('charlist'=>',!?:;- \/\''));
 		$result['title'] = $trim->filter($result['title']);
 		$result['sub_title'] = trim($result['sub_title']);
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
 		
 		return $result;
 		
@@ -1588,7 +1589,14 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	protected function parseSportsTitle($input){
 		
-	    $sports = array(
+		if (APPLICATION_ENV=='development'){
+			//var_dump(func_get_args());
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		$result = $input;
+	    
+		$sports = array(
 	    		'Street Workout',
 	    		'Автоспорт',
 	    		'Альпинизм',
@@ -1646,9 +1654,10 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    		'Чемпионат Германии',
 	    		'Кубок',
 	    );
-	    $regex= array(
-	    		'/^('.implode('|', $sports).')\.\s*([\w\s\d"-]+)\.\s*(.*)$/ui',
-	    		'/^('.implode('|', $champs).').*\.?(\s*)(.*)$/ui',
+	    
+		$regex= array(
+	    		'/^('.implode('|', $sports).')\.\s+([\p{Common}\p{Cyrillic}\p{Latin}]+)\.\s*([\p{Common}\p{Cyrillic}\p{Latin}]*)$/ui',
+	    		'/^('.implode('|', $champs).').*\.?(\s*)([\p{Common}\p{Cyrillic}\p{Latin}]+)$/ui',
 	    );
 	    foreach ($regex as $r){
 	    	if (preg_match($r, $input['title'], $m)){
@@ -1658,7 +1667,12 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    	}
 	    }
 	    
-	    $regex = '/^(Мировой Кубок)\.\s+([\w\s\d" -\.]+)$/ui';
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);
+		}
+	    
+		$regex = '/^(Мировой Кубок)\.\s+([\p{Common}\p{Cyrillic}\p{Latin}]+)$/ui';
 	    if (preg_match($regex, $input['title'], $m)){
 	    	//var_dump($string);
 	    	$result['title']	 = trim($m[1]);
@@ -1668,10 +1682,10 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    
 	    
 	    $regex = array(
-	    		'/^((Жеребьевка)\s+([\w\d\s\/]+))\.\s+(.+)$/ui',	  				//Жеребьевка 1/8 финала Лиги чемпионов. Прямая трансляция
-	    		'/^("([\w\s]+)"\.\s+([\w\s\d-]+))\.\s+([\w\s\.-]+)$/ui',			//"В дни теннисных каникул". Уимблдон-2012. Сабина Лисицки - Божана Йовановски
-	    		'/^("([\w\s]+)"\.\s+([\w\s\d-]+\.\s+\w+))\.\s+([\w\s\.\/-]+)$/ui',	//"В дни теннисных каникул". Уимблдон-2012. Финал. Д. Маррей/Фр. Нильсен - Р. Линдстедт/Х. Текау
-	    		'/^(.+(Чемпионат России\s[\w\s]+))\sсезона\s([\d]{4}-[\d]{4})\sгода\.?(.+)/ui',	//СОГАЗ - Чемпионат России по футболу сезона 2012-2013 года. "Терек" - "Динамо"
+	    		'/^((Жеребьевка)\s+([\p{Common}\p{Cyrillic}\p{Latin}]+))\.\s+(\p{Common}\p{Cyrillic}\p{Latin})$/ui',	  				//Жеребьевка 1/8 финала Лиги чемпионов. Прямая трансляция
+	    		'/^("([\p{Common}\p{Cyrillic}]+)"\.\s+([\p{Common}\p{Cyrillic}\p{Latin}]+))\.\s+([\p{Common}\p{Cyrillic}\p{Latin}]+)$/ui',			//"В дни теннисных каникул". Уимблдон-2012. Сабина Лисицки - Божана Йовановски
+	    		'/^("([\p{Common}\p{Cyrillic}]+)"\.\s+([\p{Common}\p{Cyrillic}\p{Latin}]+\.\s+[\p{Common}\p{Cyrillic}\p{Latin}]+))\.\s+([\p{Common}\p{Cyrillic}\p{Latin}]+)$/ui',	//"В дни теннисных каникул". Уимблдон-2012. Финал. Д. Маррей/Фр. Нильсен - Р. Линдстедт/Х. Текау
+	    		'/^(.+(Чемпионат России\s[\p{Common}\p{Cyrillic}\d\s]+))\sсезона\s([\d]{4}-[\d]{4})\sгода\.?(.+)/ui',	//СОГАЗ - Чемпионат России по футболу сезона 2012-2013 года. "Терек" - "Динамо"
 	    );
 	    foreach ($regex as $r){
 	    	if (preg_match($r, $input['title'], $m)){
@@ -1722,6 +1736,8 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	protected function parseNewsTitle($input){
 		
+		$result = $input;
+		
 	    if ( $input['title']=='Вечерние новости с субтитрами') {
 	        
 	    	$result['title'] = $input['title'];
@@ -1761,12 +1777,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    		
 	    }
 	    
-	    if ($result){
-	        return $result;
-	    }
-	    
-	    $input['live'] = 0;
-	    return $input;
+	    return $result;
 	    
 	}
 	
@@ -1778,21 +1789,25 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	protected function detectLive($input){
 		
+	    $result = $input;
+	    $result['live'] = 0;
 	    
 	    $search = array(
 	    	'Прямая трансляция',
 	    	'Трансляция из',
 	    );
 	    foreach ($search as $string){
-	        if ( Xmltv_String::stristr($input['title'], $string)) {
+	        if ( Xmltv_String::stristr( $input['title'], $string )) {
 	            $result['live'] = 1;
 	        }
 	    }
 	    
 	    if ( preg_match( '/^(Прямая трансляция:\s)(.+)$/ui', $input['title'], $m)){
 	    	$result['title'] = Xmltv_String::str_ireplace( $m[1], '', $input['title']);
+	    	$result['live'] = 1;
 	    } elseif( preg_match('/^(.+)\s(Прямая трансляция).*$/ui', $input['title'], $m)){
 	    	$result['title'] = Xmltv_String::str_ireplace( $m[2], '', $input['title']);
+	    	$result['live'] = 1;
 	    }
 	    
 	    if (Xmltv_String::stristr($input['title'], 'Live')){
@@ -1801,12 +1816,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    	$result['live']  = 1;
 	    }
 	    
-	    if ($result){
-	        return $result;
-	    } 
-	    
-	    $input['live'] = 0;
-	    return $input;
+	    return $result;
 	    
 	}
 	
@@ -2293,6 +2303,13 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    $input['rating'] = null;
 	    return $input;
 	    
+	}
+	
+	
+	public function newProgram(array $input=array()){
+		
+		return $this->table->createRow( $input );
+		
 	}
 	
 }
