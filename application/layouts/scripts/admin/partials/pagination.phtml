@@ -1,0 +1,34 @@
+<?php 
+/**
+ * Admin backend pagination partial
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version $Id: pagination.phtml,v 1.1 2013-03-17 17:01:25 developer Exp $
+ */
+?>
+
+<?php if ($this->pageCount) { 
+	printf("Страницы с %d по %d :: Всего(%d)", $this->firstItemNumber, $this->lastItemNumber, $this->totalItemCount);
+	?>
+	<div class="pagination">
+		<ul><?php 
+			if (isset($this->previous)) { ?><li><a href="<?php echo $this->baseUrl('admin/content/articles/page/'.$this->first); ?>">
+				<?php echo $this->escape('●'); ?></a></li>
+			<?php } else { ?><li class="disabled"><a href="#"><?php echo $this->escape('○'); ?></a></li> 
+			<?php 
+			} ?>
+			 
+			<?php if (isset($this->previous)){ ?><li><a href="<?php echo $this->baseUrl('admin/content/articles/page/'.$this->previous); ?>">&lt;</a></li>
+			<?php } else { ?><li class="disabled"><a href="#">&lt;</a></li><?php } ?>
+			 
+			<?php if (isset($this->next)) { ?><li><a href="<?php echo $this->baseUrl('admin/content/articles/page/'.$this->next); ?>">&gt;</a></li>
+			<?php } else { ?><li class="disabled"><a href="#">&gt;</a></li><?php } ?>
+			 
+			<?php if (isset($this->next)) { ?><li><a href="<?php echo $this->baseUrl('admin/content/articles/page/'.$this->last); ?>"><?php echo $this->escape('■'); ?></a></li>
+			<?php } else { ?><li class="disabled"><a href="#"><?php echo $this->escape('□'); ?></a></li><?php } ?>
+	 	</ul>
+	</div>
+<?php 
+} ?>
+
