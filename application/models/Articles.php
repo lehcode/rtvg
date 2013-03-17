@@ -3,16 +3,57 @@
  * Articles model
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Articles.php,v 1.1 2013-03-17 06:33:12 developer Exp $
+ * @version $Id: Articles.php,v 1.2 2013-03-17 17:19:11 developer Exp $
  *
  */
-class Xmltv_Model_DbTable_Articles extends Xmltv_Db_Table_Abstract
+class Xmltv_Model_Articles
 {
-	protected $_name = 'content';
-	protected $_primary = array('id');
+	/**
+	 * @var Zend_Db_Adapater_Mysqli
+	 */
+	protected $db;
 	
-	public function init()
+	/**
+	 * Table prefix
+	 * @var string
+	 */
+	protected static $tblPfx='';
+	
+	public function __construct(array $config=null)
 	{
-		parent::init();
+		if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config')) {
+	        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
+	    }
+	    
+	    if (is_array($config)) {
+	    	$this->setOptions($config);
+	    }
+	    
+		// Init database
+		$this->dbConf = $config['db'];
+		$this->db = new Zend_Db_Adapter_Mysqli( $this->dbConf);
+		
+		// Set table prefix
+		$pfx = $this->dbConf->get('tbl_prefix');
+		if(false !== (bool)$pfx) {
+		    self::$tblPfx = $pfx; 
+		}
 	}
+	
+	/**
+	 * Set model options
+	 * @param array $options
+	 */
+	public function setOptions(array $options=null) {
+	    
+		$methods = get_class_methods($this);
+		foreach ($options as $key => $value) {
+			$method = 'set' . ucfirst($key);
+			if (in_array($method, $methods)) {
+				$this->$method($value);
+			}
+		}
+		return $this;
+	}
+	
 }

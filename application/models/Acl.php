@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.11 2013-03-16 20:03:36 developer Exp $
+ * @version $Id: Acl.php,v 1.12 2013-03-17 17:19:11 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -72,18 +72,27 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    // Admin resources
 	    $adminModule = new Zend_Acl_Resource( 'admin:' );
 	    $this->add( $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:actors' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:archive' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:index' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:auth' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:channels' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:comments' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:content' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:content.articles' ), 'admin:content' );
 	    $this->add( new Zend_Acl_Resource( 'admin:error.error' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:import.index' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:import.remote' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:grab' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:import' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:import.index' ), 'admin:import' );
+	    $this->add( new Zend_Acl_Resource( 'admin:import.remote' ), 'admin:import' );
+	    $this->add( new Zend_Acl_Resource( 'admin:movies' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:programs' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:series' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:sysinfo' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:system' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:user' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.login' ), 'admin:user' );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.profile' ), 'admin:user' );
-	    $this->add( new Zend_Acl_Resource( 'admin:programs' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:channels' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:content' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:content.articles' ), 'admin:content' );
 	    
 	    // Deny acces to denied (wrong) resources to all
 	    $this->deny( null, array(
@@ -100,12 +109,14 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    // Let humans can try to login/logout
 	    $this->allow( null,  'admin:auth', null, new Rtvg_Acl_IsNotBotAssertion() );
 	    
-	    // Publisher can access publishing parts
-	    // and backend login
+	    // Publisher can access publishing parts and backend login
 	    $this->allow( array(self::ROLE_EDITOR), array(
 	    	'admin:content',
 	    	'admin:auth',
 	    	'admin:index',
+	    	'admin:actors',
+	    	'admin:movies',
+	    	'admin:series',
 	    ));
 	    $this->allow( self::ROLE_GOD );
 	    

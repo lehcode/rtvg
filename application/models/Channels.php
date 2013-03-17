@@ -1,8 +1,10 @@
 <?php
 /**
- * Channels model
+ * Frontend channels model
  *
- * @version $Id: Channels.php,v 1.22 2013-03-14 06:09:55 developer Exp $
+ * @author     Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version    $Id: Channels.php,v 1.23 2013-03-17 17:19:11 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
