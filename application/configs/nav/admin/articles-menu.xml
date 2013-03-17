@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+/**
+ * 
+ * Main menu for backend
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: articles-menu.xml,v 1.1 2013-03-17 21:33:50 developer Exp $
+ */
+ -->
+<config>
+	<nav>
+		<create>
+			<label>+</label>
+			<privilege>create</privilege>
+			<resource>admin:content.articles</resource>
+			<module>admin</module>
+			<controller>content</controller>
+			<action>edit</action>
+			<aClass>btn</aClass>
+		</create>
+		<unpublish>
+			<label>○●</label>
+			<privilege>unpublish</privilege>
+			<resource>admin:content.articles</resource>
+			<module>admin</module>
+			<controller>content</controller>
+			<action>unpublish</action>
+			<aClass>btn</aClass>
+		</unpublish>
+		<delete>
+			<label>-</label>
+			<privilege>delete</privilege>
+			<resource>admin:content.articles</resource>
+			<module>admin</module>
+			<controller>content</controller>
+			<action>remove</action>
+			<aClass>btn</aClass>
+		</delete>
+	</nav>
+</config>

@@ -1,0 +1,15 @@
+<?php
+/**
+ * Backend navigation partial
+ * 
+ * @uses Zend_Navigation_Page
+ */
+?>
+<div class="btn-group">
+<?php
+foreach ($this->container as $page) {
+	if ( $this->isAllowed($page->getResource()) ){
+		?><button class="btn btn-mini"
+			type="submit" <?php echo (null !== $page->get('id', null)) ? 'id="'.$page->get('id').'"' : null ; ?>><?php echo $page->getLabel() ?></button><?php 
+	}
+} ?></div>
