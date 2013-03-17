@@ -3,8 +3,7 @@
  * Video cache for main video from VideosController::showVideoAction()
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @uses Xmltv_Db_Table_Abstract
- * @version $Id: VcacheMain.php,v 1.7 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: VcacheMain.php,v 1.8 2013-03-17 06:27:36 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_VcacheMain extends Xmltv_Db_Table_Abstract
