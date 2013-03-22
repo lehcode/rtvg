@@ -1,0 +1,50 @@
+<?php
+/**
+ * Backend navigation partial
+ * 
+ * @uses Zend_Navigation_Page
+ */
+
+$view = new Zend_View();
+$view->headScript()->appendScript("$(document).ready(function() {
+    $('form#edit-article-menu button').click(function(e){
+	e.preventDefault;
+	if ($(this).attr('id')=='apply'){
+		$('form#edit-article-menu input[name=do]').val('apply');
+	}else if ($(this).attr('id')=='save'){
+		$('form#edit-article-menu input[name=do]').val('save');
+	}else if ($(this).attr('id')=='save-plus'){
+		$('form#edit-article-menu input[name=do]').val('save-plus');
+	}
+	$('form#edit-article-menu').submit();
+})});
+");
+?>
+<div class="btn-group">
+<?php
+foreach ($this->container as $page) {
+	if ( $this->isAllowed($page->getResource()) ){
+	    switch ($page->idAttr){
+	    	default:
+	        case 'back':
+	    	    ?>
+	    	    <button class="btn btn-mini" 
+	    	    	type="button" 
+	    	    	id="back"  
+	    	    	<?php echo (null !== $page->get('onclick', null)) ? ' onclick="'.$page->get('onclick').'"' : null ; ?>>
+	    	    		<?php echo $page->getLabel() ?></button>
+	    	    <?php 
+	    	break;
+
+	        case 'apply':
+	        case 'save':
+	        case 'save-plus':
+	            $onclick = "$('#articleForm input[name=do]').val('".$page->idAttr."'); $('articleForm').submit();";
+	    	    ?>
+	    	    <button class="btn btn-mini" 
+	    	    	id="<?php echo $page->idAttr; ?>"><?php echo $page->getLabel() ?></button>
+	    	    <?php 
+	    	break;
+	    }
+	}
+} ?></div>

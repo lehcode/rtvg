@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+/**
+ * 
+ * Main menu for backend
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: edit-article-menu.xml,v 1.1 2013-03-22 04:29:10 developer Exp $
+ */
+ -->
+<config>
+	<nav>
+	
+		<back>
+			<label>Назад</label>
+			<resource>admin:content</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>content</controller>
+		   	<action>articles</action>
+			<aClass>btn</aClass>
+			<onclick>window.history.back(-1);</onclick>
+			<idAttr>back</idAttr></back>
+		<apply>
+			<label>Применить</label>
+			<resource>admin:content.article</resource>
+			<privilege>edit</privilege>
+			<module>admin</module>
+			<controller>content</controller>
+			<action>edit</action>
+			<aClass>btn</aClass>
+			<idAttr>apply</idAttr>
+		</apply>
+		<save>
+			<label>Сохранить</label>
+			<resource>admin:content.article</resource>
+			<privilege>edit</privilege>
+			<module>admin</module>
+			<controller>content</controller>
+			<action>edit</action>
+			<aClass>btn</aClass>
+			<idAttr>save</idAttr>
+		</save>
+		<saveAndNew>
+			<label>Сохранить+</label>
+			<resource>admin:content.article</resource>
+			<privilege>edit</privilege>
+			<module>admin</module>
+			<controller>content</controller>
+			<action>ediy</action>
+			<aClass>btn</aClass>
+			<idAttr>save-plus</idAttr>
+		</saveAndNew>
+		
+	</nav>
+</config>
