@@ -3,7 +3,7 @@
  * Programs listings display
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: ListingsController.php,v 1.35 2013-03-14 11:43:11 developer Exp $
+ * @version $Id: ListingsController.php,v 1.36 2013-03-22 17:51:43 developer Exp $
  *
  */
 class ListingsController extends Rtvg_Controller_Action
@@ -94,16 +94,14 @@ class ListingsController extends Rtvg_Controller_Action
 				//die(__FILE__.': '.__LINE__);
 			}
 			
-			/*
+			
 			$l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
 			if (parent::checkDate($listingDate, $l)===false){
-			    $this->view->assign( 'history_length', $l);
-				$this->view->assign('hide_sidebar', 'right');
-				$this->render('outdated');
-				return true;
+			    //$this->view->assign( 'history_length', $l);
+				//$this->view->assign( 'hide_sidebar', 'right' );
+				$this->view->headMeta()->setName('robots', 'noindex,follow');
 			}
-			*/
-			
+
 			if (APPLICATION_ENV=='development'){
 				//var_dump($listingDate->toString());
 				//die(__FILE__.': '.__LINE__);
@@ -225,11 +223,7 @@ class ListingsController extends Rtvg_Controller_Action
 			if ($this->_getParam('tz', null)!==null) {
 			    if ($timeShift!=0){
 					foreach ($list as $item) {
-					    if (APPLICATION_ENV=='development'){
-					        //var_dump($item['start']->toString());
-					        //die(__FILE__.': '.__LINE__);
-					    }
-						$item['start'] = $item['start']->addHour($timeShift);
+					    $item['start'] = $item['start']->addHour($timeShift);
 						$item['end']   = $item['end']->addHour($timeShift);
 						$this->view->headMeta()->setName('robots', 'noindex,follow');
 					}
@@ -247,12 +241,6 @@ class ListingsController extends Rtvg_Controller_Action
 			 *   2. Запрос в файловый кэш
 			 * 		Если найдено - сохранение в БД
 			 */
-			
-			if ($_GET['RTVG_PROFILE']){
-				//var_dump($this->isAllowed);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
 			if (count($list) && ($list!==false)) {
 			    
 			    $listingVideos = array();

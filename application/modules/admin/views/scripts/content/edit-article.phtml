@@ -4,4 +4,33 @@
  */
 ?>
 
-<h3 class="action"><?php echo (isset($this->new) && $this->new===true) ? "Новая статья" : "" ; ?></h3>
+<?php if (!$this->new) : $article = $this->article->toArray(); endif; ?>
+	
+<h3 class="page_heading"><?php echo ($this->new === true) ? "Новая статья" : "Редактирование" ; ?></h3>
+
+<div class="container-fluid menu edit-article" id="edit-article-menu">
+	<?php 
+	$this->navigation()->menu( $this->article_menu )
+		->setPartial( array('partials/edit-article-menu.phtml', 'admin'));
+	echo $this->navigation()
+		->setMaxDepth(0)
+		->setInjectTranslator(false)
+		->menu();
+	?>
+</div>
+
+<?php
+$form = new Xmltv_Form_EditArticle( array(
+	'class'=>'admin-form form form-horizontal',
+	'id'=>'articleForm',
+), array( 
+	'article'=>$article,
+	'categories'=>$this->categories,
+	'authors'=>$this->authors,
+	'user'=>$this->user,
+));
+echo $form;
+?>
+
+
+

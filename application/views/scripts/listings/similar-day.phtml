@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: similar-day.phtml,v 1.2 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: similar-day.phtml,v 1.3 2013-03-22 17:51:44 developer Exp $
  *
  */
 ?>
@@ -20,15 +20,15 @@ $this->headTitle( $this->escape( 'Похожие программы сегодн
 <?php 
 if (isset($this->similar)) {
     foreach ($this->similar as $single) {
-        $channelIcon = $this->baseUrl('images/channel_logo/'.$single->channel_icon);
-        $date = new Zend_Date($single->start, 'YYYY-MM-dd HH:mm:ss' );
+        $channelIcon = $this->baseUrl('images/channel_logo/'.$single['channel_icon']);
+        $date = new Zend_Date($single['start'], 'YYYY-MM-dd HH:mm:ss' );
         $channelUrl = $this->url( array( 'channel'=>$single['channel_alias'] ), 'default_listings_day-listing' );
         $programUrl = $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U");
 		?>
 		
 		
 			<img src="<?php echo $channelIcon ?>" 
-				alt="<?php echo $single->channel_title ?>" />
+				alt="<?php echo $single['channel_title'] ?>" />
 			
 			<span class="label">
 				<?php echo $single['start']->toString( 'd MMMM') ?></span>&nbsp;<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?>

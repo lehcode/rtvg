@@ -4,12 +4,26 @@
  * 
  * @uses Zend_Navigation_Page
  */
+
+$view = new Zend_View();
+$view->headScript()->appendScript("function toggleInputAndSubmit(val){
+	var form = '#tableForm';
+	$(form+' input[name=\"do\"]').val( val );
+	$(form).submit();
+}
+$(document).ready(function($){
+	$('button#new').click(function(e){ e.preventDefault(); toggleInputAndSubmit($(this).attr('id')); });
+	$('button#toggle').click(function(e){ e.preventDefault(); toggleInputAndSubmit($(this).attr('id')); });
+	$('button#delete').click(function(e){ e.preventDefault(); toggleInputAndSubmit($(this).attr('id')); });
+});
+");
 ?>
 <div class="btn-group">
 <?php
 foreach ($this->container as $page) {
 	if ( $this->isAllowed($page->getResource()) ){
 		?><button class="btn btn-mini"
-			type="submit" <?php echo (null !== $page->get('id', null)) ? 'id="'.$page->get('id').'"' : null ; ?>><?php echo $page->getLabel() ?></button><?php 
+			type="submit" <?php echo (null !== $page->get('idAttr', null)) ? 'id="'.$page->get('idAttr').'"' : null ; ?>>
+			<?php echo $page->getLabel() ?></button><?php 
 	}
 } ?></div>

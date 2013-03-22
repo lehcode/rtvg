@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin
  * @subpackage backend
- * @version    $Id: admin.phtml,v 1.12 2013-03-17 18:34:58 developer Exp $
+ * @version    $Id: admin.phtml,v 1.13 2013-03-22 17:51:44 developer Exp $
  *
  */
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
@@ -50,14 +50,12 @@ echo $this->headScript();
 			$this->escape( $this->user->display_name.': ['.
 			$this->user->role.']').'</span>&nbsp;<b>'.
 			$this->escape('<'.$this->user->email.'>' ).'</b>&nbsp;'.
-			'<span><a href="/" target="_blank">http://rutvgid.ru</a></span>'; 
+			'<span><a href="/" target="_blank">Главная</a></span>'; 
 		} ?>
 	</div>
 
 	<div class="admin container-fluid">
 
-	<?php echo (count($this->messages)>0 ? $this->showMessages( $this->messages ) : null ); ?>
-	
 	<?php if ($this->isAllowed('admin:auth') && $this->user['role']!='guest') {
 		// Header HTML
 		?>
@@ -85,19 +83,25 @@ echo $this->headScript();
 			?>
 		</div>
 		<?php 
-		if ($this->isAllowed('admin:sysinfo')){
+		if ($this->isAllowed('admin:system')){
 			// Some system info
 			echo $this->sysinfo();
 		}
 	} ?>
-
 	
-	<?php $bc = $this->navigation()->breadcrumbs( Zend_Registry::get('AdminMenu') )->setLinkLast(false)->setMinDepth(0)->render();
+
+	<?php if (!isset($this->hide_breadcrumb) || ($this->hide_breadcrumb!==true)){  
+	$bc = $this->navigation()->breadcrumbs( Zend_Registry::get('AdminMenu') )->setLinkLast(false)->setMinDepth(0)->render();
 	if (!empty($bc)){
 		?><div class="breadcrumb row-fluid"><?php printf("Вы здесь: %s", $bc); ?></div>
-	<?php } ?>
+	<?php }} ?>
 	
-
+	<?php if (count($this->messages)>0){
+	    foreach ($this->messages as $msg){
+	    	echo $this->showMessage( $msg, 'notice' );
+	    } 
+	}?>
+	
 	<div class="row-fluid" id="area">
 		<?php echo $this->layout()->content; ?>
 	</div>

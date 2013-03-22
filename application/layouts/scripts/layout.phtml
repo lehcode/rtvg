@@ -3,7 +3,7 @@
  * Common layout
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: layout.phtml,v 1.34 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: layout.phtml,v 1.35 2013-03-22 17:51:44 developer Exp $
  *
  */
 
@@ -17,12 +17,6 @@ if ($this->hide_sidebar=='left'){
 if ($this->hide_sidebar=='right'){
 	$this->maincontent_width = 10;
 }
-
-$this->jQuery()->enable() //enable jquery ;
-	//->setCdnSsl(true) if need to load from ssl location
-	->setVersion('1.8.3') //jQuery version, automatically 1.5 = 1.5.latest
-	->setUiVersion('1.8.18') //jQuery UI version, automatically 1.8 = 1.8.latest
-	->uiEnable();
 
 $this->headScript()
 	->appendFile( 'http://yandex.st/share/share.js' )
@@ -102,8 +96,8 @@ if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
 <?php 
 echo $this->headTitle(), PHP_EOL;
 echo $this->headMeta(), PHP_EOL;
-echo $this->jQuery();
 echo $this->headLink(), PHP_EOL;
+echo $this->jQuery();
 echo $this->headScript(), PHP_EOL;
 ?>
 <?php 
@@ -216,13 +210,15 @@ var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga
 })();"); ?></script>
 <?php 
 $scripts = array(
-	'<script type="text/javascript">'.Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/wizard/rich.js')).'</script>'."\n",
-	'<script language="javascript" type="text/javascript" src="http://contlist.com/7s7sp0lsgm43w9ntydg"></script>'."\n"
+	'<script type="text/javascript" type="text/javascript" src="'.$this->baseUrl('js/ss/wizard/rich.js').'"></script>'."\n",
+	'<script language="javascript" type="text/javascript" src="http://contlist.com/7s7sp0lsgm43w9ntydg"></script>'."\n",
+	'<script type="text/javascript" charset="windows-1251" src="http://possums-mind.asia/a/46401989-rutvgid.ru.js"></script>'."\n",
 );
 echo $scripts[rand( 0, count($scripts)-1 )];
 ?>
-<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/advmaker/cu.js')); ?></script>
-<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/advmaker/sb.js')); ?></script>
+<?php /*<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/wizard/rollin.js')); ?></script>*/ ?>
+<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify('var ref = escape(document.referrer);
+document.write(\'<scr\' + \'ipt type="text/javascript" src="http://mediaunder.info/scode.php?site=13319&ref=\' + ref + \'"></scr\' + \'ipt>\')'); ?></script>
 <?php } ?>
 <?php echo $this->inlineScript(); ?>
 </body>

@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: IndexController.php,v 1.10 2013-03-17 18:34:58 developer Exp $
+ * @version    $Id: IndexController.php,v 1.11 2013-03-22 17:51:44 developer Exp $
  *
  */
 
@@ -24,7 +24,7 @@ class Admin_IndexController extends Rtvg_Controller_Admin
 	 * Redirect to login
 	 */
 	public function indexAction () {
-		
+		//var_dump($this->isAllowed);
 	    if ( $this->isAllowed !== true) {
 	    	$this->_forward('login');
 	    	return;

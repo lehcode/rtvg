@@ -5,7 +5,7 @@
  * Main menu for backend
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: articles-menu.xml,v 1.1 2013-03-17 21:33:50 developer Exp $
+ * @version $Id: articles-menu.xml,v 1.2 2013-03-22 17:51:43 developer Exp $
  */
  -->
 <config>
@@ -13,29 +13,32 @@
 		<create>
 			<label>+</label>
 			<privilege>create</privilege>
-			<resource>admin:content.articles</resource>
+			<resource>admin:content.article</resource>
 			<module>admin</module>
 			<controller>content</controller>
 			<action>edit</action>
 			<aClass>btn</aClass>
+			<idAttr>new</idAttr>
 		</create>
-		<unpublish>
+		<toggle>
 			<label>○●</label>
 			<privilege>unpublish</privilege>
-			<resource>admin:content.articles</resource>
+			<resource>admin:content.article</resource>
 			<module>admin</module>
 			<controller>content</controller>
 			<action>unpublish</action>
 			<aClass>btn</aClass>
-		</unpublish>
+			<idAttr>toggle</idAttr>
+		</toggle>
 		<delete>
 			<label>-</label>
 			<privilege>delete</privilege>
-			<resource>admin:content.articles</resource>
+			<resource>admin:content.article</resource>
 			<module>admin</module>
 			<controller>content</controller>
 			<action>remove</action>
 			<aClass>btn</aClass>
+			<idAttr>delete</idAttr>
 		</delete>
 	</nav>
 </config>

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.27 2013-03-14 11:43:11 developer Exp $
+ * @version $Id: VideosController.php,v 1.28 2013-03-22 17:51:44 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -41,7 +41,7 @@ class VideosController extends Rtvg_Controller_Action
 		if ( parent::validateRequest()){
 			
 			$this->view->assign( 'pageclass', 'show-video' );
-			$conf = Zend_Registry::get('site_config')->videos->get(related);
+			$conf = Zend_Registry::get('site_config')->videos->get('related');
 			$ytConfig=array(
 				'max_results' => (int)$conf->get('amount'),
 				'safe_search' => $conf->get('safe_search'),

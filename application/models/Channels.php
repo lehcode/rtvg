@@ -4,7 +4,7 @@
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: Channels.php,v 1.23 2013-03-17 17:19:11 developer Exp $
+ * @version    $Id: Channels.php,v 1.24 2013-03-22 17:51:44 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -351,9 +351,11 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function category($alias=null){
 		
-		if ($alias){
+		if (null !== $alias){
 		    $table = new Xmltv_Model_DbTable_ChannelsCategories();
 		    return $table->fetchRow("`alias` LIKE '".$alias."'");
+		} else {
+			return false;
 		}
 	}
 	

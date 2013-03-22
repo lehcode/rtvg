@@ -1,7 +1,7 @@
 <?php 
 //$this->headMeta()->setName('robots', 'noindex,follow');
-$channelTitle = $this->escape($this->channel->title);
-$channelAlias = $this->escape($this->channel->alias);
+$channelTitle = $this->escape($this->channel['title']);
+$channelAlias = $this->escape($this->channel['alias']);
 $this->headTitle( $channelTitle );
 ?>
 <h1><?php echo $channelTitle ?></h1>

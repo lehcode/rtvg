@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.12 2013-03-17 17:19:11 developer Exp $
+ * @version $Id: Acl.php,v 1.13 2013-03-22 17:51:44 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -58,10 +58,15 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:search' ), $default );	    
 	    $this->add( new Zend_Acl_Resource( 'default:search.search' ), 'default:search' );	    
 	    $this->add( new Zend_Acl_Resource( 'default:auth' ), $default );
-	    // Dummy ACLs to avoid some minor routing error notices    
-	    $this->add( new Zend_Acl_Resource( 'default:fonts' ));	    
-	    $this->add( new Zend_Acl_Resource( 'default:images' ));	    
-	    $this->add( new Zend_Acl_Resource( 'default:img' ));
+	    // Dummy ACLs to avoid some minor routing error notices 
+	    $this->add( new Zend_Acl_Resource( 'default:images' ), $default);	    
+	    $this->add( new Zend_Acl_Resource( 'default:images.index' ), $default);	    
+	    $this->add( new Zend_Acl_Resource( 'default:img' ), $default);
+	    $this->add( new Zend_Acl_Resource( 'default:img.index' ), $default);
+	    $this->add( new Zend_Acl_Resource( 'default:fonts' ), $default);
+	    $this->add( new Zend_Acl_Resource( 'default:fonts.index' ), $default);
+	    $this->add( new Zend_Acl_Resource( 'default:css' ), $default);
+	    $this->add( new Zend_Acl_Resource( 'default:css.index' ), $default);
 	    
 	    // Deny errors for everyone
 	    $denied1 = new Zend_Acl_Resource( 'default:%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE.%25D0%25BE%25D0%25BD%25D0%25BB%25D0%25B0%25D0%25B9%25D0%25BD' );	    
@@ -76,10 +81,11 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:archive' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:index' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:auth' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:login' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:channels' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:comments' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:content' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:content.articles' ), 'admin:content' );
+	    $this->add( new Zend_Acl_Resource( 'admin:content.article' ), 'admin:content' );
 	    $this->add( new Zend_Acl_Resource( 'admin:error.error' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:grab' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:import' ), $adminModule );
@@ -88,8 +94,9 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:movies' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:programs' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:series' ), $adminModule );
-	    $this->add( new Zend_Acl_Resource( 'admin:sysinfo' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:system' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:system.cache' ), $adminModule );
+	    $this->add( new Zend_Acl_Resource( 'admin:system.phpinfo' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:user' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.login' ), 'admin:user' );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.profile' ), 'admin:user' );
@@ -100,24 +107,33 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    	$denied2,
 	    ));
 	    
-	    // Deny everything to guests
-	    $this->deny( self::ROLE_GUEST );
+	    // Deny everything
+	    $this->deny();
 	    
-	    // Conditionally allow parts to guests
-	    $this->allow( self::ROLE_GUEST, $default, null, new Rtvg_Acl_IsNotBotAssertion() );
+	    // Conditionally allow parts
+	    $this->allow( null, $default, null, new Rtvg_Acl_IsNotBotAssertion() );
+	    $this->allow( null, $default, null, new Rtvg_Acl_IsNotBadBotAssertion() );
 	    
-	    // Let humans can try to login/logout
-	    $this->allow( null,  'admin:auth', null, new Rtvg_Acl_IsNotBotAssertion() );
 	    
 	    // Publisher can access publishing parts and backend login
-	    $this->allow( array(self::ROLE_EDITOR), array(
-	    	'admin:content',
+	    $this->allow( null, array(
 	    	'admin:auth',
-	    	'admin:index',
+	    	'admin:login',
+	    ));
+	    $this->allow(array(self::ROLE_EDITOR, self::ROLE_PUBLISHER), array(
+	    	'admin:content',
 	    	'admin:actors',
 	    	'admin:movies',
 	    	'admin:series',
+	    	'admin:index',
 	    ));
+	    
+	    $this->deny(array(
+	    	self::ROLE_EDITOR,
+	    	self::ROLE_PUBLISHER,
+	    ), 'admin:content.article', 'income');
+	    
+	    // Alow everything to root user
 	    $this->allow( self::ROLE_GOD );
 	    
 	    return $this;

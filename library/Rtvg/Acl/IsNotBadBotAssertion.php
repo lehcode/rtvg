@@ -24,7 +24,7 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         	'Windows NT 6.1',
         	'Mozilla/4.0 (compatible; MSIE 4.01; Windows NT)',
         	'Mozilla/5.0 (compatible; SearchBot)',
-        	'Mozilla/4.61 [en] (X11; U; ) - BrowseX (2.0.0 Windows)',
+        	'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
         );
         foreach ($badAgents as $bad){
         	if ($userAgent==$bad) {
@@ -38,7 +38,9 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         	'MJ12bot',
         	'Nutch',
         	'cr4nk',
-        	'pycurl',
+        	'Firefox/3.',
+        	'Epiphany/2.',
+        	'X11; U;',
         );
         foreach ($badAgents as $string){
         	if (stristr($userAgent, $string)) {

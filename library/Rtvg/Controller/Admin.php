@@ -37,6 +37,11 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
      */
     protected $isAllowed;
     
+    /**
+     * Main model for controller
+     */
+    protected $mainModel;
+    
     public function init(){
         
         $this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct( 'grantAccess', array( 'privilege'=>$this->_getParam('action'), 'module'=>'admin' ) );
@@ -67,10 +72,7 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
         	return false;
         }
         
-        if ($this->validateRequest()){
-        	return false;
-        }
-        
+        $this->validateRequest();
         $this->view->addScriptPath("/path/to/your/view/scripts/");
         
     }
@@ -101,7 +103,7 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
     			echo "Wrong input!";
     			Zend_Debug::dump($this->input->getMessages());
     		} elseif(APPLICATION_ENV!='production'){
-    			throw new Zend_Exception(self::ERR_INVALID_INPUT, 404);
+    			throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404 );
     		}
     		
     	} else {

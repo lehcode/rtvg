@@ -4,7 +4,7 @@
  * 
  * @author	 Antony Repin
  * @subpackage backend
- * @version	$Id: EditArticle.php,v 1.2 2013-03-22 04:32:27 developer Exp $
+ * @version	$Id: EditArticle.php,v 1.3 2013-03-22 17:51:44 developer Exp $
  *
  */
 class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
@@ -164,8 +164,8 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 
 		// Article intro
 		$intro = new Zend_Form_Element_Textarea('intro');
-		$intro->setValue($this->data['intro'])
-			->setLabel('Лид статьи ['.Xmltv_String::strlen($this->data['intro']).']')
+		$intro->setValue( html_entity_decode($this->data['intro']) )
+			->setLabel( 'Лид статьи ['.Xmltv_String::strlen($this->data['intro']).']' )
 			->setOptions(array(
 				'rows'=>24,
 				'class'=>'span12',
@@ -175,14 +175,15 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		
 		// Article body
 		$body = new Zend_Form_Element_Textarea('body');
-		$body->setValue($this->data['body'])
-			->setLabel('Тело статьи ['.Xmltv_String::strlen($this->data['body']).']')
-			->setOptions(array(
+		$body->setValue( html_entity_decode($this->data['body']) )
+			->setLabel( 'Тело статьи ['.Xmltv_String::strlen($this->data['body']).']' )
+			->setOptions( array(
 				'rows'=>24,
 				'class'=>'span12',
 			))
 			->setDecorators($textareaDecorators)
-			->setRequired(true);
+			->setRequired(true)
+			->setAllowEmpty(true);
 		
 		$textfieldDecorators = array(
 			array('ViewHelper'),
@@ -199,7 +200,7 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 				'style'=>'',
 			))
 			->setDecorators($textfieldDecorators)
-			->setRequired(true);
+			->setAllowEmpty(true);
 		
 		// Author
 		$author = new Zend_Form_Element_Select('author');
@@ -231,7 +232,8 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 			->setValue($date->toString('dd.MM.YYYY'))
 			->addValidator(new Zend_Validate_Date(array('format' => 'dd.MM.YYYY')))
 			->setDecorators($dropdownDecorators)
-			->setOptions(array('style'=>'margin:0.5em;'));
+			->setOptions(array('style'=>'margin:0.5em;'))
+			->setRequired(true);
 		
 		$publishUp = new ZendX_JQuery_Form_Element_DatePicker( 'publish_up');
 		if ($this->data['publish_up']!='0000-00-00 00:00:00') {
@@ -243,17 +245,20 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		$publishUp->setLabel('Начало публикации')
 			->addValidator(new Zend_Validate_Date(array('format' => 'dd.MM.YYYY')))
 			->setDecorators($dropdownDecorators)
-			->setOptions(array('style'=>'margin:0.5em;'));
+			->setOptions(array('style'=>'margin:0.5em;'))
+			->setRequired(true);
 		
 		$publishDown = new ZendX_JQuery_Form_Element_DatePicker( 'publish_down');
 		$publishDown->setLabel('Снять с публикации');
 		$date = new Zend_Date($this->data['publish_down'], 'YYYY-MM-dd HH:mm:ss');
+		$publishDown->setValue( Zend_Date::now()->subDay(1)->toString( 'dd.MM.YYYY' ) );
 		if ($this->data['publish_down']!='0000-00-00 00:00:00'){
 			$publishDown->setValue($date->toString('dd.MM.YYYY'));
 		}
 		$publishDown->addValidator(new Zend_Validate_Date(array('format' => 'dd.MM.YYYY')))
 			->setDecorators($dropdownDecorators)
-			->setOptions(array('style'=>'margin:0.5em;'));
+			->setOptions(array('style'=>'margin:0.5em;'))
+			->setAllowEmpty(true);
 		
 		
 		// Published checkbox
@@ -356,10 +361,18 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		}
 		
 		$do = new Zend_Form_Element_Hidden('do');
-		$do->setDecorators(array('ViewHelper'))
-			->setValue('save');
+		$do->setDecorators(array('ViewHelper'));
+
+		$id = new Zend_Form_Element_Hidden('id');
+		$id->setDecorators(array('ViewHelper'))
+			->setValue((int)$this->data['id'])
+			->setName('idx[]');
+
+		$hits = new Zend_Form_Element_Hidden('hits');
+		$hits->setDecorators(array('ViewHelper'))
+			->setValue((int)$this->data['hits']);
 		
-		$this->addElements(array($alias, $do));
+		$this->addElements(array($alias, $do, $id, $hits));
 		
 		$this->setDecorators(array(
 			'FormElements',
@@ -369,7 +382,9 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 					'class'=>'row-fluid')),
 		))
 			->setAttrib('class', $this->options['class'])
-			->setAttrib('id', $this->options['id']);
+			->setAttrib('id', $this->options['id'])
+			->setAttrib('action', $this->getView()->baseUrl('admin/content/edit'))
+			->setMethod('post');
 		
 	}
 }

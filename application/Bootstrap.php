@@ -3,7 +3,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.25 2013-03-16 21:19:14 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.26 2013-03-22 17:51:43 developer Exp $
  *
  */
 
@@ -170,7 +170,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$this->bootstrap( 'view' );
 		$view = $this->getResource( 'view' );
 		$view->addHelperPath( "ZendX/JQuery/View/Helper", "ZendX_JQuery_View_Helper" );
-		$view->headLink()->prependStylesheet( 'http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css');
+		$viewRenderer = new Zend_Controller_Action_Helper_ViewRenderer();
+		$viewRenderer->setView($view);
+		Zend_Controller_Action_HelperBroker::addHelper($viewRenderer);
+		$view->jQuery()->enable()
+			->setRenderMode( ZendX_JQuery::RENDER_ALL )
+			//->setCdnSsl(true) if need to load from ssl location
+			->setVersion('1.8.3') //jQuery version, automatically 1.5 = 1.5.latest
+			->setUiVersion('1.8.18') //jQuery UI version, automatically 1.8 = 1.8.latest
+			->uiEnable();
 	}
 	
 	/**
@@ -184,22 +192,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	{
 	    $db = $this->bootstrap('multidb')->getResource('multidb')->getDb('local');
 	    $db->setFetchMode( Zend_DB::FETCH_OBJ );
-	    
-		$auth = Zend_Auth::getInstance();
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($auth->hasIdentity());
-			//die(__FILE__.': '.__LINE__);
-		}
+	    $auth = Zend_Auth::getInstance();
 		
 		if ($auth->hasIdentity()) {
 		    
 		    $users = new Xmltv_Model_Users();
-		    
-		    if (APPLICATION_ENV=='development'){
-		        //var_dump($auth->getIdentity());
-		        //die(__FILE__.': '.__LINE__);
-		    }
 		    
 		    try {
 		        
@@ -221,22 +218,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		    }
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump(isset($user));
-			//var_dump($user !== false);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		if (isset($user) && ($user !== false)) {
 		    $user = Bootstrap_Auth::setCurrentUser($user);
 		} else {
 			$user = Bootstrap_Auth::getCurrentUser($db);
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($openId);
-			//var_dump($user);
-			//die(__FILE__.': '.__LINE__);
 		}
 		
 		return $user;

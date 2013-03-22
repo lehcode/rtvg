@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.26 2013-03-14 11:43:11 developer Exp $
+ * @version $Id: Programs.php,v 1.27 2013-03-22 17:51:44 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -244,25 +244,25 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
-	    $result = $this->db->fetchAll($select);
+	    $result = $this->db->fetchAll( $select, null, Zend_db::FETCH_ASSOC );
 	    
 	    if (APPLICATION_ENV=='development') {
 	    	//var_dump($result);
 	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
-	    if (!count($result)){
+	    if (!$result || (count($result)==0)) {
 	    	return false;
 	    }
 	    
 	    foreach ($result as $idx=>$row){
-	    	$result[$idx]['start'] = new Zend_Date($result['start'], 'YYYY-MM-dd HH:mm:ss');
-	    	$result[$idx]['end'] = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
-	    	$result[$idx]['new'] = (bool)$result['new'];
-	    	$result[$idx]['live'] = (bool)$result['live'];
-	    	$result[$idx]['premiere'] = (bool)$result['premiere'];
-	    	$result[$idx]['date'] = $result['date']!==null ? new Zend_Date( $result['date'], 'YYYY-MM-dd HH:mm:ss') : null ;
-	    	$result[$idx]['length'] = $result['length']!==null ? new Zend_Date( $result['length'], 'HH:mm:ss') : null ;
+	    	$result[$idx]['start']    = new Zend_Date( $row['start'], 'YYYY-MM-dd HH:mm:ss' );
+	    	$result[$idx]['end']      = new Zend_Date( $row['end'], 'YYYY-MM-dd HH:mm:ss' );
+	    	$result[$idx]['new']      = (bool)$row['new'];
+	    	$result[$idx]['live']     = (bool)$row['live'];
+	    	$result[$idx]['premiere'] = (bool)$row['premiere'];
+	    	$result[$idx]['date']     = (null !== $row['date'])   ? new Zend_Date( $row['date'], 'YYYY-MM-dd HH:mm:ss') : null ;
+	    	$result[$idx]['length']   = (null !== $row['length']) ? new Zend_Date( $row['length'], 'HH:mm:ss') : null ;
 	    }
 	    
 	    if (APPLICATION_ENV=='development') {

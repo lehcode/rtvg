@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.19 2013-03-08 06:50:09 developer Exp $
+ * @version $Id: show-video.phtml,v 1.20 2013-03-22 17:51:44 developer Exp $
  *
  */
 
@@ -100,6 +100,7 @@ if (isset($this->main_video)){
 					
 					<p class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></p>
 					
+					<?php if (isset($v['category_ru']) && !empty($v['category_ru'])) { ?>
 					<p class="category">
 						Категория: 
 						<a href="<?php echo $this->url( array('category'=>Xmltv_String::strtolower( $v['category_ru'] )), 'default_channels_category'); ?>"
@@ -108,6 +109,8 @@ if (isset($this->main_video)){
 							<?php echo $v['category_ru']; ?>
 						</a>
 					</p>
+					<?php 
+					} ?>
 					
 					<p class="date">
 						<?php 
@@ -143,7 +146,7 @@ if (isset($this->main_video)){
     $this->headMeta()->setName( 'robots', 'noindex,follow' );
 }
 ?>
-
+<?php /*
 <div id="advm_block" style="display:none">
   <div id="advm_close">Закрыть [Х]</div>
   <script type="text/javascript" src="http://c.am11.ru/code/bn/js.php?u=13073&f=3"></script>
@@ -152,7 +155,7 @@ if (isset($this->main_video)){
   </div>
 </div>
 <script type="text/javascript" src="http://c.am11.ru/code/mod/bigpreloader5.js"></script>
-
+*/ ?>
 
 
 

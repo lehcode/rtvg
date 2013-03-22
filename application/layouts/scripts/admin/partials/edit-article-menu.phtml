@@ -7,16 +7,10 @@
 
 $view = new Zend_View();
 $view->headScript()->appendScript("$(document).ready(function() {
-    $('form#edit-article-menu button').click(function(e){
+    $('div#edit-article-menu button').click(function(e){
 	e.preventDefault;
-	if ($(this).attr('id')=='apply'){
-		$('form#edit-article-menu input[name=do]').val('apply');
-	}else if ($(this).attr('id')=='save'){
-		$('form#edit-article-menu input[name=do]').val('save');
-	}else if ($(this).attr('id')=='save-plus'){
-		$('form#edit-article-menu input[name=do]').val('save-plus');
-	}
-	$('form#edit-article-menu').submit();
+	$('form#articleForm input[name=do]').val($(this).attr('id'));
+	$('form#articleForm').submit();
 })});
 ");
 ?>

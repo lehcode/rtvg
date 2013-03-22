@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.11 2013-03-17 18:34:58 developer Exp $
+ * @version $Id: Action.php,v 1.12 2013-03-22 17:51:44 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -460,10 +460,8 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		    $date = $d->toString('YYYY-MM-dd');
 		    $time = $now->toString('HH:mm:ss');
 		    return new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
-		}
-		
-		if (!$d) {
-		    return $now;
+		} else {
+			return $now;
 		}
 		
 		if ( APPLICATION_ENV=='development' ){

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version $Id: Articles.php,v 1.2 2013-03-17 18:34:58 developer Exp $
+ * @version $Id: Articles.php,v 1.3 2013-03-22 17:51:44 developer Exp $
  *
  */
 class Admin_Model_Articles {
@@ -25,7 +25,7 @@ class Admin_Model_Articles {
 	 * Content articles database table
 	 * @var Admin_Model_DbTable_Articles
 	 */
-	protected $articlesTable;
+	protected $contentTable;
 
 	/**
 	 * Content categories database table
@@ -70,7 +70,7 @@ class Admin_Model_Articles {
 		    self::$tblPfx = $pfx; 
 		}
 		
-		$this->articlesTable           = new Admin_Model_DbTable_Articles();
+		$this->contentTable            = new Admin_Model_DbTable_Articles();
 		$this->contentCategoriesTable  = new Xmltv_Model_DbTable_ContentCategories();
 		$this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
 		$this->programsCategoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
@@ -97,10 +97,10 @@ class Admin_Model_Articles {
 	/**
 	 * Fetch all articles list with properties
 	 */
-	public function getList(){
+	public function getList( $only_published=false ){
 		
 		$select = $this->db->select()
-			->from(array('a'=>$this->articlesTable->getName()), array(
+			->from(array('a'=>$this->contentTable->getName()), array(
 				'id',
 				'title',
 				'alias',
@@ -109,6 +109,7 @@ class Admin_Model_Articles {
 				'tags',
 				'metadesc',
 				'metakeys',
+				'published',
 			))
 			->join( array('content_cat'=>$this->contentCategoriesTable->getName()), "`a`.`content_cat`=`content_cat`.`id`", array(
 				'content_cat_id'=>'id',
@@ -124,8 +125,11 @@ class Admin_Model_Articles {
 				'prog_cat_id'=>'id',
 				'prog_cat_title'=>'title',
 				'prog_cat_alias'=>'alias',
-			))
-			->where("`a`.`published`=1");
+			));
+			
+			if ($only_published===true){
+				$select->where("`a`.`published`=1");
+			}
 			
 		if (APPLICATION_ENV=='development'){
 			//self::debugSelect($select, __METHOD__);
@@ -149,7 +153,7 @@ class Admin_Model_Articles {
 		
 		if (!$select){
 			$select = $this->db->select()
-				->from(array('a'=>$this->articlesTable->getName()));
+				->from(array('a'=>$this->contentTable->getName()));
 		}
 		return new Zend_Paginator(new Zend_Paginator_Adapter_DbSelect($select));
 		
@@ -167,6 +171,46 @@ class Admin_Model_Articles {
         } catch (Zend_Db_Table_Select_Exception $e) {
             throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
         }
+        
+    }
+    
+    public function allCategories($as_array=false){
+    	
+        $r = $this->programsCategoriesTable->fetchAll(null, "title ASC");
+        $result['programs'] = $as_array===true ? $r->toArray() : $r ;
+        $r = $this->channelsCategoriesTable->fetchAll(null, "title ASC");
+    	$result['channel']  = $as_array===true ? $r->toArray() : $r ;
+    	$r = $this->contentCategoriesTable->fetchAll(null, "title ASC");
+    	$result['content']  = $as_array===true ? $r->toArray() : $r ;
+    	return $result;
+    }
+    
+    public function getArticle($id){
+    	
+    	return $this->contentTable->fetchRow( "`id`=".$this->db->quote($id) );
+    	
+    }
+    
+    public function saveArticle(array $data=null){
+        
+        if (APPLICATION_ENV=='development'){
+	        //var_dump( isset($data['id']) );
+	        //var_dump( (int)$data['id']!=0 );
+	        //var_dump( (int)$data['id'] );
+	        //die(__FILE__.': '.__LINE__);
+        }
+        
+        if (isset($data['id']) && (int)$data['id']!=0){
+    	    $this->contentTable->update( $data, "`id`='".$data['id']."'" );
+    	} else {
+    	    $this->contentTable->insert( $data );
+    	}
+    	
+    }
+    
+    public function deleteArticle($id=null){
+    	
+        $this->contentTable->delete("`id`='$id'");
         
     }
 	

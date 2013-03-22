@@ -4,7 +4,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.27 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.28 2013-03-22 17:51:43 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -141,8 +141,13 @@ class ChannelsController extends Rtvg_Controller_Action
 		   
 			$this->view->assign('pageclass', 'category');
 			$this->channelsModel = new Xmltv_Model_Channels();
-			$catProps = $this->channelsModel->category( $this->input->getEscaped('category') )->toArray();
-			$this->view->assign('category', $catProps);
+			$catProps = $this->channelsModel->category( $this->input->getEscaped('category') );
+			if ($catProps===false){
+				$this->getResponse()->setHttpResponseCode(404);
+				$this->_helper->layout()->setLayoutPath(APPLICATION_PATH.'/layouts/scripts/');
+				$this->_helper->layout()->setLayout('not-found');
+				return;
+			}
 			
 			if (isset($_GET['RTVG_PROFILE'])){
 				//Zend_Debug::dump($this->cache->enabled);

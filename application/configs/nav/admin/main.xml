@@ -5,186 +5,217 @@
  * Main menu for backend
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: main.xml,v 1.4 2013-03-17 17:19:11 developer Exp $
+ * @version $Id: main.xml,v 1.5 2013-03-22 17:51:43 developer Exp $
  */
  -->
 <config>
 	<nav>
 	
 		<home>
-            <label>КП</label>
-            <resource>admin:index</resource>
-            <module>admin</module>
-           	<controller>index</controller>
-            
-        </home>
-        
-        <channels>
-        	
-        	<label>Каналы</label>
-        	<resource>admin:channels</resource>
-        	<privilege>index</privilege>
-        	<module>admin</module>
-           	<controller>channels</controller>
-           	<action>list</action>
-        	
-        </channels>
-        
+			<label>КП</label>
+			<resource>admin:index</resource>
+			<module>admin</module>
+		   	<controller>index</controller>
+			
+		</home>
+		
+		<channels>
+			
+			<label>Каналы</label>
+			<resource>admin:channels</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>channels</controller>
+		   	<action>list</action>
+			
+		</channels>
+		
 		<listings>
 			
-            <label>Программы</label>
-            <resource>admin:programs</resource>
-	       	<privilege>index</privilege>
-	       	<module>admin</module>
-           	<controller>programs</controller>
-           	<action>index</action>
-	       	
-        </listings>
-        
-        <content>
-        
-        	<label>Контент</label>
-            <resource>admin:content</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>content</controller>
-           	<action>articles</action>
-            <pages>
-	            <articles_index>
-	            	<label>Статьи</label>
-	            	<resource>admin:content</resource>
-		            <privilege>index</privilege>
-		            <module>admin</module>
-		           	<controller>content</controller>
-		           	<action>articles</action>
-	            </articles_index>
-	            <articles_edit>
-	            	<label>Новая статья</label>
-	            	<resource>admin:content</resource>
-		            <privilege>crud</privilege>
-		            <module>admin</module>
-		           	<controller>content</controller>
-		           	<action>edit-article</action>
-	            </articles_edit>
-            </pages>
-        </content>
-        
-        <movies>
-        	<label>Фильмы</label>
-        	<resource>admin:movies</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>movies</controller>
-           	<action>index</action>
-        </movies>
+			<label>Программы</label>
+			<resource>admin:programs</resource>
+		   	<privilege>index</privilege>
+		   	<module>admin</module>
+		   	<controller>programs</controller>
+		   	<action>index</action>
+		   	
+		</listings>
+		
+		<content>
+		
+			<label>Контент</label>
+			<resource>admin:content</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>content</controller>
+		   	<action>articles</action>
+			<pages>
+				<articles_index>
+					<label>Статьи</label>
+					<resource>admin:content</resource>
+					<privilege>index</privilege>
+					<module>admin</module>
+				   	<controller>content</controller>
+				   	<action>articles</action>
+				</articles_index>
+				<articles_new>
+					<label>Новая статья</label>
+					<resource>admin:content</resource>
+					<privilege>create</privilege>
+					<module>admin</module>
+				   	<controller>content</controller>
+				   	<action>edit</action>
+				</articles_new>
+				<categories>
+					<label>Категории</label>
+					<resource>admin:system</resource>
+					<privilege>index</privilege>
+					<module>admin</module>
+				   	<controller>content</controller>
+				   	<action>categories</action>
+				</categories>
+			</pages>
+		</content>
+		
+		<movies>
+			<label>Фильмы</label>
+			<resource>admin:movies</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>movies</controller>
+		   	<action>index</action>
+		</movies>
 
-        <series>
-        	<label>Сериалы</label>
-        	<resource>admin:series</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>series</controller>
-           	<action>index</action>
-        </series>
-        
-        <comments>
-        	<label>Комменты</label>
-        	<resource>admin:comments</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>comments</controller>
-           	<action>index</action>
-        </comments>
-        
-        <actors>
-        	<label>Актеры</label>
-        	<resource>admin:actors</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>actors</controller>
-           	<action>index</action>
-        	
-        	<pages>
-        		<actors_index>
-	        		<label>Список</label>
-	        		<resource>admin:actors</resource>
-		            <privilege>index</privilege>
-		            <module>admin</module>
-		           	<controller>actors</controller>
-		           	<action>index</action>
-	           	</actors_index>
-	           	<actors_dupes>
-	        		<label>Дубликаты</label>
-	        		<resource>admin:actors</resource>
-		            <privilege>index</privilege>
-		            <module>admin</module>
-		           	<controller>actors</controller>
-		           	<action>duplicates</action>
-	           	</actors_dupes>
-        	</pages>
-        </actors>
-        
-        <import>
-        	<label>Импорт XML</label>
-        	<resource>admin:import</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>import</controller>
-           	<action></action>
-        </import>
-        
-        <archive>
-        	<label>Архив</label>
-        	<resource>admin:archive</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>archive</controller>
-           	<action>index</action>
-        </archive>
-        
-        <grab>
-        	<label>Граббинг</label>
-        	<resource>admin:grab</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>grab</controller>
-           	<action>index</action>
-        	<pages>
-        		<grab_actors>
-	        		<label>Актеры</label>
-	        		<resource>admin:grab</resource>
-		            <privilege>index</privilege>
-		            <module>admin</module>
-		           	<controller>grab</controller>
-		           	<action>actors</action>
-	           	</grab_actors>
-	           	<grab_directors>
-        			<label>Режиссеры</label>
-        			<resource>admin:grab</resource>
-		            <privilege>index</privilege>
-		            <module>admin</module>
-		           	<controller>grab</controller>
-		           	<action>directors</action>
-        		</grab_directors>
-        		<grab_listings>
-        			<label>Расписание</label>
-        			<resource>admin:grab</resource>
-		            <privilege>index</privilege>
-		            <module>admin</module>
-		           	<controller>grab</controller>
-		           	<action>listings</action>
-        		</grab_listings>
-        	</pages>
-        </grab>
-        
-        <cache>
-        	<label>Кэш</label>
-        	<resource>admin:system</resource>
-            <privilege>index</privilege>
-            <module>admin</module>
-           	<controller>system</controller>
-           	<action>cache</action>
-        </cache>
-        
+		<series>
+			<label>Сериалы</label>
+			<resource>admin:series</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>series</controller>
+		   	<action>index</action>
+		</series>
+		
+		<comments>
+			<label>Комменты</label>
+			<resource>admin:comments</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>comments</controller>
+		   	<action>index</action>
+		</comments>
+		
+		<actors>
+			<label>Актеры</label>
+			<resource>admin:actors</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>actors</controller>
+		   	<action>index</action>
+			
+			<pages>
+				<actors_index>
+					<label>Список</label>
+					<resource>admin:actors</resource>
+					<privilege>index</privilege>
+					<module>admin</module>
+				   	<controller>actors</controller>
+				   	<action>index</action>
+			   	</actors_index>
+			   	<actors_dupes>
+					<label>Дубликаты</label>
+					<resource>admin:actors</resource>
+					<privilege>index</privilege>
+					<module>admin</module>
+				   	<controller>actors</controller>
+				   	<action>duplicates</action>
+			   	</actors_dupes>
+			</pages>
+		</actors>
+		
+		<import>
+			<label>Импорт XML</label>
+			<resource>admin:import</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>import</controller>
+		   	<action></action>
+		</import>
+		
+		<archive>
+			<label>Архив</label>
+			<resource>admin:archive</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>archive</controller>
+		   	<action>index</action>
+		</archive>
+		
+		<grab>
+			<label>Граббинг</label>
+			<resource>admin:grab</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>grab</controller>
+		   	<action>index</action>
+			<pages>
+				<grab_actors>
+					<label>Актеры</label>
+					<resource>admin:grab</resource>
+					<privilege>index</privilege>
+					<module>admin</module>
+				   	<controller>grab</controller>
+				   	<action>actors</action>
+			   	</grab_actors>
+			   	<grab_directors>
+					<label>Режиссеры</label>
+					<resource>admin:grab</resource>
+					<privilege>index</privilege>
+					<module>admin</module>
+				   	<controller>grab</controller>
+				   	<action>directors</action>
+				</grab_directors>
+				<grab_listings>
+					<label>Расписание</label>
+					<resource>admin:grab</resource>
+					<privilege>index</privilege>
+					<module>admin</module>
+				   	<controller>grab</controller>
+				   	<action>listings</action>
+				</grab_listings>
+			</pages>
+		</grab>
+		
+		<system>
+		
+			<label>System</label>
+			<resource>admin:system</resource>
+			<privilege>index</privilege>
+			<module>admin</module>
+		   	<controller>system</controller>
+		   	<action>index</action>
+		   	
+			<pages>
+				<cache>
+				<label>Кэш</label>
+				<resource>admin:system.cache</resource>
+				<privilege>index</privilege>
+				<module>admin</module>
+			   	<controller>system</controller>
+			   	<action>cache</action>
+				</cache>
+	   	 		
+				<phpinfo>
+				<label>PHP Info</label>
+				<resource>admin:system.phpinfo</resource>
+				<privilege>index</privilege>
+				<module>admin</module>
+			   	<controller>system</controller>
+			   	<action>phpinfo</action>
+				</phpinfo>
+				
+	   	 	</pages>
+		</system>
+		
+		
 	</nav>
 </config>

@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.25 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: Videos.php,v 1.26 2013-03-22 17:51:44 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -455,6 +455,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 				'duration',
 				'category',
 				'thumbs',
+				'published',
 			))
 			->where("`yt_parent`='$yt_id'")
 			->limit($amt);

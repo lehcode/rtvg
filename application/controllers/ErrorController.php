@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses	Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.16 2013-03-17 18:34:58 developer Exp $
+ * @version $Id: ErrorController.php,v 1.17 2013-03-22 17:51:43 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -34,14 +34,29 @@ class ErrorController extends Zend_Controller_Action
 			return;
 		}
 		
+		$userAgent = Zend_Controller_Front::getInstance()
+			->getParam('bootstrap')
+			->getResource('useragent');
+		
 		$msg = "Параметры запроса:\n";
 		$params = $errors->request->getParams();
+		$msg .= "\tIP: ".$_SERVER['REMOTE_ADDR']."\n".
+		"\tMethod: ".$_SERVER['REQUEST_METHOD']."\n".
+		"\tURI: ".urldecode( $_SERVER['REQUEST_URI'] )."\n".
+		"\tBrowser Type: ".$userAgent->getBrowserType()."\n\n".
+		"\tUser-Agent: ".$_SERVER['HTTP_USER_AGENT']."\n\n".
+		"\tReferer: ".( isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'none' )."\n\n";
 		foreach ( $errors->request->getParams() as $key=>$val){
-			$msg .= $key.': '.$val."\n";
+			$msg .= $key.': '.$val."\n\n";
 		}
 		
+		
 		$this->logMessage( $msg );
-		$this->sendEmail( $msg, $errors->exception );
+		if (isset($errors->exception)){
+			$this->sendEmail( $msg, $errors->exception );
+		} else {
+			$this->sendEmail( $msg );
+		}
 		
 		//$this->view->setScriptPath(APPLICATION_PATH . '/layouts/scripts/');
 		
@@ -117,12 +132,12 @@ class ErrorController extends Zend_Controller_Action
 		$this->view->assign('hide_sidebar', 'right');
 	}
 	
-	protected function logMessage($msg=null, $priority=Zend_Log::WARN){
+	protected function logMessage($msg=null, $priority=Zend_Log::WARN, $exception=null){
 		
 		//Log exception, if logger available
 		$logger = $this->getLog();
 		if ($logger) {
-			$logger->log( $msg, $priority, $errors->exception );
+			$logger->log( $msg, $priority, $exception );
 		}
 		
 	}
@@ -131,11 +146,11 @@ class ErrorController extends Zend_Controller_Action
 	
 		$senderEmail='dev@egeshi.com';
 		$mail = new Zend_Mail('UTF-8');
-		$mail->setBodyText( $errors->exception."\n\n".$msg );
+		$mail->setBodyText( $exception."\n\n".$msg );
 		$mail->setFrom( $senderEmail, 'Rutvgid Error');
 		$mail->addTo( 'egeshisolutions@gmail.com', 'Bugs');
-		if ($errors->exception){
-			$mail->setSubject( $errors->exception->getMessage() );
+		if ($exception){
+			$mail->setSubject( $exception->getMessage() );
 		} else {
 			$mail->setSubject( "Внимание! Ошибка!" );
 		}

@@ -4,7 +4,7 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.24 2013-03-17 18:34:58 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.25 2013-03-22 17:51:44 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -424,22 +424,88 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					break;
 					
 					case 'content':
+						
 						switch ($action){
-							case 'articles': break;
-							case 'edit':
-								if (isset($_GET['id']) && (int)$_GET['id']!==0) {
-									$validators['id'] = array( new Zend_Validate_Digits());
-								}
-							break;
 							
-							case 'index':
+							case 'edit':
+								if (isset($_REQUEST['idx']) && (int)$_REQUEST['idx']!==0) {
+									if (is_array($_REQUEST['idx'])){
+										$validators['idx'] = array( new Zend_Validate_Digits( array(
+											'Zend_Controller_Action_Helper_RequestValidator', 
+											'IdxArray')));
+									} else {
+										$validators['idx'] = array( new Zend_Validate_Digits() );
+									}
+									
+								}
+								
+								$validators['do'] = array( new Zend_Validate_InArray( array(
+									'haystack'=>array('delete','new','edit','toggle','save','save-plus','apply'))),
+										'presence' => 'required',
+										'messages' => array( "Нет такого действия: '%value%'" )
+								);
+								$validators['title'] = array( new Zend_Validate_Regex('/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui') );
+								$validators['alias'] = array( new Zend_Validate_Regex('/[^\s]+/ui') );
+								
+								$validators['published'] = array( 
+									new Zend_Validate_Digits(),
+									new Zend_Validate_StringLength(1),
+								);
+								
+								$validators['progcat'] = array( 
+									new Zend_Validate_Digits(),
+									new Zend_Validate_StringLength(1),
+								);
+								
+								$validators['contcat'] = array( 
+									new Zend_Validate_Digits(),
+									new Zend_Validate_StringLength(1),
+								);
+								
+								$validators['chcat'] = array( 
+									new Zend_Validate_Digits(),
+									new Zend_Validate_StringLength(1),
+								);
+								
+								$validators['tags'] = array( 
+									new Zend_Validate_Regex('/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui'),
+									new Zend_Validate_StringLength(array(2,254)),
+								);
+								
+								$validators['intro'] = array( 
+									new Zend_Validate_Regex('/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui'),
+								);
+								
+								$validators['body'] = array( 
+									new Zend_Validate_Regex('/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui'),
+								);
+								
+								$validators['author'] = array( 
+									new Zend_Validate_Digits(),
+									new Zend_Validate_StringLength(array(1,11)),
+								);
+								
+								$validators['added']        = array( new Zend_Validate_Date( 'dd.MM.YYYY' ) );
+								$validators['publish_up']   = array( new Zend_Validate_Date( 'dd.MM.YYYY' ));
+								$validators['publish_down'] = array( new Zend_Validate_Date( 'dd.MM.YYYY' ) );
+								$validators['income'] = array( new Zend_Validate_InArray(array('is_cpa', 'is_ref', 'is_paid')) );
+								$validators['hits']   = array( new Zend_Validate_Digits());
 								
 							break;
+							
+							case 'index': break;
+							case 'articles': break;
 							
 							default:
 								throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
 						}
 					break;
+					
+					case 'system':
+						default: break;
+					break;
+					
+					default: break;
 				}
 			break;
 			
@@ -457,6 +523,16 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 		
 		return $input;
 		
+	}
+	
+	public static function IdxArray($value=null){
+		
+		$filter = new Zend_Filter_Digits();
+		$r = $filter->filter($value);
+		if (!is_int($r)){
+			return false;
+		}
+		return true;
 	}
 	
 	/**

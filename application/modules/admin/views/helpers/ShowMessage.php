@@ -6,9 +6,9 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package sosedionline
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/views/helpers/ShowMessage.php,v $
- * @version $Id: ShowMessage.php,v 1.3 2013-03-22 17:35:33 developer Exp $
+ * @version $Id: ShowMessage.php,v 1.4 2013-03-22 17:51:44 developer Exp $
  */
-class Admin_View_Helper_ShowMessages extends Zend_View_Helper_Abstract
+class Zend_View_Helper_ShowMessage extends Zend_View_Helper_Abstract
 {
     /**
      * Show message on page
@@ -31,29 +31,15 @@ class Admin_View_Helper_ShowMessages extends Zend_View_Helper_Abstract
 				$heading = 'Ошибка';
 				break;
 		}
-		
 		ob_start();
-		foreach ($this->messages as $text) {
-			if (is_array($text)) {
-				foreach ($text as $string) {
-					?>
-					<div class="alert alert-block">
-						<a class="close" data-dismiss="alert" href="#">×</a>
-						<h4 class="alert-heading"><?php echo $heading ?></h4>
-						<?php echo $string; ?>
-					</div>
-					<?php 
-				}
-			} else {
-				?>
-				<div class="alert alert-block">
-					<a class="close" data-dismiss="alert" href="#">×</a>
-					<h4 class="alert-heading"><?php echo $heading ?></h4>
-					<?php echo $string; ?>
-				</div>
-				<?php 
-			}
-		}
+		?>
+		<div class="alert alert-block">
+			<a class="close" data-dismiss="alert" href="#">×</a>
+			<h4 class="alert-heading"><?php echo $heading ?></h4>
+			<?php echo $msg; ?>
+		</div>
+		<?php 
 		return ob_get_clean();
+		
 	}
 }

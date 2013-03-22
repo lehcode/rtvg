@@ -18,7 +18,8 @@
 		}
 		
 		$isActive = $page->isActive() ? true : false ;
-		$aClass = ($isActive===false) ? ' class="dropdown-toggle"' : ' class="dropdown-toggle active"' ;
+		$aClass = ($isActive===false) ? 'dropdown-toggle' : 'dropdown-toggle active' ;
+		$aClass = $page->get('class', null)!==null ? ' class="'.$aClass.' '.$page->get('class').'"' : ' class="'.$aClass.'"' ;
 		$dataToggle = count($page->getPages())>0 ? ' data-toggle="dropdown"' : false ;
 		$liClass = $dataToggle===false ? '' : ' class="dropdown"' ;
 		
