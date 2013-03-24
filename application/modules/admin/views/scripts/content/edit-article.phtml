@@ -2,11 +2,12 @@
 /**
  * Article create/edit view script
  */
+
 ?>
 
 <?php if (!$this->new) : $article = $this->article->toArray(); endif; ?>
 	
-<h3 class="page_heading"><?php echo ($this->new === true) ? "Новая статья" : "Редактирование" ; ?></h3>
+<h3 class="page_heading"><?php echo ($this->new === true) ? "Новая статья" : "[".$article['id']."] Редактирование" ; ?></h3>
 
 <div class="container-fluid menu edit-article" id="edit-article-menu">
 	<?php 
@@ -28,6 +29,7 @@ $form = new Xmltv_Form_EditArticle( array(
 	'categories'=>$this->categories,
 	'authors'=>$this->authors,
 	'user'=>$this->user,
+	'ac_tags'=>$this->ac_tags,
 ));
 echo $form;
 ?>

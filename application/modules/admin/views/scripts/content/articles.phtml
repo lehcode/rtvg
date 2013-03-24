@@ -7,33 +7,33 @@
 
 <form id="tableForm" action="<?php echo $this->baseUrl('admin/content/edit') ?>" method="post">
 	
-	<div class="table-menu">
-		<?php 
-		$this->navigation()->menu( $this->actions_menu )
-			->setPartial( array('partials/actions-menu.phtml', 'admin'));
-		echo $this->navigation()
-			->setMaxDepth(2)
-			->setInjectTranslator(false)
-			->menu();
-		?>
-	</div>
+<div class="table-menu"><?php 
+$this->navigation()->menu( $this->actions_menu )
+	->setPartial( array('partials/actions-menu.phtml', 'admin'));
+echo $this->navigation()
+	->setMaxDepth(0)
+	->setInjectTranslator(false)
+	->menu(); 
+?></div>
 
 <?php 
 if (count($this->list)){
-	?>
-	<div class="items-table">
+	?><div class="items-table">
 		<table class="table table-striped table-bordered table-hover table-condensed span12"  style="font-size:x-small;">
 			<thead>
 				<tr>
 					<th width="2%"><input type="checkbox" name="toggle" /></th>
 					<th width="2%">#</th>
-					<th style="text-align:center;" width="40%">Заголовок</th>
-					<th style="text-align:center;" colspan="4">Статистика по символам</th>
-					<th style="text-align:center;" colspan="3" >Категории статьи</th>
+					<th style="text-align:center;">Заголовок</th>
+					<th style="text-align:center;" colspan="5">Статистика по символам</th>
+					<th style="text-align:center;" colspan="3">Категории статьи</th>
 					<th style="text-align:center;">Теги</th>
 					<th style="text-align:center;">MD</th>
-					<th style="text-align:center;">Вкл</th>
-					<th>ID</th>
+					<th style="text-align:center;">ВКЛ</th>
+					<th style="text-align:center;">ID</th>
+					<th style="text-align:center;">АВТ</th>
+					<th style="text-align:center;">ПР</th>
+					<th style="text-align:center;" colspan="2">Даты</th>
 				</tr>
 				<tr>
 					<th colspan="3"></th>
@@ -41,20 +41,32 @@ if (count($this->list)){
 					<th style="text-align:center;">Лид</th>
 					<th style="text-align:center;">Текст</th>
 					<th style="text-align:center;">Всего</th>
+					<th style="text-align:center;">Л/Т</th>
 					<th style="text-align:center;">Контент</th>
 					<th style="text-align:center;">Каналы</th>
-					<th style="text-align:center;">Программы</th>
+					<th style="text-align:center;">Предачи</th>
 					<th>&nbsp;</th>
 					<th>&nbsp;</th>
 					<th>&nbsp;</th>
 					<th>&nbsp;</th>
+					<th>&nbsp;</th>
+					<th>&nbsp;</th>
+					<th>Созд.</th>
+					<th>Снять</th>
 				</tr>
 			</thead>
 			<tbody>
 			<?php 
 			$c=0;
 			foreach ($this->list as $item){
-				$sq = $this->escape('■');
+			    
+				$sq          = $this->escape('■');
+				$added       = new Zend_Date($item['added'], 'YYYY-MM-dd');
+				$publishDown = new Zend_Date($item['publish_down'], 'YYYY-MM-dd');
+				
+				if(APPLICATION_ENV=='development'){
+					//var_dump($item);
+				}
 				?>
 				<tr>
 					<td><input type="checkbox" id="<?php printf('cb%s', $c); ?>" name="idx[]" value="<?php echo (int)$item['id']; ?>" /></td>
@@ -71,15 +83,39 @@ if (count($this->list)){
 						echo $bodyLen; ?>
 					</td>
 					<td style="text-align:right;"><b><?php echo $introLen+$bodyLen; ?></b></td>
-					<td><?php echo $item['content_cat_title'] ?></td>
-					<td><?php echo $item['channel_cat_title'] ?></td>
-					<td><?php echo $item['program_cat_title'] ?></td>
+					<td style="text-align:right;"><i><?php $ratio = round( $introLen/$bodyLen, 2);
+					if ($ratio < 0.25){
+					    echo '<span style="color:DarkGreen;">'.$ratio.'</span>';
+					} elseif($ratio >= 0.25 && $ratio <= 0.34) { 
+					    echo '<span style="color:GoldenRod;">'.$ratio.'</span>';
+					} else {
+					    echo '<span style="color:Red;">'.$ratio.'</span>';
+					} ?></i></td>
+					<td nowrap="true"><?php echo $item['content_cat_title'] ?></td>
+					<td nowrap="true"><?php echo $item['channel_cat_title'] ?></td>
+					<td nowrap="true"><?php echo $item['prog_cat_title'] ?></td>
 					<td style="text-align:center;"><?php echo ((bool)$item['tags']!==false) ? '<span style="color:green">'.$sq.'</span>' : '<span style="color:red">'.$sq.'</span>' ;  ?></td>
 					<td style="text-align:center;">
 						<?php echo (empty($item['metadesc'])) ? '<span style="color:red">'.$sq.'</span>' : '<span style="color:green">'.$sq.'</span>' ;  ?>
 					</td>
 					<td style="text-align:center;"><?php echo (false === (bool)$item['published']) ? '<span style="color:red; font-weight: bold;">'.$this->escape('○').'</span>' : '<span style="color:green; font-weight: bold;">'.$this->escape('●').'</span>' ; ?></td>
-					<td><?php echo (int)$item['id']; ?></td>
+					<td style="text-align:right;"><?php echo (int)$item['id']; ?></td>
+					<td><?php 
+						$ajaxUrl = $this->baseUrl('admin/messages/compose').'?to='.$item['author'];
+						$ajaxComplete = array(
+							'update' => '#pms'
+						); 
+						echo $this->ajaxLink( $item['author_name'], $ajaxUrl, $ajaxComplete ); ?>
+						<?php /*<a href="<?php echo $this->baseUrl('admin/messages/compose').'?to='.$item['author']; ?>" 
+						title="<?php echo Rtvg_Message::MSG_SEND_MESSAGE ?>"
+						target="_blank"><?php echo $item['author_name'] ?></a>*/ ?></td>
+					<td style="text-align:right;"><?php echo (int)$item['hits']; ?></td>
+					<td><?php echo $added->toString('dd-MM-YY'); ?></td>
+					<td style="text-align:center;"><?php if($publishDown->compare($added) == -1){
+						echo '<span style="color:darkGreen;">'.$sq.'</span>';
+					} else {
+					    echo $publishDown->toString('dd-MM-YY');
+					} ?></td>
 				</tr>
 				<?php 
 				$c++;
@@ -87,7 +123,7 @@ if (count($this->list)){
 			</tbody>
 			<tfoot>
 				<tr>
-					<td colspan="14" style="text-align:center;">
+					<td colspan="19" style="text-align:center;">
 						<?php echo $this->paginationControl( $this->pagenav, 'Sliding', 'partials/pagination.phtml', array() ); ?>
 					</td>
 				</tr>
@@ -95,8 +131,8 @@ if (count($this->list)){
 		</table>
 	</div>
 	<?php 
-}
-?>
+} ?>
 	<input type="hidden" name="do" value="" />
 	
 </form>
+<div id="pms"></div>

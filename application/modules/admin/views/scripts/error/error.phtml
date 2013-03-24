@@ -8,10 +8,7 @@
 <h1>Ошибка</h1>
 <h2><?php echo $this->message ?></h2>
 
-<?php 
-//var_dump($this->messages);
-//die(__FILE__.': '.__LINE__);
-?>
+<a href="javascript:window.history.back(-1);">Назад</a>
 
 <?php if (isset($this->exception)) { ?>
 <h3>Exception information:</h3>

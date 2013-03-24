@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version $Id: Articles.php,v 1.3 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: Articles.php,v 1.4 2013-03-24 03:02:28 developer Exp $
  *
  */
 class Admin_Model_Articles {
@@ -99,6 +99,7 @@ class Admin_Model_Articles {
 	 */
 	public function getList( $only_published=false ){
 		
+	    $usersTable = new Xmltv_Model_DbTable_Users();
 		$select = $this->db->select()
 			->from(array('a'=>$this->contentTable->getName()), array(
 				'id',
@@ -108,31 +109,37 @@ class Admin_Model_Articles {
 				'body',
 				'tags',
 				'metadesc',
-				'metakeys',
 				'published',
+				'added',
+				'publish_up',
+				'publish_down',
+				'author',
 			))
-			->join( array('content_cat'=>$this->contentCategoriesTable->getName()), "`a`.`content_cat`=`content_cat`.`id`", array(
+			->joinLeft( array('content_cat'=>$this->contentCategoriesTable->getName()), "`a`.`content_cat`=`content_cat`.`id`", array(
 				'content_cat_id'=>'id',
 				'content_cat_title'=>'title',
 				'content_cat_alias'=>'alias',
 			))
-			->join( array('channel_cat'=>$this->channelsCategoriesTable->getName()), "`a`.`channel_cat`=`channel_cat`.`id`", array(
+			->joinLeft( array('channel_cat'=>$this->channelsCategoriesTable->getName()), "`a`.`channel_cat`=`channel_cat`.`id`", array(
 				'channel_cat_id'=>'id',
 				'channel_cat_title'=>'title',
 				'channel_cat_alias'=>'alias',
 			))
-			->join( array('prog_cat'=>$this->programsCategoriesTable->getName()), "`a`.`channel_cat`=`prog_cat`.`id`", array(
+			->joinLeft( array('prog_cat'=>$this->programsCategoriesTable->getName()), "`a`.`prog_cat`=`prog_cat`.`id`", array(
 				'prog_cat_id'=>'id',
 				'prog_cat_title'=>'title',
 				'prog_cat_alias'=>'alias',
-			));
+			))
+			->joinLeft( array('u'=>$usersTable->getName()), "`a`.`author`=`u`.`id`", array(
+				'author_name'=>'display_name',
+				'author_email'=>'email'));
 			
 			if ($only_published===true){
 				$select->where("`a`.`published`=1");
 			}
 			
 		if (APPLICATION_ENV=='development'){
-			//self::debugSelect($select, __METHOD__);
+			self::debugSelect($select, __METHOD__);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
@@ -193,24 +200,99 @@ class Admin_Model_Articles {
     
     public function saveArticle(array $data=null){
         
-        if (APPLICATION_ENV=='development'){
-	        //var_dump( isset($data['id']) );
-	        //var_dump( (int)$data['id']!=0 );
-	        //var_dump( (int)$data['id'] );
-	        //die(__FILE__.': '.__LINE__);
-        }
-        
         if (isset($data['id']) && (int)$data['id']!=0){
-    	    $this->contentTable->update( $data, "`id`='".$data['id']."'" );
+            $update = array();
+            foreach ($data as $key=>$value){
+                $update[] = $this->db->quoteIdentifier($key) . '=' . $this->db->quote( $value );
+            }
+            $sql = "UPDATE `".$this->contentTable->getName()."` SET ".implode( ',', $update )." WHERE `id`=".$data['id'];
+            
+            if (APPLICATION_ENV=='development'){
+                echo '<b>'.__METHOD__.'</b><br />';
+                Zend_Debug::dump($sql);
+            	//die(__FILE__.': '.__LINE__);
+            }
+            
+            if(!$this->db->query( $sql )){
+                throw new Zend_Exception( Rtvg_Message::ERR_CANNOT_UPDATE_ROW, 500 );
+            }
     	} else {
-    	    $this->contentTable->insert( $data );
+    	    $this->contentTable->insert($data);
     	}
+    	
+    	return true;
     	
     }
     
     public function deleteArticle($id=null){
+        
+        if (!$id) 
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 501 );
+        
+        try {
+            $this->contentTable->delete("`id`='$id'");
+        } catch (Exception $e) {
+            throw new Zend_Exception( Rtvg_Message::ERR_CANNOT_DELETE_ROW, 501 );
+        }
+        
+        
+    }
+    
+    public function toggleArticleState($id=null){
     	
-        $this->contentTable->delete("`id`='$id'");
+        if (!$id) {
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 501 );
+        }
+        
+        $row = $this->contentTable->fetchRow( "`id`=".(int)$id );
+        //var_dump($row->id);
+        var_dump($row->published);
+        if (!$row->published){
+            $published=1;
+        }
+        if ($row->published==1){
+        	$published=0;
+        }
+        
+        $sql = "UPDATE `".$this->contentTable->getName()."` SET `published`=$published WHERE `id`=".(int)$id;
+        $this->db->query($sql);
+        
+        if (APPLICATION_ENV=='development'){
+	        //var_dump($result);
+	        //die(__FILE__.': '.__LINE__);
+        }
+        
+    }
+    
+    public function getContentTags(){
+    	
+        $select = $this->db->select()
+        	->from($this->contentTable->getName(), array('tags'=>'LOWER(`tags`)'));
+        $result = $this->db->fetchAll($select);
+        
+        if (APPLICATION_ENV=='development'){
+            //var_dump($result);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        $acTags = array();
+        foreach ($result as $item){
+            $t = explode(',', $item['tags']);
+            foreach ($t as $tag){
+                $tag = trim($tag);
+                if (!in_array($tag, $acTags)){
+                    $acTags[]=$tag;
+                }
+            }
+            
+        }
+        
+        if (APPLICATION_ENV=='development'){
+        	//var_dump($acTags);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        return $acTags;
         
     }
 	

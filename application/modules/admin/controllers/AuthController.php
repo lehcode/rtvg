@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses    Xmltv_Controller_Action
- * @version $Id: AuthController.php,v 1.3 2013-03-16 12:46:19 developer Exp $
+ * @version $Id: AuthController.php,v 1.4 2013-03-24 03:02:28 developer Exp $
  *
  */
 
@@ -35,6 +35,7 @@ class Admin_AuthController extends Rtvg_Controller_Admin
 
     public function indexAction()
     {
+        parent::validateRequest();
         
         if ($this->isAllowed===true){
         	return $this->_forward( 'login' );

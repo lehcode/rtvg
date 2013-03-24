@@ -5,7 +5,7 @@
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: ErrorController.php,v 1.5 2013-03-17 18:34:58 developer Exp $
+ * @version    $Id: ErrorController.php,v 1.6 2013-03-24 03:02:28 developer Exp $
  */
 class Admin_ErrorController extends Zend_Controller_Action
 {
@@ -30,6 +30,7 @@ class Admin_ErrorController extends Zend_Controller_Action
 	
 	public function errorAction()
     {
+        
         $errors = $this->_getParam('error_handler');
         
         $messages = $this->_flashMessenger->getMessages();
@@ -39,8 +40,8 @@ class Admin_ErrorController extends Zend_Controller_Action
         }
         
         if (!$errors || !$errors instanceof ArrayObject) {
-            $this->view->message = 'You have reached the error page';
-            return;
+            $this->view->message = '';
+            return $this->render();
         }
         
         switch ($errors->type) {
