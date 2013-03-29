@@ -6,12 +6,17 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/models/DbTable/Users.php,v $
- * @version $Id: Users.php,v 1.6 2013-03-14 06:09:55 developer Exp $
+ * @version $Id: Users.php,v 1.7 2013-03-29 21:15:44 developer Exp $
  */
 class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
 {
 
-	protected $_name    = 'users';
+    protected $_name    = 'users';
+	/**
+	 * Table prefix
+	 * @var string
+	 */
+	protected $_pfx = '';
 	protected $_primary = array('id');
 	protected $_defaultValues = array(
 		'id'=>0,
@@ -32,7 +37,13 @@ class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
 	 */
     public function init() {
         
-        parent::init();
+        $this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
+        
+        if (!$this->_pfx){
+        	throw new Zend_Exception(self::ERR_WRONG_DB_PREFIX);
+        }
+        
+        $this->setName($this->_pfx.$this->_name);
         
         $this->setRowClass('Xmltv_User');
         $this->setRowsetClass('Xmltv_Users');
