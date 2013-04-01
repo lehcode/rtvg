@@ -1,0 +1,178 @@
+<?php 
+/**
+ * Передачи сегодня
+ * 
+ * @author  Antony Repin
+ * @version $Id: programlist.phtml,v 1.1 2013-04-01 16:57:06 developer Exp $
+ *
+ */
+
+$channelTitle = $this->escape( $this->channel['title'] );
+$channelAlias = $this->escape( $this->channel['alias'] );
+$channelCat   = $this->escape( $this->channel['cat_title'] );
+?>
+
+<div id="programlist" class="container-fluid">
+	
+	<?php 
+	$pc=0;
+	foreach ($this->items as $k=>$prog) {
+		
+		if ($this->is_today){
+			$active = $prog['now_showing']===true ? ' active' : '' ;
+		} else {
+			$active = $pc==0 ? ' active' : '' ;
+		}
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($k);
+			//var_dump($active);
+			//var_dump($prog);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		switch ($k){
+			case 0:
+				$timespan = 'Сейчас';
+				$bg = "#FFCC00";
+				$showRating = true;
+			break;
+		   	case 1:
+				$timespan = 'Далее';
+				$bg = "#BABABA";
+				$showRating = true;
+			break;
+			case 2:
+				$timespan = 'Затем';
+				$bg = "#FFFFFF";
+				$showRating = true;
+				break;
+			case 3:
+			    $timespan = 'После';
+				$bg = "#FFFFFF";
+			break;
+			default: break;
+		}
+		?>
+		
+	<div class="item<?php echo $active; ?> span2">
+		
+		<p class="label label-warning"><?php echo $timespan; ?></p>
+		
+		<?php if (isset($prog['live']) && ($prog['live']===true)): ?>
+		<img src="<?php echo $this->baseUrl('images/icons/live.png'); ?>" />
+		<?php endif; ?>
+		
+		
+		<h3 class="programtitle">
+			<a href="<?php echo $this->url( array(
+				'channel'=>$channelAlias,
+				'alias'=>$prog['alias']), 'default_listings_program-week' ); ?>"
+				title="Расписание <?php echo $prog['title'] ?> на неделю"
+				target="_self">
+				<?php echo $prog['title']; ?>
+			</a>
+		</h3>
+		
+		<?php if (isset($prog['sub_title']) && !empty($prog['sub_title'])) : ?>
+		<p class="subtitle"><?php echo $prog['sub_title'] ?></p>
+		<?php endif; ?>
+			
+		
+		<div class="program-times">
+			<div class="time start">
+				<span class="label label-important"><?php echo $prog['start']->toString('HH:mm') ?></span>
+			</div>
+			<div class="time end">
+				<span class="label label-important"><?php echo $prog['end']->toString('HH:mm') ?></span>
+			</div>
+		</div>
+		
+		<ul class="nav nav-pills nav-list">
+			<li><a href="<?php echo $this->url( array(
+				'alias'=>$prog['alias'],
+				'channel'=>$channelAlias,
+				'timespan'=>'сегодня'), 'default_listings_program-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
+				<?php echo $prog['title']; ?> сегодня
+			</a></li>
+			<?php if (isset($prog['category_title']) && !empty($prog['category_title'])): ?>
+			<li><a href="<?php echo $this->url( array(
+				'category'=>$prog['category_alias'],
+				'timespan'=>'неделя'), 'default_listings_category'); ?>" title="Передачи на неделе">
+				<?php echo $prog['category_title']; ?> на этой неделе
+			</a>
+			</li>
+			<li><a href="<?php echo $this->url( array(
+				'category'=>$prog['category_alias'],
+				'timespan'=>'сегодня'), 'default_listings_category'); ?>" title="Передачи сегодня">
+				<?php echo $prog['category_title']; ?> сегодня
+			</a></li>
+		<?php endif; ?>
+		</ul>
+		
+		
+		
+		
+		<?php if (isset($prog['rating']) && $prog['rating']>0) : ?>
+		<p class="rating">Возрастной рейтинг: 
+			<span class="label label-warning"><?php echo $prog['rating'] ?>+</span>
+		</p>
+		<?php endif; ?>
+		
+		
+		<?php 
+		/*
+		 * Описание программы
+		 */
+		if ( isset($prog['desc']) && !empty($prog['desc'])) { ?>
+		<p class="video-desc"><?php echo $this->truncateString( $this->escape( $prog['desc'] ), 20, 'words' ); ?></p>
+		<?php } ?>
+		
+		<?php 
+		/*
+		 * Видео
+		*/
+		if (count($this->listing_videos)) {
+		    if (array_key_exists( $prog['hash'], $this->listing_videos)){
+				echo $this->partial( 'listings/partials/day-video.phtml', array(
+					'item' => $this->listing_videos[$prog['hash']],
+				));
+			}
+		} ?>
+		
+		<?php /* if (isset($prog['actors']) && !empty($prog['actors'])): ?>
+		<p>В ролях:
+			<ul class="persons btn-group">
+				<?php foreach ($prog['actors'] as $p): ?>
+				<li class="btn btn-mini">
+					<?php echo $p['complete_name'] ?>
+				</li>
+				<?php endforeach; ?>
+			</ul>
+		</p>
+		<?php endif; ?>
+		
+		<?php if (isset($prog['directors']) && !empty($prog['directors'])): ?>
+		<p>Режиссер:
+			<ul class="persons btn-group">
+				<?php foreach ($prog['directors'] as $p): ?>
+				<li class="btn btn-mini">
+					<?php echo $p['complete_name'] ?>
+				</li>
+				<?php endforeach; ?>
+			</ul>
+		</p>
+		<?php endif; */  ?>
+		
+	</div>
+	
+	<?php 
+		$pc++;
+	}
+	?>
+	
+	
+	
+	
+	
+</div>
