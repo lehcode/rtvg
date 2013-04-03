@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: list.phtml,v 1.18 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: list.phtml,v 1.19 2013-04-03 04:08:16 developer Exp $
  *
  */
 
@@ -28,58 +28,25 @@ if ($categoryTitle) {
 }
 
 
-APPLICATION_ENV=='production' ? 
-	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.min.js')) : 
-	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.js'));
+//APPLICATION_ENV=='production' ? 
+//	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.min.js')) : 
+//	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.js'));
 
-$js = "$(function() { $('#fastsearch-wrap img').tooltip({ showURL: false });
-	$.getJSON( '/channels/typeahead/format/json/', function(response) {
-		typeahead_items = new Array();
-		$.each(response, function(key, val) { 
-			$.each(val, function(name, channel){  typeahead_items.push(channel.title); }); 
-		});
-		$('#searchinput').typeahead({ source:typeahead_items });
-	});
-	
-	$('#searchinput').blur(function(){ 
-		if ($(this).val() != '') {
-			$('ul.typeahead li').click(function(){
-				$('.channeltitle').each(function(){
-					var r = new RegExp($('ul.typeahead li.active').attr('data-value'), 'i');
-					if (currentTitle = $(this).html().match(r)) {
-						$(\"html:not(:animated),body:not(:animated)\").animate({ scrollTop: $(this).offset().top }, 1000);
-						return false;
-					}
-				});
-			});
-		}
-	});
-	
-	$( '#channels' ).accordion({ autoHeight:false, navigation:true, clearStyle:true, icons: false });
-	
-});";
+$css = " .ui-autocomplete-category {
+	font-weight: bold;
+	padding: .2em .4em;
+	margin: .8em 0 .2em;
+	line-height: 1.5;
+}";
+$this->headStyle()->appendStyle($css);
 
-if (APPLICATION_ENV=='production'){
-    $js = Rtvg_Compressor_JSMin::minify($js);
-}
+$js = "$(function(){
+$('#channels').accordion({ icons:false, heightStyle:'content' });
+});
+";
+$js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js ;
 $this->headScript()->appendScript( $js );
 ?>
-<div id="fastsearch-wrap">
-	<?php 
-	$tip = "Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.";
-	if ($this->category) {
-	  $tip .=" Если канала нет в категории <i>".$categoryTitle."</i>, наберите его название или часть названия и нажмите Перейти.";  
-	} 
-	?>
-	<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
-	<?php 
-	$form = new Xmltv_Form_TypeaheadForm(array(
-		'action'=>$this->url(array(), 'default_search_search'),
-		'btn_class'=>'btn btn-primary',
-	)); 
-	echo $form;
-	?>
-</div>
 
 <h2>Передачи сегодня и на неделе</h2>
 	
@@ -87,10 +54,36 @@ $this->headScript()->appendScript( $js );
 if ( isset($this->category) && $this->category!==null) {
 	echo '<h1>'.$categoryTitle.' каналы'.'</h1>';
 	printf('<p class="label label-info">Телеканалы в категории «%s»: %d</p>', $categoryTitle, count($this->channels)) ;
-} else {
-	echo '<h1>Все каналы</h1>';
-	printf('<p class="label label-info">Всего %d</p>', count($this->channels)) ;
 } ?>
+
+<?php 
+/*
+ * Scroll to channel (autocomplete)
+*/
+$formProps = array(
+	'method'   => 'post',
+	'enctype'  => 'application/x-www-form-urlencoded',
+	'name'     => 'typeahead',
+	'id'       => 'typeahead',
+	'html_tag' => array( 
+		'tag'   => 'div',
+		'class' => 'container-fluid'
+	),
+	'input'    => array( 
+		'style' => 'width:100%;',
+		'label' => 'Быстрый поиск канала',
+		'id'    => 'searchinput',
+		'html_tag' => array(
+			'tag'=>'div'
+		)
+	),
+	'append'   => '#maincontent',
+);
+$formProps['scroll'] = (isset($categoryTitle) && !empty($categoryTitle)) ? false :  true;
+echo new Xmltv_Form_TypeaheadForm( $formProps );
+?>
+
+<h1>Все каналы</h1>
 
 <div id="channels">
 
@@ -113,13 +106,13 @@ if ( isset($this->category) && $this->category!==null) {
 	<div class="channeldesc">
 		<a class="label" 
 			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_listings_day-listing'); ?>" 
-			title="<?php printf('Телепрограмма канала %s на сегодня', $title) ?>"
+			title="<?php printf('Телепрограмма %s на сегодня', $title) ?>"
 			target="_blank">
-			<?php printf('Передачи %s сегодня', $channel['title']) ?>
+			<?php printf('«%s» сегодня', $channel['title']) ?>
 		</a>
 		<a class="label label-info" 
 			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_channels_channel-week'); ?>" 
-			title="<?php printf('Телепрограмма канала %s на неделю', $channel['title']) ?>">
+			title="<?php printf('Телепрограмма %s на неделю', $channel['title']) ?>">
 			Программа на неделю
 		</a>
 		

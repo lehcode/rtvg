@@ -3,13 +3,17 @@
  * Frontend index controller
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @uses    Xmltv_Controller_Action
- * @version $Id: FrontpageController.php,v 1.9 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: FrontpageController.php,v 1.10 2013-04-03 04:08:15 developer Exp $
  *
  */
 
 class FrontpageController extends Rtvg_Controller_Action
 {
+    
+    /**
+     * @var Xmltv_Model_Articles
+     */
+    private $articlesModel;
     
     const TOP_CHANNELS_AMT = 20;
     protected $list;
@@ -30,6 +34,14 @@ class FrontpageController extends Rtvg_Controller_Action
 			$ajaxContext->addActionContext( 'single-channel', 'html' )
 				->initContext();
     	}
+    	
+    	$this->articlesModel = new Xmltv_Model_Articles();
+    	
+    	if (!$this->_request->isXmlHttpRequest()){
+			$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
+			$this->view->assign( 'vk_group_init', false );
+		}
+    	
     }
     	
 	/**
@@ -37,8 +49,6 @@ class FrontpageController extends Rtvg_Controller_Action
 	 */
 	public function indexAction () {
 		
-	    $this->view->assign('pageclass', 'frontpage');
-	    
 	    if ($this->cache->enabled){
 	        
 	        $this->cache->setLifetime(600);
@@ -62,7 +72,6 @@ class FrontpageController extends Rtvg_Controller_Action
 		    $this->cache->setLifetime(600);
 		    $this->cache->setLocation(ROOT_PATH.'/cache');
 		    $f = '/Channels';
-			
 			$hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
 	        if (($channels = $this->cache->load( $hash, 'Core', $f))===false) {
 		        $channels = $this->channelsModel->allChannels("title ASC");
@@ -73,10 +82,27 @@ class FrontpageController extends Rtvg_Controller_Action
 	    }
 	    $this->view->assign( 'channels', $channels );
 	    
+	    $articlesAmt = 4;
+	    $this->view->assign( 'articles_amt', $articlesAmt);
+	    if ( $this->cache->enabled && APPLICATION_ENV=='production' ){
+	        $this->cache->setLifetime(600);
+	        $f = '/Content/Articles';
+	        $hash = md5( 'frontpage-articles' );
+	        if (($channels = $this->cache->load( $hash, 'Core', $f))===false ) {
+	        	$articles = $this->articlesModel->frontpageItems( $articlesAmt );
+	        	$this->cache->save( $channels, $hash, 'Core', $f);
+	        }
+	    } else {
+	        $articles = $this->articlesModel->frontpageItems( $articlesAmt );
+	    }
+	    $this->view->assign( 'articles', $articles );
+	    
 	}
 	
 	private function _getList(){
-		$this->list = $this->programsModel->frontpageListing( $this->_helper->top( 'topchannels', array('amt'=>self::TOP_CHANNELS_AMT)));
+		$this->list = $this->programsModel->frontpageListing( $this->_helper->top( 
+			'TopChannels', 
+			array( 'amt'=>self::TOP_CHANNELS_AMT )));
 	}
 	
 	/**
@@ -85,7 +111,7 @@ class FrontpageController extends Rtvg_Controller_Action
 	public function singleChannelAction(){
 		
 	    if (!$this->_request->isXmlHttpRequest()){
-	        throw new Zend_Exception(parent::ERR_INVALID_INPUT.__METHOD__, 500);
+	        throw new Zend_Exception( Rtvg_Message::ERR_INVALID_INPUT );
 	    }
 	    
 	    if (parent::validateRequest()){

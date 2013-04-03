@@ -3,7 +3,7 @@
  * Чердак страницы
  *
  * @author  Antony Repin
- * @version $Id: header.phtml,v 1.10 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: header.phtml,v 1.11 2013-04-03 04:08:16 developer Exp $
  *
  */
 ?>
@@ -15,7 +15,7 @@ $this->inlineScript()
 
 <div class="container-fluid">
 
-	<div class="navbar span5">
+	<div class="navbar span4">
 		<div class="navbar-inner">
 			<?php echo $this->nav_html; ?>
 		</div>
@@ -48,61 +48,16 @@ $this->inlineScript()
 	if (isset($this->user) && $this->isAllowed()) { 
 	?>
 	<div class="span2">
-		<a href="javascript:void(0);" 
-			id="vklogin" 
-			class="vklogin" 
-			title="Нажмите чтобы войти через vkontakte">
-			<img src="/images/forms/vklogin.png" alt="Войти vkontakte" />
-		</a>
+		<a href="javascript:void(0);" id="vklogin" class="vklogin" title="Нажмите чтобы войти через vkontakte"><img src="/images/forms/vklogin.png" alt="Войти vkontakte" /></a>
 	</div>
 	<?php 
 	} ?>
 	
-</div>
-
-
-
-<?php 
-/*
-<div class="row">
-	<div class="navbar span6">
-		<div class="navbar-inner">
-			<ul class="nav">
-				<li><a href="<?php echo $this->url(array(), 'default_channels_list') ?>">Каналы</a></li>
-				<li><a href="<?php echo $this->url(array(), 'default_series_week') ?>">Сериалы</a></li>
-				<li><a href="<?php echo $this->url(array(), 'default_movies_week') ?>">Фильмы</a></li>
-				<li><a href="<?php echo $this->url(array(), 'default_persons_actors') ?>">Актеры</a></li>
-				<li><a href="<?php echo $this->url(array(), 'default_rumors_recent') ?>">Новости</a></li>
-				<li class="divider-vertical"></li>
-				<li>
-					<a href="javascript:void(0);" id="vklogin" class="vklogin" title="Нажмите чтобы войти через vkontakte"><img src="/images/forms/vklogin.png" alt="Войти vkontakte" /></a>
-				</li>
-			</ul>
-		</div>
-	</div>
-	
-	<div class="span2">
-		<div id="vk_like"></div>
-	</div>
-	
+	<?php if ($this->is_frontpage) : ?>
 	<div class="span4">
-		<div class="brand">
-			<?php $tag = 'p'; if ($this->pageclass=='allchannels') $tag='h1'; ?>
-			<<?php echo $tag ?>>Rutvgid.ru :: <a href="<?php echo $this->url(array(), 'default_frontpage_index'); ?>" title="Телепрограмма на все телеканалы">Программа передач телеканалов России, Украины и СНГ.</a>
-		</div>
+		<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
 	</div>
+	<?php endif; ?>
 	
 </div>
-*/ ?>
 
-<?php /*
-<div id="MarketGidComposite35536">
-	<center>
-		<a id="mg_add35536" href="http://usr.marketgid.com/demo/goods/" target="_blank">Добавить свое объявление</a><br> <a href="http://marketgid.com/" target="_blank">Загрузка...</a>
-	</center>
-</div>
-*/ ?>
-
-<div class="span12">
-	<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
-</div>

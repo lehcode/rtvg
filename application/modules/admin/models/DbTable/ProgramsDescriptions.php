@@ -22,19 +22,6 @@ class Admin_Model_DbTable_ProgramsDescriptions extends Xmltv_Model_DbTable_Progr
 		}
 		return (int)$result[0]['amount'];
     }
-	/**
-	 * @return the $_name
-	 */
-	public function getName() {
-		return $this->_name;
-	}
-
-	/**
-	 * @param field_type $_name
-	 */
-	public function setName($_name) {
-		$this->_name = $_name;
-	}
 
     
 }

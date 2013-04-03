@@ -3,41 +3,45 @@
  * Articles model
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Articles.php,v 1.4 2013-03-26 20:03:26 developer Exp $
+ * @version $Id: Articles.php,v 1.5 2013-04-03 04:08:16 developer Exp $
  *
  */
-class Xmltv_Model_Articles
+class Xmltv_Model_Articles extends Xmltv_Model_Abstract
 {
-	/**
-	 * @var Zend_Db_Adapater_Mysqli
-	 */
-	protected $db;
-	
 	/**
 	 * Table prefix
 	 * @var string
 	 */
 	protected static $tblPfx='';
 	
+	/**
+	 * @var Xmltv_Model_DbTable_Articles
+	 */
+	protected $articlesTable;
+	
+	/**
+	 * @var Xmltv_Model_DbTable_ContentCategories
+	 */
+	protected $contentCategoriesTable;
+
+	/**
+	 * @var Xmltv_Model_DbTable_ProgramsCategories
+	 */
+	protected $programsCategoriesTable;
+
+	/**
+	 * @var Xmltv_Model_DbTable_ChannelsCategories
+	 */
+	protected $channelsCategoriesTable;
+	
 	public function __construct(array $config=null)
 	{
-		if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config')) {
-	        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
-	    }
-	    
-	    if (is_array($config)) {
-	    	$this->setOptions($config);
-	    }
-	    
-		// Init database
-		$this->dbConf = $config['db'];
-		$this->db = new Zend_Db_Adapter_Mysqli( $this->dbConf);
+		parent::__construct($config);
+		$this->articlesTable           = new Xmltv_Model_DbTable_Articles();
+		$this->contentCategoriesTable  = new Xmltv_Model_DbTable_ContentCategories();
+		$this->programsCategoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+		$this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
 		
-		// Set table prefix
-		$pfx = $this->dbConf->get('tbl_prefix');
-		if(false !== (bool)$pfx) {
-		    self::$tblPfx = $pfx; 
-		}
 	}
 	
 	/**
@@ -54,6 +58,205 @@ class Xmltv_Model_Articles
 			}
 		}
 		return $this;
+	}
+	
+	/**
+	 * Articles list for frontpage
+	 * 
+	 * @param int $amt
+	 */
+	public function frontpageItems($amt=10){
+		
+	    $select = $this->db->select()
+	    	->from( array('a'=>$this->articlesTable->getName()), array( 
+	    		'id',
+	    		'title',
+	    		'alias',
+	    		'image',
+	    		'metadesc',
+	    	))
+	    	->joinLeft( array('cc'=>$this->contentCategoriesTable->getName()), "`a`.`content_cat`=`cc`.`id`", array(
+	    		'content_cat_id'=>'id',
+	    		'content_cat_title'=>'title',
+	    		'content_cat_alias'=>'alias',
+	    	))
+	    	->joinLeft( array('chc'=>$this->channelsCategoriesTable->getName()), "`a`.`channel_cat`=`chc`.`id`", array(
+	    		'channel_cat_id'=>'id',
+	    		'channel_cat_title'=>'title',
+	    		'channel_cat_alias'=>'alias',
+	    	))
+	    	->joinLeft( array('pc'=>$this->channelsCategoriesTable->getName()), "`a`.`prog_cat`=`pc`.`id`", array(
+	    		'program_cat_id'=>'id',
+	    		'program_cat_title'=>'title',
+	    		'program_cat_alias'=>'alias',
+	    	))
+	    	->where( "`a`.`published`='1' AND `a`.`publish_down`<'".Zend_Date::now()->toString('YYYY-MM-dd')."'")
+	    	->order( "a.publish_up DESC" )
+	    	->limit( $amt );
+	    
+	    if (APPLICATION_ENV=='development'){
+		    Zend_Registry::get('console_log')->log($select->assemble(), Zend_Log::INFO);
+		    //die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    $result = $this->db->fetchAll($select);
+	    
+	    if (APPLICATION_ENV=='development'){
+	    	//var_dump($result);
+	    	//die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    if (!count($result)){
+	        return false;
+	    }
+	    
+	    foreach ($result as $k=>$item){
+	        $result[$k]['date_added']   = new Zend_Date( $item['date_added'], 'YYYY-MM-dd' );
+	        $result[$k]['publish_up']   = new Zend_Date( $item['publish_up'], 'YYYY-MM-dd' );
+	        $result[$k]['publish_down'] = new Zend_Date( $item['publish_down'], 'YYYY-MM-dd' );
+	    }
+	    
+	    return $result;
+	    
+	}
+	
+	/**
+	 * @param string $articleAlias
+	 */
+	public function singleItem( $articleAlias ){
+		
+	    $select = $this->db->select()
+	    	->from( array('a'=>$this->articlesTable->getName()), array(
+	    		'id',
+	    		'title',
+	    		'alias',
+	    		'intro',
+	    		'body',
+	    		'tags',
+	    		'metadesc',
+				//'content_cat',
+				//'channel_cat',
+				//'prog_cat',
+				'video_cat',
+				'hits',
+				'is_ref',
+				'is_paid',
+				'is_cpa',
+	    	))
+	    	->joinLeft(array('cc'=>$this->contentCategoriesTable->getName()), "`a`.`content_cat`=`cc`.`id`", array(
+	    		'content_cat_id'=>'id',
+	    		'content_cat_title'=>'title',
+	    		'content_cat_alias'=>'alias',
+	    	))
+	    	->joinLeft(array('chc'=>$this->channelsCategoriesTable->getName()), "`a`.`channel_cat`=`chc`.`id`", array(
+	    		'channel_cat_id'=>'id',
+	    		'channel_cat_title'=>'title',
+	    		'channel_cat_alias'=>'alias',
+	    	))
+	    	->joinLeft(array('pc'=>$this->programsCategoriesTable->getName()), "`a`.`prog_cat`=`pc`.`id`", array(
+	    		'program_cat_id'=>'id',
+	    		'program_cat_title'=>'title',
+	    		'program_cat_alias'=>'alias',
+	    	))
+	    	->where("`a`.`published`='1' AND `a`.`publish_down`<'".Zend_Date::now()->toString('YYYY-MM-dd')."' AND `a`.`alias`='$articleAlias' ")
+	    	->limit( 1 );
+
+		if (APPLICATION_ENV=='development'){
+		    Zend_Registry::get('console_log')->log($select->assemble(), Zend_Log::INFO);
+		    //die(__FILE__.': '.__LINE__);
+	    }
+	    
+	    $result = $this->db->fetchAll($select);
+	     
+	    if (APPLICATION_ENV=='development'){
+	    	//var_dump($result);
+	    	//die(__FILE__.': '.__LINE__);
+	    }
+	     
+	    if (!count($result)){
+	    	return false;
+	    }
+	    
+	    foreach ($result as $k=>$item){
+	    	$result[$k]['date_added']   = new Zend_Date( $item['date_added'], 'YYYY-MM-dd' );
+	    	$result[$k]['publish_up']   = new Zend_Date( $item['publish_up'], 'YYYY-MM-dd' );
+	    	$result[$k]['publish_down'] = new Zend_Date( $item['publish_down'], 'YYYY-MM-dd' );
+	    }
+	     
+	    return $result;
+	    
+	}
+	
+	/**
+	 * get realted items by source type
+	 * 
+	 * @param array  $item // source object
+	 * @param string $type // article|channel|program|video
+	 */
+	public function relatedItems( $item=null, $type='article' ){
+		
+	    if (!$item || empty($item) || !is_array($item)){
+	        throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM );
+	    }
+	    
+	    switch ($type){
+	    	default:
+	    	    throw new Zend_Exception( "Type was not defined" );
+	    	break;
+	    	case 'article':
+	    	    return $this->articleRelatedItems( $item );
+	    	break;
+	    	case 'channel':
+	    	    return $this->channelRelatedItems( $item );
+	    	break;
+	    	case 'program':
+	    	    return $this->programRelatedItems( $item );
+	    	break;
+	    	case 'video':
+	    	    return $this->videoRelatedItems( $item );
+	    	break;
+	    }
+	    
+	}
+	
+	/**
+	 * Fetch items related to article
+	 * by content category
+	 * 
+	 * @param array $article
+	 * @param int   $amt
+	 */
+	private function articleRelatedItems( $article, $amt=4 ){
+		
+		return $this->articlesTable->fetchAll(array(
+			"`a`.`content_cat`='".$article['content_cat_id']."'",
+			"`a`.`id` != '".(int)$article['id']."'"
+		), "a.publish_up DESC", $amt );
+	    
+	}
+	
+	/**
+	 * All articles categories list
+	 */
+	public function getCategories(){
+		
+	    return $this->contentCategoriesTable->fetchAll()->toArray();
+	    
+	}
+	
+	/**
+	 * Fetch articles for ListingsController::day-listing()
+	 * 
+	 * @param array $currentProgram
+	 * @param array $channel
+	 * @param int   $amt
+	 */
+	public function dayListingArticles( $currentProgram=array(), $channel=array(), $amt=10 ){
+		
+	    return $this->articlesTable->fetchAll(array(
+			"`a`.`prog_cat`='".$currentProgram['category_id']."' OR `a`.`channel_cat`='".$channel['id']."' "
+		), "a.publish_up DESC", $amt );
+	    
 	}
 	
 }

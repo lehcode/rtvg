@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: SitemapController.php,v 1.9 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: SitemapController.php,v 1.10 2013-04-03 04:08:15 developer Exp $
  *
  */
 class SitemapController extends Rtvg_Controller_Action
@@ -23,8 +23,8 @@ class SitemapController extends Rtvg_Controller_Action
         
         parent::init();
         $this->_request->setParam('format', 'xml');
-		$contextSwitch = $this->_helper->getHelper('contextSwitch');
-        $contextSwitch->addActionContext('sitemap', 'xml')->initContext();
+		$ajaxContext = $this->_helper->getHelper('contextSwitch');
+        $ajaxContext->addActionContext('sitemap', 'xml')->initContext();
         $this->_helper->layout->disableLayout();
         $this->_model = new Xmltv_Model_Sitemap();
         

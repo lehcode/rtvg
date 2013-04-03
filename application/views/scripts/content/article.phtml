@@ -1,2 +1,82 @@
 <?php
-var_dump($this->article);
+/**
+ * View script to dosplay single article
+ * 
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: article.phtml,v 1.2 2013-04-03 04:08:16 developer Exp $
+ */
+
+if (APPLICATION_ENV=='development'){
+	Zend_Registry::get('console_log')->log( $this->article, Zend_Log::INFO);
+}
+?>
+<div class="article" itemscope itemtype="http://schema.org/CreativeWork">
+	<h1 itemprop="headline"><?php echo $this->article['title']; ?></h1>
+	<div itemptop="text">
+		<p class="lead"><?php echo $this->article['intro']; ?></p>
+		<?php $body = array();
+		$replaced = array();
+		foreach (explode("\r\n", $this->article['body']) as $p){
+		    $p = $this->escape($p);
+		    foreach ( $this->tags as $tag ) {
+		        $tag = $this->escape($tag);
+		        $linkAttrHref = '<a href="'.$this->url( array('tag'=>$this->safeTag( $tag )), 'default_content_tag').'" target="_blank" title="'.sprintf("Новости про %s", $tag).'"><em>'.$tag.'</em></a>';
+		        if (preg_match('/\s'.$tag.'\s/ui', $p)){
+		            if (!in_array($tag, $replaced)){
+		            	$p = preg_replace('/'.$tag.'/ui', $linkAttrHref, $p);
+		            	$replaced[]=$tag;
+		            }
+		        }
+		    	
+		    }
+		    $body[] = '<p>'.trim($p).'</p>';
+		}
+		echo implode('', $body); ?>
+	</div>
+	<div class="microformat" itemprop="keywords"><?php echo $this->escape( $this->article['tags'] ); ?></div>
+	<div class="microformat" itemprop="dateCreated"><?php echo $this->article['date_added']->toString("YYYY-MM-dd"); ?></div>
+	<div class="microformat" itemprop="datePublished"><?php echo $this->article['publish_up']->toString("YYYY-MM-dd"); ?></div>
+	<div class="microformat" itemprop="copyrightHolder">rutvgid.ru</div>
+	<div class="microformat" itemprop="copyrightYear"><?php echo Zend_Date::now()->toString('YYYY'); ?></div>
+	<div class="microformat" itemprop="publisher">rutvgid.ru</div>
+	
+</div>
+
+<div class="category">
+	<?php $linkAttrHref = $this->url( array(
+		'content_cat' => $this->escape( $this->article['content_cat_alias']),
+		'article_alias' => $this->escape( $this->article['alias'])), 'default_content_blog-category' ); ?>
+	<a href="<?php echo $linkAttrHref; ?>">
+		<?php printf( "Все %s на rutvgid", Xmltv_String::strtolower( $this->article['content_cat_title']) ); ?>
+	</a>
+</div>
+
+<?php 
+/*
+ * ######################################
+ * Related articles
+ * ######################################
+ */
+$related= $this->related_articles;
+$relatedAmt = count( $related );
+$spanW = floor(12/$relatedAmt);
+if ($relatedAmt>0) {
+?>
+<div id="related">
+	<?php foreach ($related as $item) { 
+		$linkAttrHref = $this->url( array(
+			'cat_alias'=>$item->content_cat_alias,
+			'article_alias'=>$item->alias,
+		), 'default_content_article' );
+	    ?>
+	<div class="span<?php echo $spanW; ?>">
+		<h3>
+			<a href="<?php echo $linkAttrHref; ?>"><?php echo $item->title; ?></a></h3>
+		<?php //foreach (explode("\r\n", $item->intro) as $p){ ?>
+		<?php //echo '<p>'.trim($p).'</p>'; ?>
+		<?php //} ?>
+	</div>
+	<?php } ?>
+</div>
+<?php 
+} ?>

@@ -16,21 +16,25 @@ abstract class Xmltv_Model_Abstract
      * @var Xmltv_Model_DbTable_ProgramsDescriptions
      */
     protected $descriptionsTable;
+    
     /**
      *
      * @var Xmltv_Model_DbTable_ProgramsCategories
      */
     protected $categoriesTable;
+    
     /**
      *
      * @var Xmltv_Model_DbTable_ChannelsCategories
      */
     protected $channelsCategoriesTable;
+    
     /**
      *
      * @var Xmltv_Model_DbTable_ChannelsRatings
      */
     protected $channelsRatingsTable;
+    
     /**
      * Channels
      * @var Xmltv_Model_DbTable_Channels
@@ -38,23 +42,11 @@ abstract class Xmltv_Model_Abstract
     protected $channelsTable;
     
     /**
-     * Actors
-     * @var Xmltv_Model_DbTable_Actors
-     */
-    protected $actorsTable;
-
-    /**
      * Programs
      * @var Xmltv_Model_DbTable_Programs
      */
     protected $programsTable;
     
-    /**
-     * Directors
-     * @var Xmltv_Model_DbTable_Directors
-     */
-    protected $directorsTable;
-
     /**
      * Video cache for sidebar
      * @var Xmltv_Model_DbTable_VcacheSidebar
@@ -62,7 +54,7 @@ abstract class Xmltv_Model_Abstract
     protected $vcacheSidebarTable;
 
     /**
-     * Video cache for main listing videos
+     * Video cache for sidebar
      * @var Xmltv_Model_DbTable_VcacheListings
      */
     protected $vcacheListingsTable;
@@ -131,9 +123,9 @@ abstract class Xmltv_Model_Abstract
 	 */
 	public function __set($name, $value)
 	{
-		$method = 'set' . $name;
+		$method = 'set' . ucfirst( $name );
 		if (('mapper' == $name) || !method_exists($this, $method)) {
-			throw new Exception('Invalid guestbook property');
+			throw new Zend_Exception('Invalid model method: '.$method);
 		}
 		$this->$method($value);
 	}
@@ -146,9 +138,9 @@ abstract class Xmltv_Model_Abstract
 	 */
 	public function __get($name)
 	{
-		$method = 'get' . $name;
+		$method = 'get' . ucfirst( $name );
 		if (('mapper' == $name) || !method_exists($this, $method)) {
-			throw new Exception('Invalid guestbook property');
+			throw new Zend_Exception('Invalid model method: '.$method);
 		}
 		return $this->$method();
 	}
@@ -178,8 +170,8 @@ abstract class Xmltv_Model_Abstract
 	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
 	    $this->channelsRatingsTable    = new Xmltv_Model_DbTable_ChannelsRatings();
 	    
-	    $this->actorsTable    = new Xmltv_Model_DbTable_Actors();
-	    $this->directorsTable = new Xmltv_Model_DbTable_Directors();
+	    //$this->actorsTable    = new Xmltv_Model_DbTable_Actors();
+	    //$this->directorsTable = new Xmltv_Model_DbTable_Directors();
 	    $this->programsTable  = new Xmltv_Model_DbTable_Programs();
 	    
 	    $this->vcacheListingsTable = new Xmltv_Model_DbTable_VcacheListings();
@@ -200,7 +192,8 @@ abstract class Xmltv_Model_Abstract
 	 */
 	protected static function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
 	    
-	    //echo '<b>'.$method.'</b><br />';
+	    // Use this in your model, view and controller files
+	    Zend_Registry::get('console_log')->log($select->assemble(), Zend_Log::INFO);
 		//Zend_Debug::dump($select->assemble());
         
 	}
@@ -216,7 +209,6 @@ abstract class Xmltv_Model_Abstract
 		}
 		return $this;
 	}
- 
     
 }
 ?>

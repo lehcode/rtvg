@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.12 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: Action.php,v 1.13 2013-04-03 04:08:16 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -170,7 +170,8 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			) );
 		
 		$this->cache = new Rtvg_Cache();
-        $this->cache->enabled = (bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' );
+		$e = ((bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' ) && APPLICATION_ENV=='production');
+        $this->cache->enabled = ($e===true) ? true : false;
         $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
         $this->cache->setLocation( ROOT_PATH.'/cache' );
 		
@@ -182,26 +183,24 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
          */
         $bootstrap = $this->getInvokeArg('bootstrap');
         
-        try {
-        
-            /**
-        	 * @var Zend_Http_UserAgent
-        	 */
-        	$this->userAgent = $bootstrap->getResource('useragent');
-        
-        	/**
-        	 * @var Zend_Http_UserAgent_AbstractDevice
-        	 */
-        	$this->userDevice = $this->userAgent->getDevice();
-        	$this->view->assign( 'user_device', $this->userDevice );
-        	
-        } catch (Exception $e) {
-        	
+        if (!$this->_request->isXmlHttpRequest()){
+	        try {
+	        
+	            /**
+	        	 * @var Zend_Http_UserAgent
+	        	 */
+	        	$this->userAgent = $bootstrap->getResource('useragent');
+	        
+	        	/**
+	        	 * @var Zend_Http_UserAgent_AbstractDevice
+	        	 */
+	        	$this->userDevice = $this->userAgent->getDevice();
+	        	$this->view->assign( 'user_device', $this->userDevice );
+	        	
+	        } catch (Exception $e) {
+	        	
+	        }
         }
-        
-        $this->user = $bootstrap->getResource('user');
-        $this->view->assign('user', $this->user);
-        
         
         self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		if (self::$videoCache){
@@ -230,11 +229,11 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			$this->kidsChannels = intval($kc);
 		}
 		
-		//$this->initView();
-		
-		if (APPLICATION_ENV=='development'){
-		    //var_dump($this->isAllowed);
-		    //die(__FILE__.': '.__LINE__);
+		if (!$this->_request->isXmlHttpRequest()){
+		    $this->view->assign( 'hide_sidebar', 'both' );
+		    $this->view->assign( 'show_popunder', true );
+		    $this->view->assign( 'is_frontpage', false );
+		    $this->view->assign( 'vk_group_init', true );
 		}
 		
 		//$this->adScripts = new Rtvg_Ad_Collection();
@@ -411,7 +410,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	    
 	    if (APPLICATION_ENV=='development'){
 	        //var_dump($this->input->getEscaped('channel'));
-	        var_dump($alias);
+	        //var_dump($alias);
 	        //die(__FILE__.': '.__LINE__);
 	    }
 	    
@@ -769,6 +768,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 */
 	public function __call ($method, $arguments) {
 		throw new Zend_Exception( Rtvg_Message::ERR_METHOD_NOT_FOUND, 404);
+	}
+	
+	public function pageclass($classname=null){
+		
+	    return strtolower(str_ireplace('controller', '', $classname));
+	    
 	}
 	
 }

@@ -1,10 +1,9 @@
 <?php 
 /**
- * Выборанная программа сегодня
+ * Выбранная программа сегодня
  * 
  * @author  Antony Repin
- * @package rutvgid
- * @version $Id: program-day.phtml,v 1.13 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: program-day.phtml,v 1.14 2013-04-03 04:08:16 developer Exp $
  *
  */
 ?>
@@ -62,13 +61,7 @@ if (!empty($this->programs)) {
 		//page title
 		$this->headTitle( sprintf ('«%s» на канале «%s» %s', $programTitle, $channelTitle, $this->escape( $this->date->toString('dd MMM YYYY'))));
 	}
-	/*
-	$start_times = array();
-	foreach ($this->programs as $single) {
-		$start = new Zend_Date( $single->start );
-		$start_times[] = $this->escape( $start->toString( "HH:mm" ));
-	}
-	*/
+	
 	?>
 	
 	<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
@@ -78,6 +71,7 @@ if (!empty($this->programs)) {
 	<h2><a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>">
 		<em><?php printf("Программа «%s» на сегодня", $channelTitle) ?></em></a>
 	</h2>
+	
 	<h3><a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>">
 		<em><?php printf("Программа «%s» на неделю", $channelTitle) ?></em></a>
 	</h3>

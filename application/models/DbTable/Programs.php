@@ -3,7 +3,7 @@
  * Programs database table class
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Programs.php,v 1.21 2013-03-17 18:34:58 developer Exp $
+ * @version $Id: Programs.php,v 1.22 2013-04-03 04:08:16 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
@@ -101,17 +101,20 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	/**
 	 * @param int $channel_id
 	 * @param string $date
+	 * @param int $count // optional
 	 */
-	public function fetchDayItems($channel_id=null, $date=null) {
+	public function fetchDayItems($channel_id=null, $date=null, $count=null) {
 		
-		if (!$channel_id || !$date)
-			throw new Zend_Exception(parent::ERR_PARAMETER_MISSING.__METHOD__, 500);
+		if (!$channel_id || !$date) {
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM );
+		}
 		
 		$categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
 		
-		$d = new Zend_Date( $date->toString("U"), 'U');
-		$channelsTable = new Xmltv_Model_DbTable_Channels();
+		//$d = new Zend_Date( $date->toString("U"), 'U');
+		$channelsTable   = new Xmltv_Model_DbTable_Channels();
 		$categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+		$now = Zend_Date::now();
 		/**
 		 * Create SQL query
 		 * @var Zend_Db_Select
@@ -122,10 +125,10 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 				'title',
 				'sub_title',
 				'alias',
-				'channel',
+				//'channel',
 				'start',
 				'end',
-				'category',
+				//'category',
 				'rating',
 				'new',
 				//'live',
@@ -150,23 +153,29 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 				'hash',
 			))
 			->joinLeft( array( 'cat'=>$categoriesTable->getName()), "`prog`.`category`=`cat`.`id`", array( 
+				'category_id'=>'id',
 				'category_title'=>'title',
 				'category_title_single'=>'title_single',
 				'category_alias'=>'alias',
 			))
-			->join( array( 'ch'=>$channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
+			->joinLeft( array( 'ch'=>$channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
+				'channel_id'=>'id',
 				'channel_title'=>'title',
 				'channel_alias'=>'alias',
 			))
-			->where( "`prog`.`start` >= '".$d->toString('YYYY-MM-dd')." 00:00'")
-			->where( "`prog`.`start` < '".$d->addDay(1)->toString('YYYY-MM-dd')." 00:00'")
-			->where( "`prog`.`channel` = '$channel_id'")
+			->where("`prog`.`start` >= '".Zend_Date::now()->toString("YYYY-MM-dd")." 00:00:00'")
+			->where("`prog`.`start` < '".Zend_Date::now()->addDay(1)->toString("YYYY-MM-dd")." 00:00'")
+			->where( "`prog`.`channel` = ".$this->_db->quote($channel_id))
 			->where( "`ch`.`published` = '1'")
 			->group( "prog.hash")
 			->order( "prog.start", "ASC");
+			
+			if (isset($count) && is_int($count)){
+			    //$select->limit( $count );
+			}
 		
 		if (APPLICATION_ENV=='development'){
-			parent::debugSelect($select, __METHOD__);
+			//parent::debugSelect($select, __METHOD__);
 			//die(__FILE__.': '.__LINE__);
 		}
 			

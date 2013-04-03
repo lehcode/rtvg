@@ -3,92 +3,103 @@
  * Быстрый переход по каналам и поиск канала
  * 
  * @author  Antony Repin
- * @version $Id: TypeaheadForm.php,v 1.3 2013-03-05 06:53:19 developer Exp $
+ * @version $Id: TypeaheadForm.php,v 1.4 2013-04-03 04:08:15 developer Exp $
  *
  */
 class Xmltv_Form_TypeaheadForm extends Zend_Form
 {
-	
-	protected static $formClass;
-	protected static $labelClass;
-	protected static $htmlTagClass;
-	protected static $submitClass;
-	
-	/**
+    /**
 	 * Форма быстрого поиска канала
+	 * со скроллом к положению канала на странице
+	 * или без
 	 * 
 	 * @param array $options
 	 */
-    public function __construct($options = null) {
+    public function __construct( $options=null ) {
     	
-        parent::__construct($options);
+        (isset($options['html_tag']) && !empty($options['html_tag'])) ? $tagProps = $options['html_tag'] : null ;
+        unset($options['html_tag']);
+        (isset($options['append'])   && !empty($options['append']))   ? $appendTo = $options['append'] : '#maincontent' ;
+        unset($options['append']);
+        (isset($options['input'])    && !empty($options['input']))    ? $input    = (array)$options['input'] : null ;
+        unset($options['input']);
+        
+        parent::__construct( $options );
 		
-        $attribs = array(
-        	'method'=>'post',
-        	'enctype'=>'application/x-www-form-urlencoded',
-        	'name'=>'typeahead',
-        );
-        $this->setAttribs($attribs);
+        $view = $this->getView();
         
-        if ( isset($options['action']) && !empty($options['action'])) {
-        	$this->setAttrib('action', $options['action']);
+        $inputId = (isset($input['id']) && !empty($input['id'])) ? (string)$input['id'] : 'searchinput';
+        $js = "$(function(){
+    	$.getJSON( '".$view->baseUrl( 'channels/typeahead/format/json')."', function(data) {
+			var typeaheadItems = new Array();
+			$.each(data.result, function( key, val ) {
+				var newItem = new Array(); 
+				newItem['label'] = val.title;
+				newItem['value'] = val.title;
+				typeaheadItems.push( newItem ); 
+			});
+			$('input#$inputId').autocomplete({ 
+				appendTo: '$appendTo',
+				source: typeaheadItems,
+				delay: 0,
+				select: function( event, ui ){ " . PHP_EOL;
+        
+        if ( $options['scroll']===true ){
+            $js .= "$('.channeltitle').each(function( ){
+				var r = new RegExp(ui.item.label, 'i');
+				if (currentTitle = $(this).html().match(r)) {
+					$(\"html:not(:animated),body:not(:animated)\").animate({ scrollTop: $(this).offset().top }, 1000);
+					return false;
+				}
+			});".PHP_EOL;
+        } else {
+            $js .= "".PHP_EOL;
         }
         
-        $tagProps = array('tag'=>'div');
-        if (isset($options['html_tag_class']) && !empty($options['html_tag_class'])){
-            $tagProps['class'] = $options['html_tag_class'];
+	    $js .= " }
+			});
+			$('#".$options['id']."').show(500);
+		});
+		
+    	});".PHP_EOL;
+        $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js ;
+        
+        $view->headScript()->appendScript($js);
+        
+        $search = new Zend_Form_Element_Text( $input['id'] );
+        $tipText = "Начните вводить название канала и выберите его из списка";
+        $htmlTag = null;
+        if (isset($input['html_tag']) && !empty($input['html_tag'])){
+            $htmlTag['tag']   = (string)$input['html_tag']['tag'];
+            $htmlTag['class'] = (isset($input['html_tag']['class']) && !empty($input['html_tag']['class'])) ? (string)$input['html_tag']['class'] : null ;
         }
         
+        $htmlTagClass = (isset($input['html_tag']) && !empty($input['html_tag'])) ? (string)$input['html_tag'] : null ;
+        $search->setLabel( $input['label'] )
+        	->setAttrib( 'class', $input['class'] )
+        	->setAttrib( 'title', $tipText )
+        	->addFilter( 'StripTags' )
+        	->addValidator( 'NotEmpty' )
+       		->addFilter( 'StringTrim' )
+        	->setDecorators( array(
+        		array( 'ViewHelper' ),
+        		array( 'Errors' ),
+        		array( 'Label', $htmlTag ),
+        	));
+        
+        $htmlTag = (isset($tagProps) && !empty($tagProps)) ? $tagProps['tag'] : null ;
+        $htmlTagClass = (isset($tagProps) && !empty($tagProps)) ? $tagProps['class'] : null ;
         $this->setDecorators(array(
         	'FormElements',
         	'Form', array(
-        		array('data'=>'HtmlTag'), $tagProps ),
+        		array('data'=>'HtmlTag'),
+        		array(
+        			'tag'   => $htmlTag,
+        			'class' => $htmlTagClass
+        	)),
         ));
-        
-        self::$submitClass = isset($options['submit_class']) && !empty($options['submit_class']) ? $options['submit_class'] : null ;
-		
-    }
-    
-    
-    /**
-     * (non-PHPdoc)
-     * @see Zend_Form::init()
-     */
-    public function init(){
-    	
-        $search = new Zend_Form_Element_Text('searchinput');
-        $decorators = array(
-        	array('ViewHelper'),
-        	array('Errors'),
-        	array('Label', array( 'tag' => null )));
-        
-        $search->setLabel("Быстрый поиск по телеканалам")
-	        ->setAttrib('data-provide', 'typeahead')
-	        ->setAttrib('class', 'span4')
-	        ->addFilter('StripTags')
-	        ->addValidator('NotEmpty')
-	        ->addFilter('StringTrim')
-	        ->setDecorators($decorators)
-	        ->removeDecorator('HtmlTag');
-        
-        
-        $submit = new Zend_Form_Element_Submit('submit');
-        $decorators = array(
-        	array('ViewHelper'),
-        	array('HtmlTag', array('tag' => 'span')),
-        );
-        $submit->setLabel('>')
-        ->setAttrib('id', '')
-        ->setDecorators($decorators)
-        ->removeDecorator('HtmlTag');
-        
-        if (self::$submitClass!==null) {
-        	$submit->setAttrib('class', self::$submitClass);
-        }
-         
-        $this->addElements(array($search, $submit));
-        
-        
+        $this->addElement($search);
         
     }
+    
 }

@@ -1,6 +1,8 @@
 <?php
 class Rtvg_Message {
-    
+    /*
+     * Errors
+     */
     const ERR_CANNOT_CREATE_DIR = "Не могу создать директорию";
     const ERR_INVALID_INPUT = "Введены неверные данные";
     const ERR_IS_HACK = "Хак: ";
@@ -26,8 +28,18 @@ class Rtvg_Message {
     const ERR_WRONG_MODULE = "Неверный модуль";
     const ERR_WRONG_PARAM = "Неверный параметр";
     const ERR_WRONG_TYPE_FOR = "Неверный тип параметр для ";
-    const ERR_CANNOT_SAVE = "Не могу сохранить запись";
+    const ERR_CANNOT_DELETE_ROW = "Не могу удалить запись";
+    const ERR_CANNOT_SAVE_ROW = "Не могу сохранить запись";
+    const ERR_CANNOT_UPDATE_ROW = "Не могу обновить запись";
     const FORM_SELECT_ONE = "--Выберите--";
+    /*
+     * Messages
+     */
+    const MSG_EDIT_ARTICLE = "Редактирование";
+    const MSG_LOADING_CHANNEL_SCHEDULE_AJAX = "Загружаю передачи для «%s», немного подожите…";
     const MSG_LOGGED_OUT = "Вы вышли из системы";
+    const MSG_NEW_ARTICLE = "Новая статья";
+    const MSG_REALLY_DELETE = "Удалить?";
+    const MSG_SEND_MESSAGE = "Отправить сообщение";
 }
 

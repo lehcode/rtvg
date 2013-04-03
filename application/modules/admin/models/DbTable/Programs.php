@@ -16,17 +16,6 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
     public function __construct($config=array()){
     	
     	parent::__construct();
-		
-    	if (isset($config['tbl_prefix'])) {
-    		$pfx = (string)$config['tbl_prefix'];
-    	} else {
-    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix', 'rtvg_');
-    	}
-    	
-    	//var_dump($this);
-    	//die();
-    	
-    	$this->setName($this->_name);
     	
     }
     

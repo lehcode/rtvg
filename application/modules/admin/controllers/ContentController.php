@@ -4,11 +4,16 @@
  * 
  * @author	 Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version	$Id: ContentController.php,v 1.4 2013-03-24 03:02:28 developer Exp $
+ * @version	$Id: ContentController.php,v 1.5 2013-04-03 04:08:16 developer Exp $
  *
  */
 class Admin_ContentController extends Rtvg_Controller_Admin
 {
+
+    /**
+     * @var Xmltv_Model_DbTable_Articles
+     */
+    protected $articlesTable;
     
     const HEAD_TITLE_PATTERN = "%s --> %s --> %s";
     
@@ -22,9 +27,12 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 		$this->mainModel = new Admin_Model_Articles();
 	}
 	
+	/**
+	 * Index
+	 */
 	public function indexAction()
 	{
-		return $this->_redirect($this->view->baseUrl('admin/content/articles'));
+		return $this->_redirect($this->view->url(array(), 'default_content_blog'));
 	}
 	
 	/**
@@ -48,6 +56,9 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 		$this->view->headTitle( sprintf( self::HEAD_TITLE_PATTERN,  $_SERVER['HTTP_HOST'], $this->user->display_name, "Работа со статьями"));
 		$this->view->assign( 'actions_menu', new Zend_Navigation( 
 			new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/admin/articles-menu.xml', 'nav' )));
+		
+		$sorterScript = (APPLICATION_ENV=='development')? 'js/j/jquery.tablesorter.js' : 'js/j/jquery.tablesorter.min.js' ;
+		$this->view->headScript()->appendFile( $this->view->baseUrl( $sorterScript ) );
 		
 	}
 	
@@ -76,6 +87,11 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 		     */
 			default:
 			case'edit':
+			    
+			    if (APPLICATION_ENV=='development'){
+			    	var_dump($this->_getAllParams());
+			    	//die(__FILE__.': '.__LINE__);
+			    }
 			    
 			    $this->view->headTitle( sprintf( self::HEAD_TITLE_PATTERN,  $_SERVER['HTTP_HOST'], $this->user->display_name, "Работа со статьями"));
 			    $this->view->headScript()
@@ -165,7 +181,7 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 					}
 					$idx = $this->_getParam('idx');
 					$url = $this->view->baseUrl('admin/content/edit').'?do=edit&idx[]='.$idx[0];
-					return $this->_redirect( $url, array( 'exit'=>true ) );
+					return $this->_redirect( $url, array( 'exit'=>true, 'params'=>$this->_getAllParams() ) );
 				}
 				
 				$article = array();
@@ -179,7 +195,6 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 				        if ($param==$col['COLUMN_NAME']){
 				            switch ($col['DATA_TYPE']){
 				            	case 'int':
-				            	case 'bit(1)':
 				            	    $article[$param] = (int)$value;
 				            	break;
 				            	case 'date':
@@ -187,20 +202,27 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 				            	    $article[$param] = $d->toString('YYYY-MM-dd');
 				            	break;
 				            	default:
-				            		$article[$param] = $this->view->escape($value);
+				            		$article[$param] = $value;
 				            }
 				        }
 				    }
 				}
-				$article['alias'] = Admin_Model_Programs::makeAlias($article['title']);
-				$article['tags']  = Xmltv_String::strtolower($article['tags']);
+				
+				$article['alias']  = Admin_Model_Programs::makeAlias( $article['title'] );
+				foreach ($incomeTypes as $type){
+					$article[$type]=0;
+					if ($type==$this->input->getEscaped('income')){
+						$article[$type]=1;
+					}
+				}
 				
 				if(APPLICATION_ENV=='development'){
 				    //var_dump($this->_getAllParams());
 				    //var_dump($article);
 				    //die(__FILE__.': '.__LINE__);
 				}
-								
+
+				
 				try {
 					$this->mainModel->saveArticle( $article );
 				} catch (Zend_Db_Adapter_Exception $e) {
@@ -212,6 +234,7 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 						return;
 					}
 				}
+				
 				
 				$this->_flashMessenger->addMessage( array(
 					'message' => 'Статья <b>'.$article['title'].'</b> сохранена'

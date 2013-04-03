@@ -3,14 +3,13 @@
  * 
  * Programs model for Admin module
  * 
- * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package rutvgid
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/Programs.php,v $
- * @version $Id: Programs.php,v 1.27 2013-03-17 18:34:58 developer Exp $
+ * @author     Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version    $Id: Programs.php,v 1.28 2013-04-03 04:08:16 developer Exp $
  */
 
 class Admin_Model_Programs extends Xmltv_Model_Programs
-	{
+{
 	
 	protected $countriesList = array(
 		'Австралия'=>'au',
@@ -110,6 +109,9 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		'/^([\d]{1,2})\+\s/ui',
 	) ;
 	
+	protected $actorsTable;
+	protected $directorsTable;
+	
 	
 
 	/**
@@ -118,6 +120,8 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	public function __construct(){
 		
 	    parent::__construct();
+	    $this->actorsTable    = new Admin_Model_DbTable_Actors();
+	    $this->directorsTable = new Admin_Model_DbTable_Directors();
 		
 	}
 	
@@ -451,29 +455,34 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 				$cat_title = $this->categoriesMap[$catLower];
 			}
 			
-			//var_dump($cat_title);
-			//die(__FILE__.': '.__LINE__);
+			if (APPLICATION_ENV=='development'){
+				//var_dump($cat_title);
+				//die(__FILE__.': '.__LINE__);
+			}
 			
 			foreach ($this->programsCategoriesList as $c) {
-			    if( Xmltv_String::strtolower($c->title)==Xmltv_String::strtolower($cat_title)) {
+			    if( Xmltv_String::strtolower( $c->title ) == Xmltv_String::strtolower($cat_title)) {
 					$catId  = (int)$c->id;
 					$exists = true;
 				}
 			}
 			
-			//var_dump($catId);
-			//die(__FILE__.': '.__LINE__);
+			if (APPLICATION_ENV=='development'){
+				//var_dump($catId);
+				//die(__FILE__.': '.__LINE__);
+			}
 			
 			// If not found
 			if (!$exists){
 			    if (APPLICATION_ENV=='development'){
-			        var_dump( func_get_args());
+			        //var_dump( func_get_args());
 			        //var_dump($c->title);
-			        die(__FILE__.': '.__LINE__);
+			        //die(__FILE__.': '.__LINE__);
 			    }
 				
 			}
 		} elseif ($prog_desc) {
+		    
 			$categoriesRegex = array(
 				'/-?\s*сериал\.?/'
 			);
@@ -486,12 +495,15 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 					}
 				}
 			}
+			
 		} else {
 			return false;
 		}
 		
-		//var_dump($catId);
-		//die(__FILE__.': '.__LINE__);
+		if (APPLICATION_ENV=='development'){
+			//var_dump($catId);
+			//die(__FILE__.': '.__LINE__);
+		}
 		
 		return $catId;
 	
@@ -798,8 +810,11 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    			}
 	    		}
 	    	}
-	    	$result = implode(',', $result['country']);
-	    	return $result;
+	    	if ($result && is_array($result)){
+	    		$result = implode(',', $result['country']);
+	    		return $result;
+	    	} 
+	    	return null;
 	    } else {
 	    	$country = $string;
 	    	if ( array_key_exists( $country, $this->countriesList)){
@@ -1532,7 +1547,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 * @param  bool   $replace_plus //Заменять + на слово
 	 * @return string|null
 	 */
-	public function makeAlias($input, $replace_plus=false){
+	public static function makeAlias($input, $replace_plus=false){
 		
 	    if (APPLICATION_ENV=='development'){
 	        //var_dump($input);

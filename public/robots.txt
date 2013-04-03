@@ -9,6 +9,10 @@ Disallow:
 
 User-agent: Googlebot
 Disallow: /*?
+Disallow: /%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE/%D1%82%D0%B5%D0%BC%D0%B0
+
+User-agent: YandexDirect
+Disallow: /
 
 User-agent: Yandex
 Clean-param: p /
@@ -16,10 +20,10 @@ Clean-param: tz /
 Clean-param: ts /
 Clean-param: layout /
 Clean-param: s /
-Crawl-delay: 2
+Crawl-delay: 1
 
 User-agent: Mail.Ru
-Crawl-delay: 2
+Crawl-delay: 1
 
 User-agent: AhrefsBot
 Disallow: /

@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.13 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: Acl.php,v 1.14 2013-04-03 04:08:16 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -41,6 +41,10 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:channels.channel-week' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels.new-comments' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels.typeahead' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:content.article' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:content.article-tag' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:content.blog' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:content.blog-category' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-listing' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-date' ), $default );
@@ -127,11 +131,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    	'admin:series',
 	    	'admin:index',
 	    ));
-	    
-	    $this->deny(array(
-	    	self::ROLE_EDITOR,
-	    	self::ROLE_PUBLISHER,
-	    ), 'admin:content.article', 'income');
+	    $this->deny(array( self::ROLE_EDITOR, self::ROLE_PUBLISHER ), 'admin:content.article', array('income'));
 	    
 	    // Alow everything to root user
 	    $this->allow( self::ROLE_GOD );

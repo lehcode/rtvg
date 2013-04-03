@@ -4,9 +4,23 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-left.phtml,v 1.11 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: sidebar-left.phtml,v 1.12 2013-04-03 04:08:16 developer Exp $
  *
  */
+?>
+
+<?php 
+if (isset($this->announces) && ($this->announces!==false)  && ($this->show_announces===true)) { ?>
+<div class="module">
+	<ul class="nav nav-pills nav-list">
+    <?php foreach ($this->announces as $article){ ?>
+    	<li><a href="#"><?php echo $article->title; ?></a></li>  
+    <?php } ?>
+    </ul>
+</div>    
+    <?php 
+}
+
 ?>
 
 <?php

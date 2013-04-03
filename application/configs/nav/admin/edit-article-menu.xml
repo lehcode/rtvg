@@ -5,7 +5,7 @@
  * Main menu for backend
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: edit-article-menu.xml,v 1.1 2013-03-22 04:29:10 developer Exp $
+ * @version $Id: edit-article-menu.xml,v 1.2 2013-04-03 04:08:15 developer Exp $
  */
  -->
 <config>
@@ -23,7 +23,7 @@
 			<idAttr>back</idAttr></back>
 		<apply>
 			<label>Применить</label>
-			<resource>admin:content.article</resource>
+			<resource>admin:content</resource>
 			<privilege>edit</privilege>
 			<module>admin</module>
 			<controller>content</controller>
@@ -33,7 +33,7 @@
 		</apply>
 		<save>
 			<label>Сохранить</label>
-			<resource>admin:content.article</resource>
+			<resource>admin:content</resource>
 			<privilege>edit</privilege>
 			<module>admin</module>
 			<controller>content</controller>
@@ -43,7 +43,7 @@
 		</save>
 		<saveAndNew>
 			<label>Сохранить+</label>
-			<resource>admin:content.article</resource>
+			<resource>admin:content</resource>
 			<privilege>edit</privilege>
 			<module>admin</module>
 			<controller>content</controller>

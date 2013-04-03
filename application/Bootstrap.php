@@ -3,7 +3,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.26 2013-03-22 17:51:43 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.27 2013-04-03 04:08:15 developer Exp $
  *
  */
 
@@ -49,6 +49,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$cache->setOption( 'caching', $e );
 		Zend_Registry::set('cache', $cache);
 		
+		// Place this in your bootstrap file before dispatching your front controller
+		$consoleWriter = new Zend_Log_Writer_Firebug();
+		Zend_Registry::set( 'console_log', new Zend_Log( $consoleWriter ) );
+		
 		/*
 		 * Front controller
 		 */
@@ -60,33 +64,31 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-			->returnResponse( false )
+			->returnResponse( true )
 			->throwExceptions( false );
 		
 		
-		
-		
-		if (APPLICATION_ENV=='production'){
-		    //$fc->returnResponse( true );
-		    $fc->throwExceptions( false );
+		if (APPLICATION_ENV=='development'){
+		    $fc->returnResponse( true )
+				->throwExceptions( true );
 		}
-		
-		/*
-		 * http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
-		 */
 		
 		$router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
 		$log = $this->bootstrap()->getResource('Log');
 		
+		/*
+		 * http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
+		*/
 		try {
 		    
 		    $response = $fc->dispatch();
+		    
 		    if( $response && $response->isException() ) {
 		    	//die(__FILE__.': '.__LIN);
 		    	$exceptions = $response->getException();
 		    	foreach ($exceptions as $e){
-		    		$log->log( $e->getMessage(), Zend_Log::CRIT, $e->getTraceAsString() );
+		    		$log->log( $e->getMessage(), Zend_Log::DEBUG, $e->getTraceAsString() );
 		    		if (APPLICATION_ENV=='development'){
 		    			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		    		}
@@ -95,11 +97,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		} catch (Exception $e) {
 		    
 		    if( APPLICATION_ENV == 'development' ) {
-		        //throw new Zend_Exception( $e->getMessage(), $e->getCode() );
 		    	die($e->getMessage());
-		    	//die("Response exception in ". __CLASS__."!");
 		    } else {
-		        $log->log( $e->getMessage(), Zend_Log::CRIT, $e->getTraceAsString() );
+		        $log->log( $e->getMessage(), Zend_Log::DEBUG, $e->getTraceAsString() );
 		    }
 		}
 		
@@ -176,8 +176,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$view->jQuery()->enable()
 			->setRenderMode( ZendX_JQuery::RENDER_ALL )
 			//->setCdnSsl(true) if need to load from ssl location
-			->setVersion('1.8.3') //jQuery version, automatically 1.5 = 1.5.latest
-			->setUiVersion('1.8.18') //jQuery UI version, automatically 1.8 = 1.8.latest
+			->setVersion('1.9.1') //jQuery version, automatically 1.5 = 1.5.latest
+			->setUiVersion('1.10.2') //jQuery UI version, automatically 1.8 = 1.8.latest
 			->uiEnable();
 	}
 	
@@ -255,14 +255,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    $view->setEncoding( 'UTF-8' );
 	    $view->headMeta()
 	    	->setHttpEquiv( 'Content-Type', 'text/html;charset=utf-8' )
+	    	->setHttpEquiv( 'X-UA-Compatible', 'IE=9;IE=8;' )
 	    	->setName('viewport', 'width=device-width, initial-scale=1.0');
-	    $view->headTitle()->setSeparator(' :: ' );
+	    $view->headTitle()
+	    	->setSeparator(' :: ' )
+	    	->prepend( "rutvgid.ru" );
 	    
+	    $baseCss = (APPLICATION_ENV=='production') ? $view->baseUrl('css/base.min.less') : $view->baseUrl('css/base.less') ;
+	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$baseCss), 'APPEND');
 	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND');
 	    $view->headLink()
-	    	->prependStylesheet( $view->baseUrl('css/base.css'))
-	    	->appendStylesheet($view->baseUrl('css/fonts.css'))
-	    	->appendStylesheet( $view->baseUrl('js/tip/jquery.tooltip.css'));
+	    	//->prependStylesheet( $view->baseUrl('css/base.css'))
+	    	->appendStylesheet($view->baseUrl('css/fonts.css'));
+	    	//->appendStylesheet( $view->baseUrl('js/tip/jquery.tooltip.css'));
 
 	    $view->headScript()
 	    	->setAllowArbitraryAttributes(true)
@@ -270,6 +275,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    
 	    if (APPLICATION_ENV=='development'){
 	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bootstrap.js' ));
+	    	//$view->headScript()->appendFile( $view->baseUrl( 'js/jquery-migrate-1.1.1.js' ));
 	    } else {
 	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bootstrap.min.js' ));
 	    }
@@ -290,7 +296,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    		->appendStylesheet( $view->baseUrl( 'css/ie.css' ))
 	    		->appendStylesheet( $view->baseUrl( 'css/fonts-ie.css' ));
 	    }
-	    
 	    
 	}
 	

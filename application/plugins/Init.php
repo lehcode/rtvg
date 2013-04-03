@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Init.php,v 1.25 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: Init.php,v 1.26 2013-04-03 04:08:16 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -44,6 +44,8 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		$this->_initNav();
 		$this->_initHttpClient();
 		
+		
+		
 	}
 	
 	/**
@@ -67,10 +69,25 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		
 		$controllerName = $request->getControllerName();
 		
+		if($request->getModuleName() == 'admin') {
+			ini_set('display_errors', 1);
+			error_reporting(E_ALL ^ E_NOTICE);
+			//var_dump(ini_get('error_reporting'));
+			/*
+			foreach( array('E_ALL', 'E_NOTICE', '~E_NOTICE', 'E_ALL&~E_NOTICE') as $s) {
+				eval("\$v=$s;");
+				printf("%20s = dec %10u\n", $s, $v, $v);
+			}
+			*/
+			Zend_Controller_Front::getInstance()
+				->returnResponse( false )
+				->throwExceptions( true );
+		}
+		
 		if (preg_match('/[^a-z0-9]+$/', $controllerName)){
 			
 			if ($controllerName=='%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE' ||
-			$controllerName == '%25d0%25b2%25d0%25b8%25d0%25b4%25d0%25b5%25d0%25be'){
+				$controllerName == '%25d0%25b2%25d0%25b8%25d0%25b4%25d0%25b5%25d0%25be'){
 				
 				$request->setControllerName('videos');
 				$action = $request->getActionName();
@@ -105,6 +122,8 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 					$controllerName=='img' ||
 					$controllerName=='css'){
 				throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404 );
+			} elseif ($controllerName=='%C3%91%E2%80%9A%C3%90%C2%B5%C3%90%C2%BB%C3%90%C2%B5%C3%90%C2%BF%C3%91%E2%82%AC%C3%90%C2%BE%C3%90%C2%B3%C3%91%E2%82%AC%C3%90%C2%B0%C3%90%C2%BC%C3%90%C2%BC%C3%90%C2%B0'){
+			    $request->setControllerName('listings');
 			} else {
 				throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404 );
 			}

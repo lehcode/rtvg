@@ -4,40 +4,26 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: TimezoneSwitch.php,v 1.3 2013-03-06 04:54:51 developer Exp $
+ * @version $Id: TimezoneSwitch.php,v 1.4 2013-04-03 04:08:15 developer Exp $
  *
  */
 class Xmltv_Form_TimezoneSwitch extends Zend_Form
 {
 	
-	private $_formClass='timezone';
-	private $_formCss='';
-	private $_actionUrl='';
-	private $_timeShift=0;
-	private $_labelClass=0;
-	private $_selectedValue=0;
-	
-	public function __construct($options=array()) {
+	public function __construct( $options=array() ) {
 		
-		parent::__construct($options);
+		(isset($options['label']) && !empty($options['label'])) ? $labelProps = $options['label'] : null ;
+		unset($options['label']);
+
+	    (isset($options['html_tag']) && !empty($options['html_tag'])) ? $htmlTagProps = $options['html_tag'] : null ;
+	    unset($options['html_tag']);
+	    
+	    (isset($options['diff']) && !empty($options['diff'])) ? $diff = $options['diff'] : null ;
+	    unset($options['diff']);
+	    
+	    parent::__construct( $options );
 		
-		if (isset($options['form_class']) && !empty($options['form_class'])) {
-			$this->_formClass = $options['form_class'];
-		}
-		if (isset($options['form_css']) && !empty($options['form_css'])) {
-			$this->_formCss = $options['form_css'];
-		}
-		if (isset($options['action_url']) && !empty($options['action_url'])) {
-			$this->_actionUrl = $options['action_url'];
-		}
-		if (isset($options['time_shift']) && !empty($options['time_shift'])) {
-			$this->_timeShift = $options['time_shift'];
-		}
-		if (isset($options['label_class']) && !empty($options['label_class'])) {
-			$this->_labelClass = $options['label_class'];
-		}
-			
-		$options = array(
+	    $options = array(
 			array('key'=>'-12', 'value'=>'-12'),
 			array('key'=>'-11', 'value'=>'-11'),
 			array('key'=>'-10', 'value'=>'-10'),
@@ -64,46 +50,36 @@ class Xmltv_Form_TimezoneSwitch extends Zend_Form
 			array('key'=>'11', 'value'=>'+11'),
 			array('key'=>'12', 'value'=>'+12'),
 		);
-		$timezone = new Zend_Form_Element_Select('timezone');
-		$timezone->addMultiOptions($options);
-		$active = $this->_timeShift==0 ? 'msk' : $this->_timeShift ; 
+	    
+		$timezone = new Zend_Form_Element_Select( 'timezone' );
+		$timezone->addMultiOptions( $options );
+		$active = $diff==0 ? 'msk' : $diff ; 
 		$timezone->setValue( $active );
-		$labelText = $this->_timeShift==0 ? 'Часовой пояс (MSK)' : 'Часовой пояс (MSK '.$this->_timeShift.')' ;
+		$labelText    = $diff==0 ? 'Время(MSK)' : 'Время(MSK '.$diff.')' ;
+		$labelClass   = isset( $labelProps['class']) && !empty( $labelProps['class'] ) ? $labelProps['class'] : null ;
+		$labelTag     = isset( $labelProps['tag']) && !empty( $labelProps['tag'] ) ? $labelProps['tag'] : 'div' ;
 		$timezone->setAttribs(array(
 			'name'=>'tz',
 			'size'=>1,
 			'onchange'=>'document.forms.timezone.submit();',
-		))
-		->setLabel($labelText)
-		->setDecorators(array(
-			'ViewHelper',
-			'Description',
-			'Errors',
-			array( 'Label', array( 'tag'=>'div', 'class'=>$this->_labelClass ) ),
-			//array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'mediumheading' ) ),
-		))
-		->removeDecorator('HtmlTag');
+			'style'=>'width:auto;',
+			))
+			->setLabel($labelText)
+			->setDecorators(array(
+				'ViewHelper',
+				array( 'Label', array( 'tag'=>null ) ),
+			));
 		
-			
-		$formAttribs = array(
-			'action'=>$this->_actionUrl,
-			'name'=>'timezone',
-			'class'=>$this->_formClass,
-			'method'=>'get',
-			'id'=>'timezone',
-			'enctype'=>'application/x-www-form-urlencoded'
-		);
+		$htmlTag      = isset($htmlTagProps['tag']) && !empty( $htmlTagProps['tag'] ) ? $htmlTagProps['tag'] : 'div' ;
+		$htmlTagClass = isset($htmlTagProps['class']) && !empty( $htmlTagProps['class'] ) ? $htmlTagProps['class'] : 'div' ;
 		$this->addElements( array( $timezone ) )
-			->setAttribs($formAttribs)
 			->setDecorators(array(
 				'FormElements',
 				'Form', array(
 					array('data'=>'HtmlTag'),
-					array('tag'=>'div', 'class'=>'timeswitch')
+					array('tag'=>$htmlTag, 'class'=>$htmlTagClass)
 				),
 			));
-					
-		return $this;
 		
     }
     

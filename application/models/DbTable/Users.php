@@ -4,9 +4,7 @@
  * User data table class
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package rutvgid
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/models/DbTable/Users.php,v $
- * @version $Id: Users.php,v 1.7 2013-03-29 21:15:44 developer Exp $
+ * @version $Id: Users.php,v 1.8 2013-04-03 04:08:16 developer Exp $
  */
 class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
 {

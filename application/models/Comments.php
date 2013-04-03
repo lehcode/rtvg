@@ -13,107 +13,12 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	 */
 	private $_feed;
 	
-	const CURL_USERAGENT  = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/0.2.153.1 Safari/525.19';
+	const CURL_USERAGENT  = 'PHP/5';
 	
 	public function __construct(){
 		
 		parent::__construct();
 		
-	}
-	
-	/*
-	public function getVkComments( $query=null ){
-		
-		if ( is_array($query) )
-		$query = implode( ' ', $query );
-		
-		if ( Xmltv_Config::getDebug()===true )
-		var_dump( $query );
-		
-		//$frontendOptions = array( 'lifetime'=>7200, 'automatic_serialization'=>true );
-		//$backendOptions  = array('cache_dir'=>ROOT_PATH.'/cache/Comments' );
-		//$cache		   = Zend_Cache::factory( 'Core', 'File', $frontendOptions, $backendOptions );
-		
-		//Zend_Feed_Reader::setCache( $cache );
-		//Zend_Feed_Reader::useHttpConditionalGet();
-		//$result = Zend_Feed_Reader::import('http://blogs.yandex.ru/search.rss?text='.urlencode($query).'&format=atom');
-		
-		//$appKey="2369516";
-		//$appSecret="ZCDx7PBLRzyEDKuGztoF";
-		$accessToken = $this->_vkAuth();
-		
-		var_dump($accessToken);
-		$videos = $this->_vkApiRequest('video.search', $accessToken, array("q"=>$query));
-		var_dump($videos);
-		die(__FILE__.': '.__LINE__);
-		
-		
-	}
-	*/
-	public function vkApiRequest($api_method=null, $token=null, $method_params=array()){
-		
-		if (!$api_method || !$token)
-		throw new Zend_Exception("Не указан один или более параметров для ".__METHOD__, 500);
-		
-		$vk = new Xmltv_Vk_Api($this->_appKey, $this->_appSecret);
-		//$query = $vk->getAppBalance();
-		//$vkResponse = $vk->getUserSettings( 1172531 );
-		$vkResponse = $vk->videoSearch( array("коммандо") );
-		//var_dump($vkResponse);
-		
-		/*
-		$vkParams = array();
-		foreach ($method_params as $k=>$param)
-		$vkParams[] = "$k=$param";
-		
-		sort($vkParams);
-		var_dump($vkParams);
-		
-		$json = new Zend_Json();
-		
-		//$imp = implode( '', $vkParams );
-		$query = array();
-		foreach ($vkParams as $param){
-			$query[]=$param;
-		}
-		$query[]='v=3.0';
-		sort( $query );
-		$method_params = implode( '&', $query );
-		$sig = md5( implode( '', $query ).$this->_appSecret );
-		
-		//var_dump( $query );
-		//var_dump( $sig );
-		//var_dump( md5( "6492api_id=4method=getFriendsv=3.0secret" ) );
-		//var_dump( md5( "6492api_id=4method=getFriendsv=3.0secret" ) );
-		//die( __FILE__.": ".__LINE__ );
-		//$url = "https://api.vk.com/api.php?v=3.0&api_id={$this->_appKey}&method={$api_method}&format=json&{$method_params}&access_token={$token}&sig={$sig}";
-		$url = "http://api.vk.com/api.php?v=3.0&api_id={$this->_appKey}&format=json&method={$api_method}&{$method_params}&sig={$sig}";
-		//var_dump( $url );
-		$result = $json->decode( $this->_curl($url ), Zend_Json::TYPE_OBJECT);
-		
-		//var_dump( $result );
-		//var_dump( $result->error->request_params );
-		
-		die( __FILE__.": ".__LINE__ );
-		
-		$client = new Zend_Http_Client($url, $adapterConfig);
-		$response = $client->request('POST');
-		
-		if ($response->isError()) {
-			throw new Exception($response->asString());
-			//echo "Error transmitting data.\n";
-			//echo "Server reply was: " . $response->getStatus() . " " . $response->getMessage() . "\n";
-		}
-		
-		//var_dump($response);
-		
-		$json = new Zend_Json();
-		$result = json_decode($response->getBody(), Zend_Json::TYPE_OBJECT);
-		
-		//var_dump($result);
-		
-		return $result;
-		*/
 	}
 	
 	private function _curl($url) {
@@ -130,55 +35,6 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		//decode and return the response
 		return $body;
 	}
-	
-	/**
-	 * Авторизация приложения VK
-	 * 
-	 * @return string //VK.com token
-	 */
-	public function vkAuth(){
-		
-		$adapterConfig = array(
-			'adapter'=>'Zend_Http_Client_Adapter_Curl',
-			'curloptions'=>array(
-				CURLOPT_FOLLOWLOCATION=>false,
-				CURLOPT_CONNECTTIMEOUT=>5,
-				CURLOPT_COOKIEFILE=>ROOT_PATH.'/cookies/vk.jar',
-				CURLOPT_COOKIEJAR=>ROOT_PATH.'/cookies/vk.jar',
-				CURLOPT_USERAGENT=>self::CURL_USERAGENT,
-				//CURLOPT_HEADER=>true,
-				//CURLINFO_HEADER_OUT=>true,
-			)
-		);
-		
-		$this->_vkEmail = urlencode($this->_vkEmail);
-		
-		//$url = "http://api.vk.com/oauth/authorize?client_id={$this->_appKey}&redirect_uri=".urlencode("http://oauth.vk.com/blank.html")."&scope=16&display=wap&response_type=token";
-		//$url = "http://vkontakte.ru/login.php?app={$this->_appKey}&layout=popup&type=browser&settings=16";
-		//$url = "https://api.vk.com/oauth/token?grant_type=client_credentials&client_id={$this->_appKey}&client_secret={$this->_appSecret}&username={$this->_vkEmail}&password={$this->_vkPass}&offline=1";
-		//$url = "https://oauth.vk.com/access_token?client_id={$this->_appKey}&client_secret={$this->_appSecret}&grant_type=client_credentials&offline=1'";
-		$url = "http://oauth.vk.com/authorize?client_id=2965316&scope=offline&redirect_uri=http://oauth.vk.com/blank.html&display=wap&response_type=token";
-		
-		$client = new Zend_Http_Client($url, $adapterConfig);
-		$hash = Rtvg_Cache::getHash( __FUNCTION__ );
-		try {
-			$response = $client->request('GET');
-		} catch (Zend_Http_Client_Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-		}
-		/*	
-		if ($response->isError()) {
-			throw new Exception('(!)Ошибка передачи данных. Ответ сервера vk: ' . $response->getStatus() . ' ' . $response->getMessage() . "\n");
-		} else {
-			
-		}
-		*/
-		
-		$response = json_decode( $response->getBody() );
-		return $response->access_token;
-		
-	}
-	
 	
 	/**
 	 * Get RSS search results for particular query
@@ -526,8 +382,9 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	 */
 	public function channelComments($id=null, $paginate=false){
 	
-		if (!$id)
-			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500 );
+		if (!$id || !is_numeric($id)) {
+			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM );
+		}
 		
 		$amt = (int)Zend_Registry::get('site_config')->channels->comments->get('amount');
 		$select = $this->db->select()
@@ -537,7 +394,8 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 			->limit($amt);
 		
 		if (APPLICATION_ENV=='development'){
-		    parent::debugSelect($select, __METHOD__);
+		    Zend_Registry::get('console_log')->log( $select->assemble(), Zend_Log::INFO );
+		    //parent::debugSelect($select, __METHOD__);
 			//die(__FILE__.': '.__LINE__);
 		}
 		

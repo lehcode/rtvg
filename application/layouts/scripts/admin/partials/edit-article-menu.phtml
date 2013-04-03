@@ -5,18 +5,12 @@
  * @uses Zend_Navigation_Page
  */
 
-$view = new Zend_View();
-$view->headScript()->appendScript("$(document).ready(function() {
-    $('div#edit-article-menu button').click(function(e){
-	e.preventDefault;
-	$('form#articleForm input[name=do]').val($(this).attr('id'));
-	$('form#articleForm').submit();
-})});
-");
+
 ?>
 <div class="btn-group">
 <?php
 foreach ($this->container as $page) {
+    //var_dump($page->getResource());
 	if ( $this->isAllowed($page->getResource()) ){
 	    switch ($page->idAttr){
 	    	default:

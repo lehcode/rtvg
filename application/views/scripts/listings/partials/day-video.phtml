@@ -3,51 +3,37 @@
  * Отдельное видео на странице дневного расписания
  * 
  * @author  Antony Repin
- * @version $Id: day-video.phtml,v 1.1 2013-04-01 16:57:06 developer Exp $
+ * @version $Id: day-video.phtml,v 1.2 2013-04-03 04:08:16 developer Exp $
  */
 ?>
 
-<div class="program-video">
 <?php 
 $videoTitle = $this->escape( $this->item['title'] );
-$videoAlias = $this->escape( $this->item['alias'] );
-$videoDesc  = $this->escape( $this->item['desc'] );
-$videoId	= $this->escape( $this->item['rtvg_id'] );
-$videoUrl   = $this->url( array('alias'=>$videoAlias, 'id'=>$videoId), 'default_videos_show-video' );
+if ($this->show_title===true) { ?>
+<h4 class="title"><?php echo $videoTitle; ?></h4>
+<?php } ?>
 
-if (isset($this->item['thumbs']) && !empty($this->item['thumbs'])){
-	$wrapStyle = empty($videoDesc) ? 'width: 100%;' : 'float:left; width:120px; margin: 0 1em 0.25em 0;' ;
-	?>
-<div style="<?php echo $wrapStyle ?>">
-	<?php $thW = (int)Zend_Registry::get('site_config')->videos->listing->get('thumb_width'); ?>
+<p class="video">
+	<?php 
+	$videoAlias = $this->escape( $this->item['alias'] );
+	$videoDesc  = $this->escape( $this->item['desc'] );
+	$videoId	= $this->escape( $this->item['rtvg_id'] );
+	$videoUrl   = $this->url( array('alias'=>$videoAlias, 'id'=>$videoId), 'default_videos_show-video' );
+	$imgAttrSrc = (isset($this->random_image) && $this->random_image===true) ? 
+		$this->item['thumbs'][rand(0, count($this->item['thumbs'])-1)]['url'] :
+		$this->item['thumbs'][0]['url'] ;
+	
+	if(!empty($videoDesc)) {
+		echo $videoDesc;
+	}
+	
+	$thW = (int)Zend_Registry::get('site_config')->videos->listing->get('thumb_width'); ?>
 	<a href="<?php echo $videoUrl ?>"
-		title="Видео, похожие на <?php echo $videoTitle ?>">
-		<img src="<?php echo $this->item['thumbs'][rand(0, count($this->item['thumbs'])-1)]['url']; ?>" 
-			width="<?php echo (int)$thW>1 ? (int)$thW : 240;  ?>" 
+		title="<?php printf("Видео %s онлайн", $videoTitle); ?>">
+		<img src="<?php echo $imgAttrSrc; ?>" 
+			width="<?php echo (int)$thW>1 ? (int)$thW : 120;  ?>" 
 			alt="<?php echo $videoTitle ?>" />
 	</a>
-</div>
-<?php 
-} ?>
-
-<?php /*
-<h4 class="title">
-	<?php echo $videoTitle ?>
-</h4>
-*/ ?>
-
-<a class="btn btn-mini" href="<?php echo $videoUrl; ?>" 
-	title="Видео <?php echo $videoTitle; ?>"
-	target="_self">
-	Смотреть онлайн
-</a>
-
-<?php if(!empty($videoDesc)) : ?>
-<p class="video-desc">
-	<?php echo $videoDesc ?>
+	
 </p>
-<?php endif; ?>
-
-
-</div>
 		

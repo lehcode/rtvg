@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version $Id: Articles.php,v 1.4 2013-03-24 03:02:28 developer Exp $
+ * @version $Id: Articles.php,v 1.5 2013-04-03 04:08:16 developer Exp $
  *
  */
 class Admin_Model_Articles {
@@ -198,32 +198,61 @@ class Admin_Model_Articles {
     	
     }
     
+    /**
+     * Save article
+     * 
+     * @param  array $data
+     * @throws Zend_Exception
+     * @return boolean
+     */
     public function saveArticle(array $data=null){
         
         if (isset($data['id']) && (int)$data['id']!=0){
-            $update = array();
-            foreach ($data as $key=>$value){
-                $update[] = $this->db->quoteIdentifier($key) . '=' . $this->db->quote( $value );
-            }
-            $sql = "UPDATE `".$this->contentTable->getName()."` SET ".implode( ',', $update )." WHERE `id`=".$data['id'];
-            
-            if (APPLICATION_ENV=='development'){
-                echo '<b>'.__METHOD__.'</b><br />';
-                Zend_Debug::dump($sql);
-            	//die(__FILE__.': '.__LINE__);
-            }
-            
-            if(!$this->db->query( $sql )){
-                throw new Zend_Exception( Rtvg_Message::ERR_CANNOT_UPDATE_ROW, 500 );
-            }
+            $this->updateArticle($data);
     	} else {
-    	    $this->contentTable->insert($data);
+    	    $row = $this->contentTable->createRow($data);
+    	    if (APPLICATION_ENV=='development'){
+    	        //var_dump($row->toArray());
+    	    	//Zend_Registry::get('console_log')->log($sql, Zend_Log::INFO);
+    	    	//die(__FILE__.': '.__LINE__);
+    	    }
+    	    $this->contentTable->insert( $row->toArray(), 'id' );
     	}
     	
     	return true;
     	
     }
     
+    /**
+     * Update row in database
+     * 
+     * @param  array $data
+     * @throws Zend_Exception
+     */
+    private function updateArticle(array $data=null){
+    	
+        $update = array();
+        foreach ($data as $key=>$value){
+        	$update[] = $this->db->quoteIdentifier($key) . '=' . $this->db->quote( $value );
+        }
+        $sql = "UPDATE `".$this->contentTable->getName()."` SET ".implode( ',', $update )." WHERE `id`=".$data['id'];
+        
+        if (APPLICATION_ENV=='development'){
+        	Zend_Registry::get('console_log')->log($sql, Zend_Log::INFO);
+        	//die(__FILE__.': '.__LINE__);
+        }
+        
+        if(!$this->db->query( $sql )){
+        	throw new Zend_Exception( Rtvg_Message::ERR_CANNOT_UPDATE_ROW, 500 );
+        }
+        
+    }
+    
+    /**
+     * 
+     * @param  int $id
+     * @throws Zend_Exception
+     */
     public function deleteArticle($id=null){
         
         if (!$id) 
@@ -235,6 +264,7 @@ class Admin_Model_Articles {
             throw new Zend_Exception( Rtvg_Message::ERR_CANNOT_DELETE_ROW, 501 );
         }
         
+        return true;
         
     }
     

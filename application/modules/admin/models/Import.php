@@ -1,6 +1,12 @@
 <?php
-
-
+/**
+ * Backend import actions
+ * 
+ * @author     Antony Repin <egeshisolutions@gmail.com>
+ * @subpackage backend
+ * @version    $Id: Import.php,v 1.5 2013-04-03 04:08:16 developer Exp $
+ *
+ */
 class Admin_Model_Import
 {
 	
@@ -61,7 +67,10 @@ class Admin_Model_Import
 	}
 	
 	private function _getDateString($input=null){
-		if(!$input) return;
+	    
+		if(!$input)	
+		    return;
+		
 		$date['year']      = substr($input, 0, 4);
 		$date['month']     = substr($input, 4,2);
 		$date['day']       = substr($input, 6,2);

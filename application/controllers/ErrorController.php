@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses	Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.17 2013-03-22 17:51:43 developer Exp $
+ * @version $Id: ErrorController.php,v 1.18 2013-04-03 04:08:15 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -17,12 +17,20 @@ class ErrorController extends Zend_Controller_Action
 	 */
 	protected $_flashMessenger = null;
 	
+	private static $pageclass='error';
+	
 	public function init(){
+	    
 		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
 		$ajaxContext->addActionContext( 'ajax-error', 'json' )
 			->initContext();
 		$this->_flashMessenger = $this->_helper->getHelper( 'FlashMessenger' );
 		$this->_helper->layout->setLayout( 'error' );
+		if (!$this->_request->isXmlHttpRequest()){
+			$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
+		}
+		$this->view->pageclass = self::$pageclass;
+		
 	}
 	
 	public function errorAction()
@@ -148,7 +156,7 @@ class ErrorController extends Zend_Controller_Action
 		$mail = new Zend_Mail('UTF-8');
 		$mail->setBodyText( $exception."\n\n".$msg );
 		$mail->setFrom( $senderEmail, 'Rutvgid Error');
-		$mail->addTo( 'egeshisolutions@gmail.com', 'Bugs');
+		$mail->addTo( 'repin@egeshi.com', 'Bugs');
 		if ($exception){
 			$mail->setSubject( $exception->getMessage() );
 		} else {

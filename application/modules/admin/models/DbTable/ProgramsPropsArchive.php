@@ -6,9 +6,9 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/models/DbTable/ProgramsPropsArchive.php,v $
- * @version $Id: ProgramsPropsArchive.php,v 1.1 2012-12-25 02:14:18 developer Exp $
+ * @version $Id: ProgramsPropsArchive.php,v 1.2 2013-04-03 04:08:16 developer Exp $
  */
-class Admin_Model_DbTable_ProgramsPropsArchive extends Zend_Db_Table_Abstract
+class Admin_Model_DbTable_ProgramsPropsArchive extends Xmltv_Db_Table_Abstract
 {
 
 	protected $_name = 'programs_props';
@@ -23,20 +23,6 @@ class Admin_Model_DbTable_ProgramsPropsArchive extends Zend_Db_Table_Abstract
     	$pfx = Zend_Registry::get('app_config')->resources->multidb->archive->get('tbl_prefix');
     	$this->_name = $pfx.$this->_name;
     
-    }
-    
-    /**
-     * @return string
-     */
-    public function getName() {
-    	return $this->_name;
-    }
-    
-    /**
-     * @param string $string
-     */
-    public function setName($string=null) {
-    	$this->_name = $string;
     }
     
     public function getCount(){

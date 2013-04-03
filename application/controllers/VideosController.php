@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.28 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: VideosController.php,v 1.29 2013-04-03 04:08:15 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -15,8 +15,15 @@ class VideosController extends Rtvg_Controller_Action
      * @see Xmltv_Controller_Action::init()
      */
     public function init(){
+        
         parent::init();
+        
         $this->cache->enabled = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
+        
+        if (!$this->_request->isXmlHttpRequest()){
+        	$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
+        }
+        
     }
 	
 	/**

@@ -4,33 +4,47 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: index.phtml,v 1.2 2013-03-17 18:34:58 developer Exp $
+ * @version    $Id: index.phtml,v 1.3 2013-04-03 04:08:16 developer Exp $
  */
 
-$this->headScript()
-	->appendScript("
-	jQuery(function($){
-	$('.remote').click(function(){
-		$.ajax({
-			url: '".$this->baseUrl('admin/import/remote/site/teleguide')."',
-			data: 'format=html',
-			type: 'get',
-			dataType: 'html',
-			beforeSend: function(){
-				$('#result').css({ 'background':'lightYellow' }).html(\"<h3>Происходит импорт</h3>\");
-			},
-			success: function(response){
-				$('#result').css({ \"background-color\":\"lightGreen\" }).html(response);
-			},
-			error: function(XHR, textStatus, errorThrown){
-				$('#result').css({ \"background-color\":\"lightRed\" }).html(XHR.responseText);
-			}
-		});
+$this->headScript()->appendScript("$(function(){
+$('.remote').click(function(){
+	var debug = $('input#debug').is(':checked');
+	var jxUrl = '".$this->baseUrl('admin/import/remote/site/teleguide?debug=0')."';
+	if (debug==true){
+		var jxUrl = '".$this->baseUrl('admin/import/remote/site/teleguide?debug=1')."';
+	}
+	$.ajax({
+		url: jxUrl,
+		data: 'format=html',
+		type: 'get',
+		dataType: 'html',
+		beforeSend: function(){
+			$('#result').css({ 'background':'lightYellow' }).html(\"<h3>Происходит импорт</h3>\");
+		},
+		success: function(response){
+			$('#result').css({ \"background-color\":\"lightGreen\" }).html(response);
+		},
+		error: function(XHR, textStatus, errorThrown){
+			$('#result').css({ \"background-color\":\"lightRed\" }).html(XHR.responseText);
+		}
 	});
 });
-	");
+});");
 ?>
 <h2 class="page_heading">Загрузка XML</h2>
-<?php echo $this->form ?>
+<?php echo $this->form; ?>
+<?php echo $this->checkBox( 'debug', 0, array(
+	'tag'=>array(
+		'tag'=>'div',
+		'class'=>'form-item',
+	),
+	'label'=>array(
+		'tag'=>null,
+		'text'=>'Debug',
+	)
+), array(
+	'checked'=>''
+)); ?>
 <a class="remote" id="teleguide" href="#">Загрузить файл с teleguide.info</a>
 <div id="result"></div>

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: new-comments.phtml,v 1.1 2012-12-27 17:04:38 developer Exp $
+ * @version $Id: new-comments.phtml,v 1.2 2013-04-03 04:08:16 developer Exp $
  *
  */
 
@@ -14,13 +14,13 @@ if (count($this->items)){
 	foreach ($this->items as $comment) {
 		//var_dump($comment);
 		?>
-	<div xmlns:v="http://rdf.data-vocabulary.org/#" typeof="v:Review" class="hreview">
+	<div class="hreview">
 	
 		<?php if (!empty($comment['title'])) : ?>
 		<div class="summary"><?php echo $comment['title'] ?></div>
 		<?php else: ?>
 		<div class="summary">
-			<span property="v:itemreviewed"><?php echo $this->escape( $this->channel->title ); ?></span>
+			<?php echo $this->escape( $this->channel->title ); ?>
 		</div>
 		<?php endif; ?>
 		
@@ -28,7 +28,7 @@ if (count($this->items)){
 		<?php if (!empty($comment['author'])) : ?>
 		<div class="author">
 			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
-				<small><span property="v:reviewer"><?php echo $comment['author'] ?></span></small>
+				<small><?php echo $comment['author'] ?></small>
 			</a>
 		</div>
 		<?php endif; ?>
@@ -37,20 +37,14 @@ if (count($this->items)){
 		<?php if (!empty($comment['date_created'])) { ?>
 		<div class="date">
 			<?php echo $comment['date_created']->toString('EEEE, dd MMM yyyy hh:mm'); ?>
-			<span property="v:dtreviewed" content="<?php echo $comment['date_created']->toString('yyyy-MM-dd') ?>">
 		</div>
 		<?php 
 		} ?>
 		
-		
 		<div class="description">
-			<span property="v:description">
-				<?php echo str_ireplace($this->channel->title, '<em>'.$this->channel->title.'</em>', $comment['intro']) ?>
-			</span>
+			<?php echo str_ireplace($this->channel->title, '<em>'.$this->channel->title.'</em>', $comment['intro']) ?>
 		</div>
-		
-		<span property="v:rating"></span>
-		
+				
 	</div>
 		<?php 
 	}

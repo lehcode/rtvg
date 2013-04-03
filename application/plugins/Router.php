@@ -4,9 +4,7 @@
  * Routing plugin
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package rutvgid
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Router.php,v $
- * @version $Id: Router.php,v 1.15 2013-03-06 03:52:37 developer Exp $
+ * @version $Id: Router.php,v 1.16 2013-04-03 04:08:16 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -14,6 +12,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 	protected $_env = 'production';
 	protected $_request;
 	protected $_router;
+	
+	const ALIAS_REGEX = '[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-]+';
 	
 	/**
 	 * Constructor
@@ -130,143 +130,172 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 					'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)')));
 			
 		$this->_router->addRoute( 'default_listings_day-listing', 
-		new Zend_Controller_Router_Route( 'телепрограмма/:channel', 
-		array(
-			'module'=>'default',
-			'controller'=>'listings',
-			'action'=>'day-listing'), array(
+			new Zend_Controller_Router_Route( 'телепрограмма/:channel', array(
+				'module'=>'default',
+				'controller'=>'listings',
+				'action'=>'day-listing'
+			), 
+			array(
 				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+')));
 		
 		
 		$this->_router->addRoute( 'default_listings_day-date', 
-		new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', 
-		array(
-			'module'=>'default',
-			'controller'=>'listings',
-			'action'=>'day-date'),
-		array(
-			'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-			'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)')) );
+			new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', array(
+				'module'=>'default',
+				'controller'=>'listings',
+				'action'=>'day-date'
+			),
+			array(
+				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
+				'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)')));
 			
 		$this->_router->addRoute( 'default_listings_premieres-week', 
-		new Zend_Controller_Router_Route( 'телепрограмма/премьеры/:timespan', 
-		array(
-			'module'=>'default',
-			'controller'=>'listings',
-			'action'=>'premieres-week',
-			'timespan'=>'сегодня|неделя|[\d]{2}-[\d]{2}-[\d]{4}',
-		)));
+		new Zend_Controller_Router_Route( 'телепрограмма/премьеры/:timespan', array(
+				'module'=>'default',
+				'controller'=>'listings',
+				'action'=>'premieres-week',
+				'timespan'=>'сегодня|неделя|[\d]{2}-[\d]{2}-[\d]{4}',
+			)));
 			
 		
 		$this->_router->addRoute( 'default_videos_show-video',
-		new Zend_Controller_Router_Route( 'видео/онлайн/:alias/:id', 
-		array(
-			'module'=>'default',
-			'controller'=>'videos',
-			'action'=>'show-video',
-			'alias'=>'[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+',
-			'id'=>'[\w\d]{12}')));
+			new Zend_Controller_Router_Route( 'видео/онлайн/:alias/:id', array(
+				'module'=>'default',
+				'controller'=>'videos',
+				'action'=>'show-video',
+				'alias'=>'[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+',
+				'id'=>'[\w\d]{12}')));
 			
 		$this->_router->addRoute( 'default_error_missing-page', 
-		new Zend_Controller_Router_Route( 'горячие-новости',
-		array(
-			'module'=>'default',
-			'controller'=>'error',
-			'action'=>'missing-page')));
+			new Zend_Controller_Router_Route( 'горячие-новости', array(
+				'module'=>'default',
+				'controller'=>'error',
+				'action'=>'missing-page')));
 			
 		$this->_router->addRoute( 'default_error_invalid-input', 
-		new Zend_Controller_Router_Route( 'неверные-данные',
-		array(
-			'module'=>'default',
-			'controller'=>'error',
-			'action'=>'invalid-input')));
+			new Zend_Controller_Router_Route( 'неверные-данные', array(
+				'module'=>'default',
+				'controller'=>'error',
+				'action'=>'invalid-input')));
 			
 		$this->_router->addRoute( 'default_error_error', 
-		new Zend_Controller_Router_Route( 'ошибка',
-		array(
-			'module'=>'default',
-			'controller'=>'error',
-			'action'=>'error')));
+			new Zend_Controller_Router_Route( 'ошибка', array(
+				'module'=>'default',
+				'controller'=>'error',
+				'action'=>'error')));
 			
 		$this->_router->addRoute( 'default_error_index', 
-		new Zend_Controller_Router_Route( 'ошибка',
-		array(
-			'module'=>'default',
-			'controller'=>'error',
-			'action'=>'error')));
+			new Zend_Controller_Router_Route( 'ошибка', array(
+				'module'=>'default',
+				'controller'=>'error',
+				'action'=>'error')));
 			
 		$this->_router->addRoute( 'sitemap', 
-		new Zend_Controller_Router_Route( 'sitemap.xml',
-		array(
-			'module'=>'default',
-			'controller'=>'sitemap',
-			'action'=>'sitemap')));
+			new Zend_Controller_Router_Route( 'sitemap.xml', array(
+				'module'=>'default',
+				'controller'=>'sitemap',
+				'action'=>'sitemap')));
 			
 		$this->_router->addRoute( 'default_search_search', 
-		new Zend_Controller_Router_Route( 'телепрограмма/поиск', 
-		array(
-			'module'=>'default',
-			'controller'=>'search',
-			'action'=>'search')));
+			new Zend_Controller_Router_Route( 'телепрограмма/поиск', array(
+				'module'=>'default',
+				'controller'=>'search',
+				'action'=>'search')));
 
 		$this->_router->addRoute( 'default_programs_premieres-week', 
-		new Zend_Controller_Router_Route( 'премьеры-недели', 
-		array(
-			'module'=>'default',
-			'controller'=>'programs',
-			'action'=>'premieres-week')));
+			new Zend_Controller_Router_Route( 'премьеры-недели', array(
+				'module'=>'default',
+				'controller'=>'programs',
+				'action'=>'premieres-week')));
 
 		$this->_router->addRoute( 'default_persons_directors', 
-		new Zend_Controller_Router_Route( 'режиссеры', 
-		array(
-			'module'=>'default',
-			'controller'=>'persons',
-			'action'=>'directors')));
+			new Zend_Controller_Router_Route( 'режиссеры', array(
+				'module'=>'default',
+				'controller'=>'persons',
+				'action'=>'directors')));
 			
 		$this->_router->addRoute( 'default_comments_create', 
-		new Zend_Controller_Router_Route( 'комментарии/новый', 
-		array(
-			'module'=>'default',
-			'controller'=>'comments',
-			'action'=>'create')));
+			new Zend_Controller_Router_Route( 'комментарии/новый', array(
+				'module'=>'default',
+				'controller'=>'comments',
+				'action'=>'create')));
 			
 		$this->_router->addRoute( 'default_torrents_finder', 
-		new Zend_Controller_Router_Route( 'скачать/', 
-		array(
-			'module'=>'default',
-			'controller'=>'torrents',
-			'action'=>'finder')));
+			new Zend_Controller_Router_Route( 'скачать/', array(
+				'module'=>'default',
+				'controller'=>'torrents',
+				'action'=>'finder')));
 		
 		$this->_router->addRoute( 'default_listings_category', 
-		new Zend_Controller_Router_Route( 'передачи/:category/:timespan', 
-		array(
-			'module'=>'default',
-			'controller'=>'listings',
-			'action'=>'category')));
+			new Zend_Controller_Router_Route( 'передачи/:category/:timespan', array(
+				'module'=>'default',
+				'controller'=>'listings',
+				'action'=>'category'
+			),array(
+				'category'=>self::ALIAS_REGEX,
+				'timespan'=>'/^(сегодня|неделя)$/u'
+			)));
 		
 		$this->_router->addRoute( 'default_user_login', 
-		new Zend_Controller_Router_Route( 'login', 
-		array(
-			'module'=>'default',
-			'controller'=>'user',
-			'action'=>'login',
-		)));
+			new Zend_Controller_Router_Route( 'login', array(
+				'module'=>'default',
+				'controller'=>'user',
+				'action'=>'login',
+			)));
 		
 		$this->_router->addRoute( 'default_user_profile', 
-		new Zend_Controller_Router_Route( 'моя-страница', 
-		array(
-			'module'=>'default',
-			'controller'=>'user',
-			'action'=>'profile',
-		)));
+			new Zend_Controller_Router_Route( 'моя-страница', array(
+				'module'=>'default',
+				'controller'=>'user',
+				'action'=>'profile',
+			)));
 		
 		$this->_router->addRoute( 'default_user_logout', 
-		new Zend_Controller_Router_Route( 'logout', 
-		array(
-			'module'=>'default',
-			'controller'=>'user',
-			'action'=>'logout',
-		)));
+			new Zend_Controller_Router_Route( 'logout', array(
+				'module'=>'default',
+				'controller'=>'user',
+				'action'=>'logout',
+			)));
+		
+		$this->_router->addRoute( 'default_content_blog', 
+			new Zend_Controller_Router_Route( 'теленовости', array(
+				'module'=>'default',
+				'controller'=>'content',
+				'action'=>'blog',
+			)));
+		
+		
+		$this->_router->addRoute( 'default_content_blog-category', 
+			new Zend_Controller_Router_Route( 'теленовости/:content_cat', array(
+				'module'=>'default',
+				'controller'=>'content',
+				'action'=>'blog-category',
+			),
+			array(
+				'category'=>self::ALIAS_REGEX
+			)));
+		
+		$this->_router->addRoute( 'default_content_article', 
+			new Zend_Controller_Router_Route( 'теленовости/:content_cat/:article_alias', array(
+				'module'=>'default',
+				'controller'=>'content',
+				'action'=>'article',
+			), array(
+				'content_cat'=>self::ALIAS_REGEX,
+				'article_alias'=>self::ALIAS_REGEX
+			)));
+		
+		$this->_router->addRoute( 'default_content_tag', 
+			new Zend_Controller_Router_Route( 'тема/:tag', array(
+				'module'=>'default',
+				'controller'=>'content',
+				'action'=>'article-tag',
+			),
+			array(
+				'tag'=>self::ALIAS_REGEX
+			)));
+		
+		
 		
 		// @todo 
 		// Полный список программ в определенный день

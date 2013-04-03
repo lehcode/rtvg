@@ -4,20 +4,22 @@
  * 
  * @author     Antony Repin
  * @subpackage backend
- * @version    $Id: admin.phtml,v 1.13 2013-03-22 17:51:44 developer Exp $
+ * @version    $Id: admin.phtml,v 1.14 2013-04-03 04:08:15 developer Exp $
  *
  */
 $this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8'); 
 $this->headScript()->setAllowArbitraryAttributes(true);
+/*
 $this->jQuery()
 	->enable()
 	->setVersion('1.8.3')
 	->setUiVersion('1.8.18')
 	->addStylesheet('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css')
 	->uiEnable();
-
+*/
 $this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND')
-	->appendStylesheet( $this->baseUrl('css/admin-template.css'), 'screen');
+	->appendStylesheet( $this->baseUrl('css/admin-template.css'), 'screen')
+	->appendStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
 
 $request    = Zend_Controller_Front::getInstance()->getRequest();
 $controller = $request->getControllerName();
@@ -83,10 +85,6 @@ echo $this->headScript();
 			?>
 		</div>
 		<?php 
-		if ($this->isAllowed('admin:system')){
-			// Some system info
-			echo $this->sysinfo();
-		}
 	} ?>
 	
 
@@ -96,10 +94,34 @@ echo $this->headScript();
 		?><div class="breadcrumb row-fluid"><?php printf("Вы здесь: %s", $bc); ?></div>
 	<?php }} ?>
 	
-	<?php if (count($this->messages)>0){
-	    foreach ($this->messages as $msg){
-	    	echo $this->showMessage( $msg, 'notice' );
-	    } 
+	<?php 
+	/* 
+	 * ################################################
+	 * Messages
+	 * ################################################ 
+	 */
+	if (isset($this->messages) && !empty($this->messages)) {
+		foreach ($this->messages as $message){
+		    $alertClass = '';
+			if (is_array($message)) {
+		   		$keys = array_keys($message);
+		        switch ($keys[0]) {
+			    	default:
+			    	case 'message': $heading = 'Сообщение'; $alertClass=' alert-'.$keys[0]; break;
+			    	case 'warning': $heading = 'Предупреждение'; $alertClass=' alert-'.$keys[0]; break;
+			    	case 'error'  : $heading = 'Ошибка'; $alertClass=' alert-'.$keys[0]; break;
+			    }
+			} elseif (is_string($message)){
+			    $heading = 'Ошибка'; $alertClass=' alert-'.$keys[0]; break;
+			}
+		    ?>
+		    <div class="alert alert-block<?php $alertClass; ?>">
+				<a class="close" data-dismiss="alert" href="#">×</a>
+				<h4 class="alert-heading"><?php echo $heading ?></h4>
+				<?php echo (is_array($message)) ? $message[$keys[0]] : $message 	; ?>
+			</div>
+			<?php 
+        }
 	}?>
 	
 	<div class="row-fluid" id="area">

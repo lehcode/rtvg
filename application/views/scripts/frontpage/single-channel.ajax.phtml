@@ -1,12 +1,32 @@
-<div class="channel" id="<?php echo hash( 'crc32', $this->channel['id'] ) ?>">
+<?php 
+/**
+ * View script to output user-selected channel
+ * 
+ * @author  Antony Repin
+ * @version $Id: single-channel.ajax.phtml,v 1.4 2013-04-03 04:08:16 developer Exp $
+ */
+$channelHash = hash( 'crc32', $this->channel['id'] );
+$weekLinkAttrHref = $this->url( array(
+		'channel'=>$this->escape($this->channel['alias'])), 'default_channels_channel-week');
+$weekLinkAttrTitle = $this->escape( sprintf("Передачи «%s» на этой неделе", $this->escape($this->channel['title'])));
+$weekLinkText =  $this->escape( sprintf("«%s» расписание на неделю" , $this->channel['title']));
+?>
+<div class="channel" id="<?php echo $channelHash; ?>">
 <h3 class="title">
+	<a href="<?php echo $weekLinkAttrHref ?>" 
+		target="_blank" 
+		title="<?php echo $weekLinkAttrTitle ?>"><?php echo $weekLinkText; ?></a>
+</h3>
+
+<h2 class="title">
 	<a href="<?php echo $this->url( array(
 		'channel'=>$this->escape($this->channel['alias'])), 'default_listings_day-listing') ?>"
 		target="_blank"
 		title="<?php echo $this->escape( sprintf("Передачи «%s» сегодня", $this->escape($this->channel['title']))) ?>">
-		<?php echo $this->escape( sprintf("%s сегодня", $this->channel['title'])) ?>
+		<?php echo $this->escape( sprintf("«%s» сегодня", $this->channel['title'])) ?>
 	</a>
-</h3>
+</h2>
+
 <div class="progs">
 	<?php 
 	$w = 24;
@@ -59,14 +79,14 @@
 					<?php echo $text ?><strong><?php echo $prog['start']->toString("HH:mm") ?></strong>
 				</p>
 				
-				<h4 class="title">
+				<p class="title">
 					<a href="<?php echo $this->url( array(
 				'channel'=>$this->escape($prog['channel_alias']),
 				'alias'=>$this->escape($prog['alias']) ), 'default_listings_program-week') ?>"
 				title="<?php echo $this->escape(sprintf("Программа «%s» на неделе", $this->escape($prog['title']))) ?>">
 					<?php echo $this->escape( $prog['title'] ) ?>
 					</a>
-				</h4>
+				</p>
 				
 				<?php if (!empty($prog['sub_title'])): ?>
 				<p class="sub_title">

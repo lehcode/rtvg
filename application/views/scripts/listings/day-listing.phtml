@@ -4,31 +4,27 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.28 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.29 2013-04-03 04:08:16 developer Exp $
  *
  */
 
-$channelTitle = $this->escape($this->channel['title']);
-$channelAlias = $this->escape($this->channel['alias']);
+$channelTitle = $this->escape( $this->channel['title'] );
+$channelAlias = $this->escape( $this->channel['alias'] );
+$channelCat   = $this->escape( $this->channel['cat_title'] );
 
-APPLICATION_ENV=='production' ?
-	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.min.js')) :
-	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.js'));
-
-$js = "$('.carousel').carousel('pause');
-	$(document).ready(function(){
-		$('.top-position img').tooltip({ showURL: false });
-		$.ajax({ url: '/channels/new-comments/channel/".$channelAlias."/format/html', 
-			dataType: 'html',
-			success: function(html){ $(html).prependTo($('#comments')); }});
-	});
-";
-if (APPLICATION_ENV=='production'){
-    $js = Rtvg_Compressor_JSMin::minify( $js );
-}
-$this->headScript()
-	->appendFile( $this->baseUrl()."/js/listing-day.js")
-	->appendScript( $js );
+?>
+$(function(){
+	function scrollScreen(element) {
+		var targetPostion = $(element).offset().top;
+		var speed = 1000;
+		var selector = "html:not(:animated),body:not(:animated)"; 
+		$(selector).animate({ scrollTop: targetPostion }, speed);
+	}
+});
+<?php
+$b = ob_get_clean();
+$js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( $b ) : $b ;
+$this->headScript()->appendScript( $js );
 
 $this->headMeta()->setName('description', sprintf ('Передачи сегодня на канале «%s»', $channelTitle ));
 
@@ -44,64 +40,69 @@ if (!empty($this->programs)) {
 		}
 	}
 }
-$this->headMeta()
-	->setName('keywords', implode(',', $kw) );
+$this->headMeta()->setName('keywords', implode(',', $kw) );
 
 
 if ($this->is_today) {
-	//$this->headScript()
-	//->appendScript("$('a#carousel_onoff').click(function(){
-	//		_gaq.push(['_trackPageview', '".$this->url( array('channel'=>$channelAlias), 'default_listings_day-listing')."']);
-	//});");
 	//META title
 	$this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на сегодня, %s. Видео записей программ.', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
 	//Browser window title
 	$this->headTitle( sprintf ('Телепрограмма «%s» на сегодня', $channelTitle ) );
 } else {
-	$this->headScript()
-	->appendScript("$('a#carousel_onoff').click(function(){
-			_gaq.push(['_trackPageview', '".$this->url(array('channel'=>$channelAlias, 'date'=>$this->listing_date->toString('dd-MM-yyyy')), 'default_listings_day-date')."']);
-	});");
 	//META title
 	$this->headMeta()->setName('title', sprintf ('Программа канала %s за %s. Видео записей программ.', $channelTitle, $this->listing_date->toString('EEEE, d MMMM YYYY')));
 	//Browser window title
 	$this->headTitle( sprintf ('Телепрограмма %s за %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' ) ) );
 }
 
+$css="#content.day-listing .top form {
+	margin: 0;
+}
+";
+$this->headStyle()->appendStyle($css);
 ?>
 
-<div class="top-position">
-<div class="module" style="float: left; width: 68%;">
+<h1><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
+
+<div class="container-fluid top">
 	<?php 
-	$tip = "Начните вводить название канала и выберите его из списка. Окно браузера автоматически переместится к выбранному каналу.";
-	if ($this->category) {
-	  $tip .=" Если канала нет в категории <i>".$this->category['title']."</i>, наберите его название или часть названия и нажмите Перейти.";  
-	} 
-	?>
-	<img class="tip" src="/images/icons/tip-12x12.png" title="<?php echo $tip ?>" />
-	<?php 
-	$form = new Xmltv_Form_TypeaheadForm(array(
-		'action'=>$this->url(array(), 'default_search_search'),
-		'btn_class'=>'btn btn-primary',
+	/*
+	 * Change time zone
+	 */
+	echo new Xmltv_Form_TimezoneSwitch( array(
+		'action'   => '',
+		'name'     => 'timezone',
+		'method'   => 'get',
+		'id'       => 'timezone',
+		'enctype'  => 'application/x-www-form-urlencoded',
+		'label'    => array( 'class' => 'smallheading' ),
+		'html_tag' => array( 'tag'=>'div', 'class'=>'module span1' ),
+		'diff'     => $this->timeshift,
 	));
-	echo $form; 
+	
+	/*
+	 * Change channel autocomplete form
+	 */
+	echo new Xmltv_Form_TypeaheadForm( array(
+		'method'   => 'post',
+		'enctype'  => 'application/x-www-form-urlencoded',
+		'name'     => 'typeahead',
+		'scroll'   => false,
+		'html_tag' => array( 'tag' => 'div', 'class' => 'module span4' ),
+		'input'    => array( 
+			'style' => 'width:100%;', 
+			'label' => 'Быстрый поиск канала',
+			'id'    => 'searchinput',
+			'html_tag' => array(
+					'tag'=>'div'
+			)
+		)
+	)); 
 	?>
-</div>
-<div class="module" style="width: 30%; float: right;">
-	<?php echo new Xmltv_Form_TimezoneSwitch(array('label_class'=>'smallheading', 'time_shift'=>$this->timeshift)); ?>
-</div>
+	
+	<div class="span2"><span class="label"><?php echo $this->listing_date->toString("Сейчас HH:mm") ?></span></div>
 </div>
 
-<h1><?php
-if ($this->is_today){
-	printf('«%s» сегодня', $channelTitle); 
-} else {
-	printf('«%s» %s', $channelTitle, $this->listing_date->toString('d MMMM YYYY'));
-}?></h1>
-
-<?php if ($this->is_today) : ?>
-<strong><?php echo Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?></strong>
-<?php endif; ?>
 
 <?php
 /*
@@ -109,256 +110,32 @@ if ($this->is_today){
  */ 
 ?>
 <p>
-<em>Короткая ссылка на программу канала <?php echo $channelTitle ?></em> <a href="<?php echo $this->short_link ?>" 
-	title="<?php printf('Телепрограмма канала %s на каждый день', $channelTitle) ?>"
-	class="badge badge-important"
-	rel="nofollow"><?php echo $this->short_link; ?></a>
+	<a href="<?php echo $this->url(array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>"
+		title="<?php printf('Перейти к расписанию программ канала %s на неделю', $channelTitle); ?>">
+		<?php printf ('Программа передач "%s" на всю неделю', $channelTitle) ?>
+	</a>
+	<br />
+	<?php printf("Короткая ссылка на программу канала %s ", $channelTitle); ?>
+	<a href="<?php echo $this->short_link ?>" 
+		title="<?php printf('Телепрограмма канала %s на каждый день', $channelTitle) ?>"
+		class="badge short-link"
+		rel="alternate"
+		target="_blank"><?php echo $this->short_link; ?>
+	</a>
 </p>
 
+<?php
+$js = "$(function(){ $('#DIV_DA_126314 table').remove(); });";
+$this->headScript()->appendScript($js);
+$this->inlineScript()->appendFile( 'http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314', 'text/javascript', array('charset'=>'windows-1251') );
+?>
+<div id="DIV_DA_126314" class="advm"></div>
 
-
-<div id="programslist" class="carousel slide">
-	<div class="carousel-inner" id="programs-carousel">
-	<?php 
-	$pc=0;
-	foreach ($this->programs as $k=>$prog) {
-		
-	    if ($this->is_today){
-	        $active = $prog['now_showing']===true ? ' active' : '' ;
-	    } else {
-	        $active = $pc==0 ? ' active' : '' ;
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-			//var_dump($k);
-			//var_dump($active);
-			//var_dump($prog);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		
-		
-		?>
-	<div class="item<?php echo $active; ?> programcontainer">
-		
-		<?php  if ($active==' active') : ?>
-		<p class="label label-warning">Сейчас в эфире</p>
-		<?php endif; ?>
-		
-		
-		<?php if (isset($prog['live']) && ($prog['live']===true)): ?>
-		<img src="<?php echo $this->baseUrl('images/icons/live.png'); ?>" />
-		<?php endif; ?>
-		
-		
-		<div class="programtitle">
-			<h3>
-				<a href="<?php echo $this->url( array(
-					'channel'=>$channelAlias,
-					'alias'=>$prog['alias']), 'default_listings_program-week' ); ?>"
-					title="Расписание <?php echo $prog['title'] ?> на неделю"
-					target="_self">
-					<?php echo $prog['title']; ?>
-				</a>
-			</h3>
-			
-			<?php if (isset($prog['sub_title']) && !empty($prog['sub_title'])) : ?>
-			<p class="subtitle"><?php echo $prog['sub_title'] ?></p>
-			<?php endif; ?>
-			
-		</div>
-		
-		<div class="program-times">
-			<div class="time start">
-				<span class="label label-important"><?php echo $prog['start']->toString('HH:mm') ?></span>
-			</div>
-			<div class="time end">
-				<span class="label label-important"><?php echo $prog['end']->toString('HH:mm') ?></span>
-			</div>
-		</div>
-		
-		<div class="links">
-			<a href="<?php echo $this->url( array(
-				'alias'=>$prog['alias'],
-				'channel'=>$channelAlias,
-				'timespan'=>'сегодня'), 'default_listings_program-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
-				Выпуски <?php echo $prog['title']; ?> сегодня
-			</a>
-			<?php if (isset($prog['category_title']) && !empty($prog['category_title'])): ?>
-			<br /><a href="<?php echo $this->url( array(
-				'category'=>$prog['category_alias'],
-				'timespan'=>'неделя'), 'default_listings_category'); ?>" title="Передачи на неделе">
-				<?php echo $prog['category_title']; ?> на этой неделе
-			</a>
-			<br /><a href="<?php echo $this->url( array(
-				'category'=>$prog['category_alias'],
-				'timespan'=>'сегодня'), 'default_listings_category'); ?>" title="Передачи сегодня">
-				<?php echo $prog['category_title']; ?> сегодня
-			</a>
-		<?php endif; ?>
-		</div>
-		
-		
-		
-		
-		<?php if (isset($prog['rating']) && $prog['rating']>0) : ?>
-		<p class="rating">Возрастной рейтинг: 
-			<span class="label label-warning"><?php echo $prog['rating'] ?>+</span>
-		</p>
-		<?php endif; ?>
-		
-		<?php /*
-		<p>
-			<a class="btn btn-mini btn-primary" title="Скачать <?php echo $prog['title'] ?>" href="<?php echo $this->url(array(), 'default_torrents_finder') ?>?s=<?php echo urlencode(strrev(base64_encode($prog['title']))); ?>">
-				Скачать <?php echo $prog['title'] ?>
-			</a>
-		</p>
-		*/ ?>
-		
-		
-		<?php 
-		/*
-		 * Описание программы
-		 */
-		if ( isset($prog['desc_intro']) && !empty($prog['desc_intro'])) { 
-			?>
-		<p class="video-desc">
-			<?php echo $this->truncateString( $prog['desc_intro'], 100, 'words' ) ?>
-		</p>
-			<?php
-		} ?>
-		
-		<?php 
-		if (!empty($prog['desc_body'])) {
-			?>
-		<p class="desc body">
-			<?php echo $this->truncateString( $prog['desc_body'], 100, 'words' ) ?>
-		</p>
-			<?php 
-		}
-		?>
-		
-		
-		<?php 
-		/*
-		 * Видео
-		 */
-		if (count($this->listing_videos)) {
-			
-			$exists = array_key_exists( $prog['hash'], $this->listing_videos);
-			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($this->listing_videos);
-				//var_dump($exists);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
-			if ($exists){
-				
-				$vid = $this->listing_videos[$prog['hash']];
-				
-				if (APPLICATION_ENV=='development'){
-					//var_dump($vid);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
-				?>
-				
-				<div class="program-video">
-				<?php 
-				$videoTitle = $this->escape( $vid['title'] );
-				$videoAlias = $this->escape( $vid['alias'] );
-				$videoDesc  = $this->escape( $vid['desc'] );
-				$videoId	= $this->escape( $vid['rtvg_id'] );
-				$videoUrl = $this->url(array('alias'=>$videoAlias, 'id'=>$videoId), 'default_videos_show-video');
-				?>
-				
-				<?php if (isset($vid['thumbs']) && !empty($vid['thumbs'])){
-				    
-					$wrapStyle = empty($videoDesc) ? 'width: 100%;' : 'float:left; width:120px; margin: 0 1em 0.25em 0;' ;
-					
-					?>
-				<div style="<?php echo $wrapStyle ?>"> 
-					<?php 
-					
-					$thW = (int)Zend_Registry::get('site_config')->videos->listing->get('thumb_width');
-					//var_dump($vid['thumbs']);
-					//var_dump($vid['thumbs'][0]['url']);
-					//die();
-					
-					?>
-					<a href="<?php echo $videoUrl ?>"
-						title="Видео, похожие на <?php echo $videoTitle ?>">
-						<img src="<?php echo $vid['thumbs'][rand(0, count($vid['thumbs'])-1)]['url']; ?>" 
-							width="<?php echo (int)$thW>1 ? (int)$thW : 240;  ?>" 
-							alt="<?php echo $videoTitle ?>" />
-					</a>
-				</div>
-				<?php 
-				} ?>
-				<h4 class="title">
-					<?php echo $videoTitle ?>
-				</h4>
-				
-				<a class="btn btn-mini" href="<?php echo $videoUrl; ?>" 
-					title="Видео <?php echo $videoTitle; ?>"
-					target="_self">
-					Смотреть онлайн
-				</a>
-				
-				<?php if(!empty($videoDesc)) : ?>
-				<p class="video-desc">
-					<?php echo $videoDesc ?>
-				</p>
-				<?php endif; ?>
-				
-				
-				</div>
-				
-				<?php 
-			}
-		}
-		?>
-		
-		<?php /* if (isset($prog['actors']) && !empty($prog['actors'])): ?>
-		<p>В ролях:
-			<ul class="persons btn-group">
-				<?php foreach ($prog['actors'] as $p): ?>
-				<li class="btn btn-mini">
-					<?php echo $p['complete_name'] ?>
-				</li>
-				<?php endforeach; ?>
-			</ul>
-		</p>
-		<?php endif; ?>
-		
-		<?php if (isset($prog['directors']) && !empty($prog['directors'])): ?>
-		<p>Режиссер:
-			<ul class="persons btn-group">
-				<?php foreach ($prog['directors'] as $p): ?>
-				<li class="btn btn-mini">
-					<?php echo $p['complete_name'] ?>
-				</li>
-				<?php endforeach; ?>
-			</ul>
-		</p>
-		<?php endif; */  ?>
-		
-	</div>
-	
-	<?php 
-		$pc++;
-	}
-	?>
-	</div>
-	
-	
-	
-	<div id="slides-nav">
-		<?php /*<a data-slide="prev" href="#programslist" class="left carousel-control btn">‹</a>*/?>
-		<a data-slide="next" href="#programslist" class="right btn">Далее</a>
-	</div>
-</div>
+<?php echo $this->partial( 'listings/partials/programlist.phtml', array( 
+	'items' => $this->programs, 
+	'channel' => $this->channel, 
+	'listing_videos' => $this->listing_videos, 
+)); ?>
 
 
 <?php
@@ -374,12 +151,7 @@ if ($this->is_today){
 	</a>
 </p>
 <?php endif; ?>
-<p>
-	<a href="<?php echo $this->url(array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>"
-		title="<?php printf('Перейти к расписанию программ канала %s на неделю', $channelTitle); ?>">
-		<em><?php printf ('Программа передач "%s" на всю неделю', $channelTitle) ?></em>
-	</a>
-</p>
+
 
 
 <?php
@@ -393,8 +165,8 @@ if ($this->is_today){
 		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
 		$d->subDay(1);
 		if (APPLICATION_ENV=='development'){
-		    //var_dump($this->listing_date->toString('dd-MM-YYYY'));
-		    //var_dump($d->toString('dd-MM-YYYY'));
+			//var_dump($this->listing_date->toString('dd-MM-YYYY'));
+			//var_dump($d->toString('dd-MM-YYYY'));
 		}
 		?>
 		<a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-YYYY')), 'default_listings_day-date') ?>"
@@ -452,32 +224,32 @@ if ($this->torrent_links) {
 
 <?php 
 if (isset($this->comments)) { 
-    
-    if (APPLICATION_ENV=='development'){
-        //var_dump($this->comments);
-        //die(__FILE__.': '.__LINE__);
-    }
-    
+	
+	if (APPLICATION_ENV=='development'){
+		//var_dump($this->comments);
+		//die(__FILE__.': '.__LINE__);
+	}
+	
 ?>
 <h4 id="cheader"><?php printf('<strong>В блогах  про %s</strong>', $channelTitle) ?></h4>
 <div id="comments">
 
 	<?php
 	if (isset($this->comments) && (bool)$this->comments!==false) {
-	    
+		
 		foreach ($this->comments as $comment) {
-	    
+		
 		//var_dump($comment);
 		//die(__FILE__.': '.__LINE__);
 		?>
 		
-	<div xmlns:v="http://rdf.data-vocabulary.org/#" typeof="v:Review" class="hreview">
+	<div class="hreview">
 		
 		<?php if (!empty($comment['title'])) : ?>
 		<div class="summary"><?php echo $comment['title'] ?></div>
 		<?php else: ?>
 		<div class="summary">
-			<span property="v:itemreviewed"><?php echo $this->escape( $channelTitle ); ?></span>
+			<?php echo $this->escape( $channelTitle ); ?>
 		</div>
 		<?php endif; ?>
 		
@@ -485,7 +257,7 @@ if (isset($this->comments)) {
 		<?php if (!empty($comment['author'])) : ?>
 		<div class="author">
 			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
-				<small><span property="v:reviewer"><?php echo $comment['author'] ?></span></small>
+				<small><?php echo $comment['author'] ?></small>
 			</a>
 		</div>
 		<?php endif; ?>
@@ -501,12 +273,9 @@ if (isset($this->comments)) {
 		
 		
 		<div class="description">
-			<span property="v:description">
-				<?php echo str_ireplace($channelTitle, '<em>'.$channelTitle.'</em>', $comment['intro']) ?>
-			</span>
+			<?php echo str_ireplace($channelTitle, '<em>'.$channelTitle.'</em>', $comment['intro']) ?>
 		</div>
 		
-		<span property="v:rating"></span>
 		
 	</div>
 		<?php 

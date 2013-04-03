@@ -2,10 +2,10 @@
 /**
  * 
  * @author Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: SafeTag.php,v 1.4 2013-03-04 17:57:51 developer Exp $
+ * @version $Id: SafeTag.php,v 1.5 2013-04-03 04:08:37 developer Exp $
  *
  */
-class Zend_View_helper_SafeTag extends Zend_View_Helper_Abstract
+class Zend_View_Helper_SafeTag extends Zend_View_Helper_Abstract
 {
 	public function safeTag($tag=null){
 		

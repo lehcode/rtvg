@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: new-comments.ajax.phtml,v 1.3 2013-03-08 04:06:13 developer Exp $
+ * @version $Id: new-comments.ajax.phtml,v 1.4 2013-04-03 04:08:16 developer Exp $
  *
  */
 
@@ -24,13 +24,13 @@ if (isset($this->items) && count($this->items) && $this->items!==false){
 	    
 		?>
 		
-	<div xmlns:v="http://rdf.data-vocabulary.org/#" typeof="v:Review" class="hreview">
+	<div>
 	
 		<?php if (!empty($comment['title'])) : ?>
 		<div class="summary"><?php echo $comment['title'] ?></div>
 		<?php else: ?>
 		<div class="summary">
-			<span property="v:itemreviewed"><?php echo $this->escape( $this->channel->title ); ?></span>
+			<?php echo $this->escape( $this->channel->title ); ?>
 		</div>
 		<?php endif; ?>
 		
@@ -38,7 +38,7 @@ if (isset($this->items) && count($this->items) && $this->items!==false){
 		<?php if (!empty($comment['author'])) : ?>
 		<div class="author">
 			<a href="<?php echo $comment['link'] ?>" rel="nofollow" target="_blank">
-				<small><span property="v:reviewer"><?php echo $comment['author'] ?></span></small>
+				<small><?php echo $comment['author'] ?></small>
 			</a>
 		</div>
 		<?php endif; ?>
@@ -47,19 +47,15 @@ if (isset($this->items) && count($this->items) && $this->items!==false){
 		<?php if (!empty($comment['date_created'])) { ?>
 		<div class="date">
 			<?php echo $comment['date_created']->toString('EEEE, dd MMM yyyy hh:mm'); ?>
-			<span property="v:dtreviewed" content="<?php echo $comment['date_created']->toString('yyyy-MM-dd') ?>">
 		</div>
 		<?php 
 		} ?>
 		
 		
 		<div class="description">
-			<span property="v:description">
-				<?php echo str_ireplace($this->channel->title, '<em>'.$this->channel->title.'</em>', $comment['intro']) ?>
-			</span>
+			<?php echo str_ireplace($this->channel->title, '<em>'.$this->channel->title.'</em>', $comment['intro']) ?>
 		</div>
 		
-		<span property="v:rating"></span>
 		
 	</div>
 		<?php 

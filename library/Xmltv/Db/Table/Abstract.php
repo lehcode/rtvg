@@ -4,7 +4,7 @@
  *
  * @uses Zend_Db_Table_Abstract
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Abstract.php,v 1.9 2013-03-17 18:34:58 developer Exp $
+ * @version $Id: Abstract.php,v 1.10 2013-04-03 04:08:16 developer Exp $
  */
 class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     
@@ -21,10 +21,10 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     protected $_pfx = '';
 
     /**
-     * Table prefix
+     * Primary column
      * @var string
      */
-    protected $_primary = 'id';
+    protected $_primary = array('id');
     
     /**
      * Container for default values to be used
@@ -33,7 +33,7 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      */
     protected $_defaultValues = array();
     
-    const FETCH_MODE = Zend_Db::FETCH_ASSOC;
+    const FETCH_MODE = Zend_Db::FETCH_OBJ;
     const ERR_PARAMETER_MISSING = "Пропущен параметр для ";
     const ERR_WRONG_DATE_FORMAT = "Неверный формат даты! ";
     const ERR_WRONG_DB_PREFIX = "Неверный префикс базы данных!";

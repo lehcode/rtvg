@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.20 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: show-video.phtml,v 1.21 2013-04-03 04:08:16 developer Exp $
  *
  */
 
@@ -17,9 +17,7 @@ if (APPLICATION_ENV=='development'){
 if (isset($this->main_video)){
     
     $videoTitle = Xmltv_String::ucfirst( Xmltv_String::strtolower( $this->main_video['title'] ));
-    if ($videoTitle) {
-    	$this->headTitle( sprintf("%s :: онлайн на rutvgid.ru", str_replace("\n", ' ', $videoTitle)));
-    }
+    $this->headTitle( sprintf("Видео «%s» :: онлайн на rutvgid.ru", $videoTitle));
     
     $videoDesc = $this->main_video['desc'];
     if ($videoDesc) {
@@ -30,7 +28,7 @@ if (isset($this->main_video)){
     	->appendFile("/js/swfobject/swfobject.js");
     
     $this->headScript()->appendScript( Rtvg_Compressor_JSMin::minify("$(document).ready(function() {
-    		var descP = $('.video.thumbnails .span4 p.desc');
+    		var descP = $('.video.thumbnails p.desc');
     		var descHeight = descP.prop('offsetHeight');
     		if (descHeight>150) { descP.css({ height:'8.4em' }).after('<button class=\"btn\" id=\"fulldesc\">Читать полностью</a>'); }
     		$('#fulldesc').click( function(e){ descP.css({ height:descHeight }); $(this).hide(500); });
@@ -146,16 +144,7 @@ if (isset($this->main_video)){
     $this->headMeta()->setName( 'robots', 'noindex,follow' );
 }
 ?>
-<?php /*
-<div id="advm_block" style="display:none">
-  <div id="advm_close">Закрыть [Х]</div>
-  <script type="text/javascript" src="http://c.am11.ru/code/bn/js.php?u=13073&f=3"></script>
-  <div id="advm_box">
-    <div>Осталось <span id="advm_timer"></span> сек.</div>
-  </div>
-</div>
-<script type="text/javascript" src="http://c.am11.ru/code/mod/bigpreloader5.js"></script>
-*/ ?>
+
 
 
 

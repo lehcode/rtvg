@@ -4,13 +4,17 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.25 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.26 2013-04-03 04:08:15 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
 	
-	const ALIAS_REGEX='/^[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
-	const VIDEO_ALIAS_REGEX='/^[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
+	const ALIAS_REGEX = '/^[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
+	const VIDEO_ALIAS_REGEX = '/^[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
+	
+	protected $regexMessages = array( 
+		Zend_Validate_Regex::NOT_MATCH => "Название не указано или содержит неверные символы.",
+	);
 	
 	/**
 	 * 
@@ -84,7 +88,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 								break;
 								
 							default:
-								throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
+								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 						}
 						
 					break;
@@ -141,7 +145,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							break;
 								
 							default:
-								throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
+								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 						}
 						
 					break;
@@ -194,7 +198,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 										if ($d=='сегодня' || $d=='неделя') {
 											$validators['date'] = array( new Zend_Validate_Alpha(false) );
 										} else {
-											throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
+											throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 										}
 									}
 								}
@@ -227,7 +231,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							break;
 								
 							default:
-								throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
+								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 						}
 						
 					break;
@@ -259,7 +263,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							break;
 									
 							default: 
-								throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
+								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 						}
 							
 					break;
@@ -292,8 +296,30 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							break;
 							
 							default:
-								throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
+								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 						}
+					break;
+					
+					case 'content':
+					    
+					    switch ($action){
+					    	
+					    	case 'article':
+					    	    $validators['content_cat']   = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
+					    	    $validators['article_alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
+					    	break;
+					        
+					    	case 'article-tag':
+					    	    $validators['tag'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
+					    	break;
+					    	
+					    	case 'blog':
+					    	    break;
+					    	    
+				    	    default:
+				    	    	throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
+					        
+					    }
 					break;
 
 					/*
@@ -302,13 +328,14 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					 * ##############################################
 					 */
 					default: 
-						throw new Zend_Exception( Rtvg_Message::ERR_WRONG_CONTROLLER, 404);
+						throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 					
 				}
 				break;
 			
-			/*
+			/* ########################################################################################
 			 * Administrator interface
+			 * ########################################################################################
 			 */
 			case 'admin':
 				
@@ -347,12 +374,9 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 						switch ($action){
 							
 							case 'remote':
-								if ($this->getRequest()->getParam('site')) {
-									$validators['site'] = array( new Zend_Validate_Alnum());
-								}
-								if ($this->getRequest()->getParam('format')) {
-									$validators['format'] = array( new Zend_Validate_Regex('/^(html|json)$/'));
-								}
+								$validators['site']   = array( new Zend_Validate_Alnum());
+								$validators['format'] = array( new Zend_Validate_InArray( array( 'html', 'json' ) ));
+								$validators['debug']  = array( new Zend_Validate_InArray( array( 0, 1 ) ));
 								
 							break;
 								
@@ -428,6 +452,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 						switch ($action){
 							
 							case 'edit':
+							    
 								if (isset($_REQUEST['idx']) && (int)$_REQUEST['idx']!==0) {
 									if (is_array($_REQUEST['idx'])){
 										$validators['idx'] = array( new Zend_Validate_Digits( array(
@@ -439,41 +464,56 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 									
 								}
 								
-								$validators['do'] = array( new Zend_Validate_InArray( array(
-									'haystack'=>array('delete','new','edit','toggle','save','save-plus','apply'))),
-										'presence' => 'required',
-										'messages' => array( "Нет такого действия: '%value%'" )
+								$validators['do'] = array( 
+									new Zend_Validate_InArray( array( 'haystack'=>array('delete','new','edit','toggle','save','save-plus','apply'))),
+									'presence' => 'required',
+									'allowEmpty' => true,
+									'messages' => array(Zend_Filter_Input::PRESENCE_REQUIRED=>"Заполните поле '%field'")
 								);
-								$validators['title'] = array( new Zend_Validate_Regex('/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui') );
-								$validators['alias'] = array( new Zend_Validate_Regex('/[^\s]+/ui') );
+								
+								$validators['title'] = array( 
+									new Zend_Validate_Regex('/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui'),
+									'messages' => array( "Не указано название статьи." )
+								);
+								
+								$validators['alias'] = array( 
+									new Zend_Validate_Regex('/[^\s]+/ui'),
+									'presence' => 'optional',
+									'allowEmpty' => true
+								);
 								
 								$validators['published'] = array( 
 									new Zend_Validate_Digits(),
 									new Zend_Validate_StringLength(1),
+									'allowEmpty' => true
 								);
 								
-								$validators['progcat'] = array( 
+								$validators['prog_cat'] = array( 
 									new Zend_Validate_Digits(),
 									new Zend_Validate_StringLength(1),
 								);
 								
-								$validators['contcat'] = array( 
+								$validators['content_cat'] = array( 
 									new Zend_Validate_Digits(),
 									new Zend_Validate_StringLength(1),
+									'presence' => 'optional',
+									'allowEmpty' => true,
 								);
 								
-								$validators['chcat'] = array( 
+								$validators['channel_cat'] = array( 
 									new Zend_Validate_Digits(),
 									new Zend_Validate_StringLength(1),
 								);
 								
 								$validators['tags'] = array( 
-									new Zend_Validate_Regex('/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui'),
-									new Zend_Validate_StringLength(array(2,254)),
+									new Zend_Validate_Regex( '/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui' ),
+									new Zend_Validate_StringLength( array(3,254) ),
+									'presence' => 'optional',
+									'allowEmpty' => true,
 								);
 								
 								$validators['intro'] = array( 
-									new Zend_Validate_Regex('/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui'),
+									new Zend_Validate_Regex( '/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui' ),
 								);
 								
 								$validators['body'] = array( 
@@ -485,11 +525,29 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 									new Zend_Validate_StringLength(array(1,11)),
 								);
 								
-								$validators['added']        = array( new Zend_Validate_Date( 'dd.MM.YYYY' ) );
-								$validators['publish_up']   = array( new Zend_Validate_Date( 'dd.MM.YYYY' ));
-								$validators['publish_down'] = array( new Zend_Validate_Date( 'dd.MM.YYYY' ) );
-								$validators['income'] = array( new Zend_Validate_InArray(array('is_cpa', 'is_ref', 'is_paid')) );
-								$validators['hits']   = array( new Zend_Validate_Digits());
+								$validators['added'] = array(
+									new Zend_Validate_Date( 'dd.MM.YYYY' ),
+								);
+								
+								$validators['publish_up'] = array( 
+									new Zend_Validate_Date( 'dd.MM.YYYY' ),
+								);
+								$validators['publish_down'] = array( 
+									new Zend_Validate_Date( 'dd.MM.YYYY' ), 
+									'presence' => 'optional',
+									'allowEmpty' => true,
+								);
+								$validators['income'] = array( 
+									new Zend_Validate_InArray( array('is_cpa', 'is_ref', 'is_paid') ) );
+								
+								$validators['hits'] = array( 
+									new Zend_Validate_Digits(), 
+									'allowEmpty' => true );
+								
+								$validators['metadesc'] = array( 
+									new Zend_Validate_NotEmpty(),
+									new Zend_Validate_StringLength( array(24,254) ),
+									'allowEmpty'=>true );
 								
 							break;
 							
@@ -515,12 +573,9 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 		}
 				
 		
-		try {
-			$input = new Zend_Filter_Input($filters, $validators, $this->getRequest()->getParams());
-		} catch (Zend_Filter_Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-		}
-		
+		$input = new Zend_Filter_Input($filters, $validators, $this->getRequest()->getParams(), array(
+			'notEmptyMessage' => "Поле <b>'%field%'</b> должно быть заполнено."
+		));
 		return $input;
 		
 	}

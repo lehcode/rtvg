@@ -4,7 +4,7 @@
  * 
  * @author	 Antony Repin
  * @subpackage backend
- * @version	$Id: EditArticle.php,v 1.3 2013-03-22 17:51:44 developer Exp $
+ * @version	$Id: EditArticle.php,v 1.4 2013-04-03 04:08:15 developer Exp $
  *
  */
 class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
@@ -35,6 +35,16 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 	 */
 	private $user;
 	
+	/**
+	 * @var Zend_View
+	 */
+	private $view;
+
+	/**
+	 * @var array
+	 */
+	private $acTags;
+	
 	
 	/**
 	 * Edit article form
@@ -53,6 +63,10 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		if (isset($data['user']) && !empty($data['user'])) {
 			$this->user = $data['user']->toArray();
 		}
+
+		if (isset($data['ac_tags']) && !empty($data['ac_tags'])) {
+			$this->acTags = $data['ac_tags'];
+		}
 		
 		if (isset($data) && !empty($data)) {
 			unset($data['categories']);
@@ -60,6 +74,51 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		}
 		
 		$this->options = $options;
+		
+		$this->view = $this->getView();
+		
+		$this->view->headScript()->appendScript("function toggleForm( doAction ){
+			var form = $('#".$this->options['id']."');
+			$(form).attr('action','".$this->view->baseUrl('admin/content/edit')."?do='+doAction+'&idx[]=".$this->data['id']."');
+			$('input#do').val(doAction);
+			$(form).submit();
+		}
+		$(document).ready(function() {
+			$('button#new').click(function(e){ e.stopPropagation(); toggleForm($(this).attr('id'));  });
+			$('button#toggle').click(function(e){ e.stopPropagation(); toggleForm($(this).attr('id')); });
+			$('button#delete').click(function(e){ e.stopPropagation(); toggleForm($(this).attr('id')); });
+			$('button#apply').click(function(e){ e.stopPropagation(); toggleForm($(this).attr('id')); });
+			$('button#save').click(function(e){ e.stopPropagation(); toggleForm($(this).attr('id')); });
+			$('button#save-plus').click(function(e){ e.stopPropagation(); toggleForm($(this).attr('id')); });
+			var form = $('#".$this->options['id']."');
+			$(form).validate({
+				rules: {
+					title:{
+						required: true,
+						minlength: 25
+					},
+					prog_cat: 'required',
+					channel_cat: 'required',
+					intro: {
+						required: true,
+						minlength: 128
+					},
+					body: {
+						required: true,
+						minlength: 380
+					},
+					metadesc: {
+						required: false,
+						minlength: 24
+					},
+					tags: {
+						required: false,
+						minlength: 5
+					},
+				}
+			});
+		});
+		;");
 		
 		$this->init();
 		
@@ -75,58 +134,60 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 	{
 		parent::init();
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($this->data);
-			//var_dump($this->categories);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		$textDecorators = array(
-			array('ViewHelper'),
-			array('Errors'),
-			array('Label', array( 'tag' => 'label' )),
-			array('HtmlTag', array( 'tag' => 'div', 'class'=>'row-fluid span9', 'style'=>'' )));
-		
-		// Title
-		$title = new Zend_Form_Element_Text('title');
+				
+		/*
+		 * #########################################
+		 * Title
+		 * #########################################
+		 */ 
+		$title = new Zend_Form_Element_Text( 'title' );
+		$regex = new Zend_Validate_Regex( '/[\p{Common}\p{Cyrillic}\p{Latin}]+/ui' );
+		$regex->setMessage( "Не указано название статьи.[форма]" );
 		$title->setLabel( "Название" )
-			->setDecorators($textDecorators)
+			->setDecorators(array(
+				array('ViewHelper'),
+				array('Errors'),
+				array('Label', array()),
+				array('HtmlTag', array('class'=>'label label-important span8', 'style'=>'margin: 16px 16px 16px 0;' ))
+			))
+			->setValidators( array( $regex ))
 			->setValue( $this->data['title'] )
 			->setOptions( array(
 				'class'=>'span12'
 			))
 			->setRequired(true);
-		
-		// Alias
+		/* 
+		$this->view->jQuery()
+			->addJavascript("$(document).ready(function() {
+		    $('input#title').blur(function(){
+				$('input#alias').val( '".$this->data['alias']."' );
+			});
+		});");
+		 */
+		/*
+		 * #########################################
+		 * Alias
+		 * #########################################
+		 */ 
 		$alias = new Zend_Form_Element_Hidden('alias');
 		$alias->setValue($this->data['alias'])
-			->setDecorators(array('ViewHelper'));
+			->setDecorators(array('ViewHelper'))
+			->setAllowEmpty(true);
 		
-		// Dropdowns
+		/*
+		 * #########################################
+		 * Categories dropdowns
+		 * #########################################
+		 */ 
 		$categoryDropdown = array();
 		$dropdownDecorators = array(
 			array('ViewHelper'),
 			array('Errors'),
-			array('Label', array( 'tag' => 'div' )),
-			array('HtmlTag', array( 'tag' => 'div', 'class'=>'label', 'style'=>'margin: 0.5em;background-color: darkRed' )));
-		
-		// Programs category dropdown
-		$categoryDropdown['program'] = new Zend_Form_Element_Select('progcat');
-		$options = array(''=>Rtvg_Message::FORM_SELECT_ONE);
-		$selected = 0;
-		foreach ($this->categories['programs'] as $cat){
-			$options[$cat['id']] = $cat['title'];
-			if ((int)$this->data['prog_cat'] == (int)$cat['id']){
-				$selected = (int)$cat['id'];
-			}
-		}
-		$categoryDropdown['program']->setMultiOptions($options)
-			->setValue($selected)
-			->setLabel("Передачи")
-			->setDecorators($dropdownDecorators);
+			array('Label', array()),
+			array('HtmlTag', array('class'=>'label label-important', 'style'=>'margin: 16px 16px 16px 0;' )));
 		
 		// Content category dropdown
-		$categoryDropdown['content'] = new Zend_Form_Element_Select('contcat');
+		$categoryDropdown['content'] = new Zend_Form_Element_Select('content_cat');
 		$options = array(''=>Rtvg_Message::FORM_SELECT_ONE);
 		$selected = 0;
 		foreach ($this->categories['content'] as $cat){
@@ -139,10 +200,11 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		$categoryDropdown['content']->setMultiOptions($options)
 			->setValue($selected)
 			->setLabel("Контент")
-			->setDecorators($dropdownDecorators);
+			->setDecorators($dropdownDecorators)
+			->setAllowEmpty(true);
 		
 		// Channel category dropdown
-		$categoryDropdown['channel'] = new Zend_Form_Element_Select('chcat');
+		$categoryDropdown['channel'] = new Zend_Form_Element_Select('channel_cat');
 		$options = array(''=>Rtvg_Message::FORM_SELECT_ONE);
 		$selected = 0;
 		foreach ($this->categories['channel'] as $cat){
@@ -154,17 +216,38 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		$categoryDropdown['channel']->setMultiOptions($options)
 			->setValue($selected)
 			->setLabel("Каналы")
-			->setDecorators($dropdownDecorators);
+			->setDecorators($dropdownDecorators)
+			->setRequired(true);
 
 		$textareaDecorators = array(
-			array('ViewHelper'),
-			array('Errors'),
-			array('Label', array( 'tag' => 'div' )),
-			array('HtmlTag', array( 'tag' => 'div', 'class'=>'span6', 'style'=>'' )));
+			'ViewHelper',
+			'Errors',
+			array('Label', array('class'=>'label label-important')),
+			array('HtmlTag', array('class'=>'span6' )),
+		);
+		
+		// Programs category dropdown
+		$categoryDropdown['program'] = new Zend_Form_Element_Select('prog_cat');
+		$options = array(''=>Rtvg_Message::FORM_SELECT_ONE);
+		$selected = 0;
+		foreach ($this->categories['programs'] as $cat){
+			$options[$cat['id']] = $cat['title'];
+			if ((int)$this->data['prog_cat'] == (int)$cat['id']){
+				$selected = (int)$cat['id'];
+			}
+		}
+		$categoryDropdown['program']->setMultiOptions($options)
+			->setValue($selected)
+			->setLabel("Передачи")
+			->setDecorators($dropdownDecorators);
 
-		// Article intro
+		/*
+		 * #########################################
+		 * Article intro
+		 * #########################################
+		 */ 
 		$intro = new Zend_Form_Element_Textarea('intro');
-		$intro->setValue( html_entity_decode($this->data['intro']) )
+		$intro->setValue( $this->data['intro'] )
 			->setLabel( 'Лид статьи ['.Xmltv_String::strlen($this->data['intro']).']' )
 			->setOptions(array(
 				'rows'=>24,
@@ -173,9 +256,13 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 			->setDecorators($textareaDecorators)
 			->setRequired(true);
 		
-		// Article body
+		/*
+		 * #########################################
+		 * Article body
+		 * #########################################
+		 */ 
 		$body = new Zend_Form_Element_Textarea('body');
-		$body->setValue( html_entity_decode($this->data['body']) )
+		$body->setValue( $this->data['body'] )
 			->setLabel( 'Тело статьи ['.Xmltv_String::strlen($this->data['body']).']' )
 			->setOptions( array(
 				'rows'=>24,
@@ -188,21 +275,36 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		$textfieldDecorators = array(
 			array('ViewHelper'),
 			array('Errors'),
-			array('Label', array( 'tag' => 'div' )),
-			array('HtmlTag', array( 'tag' => 'div', 'class'=>'row-fluid span12', 'style'=>'', 'id'=>'article-tags' )));
+			array('Label', array()),
+			array('HtmlTag', array( 'class'=>'row-fluid span12', 'style'=>'', 'id'=>'article-tags' )));
 		
-		// Tags
-		$tags = new Zend_Form_Element_Text('tags');
+		/*
+		 * #########################################
+		 * Tags
+		 * #########################################
+		 */ 
+		$tags = new ZendX_JQuery_Form_Element_AutoComplete( 'tags' );
 		$tags->setValue($this->data['tags'])
 			->setLabel('Темы')
 			->setOptions(array(
 				'class'=>'span10',
 				'style'=>'',
 			))
-			->setDecorators($textfieldDecorators)
-			->setAllowEmpty(true);
+			->setDecorators(array(
+				'UiWidgetElement',
+				'Errors',
+				array('Label', array('class'=>'label label-important')),
+				array('HtmlTag', array('tag'=>'fieldset', 'class'=>'container-fluid' )),
+			))
+			->setAllowEmpty(true)
+			->addErrorMessage("Не указаны теги")
+			->setJQueryParam( 'source', $this->acTags );
 		
-		// Author
+		/*
+		 * #########################################
+		 * Author
+		 * #########################################
+		 */ 
 		$author = new Zend_Form_Element_Select('author');
 		$options = array(''=>Rtvg_Message::FORM_SELECT_ONE);
 		$selected = 0;
@@ -215,66 +317,122 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		$author->setMultiOptions($options)
 			->setValue($selected)
 			->setLabel("Автор")
-			->setDecorators($dropdownDecorators);
+			->setDecorators(array(
+				'ViewHelper',
+				'Errors',
+				array('Label', array('class'=>'label label-info')),
+				array('HtmlTag', array('class'=>'span3')),
+			));
 		
-		// Dates decorators
-		$dropdownDecorators = array(
-			array('UiWidgetElement'),
-			array('Errors'),
-			array('Label', array( 'tag' => 'div' )),
-			array('HtmlTag', array( 'tag' => 'div', 'class'=>'label label-info', 'style'=>'margin: 0.5em;' ))
-		);
-		
-		// Dates
-		$dateAdded = new ZendX_JQuery_Form_Element_DatePicker( 'added');
+		/*
+		 * #########################################
+		 * Dates
+		 * #########################################
+		 */
+		// Creation date 
+		$dateCreated = new ZendX_JQuery_Form_Element_DatePicker( 'added' );
 		$date = new Zend_Date($this->data['added'], 'YYYY-MM-dd');
-		$dateAdded->setLabel('Создана')
-			->setValue($date->toString('dd.MM.YYYY'))
-			->addValidator(new Zend_Validate_Date(array('format' => 'dd.MM.YYYY')))
-			->setDecorators($dropdownDecorators)
+		$dateCreated->setLabel('Создана')
+			->setValue( $date->toString('dd.MM.YYYY') )
+			->addValidator( new Zend_Validate_Date(array('format' => 'dd.MM.YYYY')) )
+			->setDecorators(array(
+				'UiWidgetElement',
+				'Errors',
+				array('Label', array( 'class'=>'label label-info' )),
+				array('HtmlTag', array( 'class'=>'span3', 'style'=>'' ))
+			))
 			->setOptions(array('style'=>'margin:0.5em;'))
 			->setRequired(true);
 		
+		// Start publish
 		$publishUp = new ZendX_JQuery_Form_Element_DatePicker( 'publish_up');
-		if ($this->data['publish_up']!='0000-00-00 00:00:00') {
-			$date = new Zend_Date($this->data['publish_up'], 'YYYY-MM-dd HH:mm:ss');
-			$publishUp->setValue($date->toString('dd.MM.YYYY'));
+		if (isset($this->data['publish_up']) && $this->data['publish_up']!==null && $this->data['publish_up']!='0000-00-00') {
+			$upDate = new Zend_Date($this->data['publish_up'], 'YYYY-MM-dd');
+			$publishUp->setValue( $upDate->toString('dd.MM.YYYY') );
 		} else {
 			$publishUp->setValue( Zend_Date::now()->toString('dd.MM.YYYY'));
 		}
 		$publishUp->setLabel('Начало публикации')
 			->addValidator(new Zend_Validate_Date(array('format' => 'dd.MM.YYYY')))
-			->setDecorators($dropdownDecorators)
+			->setDecorators(array(
+				'UiWidgetElement',
+				'Errors',
+				array('Label', array( 'class'=>'label label-info' )),
+				array('HtmlTag', array( 'class'=>'span3', 'style'=>'' ))
+			))
 			->setOptions(array('style'=>'margin:0.5em;'))
 			->setRequired(true);
 		
+		// End publish
 		$publishDown = new ZendX_JQuery_Form_Element_DatePicker( 'publish_down');
 		$publishDown->setLabel('Снять с публикации');
-		$date = new Zend_Date($this->data['publish_down'], 'YYYY-MM-dd HH:mm:ss');
 		$publishDown->setValue( Zend_Date::now()->subDay(1)->toString( 'dd.MM.YYYY' ) );
-		if ($this->data['publish_down']!='0000-00-00 00:00:00'){
-			$publishDown->setValue($date->toString('dd.MM.YYYY'));
+		if (isset($this->data['publish_down']) && $this->data['publish_down']!==null && $this->data['publish_down']!='0000-00-00'){
+		    $downDate = new Zend_Date( $this->data['publish_down'], 'YYYY-MM-dd' );
+			$publishDown->setValue( $downDate->toString('dd.MM.YYYY') );
+		} else {
+		    if (isset($upDate)){
+		    	$publishDown->setValue( $upDate->subDay(1)->toString('dd.MM.YYYY') );
+		    } else {
+		        $publishDown->setValue( Zend_Date::now()->subDay(1)->toString('dd.MM.YYYY') );
+		    }
 		}
 		$publishDown->addValidator(new Zend_Validate_Date(array('format' => 'dd.MM.YYYY')))
-			->setDecorators($dropdownDecorators)
+			->setDecorators(array(
+				'UiWidgetElement',
+				'Errors',
+				array('Label', array( 'class'=>'label label-info' )),
+				array('HtmlTag', array( 'class'=>'span3', 'style'=>'' ))
+			))
 			->setOptions(array('style'=>'margin:0.5em;'))
 			->setAllowEmpty(true);
 		
 		
-		// Published checkbox
+		/*
+		 * #########################################
+		 * Published checkbox
+		 * #########################################
+		 */
 		$published = new Zend_Form_Element_Checkbox('published');
 		$published->setDecorators(array(
 			array('ViewHelper'),
-			array('Label', array( 'tag' => 'label', 'for'=>'published' )),
-			array('HtmlTag', array( 'tag' => 'div', 'class'=>'span1' ))
+			array('Label', array('class'=>'label label-important')),
+			array('HtmlTag', array('class'=>'span1'))
 		));
 		$published->setLabel("Публ.")
 			->setValue((int)$this->data['published']);
 		
-		// Add elements and display groups
+		/*
+		 * #########################################
+		 * Hit count (disabled textarea)
+		 * #########################################
+		 */
+		$hits = new Zend_Form_Element_Text('hittext');
+		$hits->setLabel('Просмотры')
+			->setDecorators(array(
+				'ViewHelper',
+				'Errors',
+				array('Label', array('class'=>'label label-important')),
+				array('HtmlTag', array('class'=>'span2'))
+			))
+			->setAttrib('class', 'span4')
+			->setAttrib('disabled', 'disabled')
+			->setValue((int)$this->data['hits']);
+		$hitsHidden = new Zend_Form_Element_Hidden('hits');
+		$hitsHidden->setDecorators(array( 'ViewHelper' ))
+			->setValue((int)$this->data['hits']);
+		/*
+		 * #########################################
+		 * Add elements and display groups
+		 * #########################################
+		 */ 
 		$this->addDisplayGroup( array(
 			$title,
-			$published), 'titlegrp' );
+			$published,
+			$hits,
+			$hitsHidden,
+			$author,
+		), 'titlegrp' );
 		$titleGroup = $this->getDisplayGroup('titlegrp');
 		$titleGroup->setDecorators(array(
 			'FormElements',
@@ -282,9 +440,9 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		));
 		
 		$this->addDisplayGroup( array(
-			$categoryDropdown['program'],
 			$categoryDropdown['content'],
-			$categoryDropdown['channel']), 'categoriesgrp' );
+			$categoryDropdown['channel'],
+			$categoryDropdown['program']), 'categoriesgrp' );
 		$categoriesGroup = $this->getDisplayGroup('categoriesgrp');
 		$categoriesGroup->setDecorators(array(
 			'FormElements',
@@ -300,79 +458,108 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		$textGroup = $this->getDisplayGroup('textgrp');
 		$textGroup->setDecorators(array(
 			'FormElements',
-			array('Fieldset', array('id'=>'text-set', 'class'=>'row-fluid span9')),
+			array('Fieldset', array('id'=>'text-set', 'class'=>'container-fluid')),
 		));
 		
 		$this->addDisplayGroup( array( 
-			$author, 
-			$dateAdded,
+			$dateCreated,
 			$publishUp,
 			$publishDown ), 'propsgrp'
 		);
 		$propsGroup = $this->getDisplayGroup('propsgrp');
 		$propsGroup->setDecorators(array(
 			'FormElements',
-			array('Fieldset', array('id'=>'props-set', 'class'=>'row-fluid span1')),
+			array('Fieldset', array('id'=>'props-set', 'class'=>'container-fluid')),
 		));
 		
-		if ($this->getView()->isAllowed('admin:content.article', 'income')){
+		/*
+		 * #########################################
+		 * Income type checkboxes 
+		 * #########################################
+		 */
+		$incomeTypes = array(
+			'is_ref'=>'Реф.',
+			'is_cpa'=>'CPA',
+			'is_paid'=>'Плат.',
+		);
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($this->data);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		if ($this->view->isAllowed('admin:content.article', 'income')){
 			
-		    $incomeTypes = array(
-				'is_ref'=> 'Реф.',
-				'is_cpa'=>'CPA',
-				'is_paid'=>'Плат.',
-			);
-			$income = new Zend_Form_Element_Radio('income');
-			$income->setMultiOptions($incomeTypes)
+		    $income = new Zend_Form_Element_Radio( 'income' );
+			$income->setMultiOptions( $incomeTypes )
 				->setRequired(true)
 				->setDecorators(array(
 					array( 'ViewHelper' ),
-					array( 'Errors' ),
-					array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'row-fluid span12', 'id'=>'income' )),
-				));
-			$selected=0;
+					array( 'Label', array( 'class'=>'label label-info' )),
+					array( 'HtmlTag', array( 'tag'=>'fieldset', 'class'=>'container-fluid', 'id'=>'income' )),
+				))
+				->setSeparator( '&nbsp;' )
+				->setLabel("Доход от статьи");
+			$income->setValue( 'is_cpa' );
 			foreach ($incomeTypes as $type=>$rus){
-			    if ((int)$this->data[$type]==1){
-			        $income->setValue($type);
+			    if (isset($this->data[$type]) && (int)$this->data[$type]==1){
+			        $income->setValue( $type );
 			    }
 			}
-			$income->setLabel("Доход");
-			$this->addElement($income);
+			$income->setLabel( "Доход" );
+			$this->addElement( $income );
 			
 			
 		} else {
 			
-			// Article has referral link
-			$isRef = new Zend_Form_Element_Hidden('is_ref');
-			$isRef->setDecorators(array( array('ViewHelper')))
-				->setValue((int)$this->data['is_ref']);
-			
-			// Article is paid
-			$isPaid = new Zend_Form_Element_Hidden('is_paid');
-			$isPaid->setDecorators(array( array('ViewHelper')))
-				->setValue((int)$this->data['is_paid']);
-			
-			// Article has CPA ad (default)
-			$isCpa = new Zend_Form_Element_Hidden('is_cpa');
-			$isCpa->setDecorators(array(array('ViewHelper')))
-				->setValue((int)$this->data['is_cpa']);
-			
-			$this->addElements(array($isRef, $isPaid, $isCpa));
+		    foreach ($incomeTypes as $type=>$rus){
+		        $hidden = new Zend_Form_Element_Hidden($type);
+		        $hidden->setDecorators( array( array('ViewHelper')) )
+					->setValue($this->data[$type]);
+		        $this->addElement($hidden);
+		    }
 		}
 		
+		$this->view->headStyle()->setStyle("fieldset#income label { float: left; margin: 16px 16px 16px 0; }
+		label.error{ background-color: red; color: white; font-weight: bold; font-size: 11px; padding: 0.5em; }");
+		
+		/*
+		 * #########################################
+		 * Article META data
+		 * #########################################
+		 */
+		$metadesc = new Zend_Form_Element_Textarea( 'metadesc' );
+		$metadesc->setDecorators(array(
+			'ViewHelper',
+			'Errors',
+			array('Label', array('class'=>'label label-important')),
+			array('HtmlTag', array('class'=>'span12')),
+			))
+			->setAttrib('rows', 2)
+			->setAttrib('class', 'span12')
+			->setLabel("META описание")
+			->setValue( html_entity_decode($this->data['metadesc']) )
+			->setRequired(false);
+		$metakeys = new Zend_Form_Element_Textarea( 'metakeys' );
+		
+		$this->addDisplayGroup( array($metadesc), 'metadatagrp' );
+		$metadatagrpGroup = $this->getDisplayGroup('metadatagrp');
+		$metadatagrpGroup->setDecorators(array(
+			'FormElements',
+			array('Fieldset', array('id'=>'metadata-set', 'class'=>'container-fluid')),
+		));
+		
+		
 		$do = new Zend_Form_Element_Hidden('do');
-		$do->setDecorators(array('ViewHelper'));
+		$do->setDecorators(array('ViewHelper'))
+			->setRequired(true);
 
 		$id = new Zend_Form_Element_Hidden('id');
 		$id->setDecorators(array('ViewHelper'))
 			->setValue((int)$this->data['id'])
 			->setName('idx[]');
-
-		$hits = new Zend_Form_Element_Hidden('hits');
-		$hits->setDecorators(array('ViewHelper'))
-			->setValue((int)$this->data['hits']);
 		
-		$this->addElements(array($alias, $do, $id, $hits));
+		$this->addElements(array($alias, $do, $id));
 		
 		$this->setDecorators(array(
 			'FormElements',
@@ -383,7 +570,7 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 		))
 			->setAttrib('class', $this->options['class'])
 			->setAttrib('id', $this->options['id'])
-			->setAttrib('action', $this->getView()->baseUrl('admin/content/edit'))
+			->setAttrib('action', $this->view->baseUrl('admin/content/edit'))
 			->setMethod('post');
 		
 	}

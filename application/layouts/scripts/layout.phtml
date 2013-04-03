@@ -3,7 +3,7 @@
  * Common layout
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: layout.phtml,v 1.35 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: layout.phtml,v 1.36 2013-04-03 04:08:16 developer Exp $
  *
  */
 
@@ -18,6 +18,9 @@ if ($this->hide_sidebar=='right'){
 	$this->maincontent_width = 10;
 }
 
+$this->headLink()
+	->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
+
 $this->headScript()
 	->appendFile( 'http://yandex.st/share/share.js' )
 	->appendFile( '//vk.com/js/api/openapi.js?75' );
@@ -29,7 +32,8 @@ jQuery(document).ready(function(){
 	$("#footer .counter_logo").css({ display: "none" });
 });'));
 
-if (!$isFrontpage){
+
+if ($this->vk_group_init === true){
     $this->inlineScript()
     	->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, width: "350", height: "290" }, 27716041);');
 }
@@ -40,6 +44,7 @@ if (!$isFrontpage){
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array(
 		'pageclass'=>$this->pageclass,
 		'nav_html'=>$this->navigation()->menu()->renderMenu( Zend_Registry::get('FpMenu'), array('ulClass' => 'nav')),
+		'is_frontpage'=>$this->is_frontpage,
 )));
 
 /*
@@ -62,7 +67,9 @@ if ($pageClass=='show-video'){
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'top_programs'=>$this->top_programs,
 	'cats'=>$this->channels_cats,
-	'channel'=>$this->channel 
+	'channel'=>$this->channel,
+	'announces'=>$this->announces,
+	'show_announces'=>$this->show_announces,
 )));
 
 /*
@@ -84,21 +91,26 @@ $this->headStyle()
 	->appendStyle("");
  */
 
-if ( APPLICATION_ENV!='testing' && !$isFrontpage) {
-	$this->inlineScript()
-		->appendFile("http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753");  //directadvert right sidebar
-}
 ?>
 
 <?php echo $this->doctype(); ?>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://ogp.me/ns#" xml:lang="ru" lang="ru">
+<html xmlns="http://www.w3.org/1999/xhtml"
+<?php 
+if ($this->doctype()->isRdfa()){
+    if (isset($this->ogp_ns)){ ?>
+	prefix="og: <?php echo $this->ogp_ns; ?>#" 
+<?php }
+} ?>
+xml:lang="ru" lang="ru">
 <head>
 <?php 
 echo $this->headTitle(), PHP_EOL;
 echo $this->headMeta(), PHP_EOL;
 echo $this->headLink(), PHP_EOL;
-echo $this->jQuery();
+echo $this->jQuery(), PHP_EOL;
 echo $this->headScript(), PHP_EOL;
+echo $this->headStyle(), PHP_EOL;
+
 ?>
 <?php 
 if (APPLICATION_ENV=='production') {
@@ -114,7 +126,9 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 </head>
 <body>
 <div class="row-fluid" id="header">
+<?php if (APPLICATION_ENV=='production') : ?>
 <!-- Rating@Mail.ru counter --><div style="position:absolute;left:-10000px;"><img src="http://d8.c6.b3.a2.top.mail.ru/counter?id=2320499" style="border:0;" height="1" width="1" alt="Рейтинг@Mail.ru" /></div><!-- //Rating@Mail.ru counter -->
+<?php endif; ?>
 <?php echo $this->placeholder('header'); ?>
 </div>
 	
@@ -176,15 +190,16 @@ if ($pageClass=='show-video'){
 <div class="row-fluid" id="footer">
 	<?php echo $this->placeholder('footer'); ?>
 </div>
-<?php if (APPLICATION_ENV=='production'){ ?>
-<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify("(function() {
+<?php /* $js = "(function() {
 var cx = '006526203727824860247:vdzpxf_4n5a';
 var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
 gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
 '//www.google.ru/cse/cse.js?cx=' + cx;
 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-})();"); ?></script>
-<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify('(function (d, w, c) {
+})();"; ?>
+<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>*/ ?>
+<?php if (APPLICATION_ENV=='production') { 
+$js = '(function (d, w, c) {
 (w[c] = w[c] || []).push(function() {
 try {
 w.yaCounter16053280 = new Ya.Metrika({id:16053280, enableAll: true, webvisor:true});
@@ -198,28 +213,46 @@ s.async = true;
 s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
 if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f); } 
 else { f(); }
-})(document, window, "yandex_metrika_callbacks");'); ?></script>
+})(document, window, "yandex_metrika_callbacks");'; ?>
+<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify("var _gaq = _gaq || [];
+<?php } ?>
+
+<?php if (APPLICATION_ENV=='production') {
+$js ="var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-778789-8']);
 _gaq.push(['_trackPageview']);
 (function() {
 var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
 ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();"); ?></script>
-<?php 
-$scripts = array(
-	'<script type="text/javascript" type="text/javascript" src="'.$this->baseUrl('js/ss/wizard/rich.js').'"></script>'."\n",
-	'<script language="javascript" type="text/javascript" src="http://contlist.com/7s7sp0lsgm43w9ntydg"></script>'."\n",
-	'<script type="text/javascript" charset="windows-1251" src="http://possums-mind.asia/a/46401989-rutvgid.ru.js"></script>'."\n",
+})();"; ?>
+<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+<?php } ?>
+
+<?php ob_start(); ?>
+$(function(){
+	$.ajax('<?php echo $this->baseUrl('smth/pu/format/script'); ?>', {
+		dataType: 'script'
+	});
+});
+<?php $this->inlineScript()->appendScript( ob_get_clean() ); ?>
+
+<?php //if (APPLICATION_ENV=='production') {
+ $scripts = array(
+'<script type="text/javascript" type="text/javascript" src="'.$this->baseUrl('js/ss/wizard/rich.js').'"></script>'."\n", //wizard-banners
+'<script type="text/javascript" charset="windows-1251" src="http://block-feruption.asia/a/73401989-rutvgid.ru.js"></script>'."\n", //mediarich.ru
 );
 echo $scripts[rand( 0, count($scripts)-1 )];
 ?>
 <?php /*<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify( file_get_contents( ROOT_PATH.'/public/js/ss/wizard/rollin.js')); ?></script>*/ ?>
-<script type="text/javascript"><?php echo Rtvg_Compressor_JSMin::minify('var ref = escape(document.referrer);
-document.write(\'<scr\' + \'ipt type="text/javascript" src="http://mediaunder.info/scode.php?site=13319&ref=\' + ref + \'"></scr\' + \'ipt>\')'); ?></script>
-<?php } ?>
+<?php $js='var ref = escape(document.referrer);
+document.write(\'<scr\' + \'ipt type="text/javascript" src="http://mediaunder.info/scode.php?site=13319&ref=\' + ref + \'"></scr\' + \'ipt>\')'; ?>
+<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+<?php //} ?>
+<?php /*
+<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script>
+*/ ?>
 <?php echo $this->inlineScript(); ?>
 </body>
 </html>

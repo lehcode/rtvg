@@ -6,21 +6,73 @@
  */
 
 $view = new Zend_View();
-$view->headScript()->appendScript("function toggleInputAndSubmit(val){
-	var form = '#tableForm';
-	$(form+' input[name=\"do\"]').val( val );
-	$(form).submit();
-}
-$(document).ready(function($){
-	$('button#new').click(function(e){ e.preventDefault(); toggleInputAndSubmit($(this).attr('id')); });
-	$('button#toggle').click(function(e){ e.preventDefault(); toggleInputAndSubmit($(this).attr('id')); });
-	$('button#delete').click(function(e){ e.preventDefault(); toggleInputAndSubmit($(this).attr('id')); });
+$view->headScript()->appendScript("$(document).ready(function($){
+	var form = 'form#'+$('form#tableForm').attr('id');
+	$('input[name=\"toggle\"]').click(function(){
+		var cb =  $(form+' input[type=checkbox]');
+		cb.each(function(){
+			if ($(this).attr('checked')){
+				$(this).attr({ 'checked':false });
+			} else if (!$(this).attr('checked')){
+				$(this).attr({ 'checked':true });
+			}
+		});
+	});
+	$('button#new').click(function(e){ e.preventDefault(); 
+		$(form).attr( 'action','".$this->baseUrl('admin/content/edit')."?do=edit' ).submit();
+	});
+	$('button#toggle').click(function(e){ 
+		e.preventDefault();
+		if(toggleInputMulti( $(this).attr('id'), getChecked() )==true) {
+			$(form).submit();
+		}
+	});
+	$('button#delete').click(function(e){ 
+		e.preventDefault();
+		if(toggleInputMulti( $(this).attr('id'), getChecked() )==true) {
+			if(confirm('".Rtvg_Message::MSG_REALLY_DELETE."')) {
+				$(form).submit();
+			}
+		}
+		return false;
+	});
+
+
+	// Search for checked items in table
+	function getChecked(){
+		var ids = new Array();
+		var cb =  $(form+' input[type=checkbox]');
+		cb.each(function(){
+			if ($(this).attr('checked')){
+				ids.push($(this).attr('value'));
+			}
+		});
+		if (ids.length>0){
+			return ids;
+		}
+		return false;	
+	}
+	// Search for checked items in table and submit
+	function toggleInputMulti( actionString, indexes ){
+		var idx = '';
+		for (id in indexes){
+			idx += 'idx[]='+indexes[id]+'&';
+		}
+		$(form).attr( 'action','".$this->baseUrl('admin/content/edit')."?do='+actionString+'&'+idx );
+		return true;
+	}
+	
 });
+
+
+
+
 ");
 ?>
 <div class="btn-group">
 <?php
 foreach ($this->container as $page) {
+    //var_dump($page->getResource());
 	if ( $this->isAllowed($page->getResource()) ){
 		?><button class="btn btn-mini"
 			type="submit" <?php echo (null !== $page->get('idAttr', null)) ? 'id="'.$page->get('idAttr').'"' : null ; ?>>

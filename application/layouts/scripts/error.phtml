@@ -3,7 +3,7 @@
  * Frontpage error view script
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: error.phtml,v 1.7 2013-03-17 18:34:58 developer Exp $
+ * @version $Id: error.phtml,v 1.8 2013-04-03 04:08:16 developer Exp $
  */ 
 ?>
 <?php
@@ -16,12 +16,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Произошла ошибка</title>
+<title>Ошибка</title>
+<?php echo $this->headLink().PHP_EOL;?>
 </head>
 <body>
 
 <div id="content" class="row-fluid error">
 <?php 
+
 if (count($this->messages)) {
 	foreach ($this->messages as $text) {
 		if (is_array($text)) {
@@ -34,13 +36,14 @@ if (count($this->messages)) {
 	}
 }
 ?>
+<a href="javascript:window.history.back(-1);">Назад</a>
 
 	<div class="span12" id="maincontent">
 		<h1>Ошибка</h1>
 		<h2><?php echo $this->message ?></h2>
 		<?php if (isset($this->exception)){ ?><h3>Exception information:</h3>
 		<p>
-		<b>Message:</b> <?php echo $this->exception->getMessage() ?>
+		<b>Message:</b> <?php echo $this->exception->getMessage(); ?>
 		</p>
 		
 		<h3>Stack trace:</h3>

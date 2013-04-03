@@ -74,30 +74,6 @@ class Xmltv_Model_DbTable_ProgramsRatings extends Xmltv_Db_Table_Abstract
 		
 		
     }
-    
-    
-	/**
-	 * @return string
-	 */
-	public function getName() {
-		return $this->_name;
-	}
-
-	/**
-	 * @param string $string
-	 */
-	public function setName($string=null) {
-		$this->_name = $string;
-	}
-	
-	/**
-	 * @return string $pfx
-	 */
-	public function getPfx() {
-	
-		return $this->pfx;
-		
-	}
 
 }
 

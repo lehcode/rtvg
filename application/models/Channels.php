@@ -4,7 +4,7 @@
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: Channels.php,v 1.24 2013-03-22 17:51:44 developer Exp $
+ * @version    $Id: Channels.php,v 1.25 2013-04-03 04:08:16 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -13,7 +13,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
      * 
      * @var Xmltv_Model_DbTable_Channels
      */
-    protected $_table;
+    protected $channelsTable;
     
     /**
      * 
@@ -35,9 +35,11 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 
     public function __construct($config=array()){
         
-        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
+        if (empty($config)){
+        	$config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
+        }
         parent::__construct($config);
-        $this->table = new Xmltv_Model_DbTable_Channels();
+        $this->channelsTable = new Xmltv_Model_DbTable_Channels();
         $this->ratingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
         $this->categoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
         $this->commentsTable = new Xmltv_Model_DbTable_ChannelsComments();
@@ -87,7 +89,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 	    $categoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
 	    $select = $this->db->select()
-			->from( array('ch'=>$this->table->getName()), array(
+			->from( array('ch'=>$this->channelsTable->getName()), array(
 				'id',
 				'title',
 				'alias',
@@ -143,7 +145,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
 		
 		$alias = Xmltv_String::strtolower($alias);
-		$result = $this->table->fetchRow(" `title` LIKE '$alias'");
+		$result = $this->channelsTable->fetchRow(" `title` LIKE '$alias'");
 		$result->alias = Xmltv_String::strtolower($result->alias);
 		return $result;
 		
@@ -154,7 +156,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		if (!$id)
 			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
 		
-		$result = $this->table->fetchRow("`id`='$id'")->toArray();
+		$result = $this->channelsTable->fetchRow("`id`='$id'")->toArray();
 		$result['alias'] = Xmltv_String::strtolower($result['alias']);
 		$result['start'] = new Zend_Date($result['start'], 'yyyy-MM-dd HH:mm:ss');
 		$result['end']   = new Zend_Date($result['end'], 'yyyy-MM-dd HH:mm:ss');
@@ -212,7 +214,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
 		}
 		
-		$props = $this->table->find($id)->current();
+		$props = $this->channelsTable->find($id)->current();
 		$desc['intro'] = $props->desc_intro;
 		$desc['body']  = $props->desc_body;
 		return $desc;
@@ -369,7 +371,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    if ($string){
 	        $pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
 	        $select = $this->db->select()
-	        	->from(array( 'ch'=>$this->table->getName()), array('*', 'alias'=>'LOWER(ch.alias)'))
+	        	->from(array( 'ch'=>$this->channelsTable->getName()), array('*', 'alias'=>'LOWER(ch.alias)'))
 	        	->joinLeft( array('cat'=>$pfx.'channels_categories'), '`ch`.`category`=`cat`.`id`', array(
 	        		'category_title'=>'title',
 	        		'category_alias'=>'alias',
@@ -397,10 +399,10 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	/**
 	 * Retrieve all channels info
 	 */
-	public function allChannels($order_by=null){
+	public function allChannels($order=null){
 		
 		$select = $this->db->select()
-			->from( array('ch'=>$this->table->getName()), array(
+			->from( array('ch'=>$this->channelsTable->getName()), array(
 				'id',
 				'title',
 				'alias'=>'LOWER(`ch`.`alias`)',
@@ -427,8 +429,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 			)
 			->where("`ch`.`published`='1'");
 		
-		if ($order_by){
-		    $select->order($order_by);
+		if ($order){
+		    $select->order( $order );
 		}
 		
 		if (APPLICATION_ENV=='development'){

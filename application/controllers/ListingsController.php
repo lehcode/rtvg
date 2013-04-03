@@ -3,12 +3,17 @@
  * Programs listings display
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: ListingsController.php,v 1.36 2013-03-22 17:51:43 developer Exp $
+ * @version $Id: ListingsController.php,v 1.37 2013-04-03 04:08:15 developer Exp $
  *
  */
 class ListingsController extends Rtvg_Controller_Action
 {
 	
+    /**
+     * @var Xmltv_Model_Articles
+     */
+    private $articlesModel;
+    
 	/**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
@@ -21,6 +26,16 @@ class ListingsController extends Rtvg_Controller_Action
 		$ajaxContext->addActionContext( 'update-comments', 'html' )
 			->initContext();
 		
+		if ($this->getRequest()->getMethod()=='POST'){
+		    $this->_helper->layout()->setLayout('access-denied');
+		    return;
+		}
+		
+		if (!$this->_request->isXmlHttpRequest()){
+			$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
+		}
+		
+		$this->articlesModel = new Xmltv_Model_Articles();
 	}
 
 	/**
@@ -53,6 +68,8 @@ class ListingsController extends Rtvg_Controller_Action
 		if (parent::validateRequest()){
 			
 			$this->view->assign( 'pageclass', 'day-listing' );
+			$this->view->assign( 'hide_sidebar', 'right' );
+			$this->view->assign( 'vk_group_init', false );
 			
 			$channel = parent::channelInfo();
 			if (!isset($channel['id']) || empty($channel['id'])){
@@ -60,16 +77,6 @@ class ListingsController extends Rtvg_Controller_Action
 				return true;
 			}
 			$this->view->assign('channel', $channel );
-			
-			if (APPLICATION_ENV=='development' || isset($_GET['RTVG_PROFILE'])){
-			    //var_dump($channel);
-			    //die(__FILE__.': '.__LINE__);
-			}
-			
-			if ($_GET['RTVG_PROFILE']){
-				//Zend_Debug::dump($this->isAllowed);
-				//die(__FILE__.': '.__LINE__);
-			}
 			
 			/*
 			 * #####################################################################
@@ -87,19 +94,9 @@ class ListingsController extends Rtvg_Controller_Action
 			$listingDate = parent::listingDate();
 			$this->view->assign('listing_date', $listingDate);
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($listingDate->toString());
-				//var_dump($this->user);
-				//var_dump($this->isAllowed);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
-			
 			$l = (int)Zend_Registry::get('site_config')->listings->history->get('length');
 			if (parent::checkDate($listingDate, $l)===false){
-			    //$this->view->assign( 'history_length', $l);
-				//$this->view->assign( 'hide_sidebar', 'right' );
-				$this->view->headMeta()->setName('robots', 'noindex,follow');
+				//$this->view->headMeta()->setName('robots', 'noindex,follow');
 			}
 
 			if (APPLICATION_ENV=='development'){
@@ -140,52 +137,24 @@ class ListingsController extends Rtvg_Controller_Action
 			$top = $this->topPrograms();
 			$this->view->assign('top_programs', $top);
 			
-			if ($_GET['RTVG_PROFILE']){
-				//Zend_Debug::dump($this->isAllowed);
-				//die(__FILE__.': '.__LINE__);
-			}
 			
 			/*
 			 * #####################################################################
 			 * Fetch programs list for day and make decision on current program
 			 * #####################################################################
-			 * 
-			 * 
-			 * @todo (1)Load short programs list for day
-			 * List include 4 items:
-			 * Сейчас
-			 * Затем
-			 * Далее
-			 * Потом
-			 * 
 			 */
+			$amt = 4;
 			if ($this->cache->enabled) {
-			    
-			    $this->cache->setLifetime(600);
+			    $this->cache->setLifetime(3600);
 			    $f = "/Listings/Programs";
 				$hash = Rtvg_Cache::getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
-			    
-			    if ($_GET['RTVG_PROFILE']){
-			    	//Zend_Debug::dump($this->cache->load( $hash, 'Core', $f));
-			    	//die(__FILE__.': '.__LINE__);
-			    }
-			    
-				if (!$list = $this->cache->load( $hash, 'Core', $f)) {
-					$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'] );
-					//$this->cache->save( $list, $hash, 'Core', $f);
-					if ($_GET['RTVG_PROFILE']){
-						//Zend_Debug::dump($this->cache->save( $list, $hash, 'Core', $f));
-						//die(__FILE__.': '.__LINE__);
-					}
+			    if (!$list = $this->cache->load( $hash, 'Core', $f)) {
+					$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'], $amt );
+					$this->cache->save( $list, $hash, 'Core', $f);
 				}
 				
 			} else {
-				$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'] );
-			}
-			
-			if ($_GET['RTVG_PROFILE']){
-				//var_dump($this->isAllowed);
-				//die(__FILE__.': '.__LINE__);
+				$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'], $amt );
 			}
 			
 			if (APPLICATION_ENV=='development'){
@@ -199,8 +168,6 @@ class ListingsController extends Rtvg_Controller_Action
 			    return true;
 			}
 			
-			$this->view->assign( 'programs', $list );
-			
 			if (APPLICATION_ENV=='development'){
 				//var_dump(count($list));
 				//var_dump($list);
@@ -208,12 +175,35 @@ class ListingsController extends Rtvg_Controller_Action
 				//die(__FILE__.': '.__LINE__);
 			}
 			
-			foreach ($list as $li){
-			    if ($li['now_showing']===true){
-			        $currentProgram = $li;
-			    }
+			$list[0]['now_showing']=true;
+			$this->view->assign( 'programs', $list );
+			$currentProgram = $list[0];
+			
+			/*
+			 * #####################################################################
+			 * Articles
+			 * #####################################################################
+			 */
+			$amt = 10;
+			if ($this->cache->enabled) {
+				$this->cache->setLifetime(86400);
+				$f = "/Content/Articles";
+				$hash = 'dayListingArticles_'.Rtvg_Cache::getHash( $channel['id'] );
+				if (!$articles = $this->cache->load( $hash, 'Core', $f)) {
+					$articles = $this->articlesModel->dayListingArticles( $currentProgram, $channel, $amt );
+					$this->cache->save( $articles, $hash, 'Core', $f);
+				}
+			} else {
+				$articles = $this->articlesModel->dayListingArticles( $currentProgram, $channel, $amt );
 			}
 			
+			if (APPLICATION_ENV=='development'){
+			    //var_dump($articles);
+			    //die(__FILE__.': '.__LINE__);
+			}
+			
+			$this->view->assign( 'announces', $articles );
+			$this->view->assign( 'show_announces', true );
 			
 			/*
 			 * #####################################################################
@@ -245,11 +235,6 @@ class ListingsController extends Rtvg_Controller_Action
 			    
 			    $listingVideos = array();
 			    
-			    if ($_GET['RTVG_PROFILE']){
-			        //var_dump($this->isAllowed);
-			        //die(__FILE__.': '.__LINE__);
-			    }
-			    
 			    // Запрос в файловый кэш
 			    if ($this->cache->enabled){
 			        
@@ -261,12 +246,12 @@ class ListingsController extends Rtvg_Controller_Action
 			    	if (parent::$videoCache && $this->isAllowed) {
 			    	    
 			    	    // Ищем видео в кэше БД если он включен
-			    	    if (false === ($listingVideos = $this->vCacheModel->listingRelatedVideos( $list, $channel['title'], $listingDate ))){
+			    	    if (false === ($listingVideos = $this->vCacheModel->listingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate ))){
 			    	        
 			    	        if (false === ($listingVideos=$this->cache->load( $hash, 'Core', $f) )){
 			    	        
 			    	            // Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
-			    	            $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $listingDate );
+			    	            $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
 			    	            
 			    	            if (!count($listingVideos) || ($listingVideos===false)) {
 			    	                return false;
@@ -308,7 +293,7 @@ class ListingsController extends Rtvg_Controller_Action
 			    	
 			    	    if ((false === ($listingVideos=$this->cache->load( $hash, 'Core', $f)))){
 			    	        // Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
-			    	        $listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $listingDate );
+			    	        $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
 			    	        
 			    	        if (!count($listingVideos) || ($listingVideos===false)) {
 			    	        	return false;
@@ -325,7 +310,7 @@ class ListingsController extends Rtvg_Controller_Action
 			        
 			        // Кэширование не используется 
 			        // запрос к Yoututbe
-			    	$listingVideos = $this->videosModel->ytListingRelatedVideos( $list, $channel['title'], $listingDate );
+			    	$listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
 			    	
 			    }
 			    
@@ -334,7 +319,7 @@ class ListingsController extends Rtvg_Controller_Action
 			
 			if (APPLICATION_ENV=='development'){
 				//var_dump(count($list));
-				//var_dump($list);
+				//var_dump($listingVideos);
 				//var_dump($listingDate->toString());
 				//die(__FILE__.': '.__LINE__);
 			}
@@ -363,6 +348,7 @@ class ListingsController extends Rtvg_Controller_Action
 			 * Torrents
 			 * ######################################################
 			 */
+			/*
 			if ((bool)Zend_Registry::get('site_config')->channels->torrents->get('enabled')===true) {
 				
 				$url  = 'http://torrent-poisk.com/search.php?q='.urlencode($channel['title']).'&r=0&qsrv='.urlencode($channel['title']);
@@ -414,6 +400,7 @@ class ListingsController extends Rtvg_Controller_Action
 					}
 				}
 			}
+			*/
 			
 			$tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias']), 
 			'default_listings_day-listing',

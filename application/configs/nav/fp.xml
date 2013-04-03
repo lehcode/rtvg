@@ -5,23 +5,27 @@
  * Frontpage menu
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: fp.xml,v 1.1 2013-03-05 06:51:08 developer Exp $
+ * @version $Id: fp.xml,v 1.2 2013-04-03 04:08:15 developer Exp $
  */
  -->
 <config>
 	<nav>
 		<home>
-            <label>Ruvtgid</label>
+        	<label>Ruvtgid</label>
             <route>default_frontpage_index</route>
         </home>
 		<channelList>
-            <label>Каналы</label>
+            <label>Все каналы</label>
             <route>default_channels_list</route>
             <title>Телепрограмма всех каналов на сегодня</title>
         </channelList>
-		<premieresWeek>
+		<!-- <premieresWeek>
             <label>Премьеры недели</label>
             <route>default_listings_premieres-week</route>
-        </premieresWeek>
+        </premieresWeek> -->
+		<articles>
+			<label>Новости</label>
+			<route>default_content_blog</route>
+		</articles>
 	</nav>
 </config>

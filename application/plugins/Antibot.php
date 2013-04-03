@@ -6,7 +6,7 @@
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @package rutvgid
  * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/plugins/Antibot.php,v $
- * @version $Id: Antibot.php,v 1.2 2013-01-19 10:11:14 developer Exp $
+ * @version $Id: Antibot.php,v 1.3 2013-04-03 04:08:16 developer Exp $
  */
 
 class Xmltv_Plugin_Antibot extends Zend_Controller_Plugin_Abstract
@@ -57,13 +57,6 @@ class Xmltv_Plugin_Antibot extends Zend_Controller_Plugin_Abstract
 		
 	    $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/agents.log' ));
 	    $log->log( $this->userAgent, Zend_Log::INFO );
-	    /* foreach ($this->bots as $b){
-	        if (stristr($this->userAgent, $b)){
-	            var_dump( system("whois ".'66.249.76.75'));
-	            die(__FILE__.': '.__LINE__);
-	        }
-	    } */
-	    
 	    
 	}
 	

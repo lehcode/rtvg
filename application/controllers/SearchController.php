@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: SearchController.php,v 1.8 2013-03-11 13:55:37 developer Exp $
+ * @version $Id: SearchController.php,v 1.9 2013-04-03 04:08:15 developer Exp $
  *
  */
 class SearchController extends Rtvg_Controller_Action
@@ -47,13 +47,13 @@ class SearchController extends Rtvg_Controller_Action
             $type = (!isset($type) || $type=='web') ? 'web' : 'channel' ;
             $script = "search/$type.phtml";
             
-            if ($this->input->getEscaped('type')=='channel'){
+            //if ($this->input->getEscaped('type')=='channel'){
                 
             	$channelsModel = new Xmltv_Model_Channels();
             	$result = $channelsModel->searchChannel( $search);
             	$this->view->assign('result', $result);
             	$this->renderScript( 'search/channel.phtml' );
-            	
+            /* 	
             } else {
                 
                 $f = '/Search/Torrents';
@@ -70,7 +70,7 @@ class SearchController extends Rtvg_Controller_Action
                 	$html = $curl->fetch(Xmltv_Parser_Curl::PAGE_HTML);
                 }
             }
-            
+             */
         }
         
         

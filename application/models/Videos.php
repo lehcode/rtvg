@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.26 2013-03-22 17:51:44 developer Exp $
+ * @version $Id: Videos.php,v 1.27 2013-04-03 04:08:16 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -39,6 +39,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			    $v['alias'] = Xmltv_Youtube::videoAlias( $v['title'] );
 			} catch (Zend_Exception $e) {
 			    return false;
+			}
+			
+			if (APPLICATION_ENV=='development'){
+			    //var_dump($entry);
+			    //die(__FILE__.': '.__LINE__);
 			}
 			
 			$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
@@ -96,11 +101,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		if (!self::isRussian( $entry->getVideoTitle())) {
 			return false;
 		}
-
+		/* 
 		if (!self::isHack( $entry->getVideoTitle())) {
 			return false;
 		}
-		
+		 */
 		return true;
 		
 	}
@@ -191,8 +196,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public static function isHack($title=null){
 		
-	    if (!Xmltv_String::stristr($title, 'взлом') || 
-	    	!Xmltv_String::stristr($title, 'хак')) {
+	    if (Xmltv_String::stristr($title, 'взлом') || 
+	    	Xmltv_String::stristr($title, 'хак')) {
 	    	return true;
 	    } else {
 	    	if (APPLICATION_ENV=='development'){
@@ -340,7 +345,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			foreach ($list as $li){
 				
 				if (APPLICATION_ENV=='development'){
-					var_dump($li);
+					//var_dump($li);
 					//var_dump($li['fetch_video']);
 					die(__FILE__.': '.__LINE__);
 				}
@@ -659,8 +664,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$search = preg_replace('/\s+/ui', ' ', $search);
 		
 		if (APPLICATION_ENV=='development'){
-			echo '<b>'.__METHOD__.'</b><br />';
-			Zend_Debug::dump($search);
+			//echo '<b>'.__METHOD__.'</b><br />';
+			//Zend_Debug::dump($search);
 			//die(__FILE__.': '.__LINE__);
 		}
 		
