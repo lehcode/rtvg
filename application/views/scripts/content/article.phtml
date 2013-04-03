@@ -3,7 +3,7 @@
  * View script to dosplay single article
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: article.phtml,v 1.2 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: article.phtml,v 1.3 2013-04-03 18:18:05 developer Exp $
  */
 
 if (APPLICATION_ENV=='development'){
@@ -42,6 +42,7 @@ if (APPLICATION_ENV=='development'){
 	
 </div>
 
+<?php /*
 <div class="category">
 	<?php $linkAttrHref = $this->url( array(
 		'content_cat' => $this->escape( $this->article['content_cat_alias']),
@@ -50,6 +51,7 @@ if (APPLICATION_ENV=='development'){
 		<?php printf( "Все %s на rutvgid", Xmltv_String::strtolower( $this->article['content_cat_title']) ); ?>
 	</a>
 </div>
+*/ ?>
 
 <?php 
 /*

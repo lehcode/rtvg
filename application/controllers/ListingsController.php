@@ -3,7 +3,7 @@
  * Programs listings display
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: ListingsController.php,v 1.37 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: ListingsController.php,v 1.38 2013-04-03 18:18:05 developer Exp $
  *
  */
 class ListingsController extends Rtvg_Controller_Action
@@ -452,6 +452,7 @@ class ListingsController extends Rtvg_Controller_Action
 			$channel = parent::getChannel( $channelAlias );
 			$this->view->assign( 'channel', $channel );
 			
+			
 			/*
 			 * ######################################################
 			 * Decision on listing timespan (date|сегодня|неделя) 
@@ -757,7 +758,8 @@ class ListingsController extends Rtvg_Controller_Action
 	 */
 	public function categoryAction(){
 	
-		$cats = $this->getProgramsCategories();
+	    $cats = $this->getProgramsCategories();
+		
 		if ( parent::validateRequest( array('programsCategories'=>$cats))){
 		    
 		    $categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();

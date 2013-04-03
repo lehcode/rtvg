@@ -5,7 +5,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: list.phtml,v 1.19 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: list.phtml,v 1.20 2013-04-03 18:18:05 developer Exp $
  *
  */
 
@@ -27,12 +27,7 @@ if ($categoryTitle) {
 		->setName('keywords', $keywords );
 }
 
-
-//APPLICATION_ENV=='production' ? 
-//	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.min.js')) : 
-//	$this->headScript()->appendFile( $this->baseUrl( 'js/tip/jquery.tooltip.js'));
-
-$css = " .ui-autocomplete-category {
+$css = ".ui-autocomplete-category {
 	font-weight: bold;
 	padding: .2em .4em;
 	margin: .8em 0 .2em;
@@ -60,7 +55,7 @@ if ( isset($this->category) && $this->category!==null) {
 /*
  * Scroll to channel (autocomplete)
 */
-$formProps = array(
+echo new Xmltv_Form_TypeaheadForm( array(
 	'method'   => 'post',
 	'enctype'  => 'application/x-www-form-urlencoded',
 	'name'     => 'typeahead',
@@ -78,9 +73,8 @@ $formProps = array(
 		)
 	),
 	'append'   => '#maincontent',
-);
-$formProps['scroll'] = (isset($categoryTitle) && !empty($categoryTitle)) ? false :  true;
-echo new Xmltv_Form_TypeaheadForm( $formProps );
+	'scroll'   => false,
+));
 ?>
 
 <h1>Все каналы</h1>

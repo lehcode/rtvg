@@ -4,7 +4,7 @@
  * Model for Access Control Lists management
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Acl.php,v 1.14 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: Acl.php,v 1.15 2013-04-03 18:18:05 developer Exp $
  */
 class Xmltv_Model_Acl extends Zend_Acl
 {
@@ -36,6 +36,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:frontpage.index' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:frontpage.single-channel' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:channels.alias' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels.category' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels.list' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels.channel-week' ), $default );
@@ -54,6 +55,8 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:listings.category' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.premieres-week' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:sitemap.sitemap' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:smth.pu' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:smth.rich' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:videos.show-video' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:user' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:user.login' ), 'default:user' );

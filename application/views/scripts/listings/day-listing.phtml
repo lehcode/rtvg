@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.29 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.30 2013-04-03 18:18:05 developer Exp $
  *
  */
 
@@ -12,19 +12,6 @@ $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
 $channelCat   = $this->escape( $this->channel['cat_title'] );
 
-?>
-$(function(){
-	function scrollScreen(element) {
-		var targetPostion = $(element).offset().top;
-		var speed = 1000;
-		var selector = "html:not(:animated),body:not(:animated)"; 
-		$(selector).animate({ scrollTop: targetPostion }, speed);
-	}
-});
-<?php
-$b = ob_get_clean();
-$js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( $b ) : $b ;
-$this->headScript()->appendScript( $js );
 
 $this->headMeta()->setName('description', sprintf ('Передачи сегодня на канале «%s»', $channelTitle ));
 
@@ -62,7 +49,10 @@ $css="#content.day-listing .top form {
 $this->headStyle()->appendStyle($css);
 ?>
 
-<h1><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
+<div class="container-fluid">
+	<h1 class="span8"><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
+	<span class="span2" id="timer">Сейчас<br /><?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
+</div>
 
 <div class="container-fluid top">
 	<?php 
@@ -96,11 +86,11 @@ $this->headStyle()->appendStyle($css);
 			'html_tag' => array(
 					'tag'=>'div'
 			)
-		)
+		),
+		'ajax_tracking' => true
 	)); 
 	?>
 	
-	<div class="span2"><span class="label"><?php echo $this->listing_date->toString("Сейчас HH:mm") ?></span></div>
 </div>
 
 
@@ -111,7 +101,7 @@ $this->headStyle()->appendStyle($css);
 ?>
 <p>
 	<a href="<?php echo $this->url(array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>"
-		title="<?php printf('Перейти к расписанию программ канала %s на неделю', $channelTitle); ?>">
+		title="<?php printf('Перейти к расписанию программ канала «%s» на неделю', $channelTitle); ?>">
 		<?php printf ('Программа передач "%s" на всю неделю', $channelTitle) ?>
 	</a>
 	<br />

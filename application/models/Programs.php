@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.28 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: Programs.php,v 1.29 2013-04-03 18:18:05 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -160,10 +160,9 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 * @param  string    $alias
 	 * @param  array     $channel
 	 * @param  Zend_Date $date
-	 * $limit  int       $limit // Amount of results to return
+	 * @param  int       $limit // Amount of results to return
 	 * @throws Zend_Exception
 	 * @return array
-	 * @deprecated
 	 */
 	
 	public function getProgramForDay ($alias=array(), array $channel=null, Zend_Date $date, $limit=false) {

@@ -3,7 +3,7 @@
  * Быстрый переход по каналам и поиск канала
  * 
  * @author  Antony Repin
- * @version $Id: TypeaheadForm.php,v 1.4 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: TypeaheadForm.php,v 1.5 2013-04-03 18:18:05 developer Exp $
  *
  */
 class Xmltv_Form_TypeaheadForm extends Zend_Form
@@ -19,9 +19,11 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
     	
         (isset($options['html_tag']) && !empty($options['html_tag'])) ? $tagProps = $options['html_tag'] : null ;
         unset($options['html_tag']);
-        (isset($options['append'])   && !empty($options['append']))   ? $appendTo = $options['append'] : '#maincontent' ;
+        (isset($options['append']) && !empty($options['append'])) ? $appendTo = $options['append'] : '#maincontent' ;
         unset($options['append']);
-        (isset($options['input'])    && !empty($options['input']))    ? $input    = (array)$options['input'] : null ;
+        (isset($options['input']) && !empty($options['input'])) ? $input = (array)$options['input'] : null ;
+        unset($options['input']);
+        (isset($options['ajax_tracking']) && !empty($options['ga_js'])) ? $gaJs = (array)$options['ga_js'] : null ;
         unset($options['input']);
         
         parent::__construct( $options );
@@ -30,7 +32,7 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
         
         $inputId = (isset($input['id']) && !empty($input['id'])) ? (string)$input['id'] : 'searchinput';
         $js = "$(function(){
-    	$.getJSON( '".$view->baseUrl( 'channels/typeahead/format/json')."', function(data) {
+        $.getJSON( '".$view->baseUrl( 'channels/typeahead/format/json')."', function(data) {
 			var typeaheadItems = new Array();
 			$.each(data.result, function( key, val ) {
 				var newItem = new Array(); 
@@ -53,7 +55,16 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
 				}
 			});".PHP_EOL;
         } else {
-            $js .= "".PHP_EOL;
+            $js .= "$.ajax({
+            	url: '".$view->baseUrl( 'channels/alias/format/json')."', 
+            	data: 't='+ui.item.label,
+            	dataType: 'json',
+            	success: function(r) {
+            		var url = '".$view->baseUrl('телепрограмма/')."'+r.alias;
+            		_gaq.push( ['_trackPageview', url] );
+            		window.location = url;
+            	}
+            });".PHP_EOL;
         }
         
 	    $js .= " }
@@ -64,7 +75,7 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
     	});".PHP_EOL;
         $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js ;
         
-        $view->headScript()->appendScript($js);
+        $view->inlineScript()->appendScript($js);
         
         $search = new Zend_Form_Element_Text( $input['id'] );
         $tipText = "Начните вводить название канала и выберите его из списка";

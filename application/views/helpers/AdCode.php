@@ -1,8 +1,8 @@
 <?php
 /**
  * 
- * @author Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: AdCode.php,v 1.1 2013-04-03 15:22:20 developer Exp $
+ * @author  Antony Repin <egeshisolutions@gmail.com>
+ * @version $Id: AdCode.php,v 1.2 2013-04-03 18:18:17 developer Exp $
  *
  */
 class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
@@ -14,14 +14,12 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
     private $type = 'cpa';
     private $output = 'random';
     private $amt=2;
+    private $moduleclass='extras';
     
     /**
      * Get ad code
      * 
-     * @param int $width // desired width
-     * @param int $height // desired height
-     * @param string $type // spa
-     * @param string $output // random|stack
+     * @param array $options
      * @return string
      */
 	public function adCode($options = array()){
@@ -31,6 +29,7 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
 	    $this->type = (isset($options['type']) && !empty($options['type'])) ? $options['type'] : $this->type ;
 	    $this->output = (isset($options['output']) && !empty($options['output'])) ? $options['output'] : $this->output ;
 	    $this->amt = (isset($options['amt']) && !empty($options['amt']) && is_int($options['amt'])) ? $options['amt'] : null ;
+	    $this->moduleclass = (isset($options['moduleclass']) && !empty($options['moduleclass']) && is_int($options['moduleclass'])) ? $options['moduleclass'] : $this->moduleclass ;
 	    
 	    $codes['wizards-world']['code']='<!-- admitad.banner: 8473ea334743631d2075c3fe9ec496 Wizards World -->
 		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/8473ea334743631d2075c3fe9ec496/">
@@ -137,7 +136,7 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
 			    $keys = array_keys($codes);
 			    $rand = rand(0, count($keys)-1);
 			    $idx  = $keys[$rand];
-			    $html = '<div class="module">'.$codes[$idx]['code'].'</div>';
+			    $html = '<div class="module '.$this->moduleclass.'">'.$codes[$idx]['code'].'</div>';
 			break;
 			
 			case 'stack';
@@ -148,7 +147,7 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
 					    $keys = array_keys($codes);
 					    $rand = rand( 0, count($keys)-1 );
 					    $idx  = $keys[$rand];
-					    $html .= '<div class="module">'.$codes[$idx]['code'].'</div>'.PHP_EOL;
+					    $html .= '<div class="module '.$this->moduleclass.'">'.$codes[$idx]['code'].'</div>'.PHP_EOL;
 					    $amt-=1;
 					} while ($amt > 0);
 					

@@ -1,10 +1,9 @@
 <?php
-
 /**
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.29 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.30 2013-04-03 18:18:05 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -32,6 +31,7 @@ class ChannelsController extends Rtvg_Controller_Action
 		    $ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
 		    $ajaxContext
 		    	->addActionContext( 'typeahead', 'json' )
+		    	->addActionContext( 'alias', 'json' )
 			    ->addActionContext( 'new-comments', 'html' )
 			    ->initContext();
 			
@@ -39,6 +39,7 @@ class ChannelsController extends Rtvg_Controller_Action
 	   	
 	   	if (!$this->_request->isXmlHttpRequest()){
 	   		$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
+	   		$this->view->assign( 'hide_sidebar', null );
 	   	}
 	   	
 	}
@@ -61,6 +62,7 @@ class ChannelsController extends Rtvg_Controller_Action
 			
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$this->view->assign( 'hide_sidebar', false );
+			$this->view->assign( 'gcse', false );
 			
 			if ($this->cache->enabled){
 			    
@@ -144,6 +146,7 @@ class ChannelsController extends Rtvg_Controller_Action
 		if (parent::validateRequest()) {
 		   
 			$this->view->assign('pageclass', 'category');
+			
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$catProps = $this->channelsModel->category( $this->input->getEscaped('category') );
 			if ($catProps===false){
@@ -250,15 +253,15 @@ class ChannelsController extends Rtvg_Controller_Action
 			$this->view->assign('week_end', $e);
 			
 			if ($this->cache->enabled){
-			    $this->cache->setLocation(ROOT_PATH.'/cache');
+			    $this->cache->setLocation( ROOT_PATH.'/cache' );
 				$hash = Rtvg_Cache::getHash('channel_'.$channel['alias'].'_week');
 				$f = '/Channels';
 				if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
-					$schedule = $this->channelsModel->getWeekSchedule($channel, $s, $e);
+					$schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($s), new Zend_Date($e));
 					$this->cache->save($schedule, $hash, 'Core', $f);
 				}
 			} else {
-				$schedule = $this->channelsModel->getWeekSchedule($channel, $s, $e);
+				$schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($s), new Zend_Date($e));
 			}
 			$this->view->assign('days', $schedule);
 			
@@ -324,13 +327,28 @@ class ChannelsController extends Rtvg_Controller_Action
 		    }
 		} else {
 		    $feedData = $commentsModel->getYandexRss( array( 'телеканал "'.Xmltv_String::strtolower($channel['title']).'"') );
-		    $new = $commentsModel->parseYandexFeed( $feedData );
+		    $new      = $commentsModel->parseYandexFeed( $feedData );
 		}
 		
 		$this->view->assign('items', $new);
-			
 		
-		 
+	}
+	
+	/**
+	 * AJAX
+	 * Get channel alias from $_GET['title']
+	 */
+	public function aliasAction(){
+		
+	    if (!$this->_request->isXmlHttpRequest()){
+	    	throw new Zend_Exception( Rtvg_Message::ERR_INVALID_INPUT, 401 );
+	    }
+	    
+	    parent::validateRequest();
+	    
+	    $title = $this->input->getEscaped('t');
+	    $this->view->assign( 'alias', $this->view->escape( $this->channelsModel->getByTitle( $title )->alias ) );
+	    
 	}
 	
 }

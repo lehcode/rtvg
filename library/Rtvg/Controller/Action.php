@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.13 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: Action.php,v 1.14 2013-04-03 18:18:05 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -236,7 +236,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		    $this->view->assign( 'vk_group_init', true );
 		}
 		
-		//$this->adScripts = new Rtvg_Ad_Collection();
 		
 	}
 	
@@ -738,8 +737,8 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		 
 	}
 	
-	protected function getChannel( $alias=null ){
-		
+	protected function getChannel( $alias=null )
+	{
 	    if (!$alias){
 	        throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500 );
 	    }
@@ -757,7 +756,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	    } else {
 	    	$result = $this->channelsModel->getByAlias($alias);
 	    }
-	    
+
 	    return $result;
 	    
 	}
@@ -766,14 +765,21 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::__call()
 	 */
-	public function __call ($method, $arguments) {
-		throw new Zend_Exception( Rtvg_Message::ERR_METHOD_NOT_FOUND, 404);
+	public function __call ($method, $arguments)
+	{
+		throw new Zend_Exception( $method." does not exist!", 404);
 	}
 	
-	public function pageclass($classname=null){
-		
+	/**
+	 * Contruct pageclass name 
+	 * using actual PHP class name
+	 * 
+	 * @param  string $classname
+	 * @return string
+	 */
+	public function pageclass($classname=null)
+	{
 	    return strtolower(str_ireplace('controller', '', $classname));
-	    
 	}
 	
 }

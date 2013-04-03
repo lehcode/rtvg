@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: Admin.php,v 1.5 2013-04-03 04:08:16 developer Exp $
+ * @version    $Id: Admin.php,v 1.6 2013-04-03 18:18:05 developer Exp $
  *
  */
 
@@ -70,7 +70,7 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
         
         $this->initView();
         $this->view->addScriptPath( APPLICATION_PATH."/layouts/scripts/admin/" );
-        $this->view->setHelperPath( APPLICATION_PATH."/views/helpers/", 'Rtvg_View_Helper');
+        $this->view->addHelperPath( APPLICATION_PATH."/views/helpers/", 'Rtvg_View_Helper');
         $this->view->assign('pageclass', 'admin');
         
         /**
@@ -80,6 +80,8 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
         $bootstrap = $this->getInvokeArg('bootstrap');
         $this->user = $bootstrap->getResource('user');
         $this->view->assign('user', $this->user);
+        $this->view->inlineScript()
+        	->prependFile('http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js');
         
 		if (APPLICATION_ENV=='development'){
 			//var_dump($this->user);
@@ -91,7 +93,6 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
         	return false;
         }
         
-        //$this->validateRequest();
         
     }
     

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-left.phtml,v 1.12 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: sidebar-left.phtml,v 1.13 2013-04-03 18:18:05 developer Exp $
  *
  */
 ?>
@@ -13,8 +13,12 @@
 if (isset($this->announces) && ($this->announces!==false)  && ($this->show_announces===true)) { ?>
 <div class="module">
 	<ul class="nav nav-pills nav-list">
-    <?php foreach ($this->announces as $article){ ?>
-    	<li><a href="#"><?php echo $article->title; ?></a></li>  
+    <?php foreach ($this->announces as $article){ 
+        $linkAttrHref = $this->url( array(
+        	'content_cat'=>$article->content_cat_alias,
+        	'article_alias'=>$this->escape($article->alias)), 'default_content_article' );
+        ?>
+    	<li><a href="<?php echo $linkAttrHref; ?>" title="<?php printf( "%s новости", $article->content_cat_title ); ?>"><?php echo $article->title; ?></a></li>  
     <?php } ?>
     </ul>
 </div>    
@@ -52,14 +56,6 @@ if (isset($this->cats) && !empty($this->cats)) {
 	<?php 
 }
 ?>
-
-<div class="module">
-	<div style="width: 120px; margin: 0 auto; border: 1px solid #999;">
-		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/b9685a874a43631d20753e1104d9e6/">
-		<img width="120" height="600" border="0" src="http://ad.admitad.com/b/b9685a874a43631d20753e1104d9e6/" alt="Ренессанс Кредит" />
-		</a>
-	</div>
-</div>
 
 <?php 
 /*

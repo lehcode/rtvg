@@ -5,7 +5,7 @@
  * Frontpage menu
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: fp.xml,v 1.2 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: fp.xml,v 1.3 2013-04-03 18:18:05 developer Exp $
  */
  -->
 <config>
@@ -23,9 +23,9 @@
             <label>Премьеры недели</label>
             <route>default_listings_premieres-week</route>
         </premieresWeek> -->
-		<articles>
+		<!--<articles>
 			<label>Новости</label>
 			<route>default_content_blog</route>
-		</articles>
+		</articles>-->
 	</nav>
 </config>

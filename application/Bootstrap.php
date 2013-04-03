@@ -3,7 +3,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.27 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.28 2013-04-03 18:18:05 developer Exp $
  *
  */
 
@@ -27,13 +27,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		date_default_timezone_set( Zend_Registry::get( 'site_config' )->site->get( 'timezone', 'Europe/Moscow' ) );
 		
-		$db = $this->bootstrap( 'multidb' )->getResource( 'multidb' )->getDb( 'local' );
-		$db->setFetchMode( Zend_DB::FETCH_OBJ );
-		Zend_Registry::set( 'db_local', $db );
-		
-		$db = $this->bootstrap( 'multidb')->getResource( 'multidb' )->getDb( 'archive' );
-		$db->setFetchMode( Zend_DB::FETCH_OBJ );
-		Zend_Registry::set( 'db_archive', $db );
+		Zend_Registry::set( 'db_local', $this->getResource('multidb')->getDefaultDb() );
+		Zend_Registry::set( 'db_archive', $this->getResource('multidb')->getDb('archive') );
 		
 		Zend_Layout::startMvc();
 		
@@ -169,16 +164,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 		$this->bootstrap( 'view' );
 		$view = $this->getResource( 'view' );
+		
 		$view->addHelperPath( "ZendX/JQuery/View/Helper", "ZendX_JQuery_View_Helper" );
+		
 		$viewRenderer = new Zend_Controller_Action_Helper_ViewRenderer();
 		$viewRenderer->setView($view);
 		Zend_Controller_Action_HelperBroker::addHelper($viewRenderer);
-		$view->jQuery()->enable()
-			->setRenderMode( ZendX_JQuery::RENDER_ALL )
-			//->setCdnSsl(true) if need to load from ssl location
-			->setVersion('1.9.1') //jQuery version, automatically 1.5 = 1.5.latest
-			->setUiVersion('1.10.2') //jQuery UI version, automatically 1.8 = 1.8.latest
-			->uiEnable();
+		
+		
 	}
 	
 	/**
@@ -274,10 +267,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    	->prependFile( $view->baseUrl( 'js/less.min.js' ));
 	    
 	    if (APPLICATION_ENV=='development'){
-	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bootstrap.js' ));
-	    	//$view->headScript()->appendFile( $view->baseUrl( 'js/jquery-migrate-1.1.1.js' ));
+	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bs/base.js' ));
 	    } else {
-	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bootstrap.min.js' ));
+	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bs/base.min.js' ));
 	    }
 	    
 	    
@@ -297,6 +289,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    		->appendStylesheet( $view->baseUrl( 'css/fonts-ie.css' ));
 	    }
 	    
+	    $view->inlineScript()
+	    	->prependFile( $this->view->baseUrl('js/bs/alert.js') );
+	    
+	    
+	    //$view->addHelperPath( APPLICATION_PATH.'/../library/views/helpers/' );
+	    $view->addHelperPath( APPLICATION_PATH.'/views/helpers/', 'Rtvg_View_Helper');
 	}
 	
 	

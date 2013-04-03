@@ -17,6 +17,7 @@ class Rtvg_Message {
     const ERR_NO_AUTH = "Доступ запрещен";
     const ERR_NOT_FOUND = "Не найдено";
     const ERR_PORN_ENTRY = "Порно: ";
+    const ERR_VALIDATION_FAILED = "Неверный параметр!";
     const ERR_WRONG_ACTION = "Неверный Action";
     const ERR_WRONG_ALIAS="Неверный Alias";
     const ERR_WRONG_CONTROLLER = "Неверный контроллер";

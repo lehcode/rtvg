@@ -4,13 +4,14 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.26 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.27 2013-04-03 18:18:05 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
 	
 	const ALIAS_REGEX = '/^[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
 	const VIDEO_ALIAS_REGEX = '/^[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
+	const TITLE_REGEX = '/^[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-\s]+$/ui';
 	
 	protected $regexMessages = array( 
 		Zend_Validate_Regex::NOT_MATCH => "Название не указано или содержит неверные символы.",
@@ -132,20 +133,28 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							break;
 								
 							case 'search':
-								
-								$validators['id']	= array( new Zend_Validate_Regex( '/^[\w\d]+/u' ));
+								$validators['id'] = array( new Zend_Validate_Regex( '/^[\w\d]+/u' ));
 								$validators['alias'] = array( new Zend_Validate_Regex( self::VIDEO_ALIAS_REGEX ));
-								$filters['alias']	= 'StringToLower';
-								
+								$filters['alias'] = 'StringToLower';
+							break;
+
+							case 'alias':
+								$validators['t'] = array( new Zend_Validate_Regex( self::TITLE_REGEX ));
+								$filters['t'] = 'StringToLower';
+								$validators['format'] = array( new Zend_Validate_InArray( array('json', 'html') ) );
 							break;
 								
 							case 'new-comments':
-								$validators['format']  = array( new Zend_Validate_Regex('/^html|json$/'));
+								$validators['format'] = array( new Zend_Validate_Regex('/^html|json$/'));
 								$validators['channel'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
 							break;
 								
 							default:
-								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
+							    if (APPLICATION_ENV=='development'){
+							        throw new Zend_Exception( Rtvg_Message::ERR_VALIDATION_FAILED, 404);
+							    }
+							    throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
+								
 						}
 						
 					break;

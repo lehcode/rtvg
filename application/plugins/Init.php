@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Init.php,v 1.26 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: Init.php,v 1.27 2013-04-03 18:18:05 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -84,7 +84,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 				->throwExceptions( true );
 		}
 		
-		if (preg_match('/[^a-z0-9]+$/', $controllerName)){
+		if (preg_match('/[^a-z0-9%-]+$/', $controllerName)){
 			
 			if ($controllerName=='%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE' ||
 				$controllerName == '%25d0%25b2%25d0%25b8%25d0%25b4%25d0%25b5%25d0%25be'){
@@ -122,8 +122,6 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 					$controllerName=='img' ||
 					$controllerName=='css'){
 				throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404 );
-			} elseif ($controllerName=='%C3%91%E2%80%9A%C3%90%C2%B5%C3%90%C2%BB%C3%90%C2%B5%C3%90%C2%BF%C3%91%E2%82%AC%C3%90%C2%BE%C3%90%C2%B3%C3%91%E2%82%AC%C3%90%C2%B0%C3%90%C2%BC%C3%90%C2%BC%C3%90%C2%B0'){
-			    $request->setControllerName('listings');
 			} else {
 				throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404 );
 			}
@@ -164,17 +162,6 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	public function setRouter ($router) {
 
 		$this->_router = $router;
-	}
-	
-	protected function _initViewHelpers(){
-		
-		//Initialize and/or retrieve a ViewRenderer object on demand via the helper broker
-		$viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
-		$viewRenderer->initView();
-		 
-		//add the global helper directory path
-		$viewRenderer->view->addHelperPath(APPLICATION_PATH.'/../library/views/helpers/');
-		
 	}
 	
 	/**

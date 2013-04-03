@@ -3,7 +3,7 @@
  * Frontpage view script
  * 
  * @author  Antony Repin
- * @version $Id: index.phtml,v 1.9 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: index.phtml,v 1.10 2013-04-03 18:18:05 developer Exp $
  *
  */
 
@@ -37,7 +37,7 @@ $js = '$(document).ready(function($){
 	});
 });';
 $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( $js ) : $js ;
-$this->headScript()->appendScript( $js );
+$this->inlineScript()->appendScript( $js );
 
 ?>
 

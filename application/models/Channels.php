@@ -4,7 +4,7 @@
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: Channels.php,v 1.25 2013-04-03 04:08:16 developer Exp $
+ * @version    $Id: Channels.php,v 1.26 2013-04-03 18:18:05 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -139,14 +139,27 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 	}
 
-	public function getByTitle($alias=null){
+	/**
+	 * Get channel properties by channel title
+	 * 
+	 * @param  string $title
+	 * @throws Zend_Exception
+	 * @return Zend_Db_Table_Row
+	 */
+	public function getByTitle($title=null){
 		
-		if (!$alias)
-		throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		if (!$title) {
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
+		}
 		
-		$alias = Xmltv_String::strtolower($alias);
-		$result = $this->channelsTable->fetchRow(" `title` LIKE '$alias'");
+		$result = $this->channelsTable->fetchRow(" `title` LIKE '$title'");
 		$result->alias = Xmltv_String::strtolower($result->alias);
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($result);
+			//die(__FILE__.': '.__LINE__);	
+		}
+		
 		return $result;
 		
 	}

@@ -6,6 +6,8 @@ SetEnv APPLICATION_ENV development
 #php_flag display_errors on
 #php_value memory_limit 256M
 
+DirectoryIndex 503.php
+
 #AuthUserFile /home/web/.htpasswd
 #AuthName "Administration"
 #AuthType Basic
@@ -72,7 +74,7 @@ RewriteCond %{REQUEST_FILENAME} -s [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^.*$ - [NC,L]
-RewriteRule ^.*$ index.php [NC,L]
+RewriteRule ^.*$ 503.php [NC,L]
 
 
 
