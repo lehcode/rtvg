@@ -24,11 +24,6 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         	'-',
         	'Windows NT 6.1',
         	'Mozilla/5.0 (compatible; SearchBot)',
-        	'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2) Gecko/20100115 Firefox/3.6',
-        	'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.2.15) Gecko/20110303 Firefox/3.6.15',
-        	'Mozilla/5.0 (Windows NT 6.1; rv:12.0) Gecko/20100101 Firefox/12.0',
-        	'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
-        	'Mozilla/5.0 (X11; Linux i686; rv:6.0) Gecko/20100101 Firefox/6.0',
         );
         foreach ($badAgents as $bad){
         	if ($userAgent==$bad) {
@@ -45,6 +40,17 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         	'Epiphany/2.',
         	'SISTRIXCrawler',
         	'SearchBot',
+        	'Firefox/3.',
+        	'Firefox/4.',
+        	'Firefox/5.',
+        	'Firefox/6.',
+        	'Firefox/7.',
+        	'Firefox/8.',
+        	'Firefox/9.',
+        	'Firefox/10.',
+        	'Firefox/11.',
+        	'Firefox/12.',
+        	'Firefox/13.',
         );
         foreach ($badAgents as $string){
         	if (stristr($userAgent, $string)) {
