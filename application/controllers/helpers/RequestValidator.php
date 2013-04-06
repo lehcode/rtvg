@@ -4,14 +4,14 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.27 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.28 2013-04-06 22:35:03 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
 	
-	const ALIAS_REGEX = '/^[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
-	const VIDEO_ALIAS_REGEX = '/^[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
-	const TITLE_REGEX = '/^[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-\s]+$/ui';
+	const VIDEO_ALIAS_REGEX = '/^[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-]+$/ui';
+	const ALIAS_REGEX = '/^[\p{Cyrillic}\p{Latin}\d_-]+$/ui';
+	const TITLE_REGEX = '/^[\p{Cyrillic}\p{Latin}\d\s\(\)\.\+"-]+$/ui';
 	
 	protected $regexMessages = array( 
 		Zend_Validate_Regex::NOT_MATCH => "Название не указано или содержит неверные символы.",
@@ -29,6 +29,11 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 		
 		if (APPLICATION_ENV=='development'){
 			//var_dump( $this->getRequest()->getParams() );
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		if (isset($_GET['RTVG_PROFILE'])){
+			var_dump( $this->getRequest()->getParams() );
 			//die(__FILE__.': '.__LINE__);
 		}
 		
@@ -175,67 +180,54 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 									$cats[]=$c->alias;
 								}
 								$validators['category'] = array( new Zend_Validate_Regex( '/^('.implode('|', $cats).')$/u' ));
-								$validators['timespan'] = array( new Zend_Validate_Regex( '/^(сегодня|неделя)$/u' ));
+								$validators['timespan'] = array( new Zend_Validate_InArray( array('сегодня','неделя' ) ));
 								
 							break;
 							
 							case 'program-day':
-								
-								$validators['alias'] = array( new Zend_Validate_Regex( self::VIDEO_ALIAS_REGEX ));
-								if ($this->getRequest()->getParam('date')) {
-									$d = $this->getRequest()->getParam('date');
-									if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
-										$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')), 'presence'=>'required');
-									} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
-										$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd')), 'presence'=>'required');
-									} else{
-										$validators['date'] = array( new Zend_Validate_Regex( '/^(сегодня|неделя)$/u' ));
-									}
-								}
-								
+								$validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
+								$validators['date']  = array( new Zend_Validate_InArray( array('сегодня','неделя' ) ));
 							break;
 								
 							case 'program-week':
 								$validators['alias'] = array( new Zend_Validate_Regex( self::VIDEO_ALIAS_REGEX ));
-								if ($this->getRequest()->getParam('date')) {
-									$d = $this->getRequest()->getParam('date');
-									if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
-										$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')), 'presence'=>'required');
-									} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
-										$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd',)), 'presence'=>'required');
-									} else {
-										if ($d=='сегодня' || $d=='неделя') {
-											$validators['date'] = array( new Zend_Validate_Alpha(false) );
-										} else {
-											throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
-										}
-									}
-								}
-								
+								$validators['date'] = array( new Zend_Validate_Alpha(false) );
 							break;
 								
 							case 'day-date':
+							    $d = $this->getRequest()->getParam('date');
+							    if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
+							    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')));
+							    } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
+							    	$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd')));
+							    }
+							    $validators['date']['presence'] = 'required';
+							    
+							    $validators['channel'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
+							    
+							break;
+							
 							case 'day-listing':
 								
-								//if ($this->getRequest()->getParam('date')) {
-									$d = $this->getRequest()->getParam('date');
-									if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d))
-										$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')),
-											'presence'=>'required');
-									if (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d))
-										$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd')),
-											'presence'=>'required');
-
-								//}
-								
-								if ( null !== ($ts = $this->getRequest()->getParam('ts', null))) {
-									$validators['ts'] = array( new Zend_Validate_Digits());
+								$d = $this->getRequest()->getParam('date');
+								if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
+									$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')));
+								} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
+									$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd')));
 								}
-									
-								//$tz = $this->getRequest()->getParam('tz', null);
-								//if ($tz && $tz!=0 && !empty($tz)) {
-									$validators['tz'] = array( new Zend_Validate_Regex( '/^msk|-?[0-9]{1,2}$/' ));
-								//}
+								$validators['date']['presence'] = 'optional';
+
+								$validators['channel'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
+								
+								$validators['ts'] = array( new Zend_Validate_Digits(),
+									'presence'=>'optional'
+								);
+								
+								$tz = array();
+								for ($i = -12; $i<12; $i++){
+								    $tz[] = $i;
+								}
+								$validators['tz'] = array( new Zend_Validate_InArray($tz) );
 								
 							break;
 								
@@ -314,7 +306,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					    switch ($action){
 					    	
 					    	case 'article':
-					    	    $validators['content_cat']   = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
+					    	    $validators['category_id']   = array( new Zend_Validate_Digits() );
 					    	    $validators['article_alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
 					    	break;
 					        
@@ -323,12 +315,22 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					    	break;
 					    	
 					    	case 'blog':
+					    	    $validators['channel'] = array( new Zend_Validate_Digits() );
 					    	    break;
 					    	    
 				    	    default:
 				    	    	throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 					        
 					    }
+					break;
+					
+					case 'feed':
+					    $validators['channel'] = array(
+					    	new Zend_Validate_Int(),
+					        'presence'=>'required');
+						$validators['timespan'] = array( new Zend_Validate_InArray(array('неделя','сегодня')), 
+							'presence'=>'optional' );
+					    
 					break;
 
 					/*

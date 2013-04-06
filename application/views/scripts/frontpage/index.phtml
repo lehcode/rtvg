@@ -3,7 +3,7 @@
  * Frontpage view script
  * 
  * @author  Antony Repin
- * @version $Id: index.phtml,v 1.10 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: index.phtml,v 1.11 2013-04-06 22:35:04 developer Exp $
  *
  */
 
@@ -48,7 +48,7 @@ $this->inlineScript()->appendScript( $js );
 		foreach ($this->articles as $article){
 		    $w = floor(12/$this->articles_amt);
 		    $linkAttrHref = $this->url( array( 
-		    	'content_cat'=>$article['content_cat_alias'],
+		    	'category_id'=>$article['content_cat_id'],
 		    	'article_alias'=>$this->escape($article['alias'])), 'default_content_article' );
 		    ?>
 		    <div class="span<?php echo $w; ?> announce">

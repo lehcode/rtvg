@@ -3,14 +3,50 @@
  * Передачи сегодня
  * 
  * @author  Antony Repin
- * @version $Id: programlist.phtml,v 1.3 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: programlist.phtml,v 1.4 2013-04-06 22:35:04 developer Exp $
  *
  */
+
 
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
 $channelCat   = $this->escape( $this->channel['cat_title'] );
+
+
+//META title
+$this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на сегодня, %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
+//Browser window title
+$this->headTitle( sprintf ('Телепрограмма «%s» на сегодня', $channelTitle ) );
+
+
+//Generate keywords
+$kw = array($channelTitle, $this->listing_date->toString('d MMMM YYYY'));
+if (!empty($this->programs)) {
+	foreach ($this->programs as $p) {
+		if (count($kw)<5) {
+			if (!in_array($p['title'], $kw))
+				$kw[]= Xmltv_String::strtolower( htmlspecialchars( $p['title'], ENT_QUOTES, 'utf-8' ) );
+		}
+	}
+}
+$this->headMeta()->setName('keywords', implode(',', $kw) );
+
 ?>
+
+<?php
+/*
+ * Ссылка tinyurl
+ */ 
+?>
+<p>
+	<?php 
+	echo $this->escape( sprintf("Короткая ссылка на программу канала «%s»", $channelTitle) );
+	$linkAttrTitle = $this->escape( sprintf('Телепрограмма канала «%s» на каждый день', $channelTitle) );
+	?>
+	<a href="<?php echo $this->short_link ?>" title="<?php echo $linkAttrTitle; ?>" class="badge short-link" rel="alternate" target="_blank">
+		<?php echo $this->short_link; ?>
+	</a>
+</p>
 
 <div id="programlist" class="container-fluid">
 	<div class="pull-left span9">
@@ -57,7 +93,10 @@ $channelCat   = $this->escape( $this->channel['cat_title'] );
 		
 	<div class="item<?php echo $active; ?> span3">
 		
+		<?php if ($this->is_today): ?>
 		<span class="label"><?php echo $timespan; ?></span>
+		<?php endif; ?>
+		
 		<span class="start label label-info"><?php echo $prog['start']->toString('HH:mm') ?></span>
 		
 		<?php if (isset($prog['live']) && ($prog['live']===true)): ?>
@@ -95,24 +134,23 @@ $channelCat   = $this->escape( $this->channel['cat_title'] );
 				'timespan'=>'сегодня'), 'default_listings_program-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
 				<?php printf('%s, <strong>%s</strong> сегодня', $channelTitle, $prog['title']) ; ?>
 			</a></li>
-			<?php if (isset($prog['category_title']) && !empty($prog['category_title'])): ?>
+			<?php if (isset($prog['category_title']) && !empty($prog['category_title'])) {
+			    if ($this->is_today===true){
+			    ?>
 			<li><a href="<?php echo $this->url( array(
 				'category'=>$prog['category_alias'],
 				'timespan'=>'неделя'), 'default_listings_category'); ?>" title="Передачи на неделе">
 				<strong><?php echo $prog['category_title']; ?></strong> на этой неделе
 			</a>
 			</li>
+			<?php } ?>
 			<li><a href="<?php echo $this->url( array(
 				'category'=>$prog['category_alias'],
 				'timespan'=>'сегодня'), 'default_listings_category'); ?>" title="Передачи сегодня">
 				<strong><?php echo $prog['category_title']; ?></strong> сегодня
 			</a></li>
-		<?php endif; ?>
+		<?php } ?>
 		</ul>
-		
-		
-		
-		
 		
 		
 		
@@ -139,7 +177,7 @@ $channelCat   = $this->escape( $this->channel['cat_title'] );
 		 */
 		if ( isset($prog['desc']) && !empty($prog['desc'])) { ?>
 		<p class="desc">
-			<?php echo $this->truncateString( $this->escape( $prog['desc'] ), 30, 'words' ); ?>
+			<?php echo $this->escape( $prog['desc'] ); ?>
 		</p>
 		<?php } ?>
 		
@@ -182,7 +220,7 @@ $channelCat   = $this->escape( $this->channel['cat_title'] );
 	?>
 	</div>
 	
-	<div class="span3">
+	<div class="span3" class="sidebar">
 		<?php echo $this->adCode(array(
 			'w'=>300,
 			'h'=>300,
@@ -193,3 +231,42 @@ $channelCat   = $this->escape( $this->channel['cat_title'] );
 	</div>
 	
 </div>
+
+
+
+<?php
+/*
+ * Сылки Вчера, Завтра и Все каналы
+ */ 
+?>
+<ul id="daynav" class="nav nav-pills">
+	<li>
+		<?php 
+		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
+		$d->subDay(1);
+		if (APPLICATION_ENV=='development'){
+			//var_dump($this->listing_date->toString('dd-MM-YYYY'));
+			//var_dump($d->toString('dd-MM-YYYY'));
+		}
+		?>
+		<a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-YYYY')), 'default_listings_day-date') ?>"
+			class="btn"
+			title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-YYYY') ?>">Вчера</a>
+	</li>
+	<li>
+		<a href="<?php echo $this->url(array(), 'default_channels_list') ?>" class="btn" title="Все телеканалы">Все каналы</a>
+	</li>
+	<li>
+		<?php 
+		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
+		$d->addDay(1);
+		if (APPLICATION_ENV=='development'){
+			//var_dump($d->toString('dd-MM-YYYY'));
+		}
+		?>
+		<a href="<?php echo $this->url(array( 'channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
+			class="btn"
+			title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-yyyy') ?>">Завтра</a>
+	</li>
+	
+</ul>

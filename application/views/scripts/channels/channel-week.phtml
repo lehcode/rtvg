@@ -3,7 +3,7 @@
  * Week listing script for channel
  *
  * @uses Zend_Db_Table_Abstract
- * @version $Id: channel-week.phtml,v 1.9 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: channel-week.phtml,v 1.10 2013-04-06 22:35:03 developer Exp $
  */
 
 $this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на неделю c %s по %s ', $this->channel['title'], $this->week_start->toString('EEEE, d MMMM'), $this->week_end->toString('EEEE, d MMMM')));
@@ -11,12 +11,6 @@ $this->headMeta()->setName('keywords', sprintf ('телепрограмма,%s,�
 
 $this->headTitle( sprintf ('Программа телеканала «%s» на неделю с %s по %s', $this->channel['title'], $this->week_start->toString('d MMMM'), $this->week_end->toString('d MMMM yyyy')));
 
-$this->inlineScript()
-	->prependFile( "js/bs/transition.js" )
-	->prependFile( "js/bs/tab.js" );
-//$css = '.nav-tabs > li > a { font-size: 0.8em; padding: 9px 6px; font-weight: bold; }
-//#programslist { border: none; }';
-//$this->headStyle()->appendStyle($css);
 $channelAlias = $this->escape( $this->channel['alias'] );
 $channelDesc  = $this->escape( $this->truncateString( $this->channel['desc_body'], 100, 'words' ));
 ?>
@@ -37,16 +31,23 @@ $channelDesc  = $this->escape( $this->truncateString( $this->channel['desc_body'
 
 <a class="btn btn-mini btn-primary" href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing' ) ?>" 
 	title="<?php printf( 'Программа %s на сегодня, %s', $this->channel['title'] , Zend_Date::now()->toString('EEEE, d MMMM yyyy')) ?>">
-	<?php printf("Передачи %s сегодня", $this->channel['title']); ?>
+	<?php printf("Передачи канала «%s» сегодня", $this->channel['title']); ?>
 </a>
 
 <div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
 
 
+<?php 
+//var_dump($this->headStyle()->getContainer());
+//die(__FILE__.': '.__LINE__);
+$this->inlineScript()
+	->prependScript("$(function(){
+	$('#programlist').tabs({ collapsible: false });
+});");
+?>
+<div class="week-list container-fluid" id="programlist">
 
-<div class="week_list tabbable" id="programslist">
-
-	<ul class="nav nav-tabs" id="days_tabs">
+	<ul class="nav nav-pills" id="days-tabs">
 	<?php 
 	$i=0;
 	foreach ($this->days as $timestamp=>$programs) {
@@ -65,75 +66,43 @@ $channelDesc  = $this->escape( $this->truncateString( $this->channel['desc_body'
 	?>
 	</ul>
 	
-	<div class="tab-content">
-	<?php
-	$i=0;
+	<?php 
 	foreach ($this->days as $timestamp=>$programs) {
-	    
-		$date = new Zend_Date($timestamp, Zend_Date::TIMESTAMP, 'ru');
-		$dayId = $date->toString(Zend_Date::WEEKDAY_DIGIT);
-		$class = (Zend_Date::now()->toString('DDD')==$date->toString('DDD')) ? 'tab-pane active' : 'tab-pane';
-		?>
-		<div id="<?php echo "day$dayId" ?>" class="<?php echo $class; ?>">
-		
-		<h3>
-			<?php echo Xmltv_String::ucfirst( $date->toString('EEEE, d MMMM yyyy')) ?>
-		</h3>
-		
-		<?php 
-		foreach ($programs as $k=>$prog) {
-		    $title = $prog['title'];
-		    $alias = $prog['alias'];
-		    $start = $prog['start'];
-		    $end   = $prog['end'];
-		    $subTitle = empty($prog['sub_title']) ? null : $prog['sub_title'];
-		    ?>
-			
-		<div class="item<?php echo $start->toString('U'); ?> programdiv">
-			<table class="table">
-			
-			<div class="program list">
-				
-				<p class="start">
-					<span class="start_time"><?php echo $start->toString('HH:mm') ?></span>
-				</p>
-				
-				<div class="info">
-					<h4>
-						<a href="<?php echo $this->url( array(
-							'channel'=>$this->channel['alias'],
-							'date'=>$date->toString('dd-MM-yyyy')), 'default_listings_day-date' ); ?>">
-							<?php echo $title; ?>
-						</a>
-					</h4>
-					
-					<?php if (!empty($prog['desc'])) : ?>
-					<p class="desc">
-						<?php echo $this->escape($prog['desc']); ?>
-					</p>
-					<?php endif;  ?>
-					
-				</div>
-				
-				<?php if ($subTitle) : ?>
-				<p class="subtitle"><?php echo $subTitle ?></p>
-				<?php endif; ?>
-				
-				<p class="end">
-					<span class="end_time"><?php echo $end->toString('HH:mm') ?></span>
-				</p>
-			</div>
-			
-			</table>
-		</div>
-		
-		<?php 
-		}
-		$i++;
-		?>
-		</div>
-		<?php 
+	    $date = new Zend_Date( $timestamp, Zend_Date::TIMESTAMP );
+	    $dayId = $date->toString(Zend_Date::WEEKDAY_DIGIT);
+	    ?>
+	    <table class="table day" id="<?php echo "day$dayId" ?>">
+	    	<caption><?php echo Xmltv_String::ucfirst( $date->toString('EEEE, d MMMM yyyy')); ?></caption>
+	    	<tbody>
+	    		<?php foreach ($programs as $k=>$prog) {
+	    		    $programTitle = $this->escape($prog['title']);
+	    		    $programAlias = $this->escape($prog['alias']);
+					$linkAttrHref = $this->url( array(
+						'channel'=>$this->escape($this->channel['alias']),
+						'alias'=>$programAlias), 'default_listings_program-week' 
+					);
+					$linkAttrTitle = sprintf("«%s на этой неделе»", $programTitle);
+					?>
+	    		<tr>
+	    			<td><?php echo $prog['start']->toString("HH:mm"); ?></td>
+	    			<td><a href="<?php echo $linkAttrHref ?>">
+	    				<?php echo $programTitle; ?></a>
+	    				<span class="label"><?php echo (isset($prog['category_title_single']) && !empty($prog['category_title_single'])) ? $prog['category_title_single'].' ' : '' ; ?></span>
+	    			</td>
+	    		</tr>
+	    			<?php if (!empty($prog['desc'])) { ?>
+	    			<tr>
+	    				<td>&nbsp;</td>
+	    				<td><?php echo $this->escape( $prog['desc'] ); ?></td>
+	    			</tr>
+	    			<?php
+					} ?>
+	    		<?php } ?>
+	    	</tbody>
+	    </table>
+	    <?php 
 	}
 	?>
-	</div>
+	
+	</table>
 </div>

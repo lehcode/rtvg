@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.29 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: VideosController.php,v 1.30 2013-04-06 22:35:03 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -44,244 +44,239 @@ class VideosController extends Rtvg_Controller_Action
 	 */
 	public function showVideoAction(){
 		
+		parent::validateRequest();
 		
-		if ( parent::validateRequest()){
-			
-			$this->view->assign( 'pageclass', 'show-video' );
-			$conf = Zend_Registry::get('site_config')->videos->get('related');
-			$ytConfig=array(
-				'max_results' => (int)$conf->get('amount'),
-				'safe_search' => $conf->get('safe_search'),
-				'start_index' => (int)$conf->get('start_index'),
-			);
-			
-			$youtube	 = new Xmltv_Youtube($ytConfig);
-			$rtvgId = $this->input->getEscaped('id');
+		$this->view->assign( 'pageclass', 'show-video' );
+		$conf = Zend_Registry::get('site_config')->videos->get('related');
+		$ytConfig=array(
+			'max_results' => (int)$conf->get('amount'),
+			'safe_search' => $conf->get('safe_search'),
+			'start_index' => (int)$conf->get('start_index'),
+		);
+		
+		$youtube = new Xmltv_Youtube($ytConfig);
+		$rtvgId = $this->input->getEscaped('id');
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($rtvgId);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
+		if ($rtvgId) {
+		    
+		    $ytId = Xmltv_Youtube::decodeRtvgId( $rtvgId );
 			
 			if (APPLICATION_ENV=='development'){
+				//var_dump($this->cache->enabled);
+				//var_dump(parent::$videoCache);
 				//var_dump($rtvgId);
+				//var_dump($ytId);
 				//die(__FILE__.': '.__LINE__);
 			}
 			
-			if ($rtvgId) {
-			    
-			    $ytId = Xmltv_Youtube::decodeRtvgId( $rtvgId );
+			
+			/*
+			 * ################################################################################
+			 * Try to load current video from cache 
+			 * or fetch it from youtube.com if not found
+			 * in either database or file cache
+			 * ################################################################################
+			 */
+			if ($this->cache->enabled){
+			
+			    $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->main->get( 'lifetime' );
+			    $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
+				$this->cache->setLocation(ROOT_PATH.'/cache');
+				$f = '/Youtube/ShowVideo/Main';
+				$hash = Rtvg_Cache::getHash( $ytId );
 				
 				if (APPLICATION_ENV=='development'){
-					//var_dump($this->cache->enabled);
-					//var_dump(parent::$videoCache);
-					//var_dump($rtvgId);
-					//var_dump($ytId);
-					//die(__FILE__.': '.__LINE__);
+				    //var_dump(parent::$videoCache);
+				    //var_dump($this->isAllowed);
 				}
 				
-				
-				/*
-				 * ################################################################################
-				 * Try to load current video from cache 
-				 * or fetch it from youtube.com if not found
-				 * in either database or file cache
-				 * ################################################################################
-				 */
-				if ($this->cache->enabled){
-				
-				    $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->main->get( 'lifetime' );
-				    $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
-					$this->cache->setLocation(ROOT_PATH.'/cache');
-					$f = '/Youtube/ShowVideo/Main';
-					$hash = Rtvg_Cache::getHash( $ytId );
-					
-					if (APPLICATION_ENV=='development'){
-					    //var_dump(parent::$videoCache);
-					    //var_dump($this->isAllowed);
-					}
-					
-					if (parent::$videoCache && $this->isAllowed){
-					    
-					    // Search in database cache if was not found in file cache
-					    // and if database cache is enabled
-					    if (($mainVideo = $this->vCacheModel->getVideo($rtvgId))===false){
-					        
-							// Try to load main video data from file cache
-							if (($mainVideo = $this->cache->load( $hash, 'Core', $f))==false){
-					    		
-							    // Search Youtube service for video
-					            if (false === ($ytEntry = $youtube->fetchVideo( $ytId ))) {
-					                // Video was not found at youtube
-					                $this->view->assign('hide_sidebar', 'right');
-					                return $this->render('video-not-found');
-					            } 
-					            
-					            if (false === ($mainVideo = $this->videosModel->parseYtEntry( $ytEntry))) {
-					                $this->view->assign('hide_sidebar', 'right');
-					                return $this->render('video-not-found');
-					            }
-					            
-					            $this->cache->save( $mainVideo, $hash, 'Core', $f);
-					            
-					        }
-					    }
-					    
-					    if ($mainVideo){
-						    if (parent::$videoCache===true){
-						        if (APPLICATION_ENV=='development'){
-						            //var_dump($mainVideo);
-						            //die(__FILE__.': '.__LINE__);
-						        }
-								$this->vCacheModel->saveMainVideo($mainVideo);
-							}
-					    }
-						
-					} else {
-					    
-						if (false === ($mainVideo = $this->cache->load( $hash, 'Core', $f))){
-					    		
+				if (parent::$videoCache && $this->isAllowed){
+				    
+				    // Search in database cache if was not found in file cache
+				    // and if database cache is enabled
+				    if (($mainVideo = $this->vCacheModel->getVideo($rtvgId))===false){
+				        
+						// Try to load main video data from file cache
+						if (($mainVideo = $this->cache->load( $hash, 'Core', $f))==false){
+				    		
 						    // Search Youtube service for video
 				            if (false === ($ytEntry = $youtube->fetchVideo( $ytId ))) {
-				                
 				                // Video was not found at youtube
 				                $this->view->assign('hide_sidebar', 'right');
 				                return $this->render('video-not-found');
-				            }
+				            } 
 				            
 				            if (false === ($mainVideo = $this->videosModel->parseYtEntry( $ytEntry))) {
 				                $this->view->assign('hide_sidebar', 'right');
-				            	return $this->render('video-not-found');
+				                return $this->render('video-not-found');
 				            }
 				            
 				            $this->cache->save( $mainVideo, $hash, 'Core', $f);
 				            
 				        }
-					    
-					}
-					 
+				    }
+				    
+				    if ($mainVideo){
+					    if (parent::$videoCache===true){
+					        if (APPLICATION_ENV=='development'){
+					            //var_dump($mainVideo);
+					            //die(__FILE__.': '.__LINE__);
+					        }
+							$this->vCacheModel->saveMainVideo($mainVideo);
+						}
+				    }
+					
 				} else {
-				
-					if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
-						$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
-					} else {
-						return $this->render('video-not-found');
-						//return true;
-					}
-				
+				    
+					if (false === ($mainVideo = $this->cache->load( $hash, 'Core', $f))){
+				    		
+					    // Search Youtube service for video
+			            if (false === ($ytEntry = $youtube->fetchVideo( $ytId ))) {
+			                
+			                // Video was not found at youtube
+			                $this->view->assign('hide_sidebar', 'right');
+			                return $this->render('video-not-found');
+			            }
+			            
+			            if (false === ($mainVideo = $this->videosModel->parseYtEntry( $ytEntry))) {
+			                $this->view->assign('hide_sidebar', 'right');
+			            	return $this->render('video-not-found');
+			            }
+			            
+			            $this->cache->save( $mainVideo, $hash, 'Core', $f);
+			            
+			        }
+				    
+				}
+				 
+			} else {
+			
+				if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
+					$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
+				} else {
+					return $this->render('video-not-found');
+					//return true;
+				}
+			
+			}
+			
+			if (APPLICATION_ENV=='development'){
+			    //var_dump($mainVideo);
+			    //die(__FILE__.': '.__LINE__);
+			}
+			
+			$this->view->assign( 'main_video', $mainVideo );
+			
+			
+			/*
+			 * ################################################################################
+			 * Try to load related videos list from cache 
+			 * or fetch it from youtube.com if not found
+			 * in either database or file cache
+			 * ################################################################################
+			 */
+			$relatedAmt = (int)Zend_Registry::get('site_config')->videos->related->get('amount');
+			$relatedVideos = array();
+			
+			if ($this->cache->enabled){
+			
+				$this->cache->setLifetime( 86400 );
+				$f = '/Youtube/ShowVideo/Related';
+				$hash = Rtvg_Cache::getHash( 'related_'.$ytId);
+			
+				// Try to load videos from file cache
+				if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
+					$relatedVideos = $cached;
+				} else {
+					
+				    // If was not found in file cache
+				    $relatedVideos = false;
+				    
+				    // If DB cache is enabled
+				    if ($this->isAllowed){
+				        // Try to search DB cache
+				        if (($cached = $this->videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
+				        	$relatedVideos = $cached;
+				        }
+				    }
+				    
+				    // If was not found in DB cache either
+				    if ($relatedVideos===false){
+				        
+						// Try to load related videos list from youtube
+						if (($ytRelated = $youtube->fetchRelated( $ytId ))!==false) {
+							foreach ($ytRelated as $ytEntry){
+								if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
+									if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>=256)) {
+									    if (parent::$videoCache===true){
+											$this->vCacheModel->saveRelatedVideo($ytEntry, $ytId);
+									    }
+										$relatedVideos[] = $parsed;
+									}
+								}
+							}
+							
+							$this->cache->save( $relatedVideos, $hash, 'Core', $f);
+							
+						} else {
+						    $relatedVideos = null;
+						}
+				    }
+			
 				}
 				
 				if (APPLICATION_ENV=='development'){
-				    //var_dump($mainVideo);
-				    //die(__FILE__.': '.__LINE__);
+					//var_dump($relatedVideos);
+					//die(__FILE__.': '.__LINE__);
 				}
-				
-				$this->view->assign( 'main_video', $mainVideo );
-				
-				
-				/*
-				 * ################################################################################
-				 * Try to load related videos list from cache 
-				 * or fetch it from youtube.com if not found
-				 * in either database or file cache
-				 * ################################################################################
-				 */
-				$relatedAmt = (int)Zend_Registry::get('site_config')->videos->related->get('amount');
-				$relatedVideos = array();
-				
-				if ($this->cache->enabled){
-				
-					$this->cache->setLifetime( 86400 );
-					$f = '/Youtube/ShowVideo/Related';
-					$hash = Rtvg_Cache::getHash( 'related_'.$ytId);
-				
-					// Try to load videos from file cache
-					if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
-						$relatedVideos = $cached;
-					} else {
-						
-					    // If was not found in file cache
-					    $relatedVideos = false;
-					    
-					    // If DB cache is enabled
-					    if ($this->isAllowed){
-					        // Try to search DB cache
-					        if (($cached = $this->videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
-					        	$relatedVideos = $cached;
-					        }
-					    }
-					    
-					    // If was not found in DB cache either
-					    if ($relatedVideos===false){
-					        
-							// Try to load related videos list from youtube
-							if (($ytRelated = $youtube->fetchRelated( $ytId ))!==false) {
-								foreach ($ytRelated as $ytEntry){
-									if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
-										if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>=256)) {
-										    if (parent::$videoCache===true){
-												$this->vCacheModel->saveRelatedVideo($ytEntry, $ytId);
-										    }
-											$relatedVideos[] = $parsed;
-										}
-									}
-								}
-								
-								$this->cache->save( $relatedVideos, $hash, 'Core', $f);
-								
-							} else {
-							    $relatedVideos = null;
-							}
-					    }
-				
-					}
-					
-					if (APPLICATION_ENV=='development'){
-						//var_dump($relatedVideos);
-						//die(__FILE__.': '.__LINE__);
-					}
-				
-				} else {
-				
-					$ytRelated = $youtube->fetchRelated( $ytId );
-					foreach ($ytRelated as $ytEntry){
-						if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
-							if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
-								$relatedVideos[] = $parsed;
-							}
+			
+			} else {
+			
+				$ytRelated = $youtube->fetchRelated( $ytId );
+				foreach ($ytRelated as $ytEntry){
+					if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
+						if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
+							$relatedVideos[] = $parsed;
 						}
 					}
-				
 				}
-				
-				$this->view->assign( 'related_videos', $relatedVideos );
-				
-			} else {
-				$this->view->assign( 'main_video', null );
-				$this->view->assign( 'related_videos', null );
+			
 			}
 			
+			$this->view->assign( 'related_videos', $relatedVideos );
 			
-			/*
-			 * #####################################################################
-			 * Данные для модуля самых популярных программ
-			 * #####################################################################
-			 */
-			$top = $this->topPrograms();
-			$this->view->assign('top_programs', $top);
-			
-			/*
-			 * #####################################################################
-			 * Данные для модуля категорий каналов
-			 * #####################################################################
-			 */
-			$this->view->assign('channels_cats', $this->getChannelsCategories());
-
-			/*
-			 * #####################################################################
-			 * Данные для модуля популярных каналов
-			 * #####################################################################
-			 */
-			$this->view->assign('featured_channels', $this->getFeaturedChannels(36));
-			
+		} else {
+			$this->view->assign( 'main_video', null );
+			$this->view->assign( 'related_videos', null );
 		}
 		
 		
+		/*
+		 * #####################################################################
+		 * Данные для модуля самых популярных программ
+		 * #####################################################################
+		 */
+		$top = $this->topPrograms();
+		$this->view->assign('top_programs', $top);
+		
+		/*
+		 * #####################################################################
+		 * Данные для модуля категорий каналов
+		 * #####################################################################
+		 */
+		$this->view->assign('channels_cats', $this->getChannelsCategories());
+
+		/*
+		 * #####################################################################
+		 * Данные для модуля популярных каналов
+		 * #####################################################################
+		 */
+		$this->view->assign('featured_channels', $this->getFeaturedChannels(36));
 		
 	}
 	

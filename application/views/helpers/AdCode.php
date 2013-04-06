@@ -2,7 +2,7 @@
 /**
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: AdCode.php,v 1.2 2013-04-03 18:18:17 developer Exp $
+ * @version $Id: AdCode.php,v 1.3 2013-04-06 22:35:15 developer Exp $
  *
  */
 class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
@@ -39,13 +39,13 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
 		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/79544c6f7643631d20751ebfd6fcfa/">
 		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/79544c6f7643631d20751ebfd6fcfa/" alt="MTC " />
 		</a><!-- /admitad.banner -->';
-		$codes['yonamart-1']['code'] = '<!-- admitad.banner: dca505b41143631d207580091d146b Yonamart -->
-		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/dca505b41143631d207580091d146b/">
-		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/dca505b41143631d207580091d146b/" alt="Yonamart" />
+		$codes['urban-rivals-ru-1']['code'] = '<!-- admitad.banner: e71e4f518243631d2075e35220f679 Urban Rivals RU -->
+		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/e71e4f518243631d2075e35220f679/">
+		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/e71e4f518243631d2075e35220f679/" alt="Urban Rivals RU" />
 		</a><!-- /admitad.banner -->';
-		$codes['yonamart-2']['code'] = '<!-- admitad.banner: 4488a5396543631d207580091d146b Yonamart -->
-		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/4488a5396543631d207580091d146b/">
-		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/4488a5396543631d207580091d146b/" alt="Yonamart" />
+		$codes['urban-rivals-ru-2']['code'] = '<!-- admitad.banner: eadcad53b343631d2075e35220f679 Urban Rivals RU -->
+		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/eadcad53b343631d2075e35220f679/">
+		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/eadcad53b343631d2075e35220f679/" alt="Urban Rivals RU" />
 		</a><!-- /admitad.banner -->';
 		$codes['bs-ru-1']['code'] = '<!-- admitad.banner: df1f1510ae43631d2075baff29a610 BS.ru -->
 		<script type="text/javascript"> 
@@ -121,6 +121,7 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
 		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/e602fa22d543631d2075d908a9ba75/">
 		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/e602fa22d543631d2075d908a9ba75/" alt="Boutique - RU" />
 		</a><!-- /admitad.banner -->';
+		/*
 		$codes['boutique-ru-2']['code'] = '<!-- admitad.banner: c6903584ec43631d2075d908a9ba75 Boutique - RU -->
 		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/c6903584ec43631d2075d908a9ba75/">
 		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/c6903584ec43631d2075d908a9ba75/" alt="Boutique - RU" />
@@ -129,12 +130,13 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
 		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/0bcb69f36f43631d2075d908a9ba75/">
 		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/0bcb69f36f43631d2075d908a9ba75/" alt="Boutique - RU" />
 		</a><!-- /admitad.banner -->';
+		*/
 		
 		switch ($this->output){
 			default:
 			case 'random':
 			    $keys = array_keys($codes);
-			    $rand = rand(0, count($keys)-1);
+			    $rand = mt_rand(0, count($keys)-1);
 			    $idx  = $keys[$rand];
 			    $html = '<div class="module '.$this->moduleclass.'">'.$codes[$idx]['code'].'</div>';
 			break;
@@ -145,7 +147,7 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
 					$html='';
 					do {
 					    $keys = array_keys($codes);
-					    $rand = rand( 0, count($keys)-1 );
+					    $rand = mt_rand( 0, count($keys)-1 );
 					    $idx  = $keys[$rand];
 					    $html .= '<div class="module '.$this->moduleclass.'">'.$codes[$idx]['code'].'</div>'.PHP_EOL;
 					    $amt-=1;

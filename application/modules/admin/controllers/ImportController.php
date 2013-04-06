@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: ImportController.php,v 1.25 2013-04-03 04:08:16 developer Exp $
+ * @version    $Id: ImportController.php,v 1.26 2013-04-06 22:35:03 developer Exp $
  *
  */
 class Admin_ImportController extends Rtvg_Controller_Admin
@@ -398,10 +398,9 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			// Check data validity
 			$logger = $this->getLog();
 			if (!isset($prog->alias) || empty($prog->alias)){
-				echo "Wrong parse!";
-				$msg = $node->getElementsByTagName('title')->item(0)->nodeValue."\n".Zend_Debug::dump($parsed);
+				$msg = "Wrong parse!".$node->getElementsByTagName('title')->item(0)->nodeValue."\n".Zend_Debug::dump($parsed);
 				if ($logger) {
-				    $logger->log( $e->getTraceAsString(), Zend_Log::DEBUG );
+				    $logger->log( $msg, Zend_Log::DEBUG );
 				}
 				continue;
 			} else {

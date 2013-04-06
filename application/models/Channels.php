@@ -3,8 +3,7 @@
  * Frontend channels model
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
- * @version    $Id: Channels.php,v 1.26 2013-04-03 18:18:05 developer Exp $
+ * @version    $Id: Channels.php,v 1.27 2013-04-06 22:35:03 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -31,8 +30,15 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
      * 
      * @var Xmltv_Model_DbTable_ChannelsCategories
      */
-    protected $catgeoriesTable;
+    protected $channelsCategoriesTable;
 
+    /**
+     * 
+     * @var Xmltv_Model_DbTable_ProgramsCategories
+     */
+    protected $programsCategoriesTable;
+
+    
     public function __construct($config=array()){
         
         if (empty($config)){
@@ -41,7 +47,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         parent::__construct($config);
         $this->channelsTable = new Xmltv_Model_DbTable_Channels();
         $this->ratingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
-        $this->categoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
+        $this->programsCategoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+        $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
         $this->commentsTable = new Xmltv_Model_DbTable_ChannelsComments();
         
     }
@@ -87,7 +94,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function getByAlias($alias=null){
 		
-	    $categoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
 	    $select = $this->db->select()
 			->from( array('ch'=>$this->channelsTable->getName()), array(
 				'id',
@@ -110,7 +116,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 			))
 			->where( "`ch`.`alias` LIKE '$alias'")
 			->where( "`ch`.`published`='1'")
-			->joinLeft( array('cat'=>$categoriesTable->getName()), '`ch`.`category`=`cat`.`id`', array(
+			->joinLeft( array('cat'=>$this->channelsCategoriesTable->getName()), '`ch`.`category`=`cat`.`id`', array(
 				'category_title'=>'cat.title',
 				'category_alias'=>'LOWER(`cat`.`alias`)',
 				'category_image'=>'cat.image')
@@ -166,8 +172,9 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 
 	public function getById($id=null){
 		
-		if (!$id)
+		if (!$id) {
 			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		}
 		
 		$result = $this->channelsTable->fetchRow("`id`='$id'")->toArray();
 		$result['alias'] = Xmltv_String::strtolower($result['alias']);
@@ -287,23 +294,28 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    do{
 	    	$select = $this->db->select()
 	    	->from( array( 'prog'=>$this->programsTable->getName()), array(
-	    			'title',
-	    			'sub_title',
-	    			'alias',
-	    			'start',
-	    			'end',
-	    			'episode_num',
-	    			'hash'
+	    		'title',
+	    		'sub_title',
+	    		'alias',
+	    		'start',
+	    		'end',
+	    		'episode_num',
+	    		'hash'
 	    	))
 	    	->joinLeft( array( 'ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
-	    			'channel_id'=>'id',
-	    			'channel_title'=>'title',
-	    			'channel_alias'=>'alias'))
-	    			->where("`prog`.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00'")
-	    			->where("`prog`.`start` < '".$start->toString('yyyy-MM-dd')." 23:59'")
-	    			->where("`prog`.`channel` = '".$channel['id']."'")
-	    			->where("`ch`.`published` = '1'")
-	    			->order("prog.start", "ASC");
+	    		'channel_id'=>'id',
+	    		'channel_title'=>'title',
+	    		'channel_alias'=>'alias'))
+	    	->joinLeft( array( 'pc'=>$this->programsCategoriesTable->getName()), "`prog`.`category`=`pc`.`id`", array(
+	    		'category_id'=>'id',
+	    		'category_title'=>'title',
+	    		'category_title_single'=>'title_single',
+	    		'category_alias'=>'alias'))
+    		->where("`prog`.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00'")
+    		->where("`prog`.`start` < '".$start->toString('yyyy-MM-dd')." 23:59'")
+    		->where("`prog`.`channel` = '".$channel['id']."'")
+    		->where("`ch`.`published` = '1'")
+    		->order("prog.start", "ASC");
 	    		
 	    	if (APPLICATION_ENV=='development'){
 	    		parent::debugSelect($select, __METHOD__);

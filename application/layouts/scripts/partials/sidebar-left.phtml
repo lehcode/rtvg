@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-left.phtml,v 1.13 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: sidebar-left.phtml,v 1.14 2013-04-06 22:35:03 developer Exp $
  *
  */
 ?>
@@ -13,16 +13,16 @@
 if (isset($this->announces) && ($this->announces!==false)  && ($this->show_announces===true)) { ?>
 <div class="module">
 	<ul class="nav nav-pills nav-list">
-    <?php foreach ($this->announces as $article){ 
-        $linkAttrHref = $this->url( array(
-        	'content_cat'=>$article->content_cat_alias,
-        	'article_alias'=>$this->escape($article->alias)), 'default_content_article' );
-        ?>
-    	<li><a href="<?php echo $linkAttrHref; ?>" title="<?php printf( "%s новости", $article->content_cat_title ); ?>"><?php echo $article->title; ?></a></li>  
-    <?php } ?>
-    </ul>
-</div>    
-    <?php 
+	<?php foreach ($this->announces as $article){ 
+		$linkAttrHref = $this->url( array(
+			'category_id'=>$article->content_cat_id,
+			'article_alias'=>$this->escape($article->alias)), 'default_content_article' );
+		?>
+		<li><a href="<?php echo $linkAttrHref; ?>" title="<?php printf( "%s новости", $article->content_cat_title ); ?>"><?php echo $article->title; ?></a></li>  
+	<?php } ?>
+	</ul>
+</div>	
+	<?php 
 }
 
 ?>
@@ -31,17 +31,16 @@ if (isset($this->announces) && ($this->announces!==false)  && ($this->show_annou
 /*
  * Channels categories block
  */ 
-if (isset($this->cats) && !empty($this->cats)) {
-    ?>
-<div class="module">
-	<?php /*<h4>Каналы</h4>*/ ?>
+if (isset($this->channels_categories) && !empty($this->channels_categories)) {
+	?>
+<div class="module categories">
 	<ul id="channels_categories" class="nav nav-list">
 	<?php 
-	foreach ($this->cats as $c) {
-		$catAlias = $this->escape( $c['alias'] );
-		$catTitle = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
-		$imgAttrAlt =  $this->escape( $c['title'] ).' лого';
-		$imgAttrSrc =  $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] ));
+	foreach ($this->channels_categories as $c) {
+		$catAlias	 = $this->escape( $c['alias'] );
+		$catTitle	 = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
+		$imgAttrAlt   = $this->escape( $c['title'] ).' лого';
+		$imgAttrSrc   = $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] ));
 		$linkAttrHref = $this->url(array('category'=>$catAlias), 'default_channels_category' );
 		?>
 		<li><a href="<?php echo $linkAttrHref ?>" target="_blank">
@@ -68,13 +67,13 @@ if (isset($this->top_programs) && !empty($this->top_programs)) {
 	<ul id="program-top">
 		<?php 
 		foreach ($this->top_programs as $prog){
-		    
-		    if (APPLICATION_ENV=='development'){
-			    //var_dump($prog);
-			    //die(__FILE__.': '.__LINE__);
-		    }
-		    
-		    ?>
+			
+			if (APPLICATION_ENV=='development'){
+				//var_dump($prog);
+				//die(__FILE__.': '.__LINE__);
+			}
+			
+			?>
 		<li>
 			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$prog['channel_icon'] ) ?>" width="16" />
 			<a href="<?php echo $this->url( array('channel'=>$prog['channel_alias'], 'alias'=>$prog['alias']), 'default_listings_program-week'); ?>"
@@ -92,4 +91,77 @@ if (isset($this->top_programs) && !empty($this->top_programs)) {
 }
 ?>
 
+
+
+<?php 
+if (isset($this->comments)) {
+	
+	if (APPLICATION_ENV=='development'){
+		//var_dump($this->comments);
+		//die(__FILE__.': '.__LINE__);
+	}
+	
+?>
+<div class="module" id="comments">
+
+	<h4><?php echo $this->escape( sprintf('В блогах  про %s', $this->channel['title']) ); ?></h4>
+	
+		<?php
+		if (isset($this->comments) && (bool)$this->comments!==false) {
+			
+		    foreach ($this->comments as $comment) {
+				if (APPLICATION_ENV=='development'){
+					//var_dump($comment);
+					//die(__FILE__.': '.__LINE__);
+				}
+				?>
+			
+		<div>
+			
+			<?php /* if (!empty($comment['title'])) : ?>
+			<div class="summary"><?php echo $comment['title'] ?></div>
+			<?php endif; */ ?>
+			
+			
+			<?php if (!empty($comment['author'])) : ?>
+			<div class="author">
+				<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
+					<small><?php echo $comment['author'] ?></small>
+				</a>
+			</div>
+			<?php endif; ?>
+			
+			
+			<?php 
+			/* if (!empty($comment['date_created'])) { ?>
+			<div class="date">
+				<?php echo $comment['date_created']->toString('EEEE, dd MMM yyyy hh:mm'); ?>
+				<span property="v:dtreviewed" content="<?php echo $comment['date_created']->toString('yyyy-MM-dd') ?>">
+			</div>
+			<?php 
+			} */ 
+			?>
+			
+			
+			<p class="description">
+				<?php 
+				$desc =  str_ireplace( $this->channel['title'], '<em>'.$this->channel['title'].'</em>', $comment['intro']);
+				echo $this->truncateString($desc, 20, 'words', false);
+				?>
+			</p>
+			
+			
+		</div>
+			<?php 
+			}
+		}
+		?>
+		<a href="<?php //echo $this->url(array(), 'default_comments_create'); ?>">Добавить комментарий</a>
+	
+	<div class="copy3rdparty">
+		<a href="http://blogs.yandex.ru/" title="Yandex поиск по блогам" rel="nofollow"><img src="http://img.yandex.net/i/logo100x43.png" width="37" height="16" /></a>
+	</div>
+</div>
+<?php 
+} ?>
 

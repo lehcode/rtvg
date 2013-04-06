@@ -365,7 +365,7 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	    $d = Xmltv_Filesystem_Folder::files(ROOT_PATH.'/dicts');
 	    $w1 = explode("\n", Xmltv_Filesystem_File::read(ROOT_PATH.'/dicts/'.$d[array_rand( $d )]));
 	    $w2 = explode("\n", Xmltv_Filesystem_File::read(ROOT_PATH.'/dicts/'.$d[array_rand( $d )]));
-	    $a = $w1[rand(0, count($w1)-1)].$w2[rand(0, count($w2)-1)];
+	    $a = $w1[mt_rand(0, count($w1)-1)].$w2[mt_rand(0, count($w2)-1)];
 	    $a = preg_replace('/\s/', '', $a );
 	    $a = preg_replace('/[\d]+/', '', $a );
 	    return $a;

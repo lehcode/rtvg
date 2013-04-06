@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses	Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.18 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: ErrorController.php,v 1.19 2013-04-06 22:35:03 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -156,7 +156,7 @@ class ErrorController extends Zend_Controller_Action
 		$mail = new Zend_Mail('UTF-8');
 		$mail->setBodyText( $exception."\n\n".$msg );
 		$mail->setFrom( $senderEmail, 'Rutvgid Error');
-		$mail->addTo( 'repin@egeshi.com', 'Bugs');
+		$mail->addTo( 'egeshisolutions@gmail.com', 'Admin');
 		if ($exception){
 			$mail->setSubject( $exception->getMessage() );
 		} else {

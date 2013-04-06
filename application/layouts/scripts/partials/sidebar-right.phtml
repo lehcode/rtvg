@@ -4,10 +4,18 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: sidebar-right.phtml,v 1.11 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: sidebar-right.phtml,v 1.12 2013-04-06 22:35:03 developer Exp $
  *
  */
 ?>
+
+<?php 
+$this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').show(300); });");
+?>
+<div class="module" id="rumor-ads">
+	<?php /*<h4 class="mediumheading">Желтая пресса</h4>*/ ?>
+	<div class="content" id="DIV_DA_85753"></div>
+</div>
 
 <?php 
 if ($this->gcse===true){
@@ -27,17 +35,6 @@ if ($this->gcse===true){
 	</div>
     <?php 
 }
-?>
-
-
-<?php 
-echo $this->adCode(array(
-	'w'=>300,
-	'h'=>300,
-	'type'=>'cpa',
-	'output'=>'stack',
-	'amt'=>2,
-));
 ?>
 
 
@@ -85,7 +82,7 @@ if (count($this->videos) && $this->videos!==false) {
 		    $videoDesc = $this->escape( $video['desc'] );
 		    $linkTitle = empty($video['desc']) ? $videoTitle. $this->truncateString( $videoDesc, 40, 'letters') : $videoTitle ;
 		    $linkHref = $this->url(array('alias'=>$videoAlias, 'id'=>$video['rtvg_id']), 'default_videos_show-video');
-		    $thumb = $video['thumbs'][rand( 0, count( $video['thumbs'])-1)];
+		    $thumb = $video['thumbs'][mt_rand( 0, count( $video['thumbs'])-1)];
 		    
 		    ?>
 		    
@@ -140,7 +137,15 @@ if (count($this->videos) && $this->videos!==false) {
 }
 ?>
 
-
+<?php 
+echo $this->adCode(array(
+	'w'=>300,
+	'h'=>300,
+	'type'=>'cpa',
+	'output'=>'stack',
+	'amt'=>2,
+));
+?>
 
 <div class="module">
 	<h5 class="mediumheading">Телепрограмма vkontakte</h5>

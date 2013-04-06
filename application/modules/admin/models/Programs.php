@@ -5,7 +5,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: Programs.php,v 1.28 2013-04-03 04:08:16 developer Exp $
+ * @version    $Id: Programs.php,v 1.29 2013-04-06 22:35:03 developer Exp $
  */
 
 class Admin_Model_Programs extends Xmltv_Model_Programs
@@ -416,6 +416,11 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	public function catIdFromTitle($title){
 		
+	    if (APPLICATION_ENV=='development'){
+	    	var_dump($title);
+	    	die(__FILE__.': '.__LINE__);
+	    }
+	    
 	    $catLower = Xmltv_String::strtolower( trim($title));
 	    if (array_key_exists($catLower, $this->categoriesMap)){
 	    	$title = $this->categoriesMap[$catLower];
@@ -447,6 +452,11 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	public function getProgramCategory ($cat_title=null, $prog_desc=null) {
 		
+	    if (APPLICATION_ENV=='development'){
+	    	var_dump($cat_title);
+	    	die(__FILE__.': '.__LINE__);
+	    }
+	    
 	    if ($cat_title) {
 		    
 			$exists   = false;
@@ -648,7 +658,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 				}
 				
 				$genres = explode(', ', $m[1]);
-				$result['category']  = rand( 0, count($genres)-1);
+				$result['category']  = mt_rand( 0, count($genres)-1);
 				$result['producer']  = trim($m[2]);
 				$result['country']   = self::_parseCountry(trim($m[3]));
 				$result['year']      = (int)trim($m[4]);

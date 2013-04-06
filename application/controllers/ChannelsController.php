@@ -3,7 +3,7 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.30 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: ChannelsController.php,v 1.31 2013-04-06 22:35:03 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -23,21 +23,14 @@ class ChannelsController extends Rtvg_Controller_Action
 		
 		parent::init();
 		
-		/**
-		 * Change layout for AJAX requests
-		 */
-		if ($this->getRequest()->isXmlHttpRequest()) {
-		    
-		    $ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
-		    $ajaxContext
-		    	->addActionContext( 'typeahead', 'json' )
-		    	->addActionContext( 'alias', 'json' )
-			    ->addActionContext( 'new-comments', 'html' )
-			    ->initContext();
-			
-	   	}
+		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
+	    $ajaxContext
+	    	->addActionContext( 'typeahead', 'json' )
+	    	->addActionContext( 'alias', 'json' )
+		    ->addActionContext( 'new-comments', 'html' )
+		    ->initContext();
 	   	
-	   	if (!$this->_request->isXmlHttpRequest()){
+	   	if (false === (bool)$this->_request->isXmlHttpRequest()){
 	   		$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
 	   		$this->view->assign( 'hide_sidebar', null );
 	   	}
@@ -60,6 +53,9 @@ class ChannelsController extends Rtvg_Controller_Action
 		
 		if (parent::validateRequest()) {
 			
+		    $this->view->headLink()
+		    	->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
+		    
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$this->view->assign( 'hide_sidebar', false );
 			$this->view->assign( 'gcse', false );
@@ -146,6 +142,8 @@ class ChannelsController extends Rtvg_Controller_Action
 		if (parent::validateRequest()) {
 		   
 			$this->view->assign('pageclass', 'category');
+			$this->view->headLink()
+				->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
 			
 			$this->channelsModel = new Xmltv_Model_Channels();
 			$catProps = $this->channelsModel->category( $this->input->getEscaped('category') );
@@ -253,9 +251,8 @@ class ChannelsController extends Rtvg_Controller_Action
 			$this->view->assign('week_end', $e);
 			
 			if ($this->cache->enabled){
-			    $this->cache->setLocation( ROOT_PATH.'/cache' );
-				$hash = Rtvg_Cache::getHash('channel_'.$channel['alias'].'_week');
-				$f = '/Channels';
+			    $hash = Rtvg_Cache::getHash('channel_'.$channel['alias'].'_week');
+				$f = '/Channels/Week';
 				if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
 					$schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($s), new Zend_Date($e));
 					$this->cache->save($schedule, $hash, 'Core', $f);

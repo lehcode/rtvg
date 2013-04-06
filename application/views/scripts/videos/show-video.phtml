@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: show-video.phtml,v 1.21 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: show-video.phtml,v 1.22 2013-04-06 22:35:04 developer Exp $
  *
  */
 
@@ -85,7 +85,7 @@ if (isset($this->main_video)){
 			
 				<div class="image" itemscope itemtype="http://schema.org/ImageObject">
 					<?php 
-					$thumb = $v['thumbs'][rand(0, count($v['thumbs'])-1)];
+					$thumb = $v['thumbs'][mt_rand(0, count($v['thumbs'])-1)];
 						?>
 					<a href="<?php echo $this->url( array(
 						'alias'=>$v['alias'], 

@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.30 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.31 2013-04-06 22:35:04 developer Exp $
  *
  */
 
@@ -15,32 +15,8 @@ $channelCat   = $this->escape( $this->channel['cat_title'] );
 
 $this->headMeta()->setName('description', sprintf ('Передачи сегодня на канале «%s»', $channelTitle ));
 
-/*
- * Generate keywords
- */
-$kw = array($channelTitle, $this->listing_date->toString('d MMMM YYYY'));
-if (!empty($this->programs)) {
-	foreach ($this->programs as $p) {
-		if (count($kw)<5) {
-			if (!in_array($p['title'], $kw))
-			$kw[]= Xmltv_String::strtolower( htmlspecialchars( $p['title'], ENT_QUOTES, 'utf-8' ) );
-		}
-	}
-}
-$this->headMeta()->setName('keywords', implode(',', $kw) );
 
 
-if ($this->is_today) {
-	//META title
-	$this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на сегодня, %s. Видео записей программ.', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
-	//Browser window title
-	$this->headTitle( sprintf ('Телепрограмма «%s» на сегодня', $channelTitle ) );
-} else {
-	//META title
-	$this->headMeta()->setName('title', sprintf ('Программа канала %s за %s. Видео записей программ.', $channelTitle, $this->listing_date->toString('EEEE, d MMMM YYYY')));
-	//Browser window title
-	$this->headTitle( sprintf ('Телепрограмма %s за %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' ) ) );
-}
 
 $css="#content.day-listing .top form {
 	margin: 0;
@@ -56,19 +32,21 @@ $this->headStyle()->appendStyle($css);
 
 <div class="container-fluid top">
 	<?php 
-	/*
-	 * Change time zone
-	 */
-	echo new Xmltv_Form_TimezoneSwitch( array(
-		'action'   => '',
-		'name'     => 'timezone',
-		'method'   => 'get',
-		'id'       => 'timezone',
-		'enctype'  => 'application/x-www-form-urlencoded',
-		'label'    => array( 'class' => 'smallheading' ),
-		'html_tag' => array( 'tag'=>'div', 'class'=>'module span1' ),
-		'diff'     => $this->timeshift,
-	));
+	if ($this->is_today){
+		/*
+		 * Change time zone
+		 */
+		echo new Xmltv_Form_TimezoneSwitch( array(
+			'action'   => '',
+			'name'     => 'timezone',
+			'method'   => 'get',
+			'id'       => 'timezone',
+			'enctype'  => 'application/x-www-form-urlencoded',
+			'label'    => array( 'class' => 'smallheading' ),
+			'html_tag' => array( 'tag'=>'div', 'class'=>'module span1' ),
+			'diff'     => $this->timeshift,
+		));
+	}
 	
 	/*
 	 * Change channel autocomplete form
@@ -93,93 +71,64 @@ $this->headStyle()->appendStyle($css);
 	
 </div>
 
-
-<?php
-/*
- * Ссылка tinyurl
- */ 
-?>
-<p>
-	<a href="<?php echo $this->url(array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>"
-		title="<?php printf('Перейти к расписанию программ канала «%s» на неделю', $channelTitle); ?>">
-		<?php printf ('Программа передач "%s" на всю неделю', $channelTitle) ?>
-	</a>
-	<br />
-	<?php printf("Короткая ссылка на программу канала %s ", $channelTitle); ?>
-	<a href="<?php echo $this->short_link ?>" 
-		title="<?php printf('Телепрограмма канала %s на каждый день', $channelTitle) ?>"
-		class="badge short-link"
-		rel="alternate"
-		target="_blank"><?php echo $this->short_link; ?>
-	</a>
-</p>
-
-<?php
-$js = "$(function(){ $('#DIV_DA_126314 table').remove(); });";
-$this->headScript()->appendScript($js);
-$this->inlineScript()->appendFile( 'http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314', 'text/javascript', array('charset'=>'windows-1251') );
-?>
-<div id="DIV_DA_126314" class="advm"></div>
-
-<?php echo $this->partial( 'listings/partials/programlist.phtml', array( 
-	'items' => $this->programs, 
-	'channel' => $this->channel, 
-	'listing_videos' => $this->listing_videos, 
-)); ?>
-
-
-<?php
-/*
- * Сссылка на расписание не неделею
- */ 
-?>
-<?php if (!$this->is_today) : ?>
-<p>
-	<a href="<?php echo $this->url(array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>"
-		title="<?php printf('Перейти к расписанию программ канала %s на сегодня', $channelTitle); ?>">
-		<em><?php printf ('Программа передач "%s" на сегодня', $channelTitle) ?></em>
-	</a>
-</p>
-<?php endif; ?>
-
-
-
-<?php
-/*
- * Сылки Вчера, Завтра и Все каналы
- */ 
-?>
-<ul id="daynav" class="nav nav-pills">
-	<li>
-		<?php 
-		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
-		$d->subDay(1);
-		if (APPLICATION_ENV=='development'){
-			//var_dump($this->listing_date->toString('dd-MM-YYYY'));
-			//var_dump($d->toString('dd-MM-YYYY'));
-		}
+<div class="container-fluid">
+	<?php 
+	if (!$this->is_today) {
+		$linkAttrHref  = $this->url(array('channel'=>$channelAlias), 'default_listings_day-listing');
+		$linkAttrTitle = $this->escape( sprintf('Телепрограмма «%s» на сегодня', $channelTitle) );
+		$linkText = sprintf ('«%s» сегодня', $channelTitle);
 		?>
-		<a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-YYYY')), 'default_listings_day-date') ?>"
-			class="btn"
-			title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-YYYY') ?>">Вчера</a>
-	</li>
-	<li>
-		<a href="<?php echo $this->url(array(), 'default_channels_list') ?>" class="btn" title="Все телеканалы">Все каналы</a>
-	</li>
-	<li>
-		<?php 
-		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
-		$d->addDay(1);
-		if (APPLICATION_ENV=='development'){
-			//var_dump($d->toString('dd-MM-YYYY'));
-		}
-		?>
-		<a href="<?php echo $this->url(array( 'channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
-			class="btn"
-			title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-yyyy') ?>">Завтра</a>
-	</li>
+	<h2>
+		<a href="<?php echo $linkAttrHref; ?>" title="<?php echo $linkAttrTitle; ?>" class="btn"><strong><?php echo $linkText; ?></strong></a>
+	</h2>
+	<?php 
+	} ?>
 	
-</ul>
+	
+	<h3>
+		<?php 
+		$linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
+		$linkAttrTitle = $this->escape( sprintf('Передачи «%s» на неделю', $channelTitle) );
+		$linkText      = $this->escape( sprintf ('Программа передач "%s" на всю неделю', $channelTitle) );
+		?>
+		<a href="<?php echo $linkAttrHref; ?>" title="<?php echo $linkAttrTitle; ?>" class="btn week-link">
+			<?php echo $linkText; ?>
+		</a>
+	</h3>
+	
+	
+	<?php
+	if ($this->is_today) {
+	$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
+	$this->headScript()->appendScript($js);
+	?>
+	<div id="DIV_DA_126314" class="advm"></div>
+	<?php } ?>
+	
+</div>
+
+
+<?php 
+if ($this->is_today) {
+    echo $this->partial( 'listings/partials/programlist.phtml', array( 
+		'items'          => $this->programs, 
+		'channel'        => $this->channel, 
+		'listing_videos' => $this->listing_videos, 
+		'is_today'       => $this->is_today, 
+		'short_link'     => $this->short_link,
+    	'listing_date'   => $this->listing_date,
+	)); 
+} else {
+    echo $this->partial( 'listings/partials/programtable.phtml', array(
+    	'items'        => $this->programs,
+    	'channel'      => $this->channel,
+    	'listing_date' => $this->listing_date,
+    ));
+}
+?>
+
+
+
 
 
 
@@ -212,70 +161,3 @@ if ($this->torrent_links) {
 
 
 
-<?php 
-if (isset($this->comments)) { 
-	
-	if (APPLICATION_ENV=='development'){
-		//var_dump($this->comments);
-		//die(__FILE__.': '.__LINE__);
-	}
-	
-?>
-<h4 id="cheader"><?php printf('<strong>В блогах  про %s</strong>', $channelTitle) ?></h4>
-<div id="comments">
-
-	<?php
-	if (isset($this->comments) && (bool)$this->comments!==false) {
-		
-		foreach ($this->comments as $comment) {
-		
-		//var_dump($comment);
-		//die(__FILE__.': '.__LINE__);
-		?>
-		
-	<div class="hreview">
-		
-		<?php if (!empty($comment['title'])) : ?>
-		<div class="summary"><?php echo $comment['title'] ?></div>
-		<?php else: ?>
-		<div class="summary">
-			<?php echo $this->escape( $channelTitle ); ?>
-		</div>
-		<?php endif; ?>
-		
-		
-		<?php if (!empty($comment['author'])) : ?>
-		<div class="author">
-			<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
-				<small><?php echo $comment['author'] ?></small>
-			</a>
-		</div>
-		<?php endif; ?>
-		
-		
-		<?php /* if (!empty($comment['date_created'])) { ?>
-		<div class="date">
-			<?php echo $comment['date_created']->toString('EEEE, dd MMM yyyy hh:mm'); ?>
-			<span property="v:dtreviewed" content="<?php echo $comment['date_created']->toString('yyyy-MM-dd') ?>">
-		</div>
-		<?php 
-		} */ ?>
-		
-		
-		<div class="description">
-			<?php echo str_ireplace($channelTitle, '<em>'.$channelTitle.'</em>', $comment['intro']) ?>
-		</div>
-		
-		
-	</div>
-		<?php 
-		}
-	}
-	?>
-	<a href="<?php //echo $this->url(array(), 'default_comments_create'); ?>">Добавить комментарий</a>
-</div>
-<div class="copy3rdparty">
-	<a href="http://blogs.yandex.ru/" title="Yandex поиск по блогам" rel="nofollow"><img src="http://img.yandex.net/i/logo100x43.png" width="37" height="16" /></a>
-</div>
-<?php 
-} ?>

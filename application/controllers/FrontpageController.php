@@ -3,7 +3,7 @@
  * Frontend index controller
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: FrontpageController.php,v 1.10 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: FrontpageController.php,v 1.11 2013-04-06 22:35:03 developer Exp $
  *
  */
 
@@ -120,10 +120,9 @@ class FrontpageController extends Rtvg_Controller_Action
 	        
 	        if ($this->cache->enabled){
 	            
-	            $this->cache->setLifetime(86400);
-	            $this->cache->setLocation(ROOT_PATH.'/cache');
-	            $f = '/Channels';
-	            $hash = md5('channel-info-'.$channelId);
+	            $this->cache->setLifetime(3600);
+	            $f = '/Listings/Frontpage';
+	            $hash = md5('single_channel_'.$channelId);
 	            if (($channel = $this->cache->load( $hash, 'Core', $f))===false) {
 	            	$channel = $this->channelsModel->getById($this->input->getEscaped('id'));
 	            	$this->cache->save( $channel, $hash, 'Core', $f);
@@ -138,9 +137,8 @@ class FrontpageController extends Rtvg_Controller_Action
 	        $this->channelsModel->addHit($ch[0]['id']);
 	        
 	        if ($this->cache->enabled){
-	            
-	            $this->cache->setLocation(ROOT_PATH.'/cache');
-	            $this->cache->setLifetime(300);
+	        	
+	            $this->cache->setLifetime(1800);
 	            $f = '/Listings/Frontpage';
 	            $hash = md5('frontpage-channel-'.$channelId);
 	            if (($list = $this->cache->load( $hash, 'Core', $f))===false) {

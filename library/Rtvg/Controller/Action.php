@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.14 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: Action.php,v 1.15 2013-04-06 22:35:04 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -167,13 +167,16 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			'module'=>'default',
 			'controller'=>$this->_getParam('controller', 'index'),
 			'action'=>$this->_getParam('action', 'index'),
-			) );
+			));
 		
 		$this->cache = new Rtvg_Cache();
-		$e = ((bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' ) && APPLICATION_ENV=='production');
+		$e = ((bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' ));
         $this->cache->enabled = ($e===true) ? true : false;
         $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
         $this->cache->setLocation( ROOT_PATH.'/cache' );
+        
+        //var_dump($this->cache->enabled);
+        //die();
 		
         $this->errorUrl = $this->view->url( array(), 'default_error_error' );
         
@@ -182,26 +185,18 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
          * @var Bootstrap
          */
         $bootstrap = $this->getInvokeArg('bootstrap');
-        
+        /* 
         if (!$this->_request->isXmlHttpRequest()){
 	        try {
 	        
-	            /**
-	        	 * @var Zend_Http_UserAgent
-	        	 */
-	        	$this->userAgent = $bootstrap->getResource('useragent');
-	        
-	        	/**
-	        	 * @var Zend_Http_UserAgent_AbstractDevice
-	        	 */
+	            $this->userAgent = $bootstrap->getResource('useragent');
 	        	$this->userDevice = $this->userAgent->getDevice();
 	        	$this->view->assign( 'user_device', $this->userDevice );
-	        	
 	        } catch (Exception $e) {
 	        	
 	        }
         }
-        
+         */
         self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		if (self::$videoCache){
 			$this->vCacheModel = new Xmltv_Model_Vcache();
@@ -231,7 +226,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		
 		if (!$this->_request->isXmlHttpRequest()){
 		    $this->view->assign( 'hide_sidebar', 'both' );
-		    $this->view->assign( 'show_popunder', true );
+		    //$this->view->assign( 'show_popunder', true );
 		    $this->view->assign( 'is_frontpage', false );
 		    $this->view->assign( 'vk_group_init', true );
 		}
@@ -737,6 +732,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		 
 	}
 	
+	/*
 	protected function getChannel( $alias=null )
 	{
 	    if (!$alias){
@@ -760,6 +756,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	    return $result;
 	    
 	}
+	*/
 	
 	/**
 	 * (non-PHPdoc)

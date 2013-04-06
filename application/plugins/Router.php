@@ -4,7 +4,7 @@
  * Routing plugin
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Router.php,v 1.17 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: Router.php,v 1.18 2013-04-06 22:35:03 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -14,6 +14,10 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 	protected $_router;
 	
 	const ALIAS_REGEX = '[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-]+';
+	const VIDEO_ALIAS_REGEX = '[^&\/][\p{Common}\p{Cyrillic}\p{Latin}\d_-]+';
+	const CHANNEL_ALIAS_REGEX = '[\p{Cyrillic}\p{Latin}\d-]+';
+	const DATE_REGEX = '\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4}';
+	const ISO_DATE_REGEX = '\d{2}-\d{2}-\d{4}';
 	
 	/**
 	 * Constructor
@@ -61,7 +65,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'controller'=>'channels',
 			'action'=>'channel-week'), 
 		array(
-			'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+')));
+			'channel' => self::CHANNEL_ALIAS_REGEX)));
 			
 			
 		$this->_router->addRoute( 'default_rumors_recent', 
@@ -106,8 +110,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				'module'=>'default',
 				'controller'=>'listings',
 				'action'=>'program-week'), array(
-						'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-						'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+',
+						'channel'=>self::CHANNEL_ALIAS_REGEX,
+						'alias'=>self::ALIAS_REGEX,
 				)) );
 		
 		
@@ -117,8 +121,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'module'=>'default',
 			'controller'=>'listings',
 			'action'=>'program-day',
-			'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-			'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+'
+			'channel'=>self::CHANNEL_ALIAS_REGEX,
+			'alias'=>self::ALIAS_REGEX
 		)));
 		
 		
@@ -128,10 +132,10 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				'module'=>'default',
 				'controller'=>'listings',
 				'action'=>'program-day',
-				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
+				'channel'=>self::CHANNEL_ALIAS_REGEX,
 			), array(
-				'alias'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-				'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)'
+				'alias'=>self::ALIAS_REGEX,
+				'date'=>'('.self::DATE_REGEX.'|сегодня)'
 			))
 		);
 			
@@ -142,7 +146,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				'action'=>'day-listing'
 			), 
 			array(
-				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+')));
+				'channel'=>self::CHANNEL_ALIAS_REGEX)));
 		
 		
 		$this->_router->addRoute( 'default_listings_day-date', 
@@ -152,37 +156,24 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				'action'=>'day-date'
 			),
 			array(
-				'channel'=>'[\p{Cyrillic}\p{Latin}\d-]+',
-				'date'=>'([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}-[\d]{2}-[\d]{4}|сегодня)')));
+				'channel'=>self::CHANNEL_ALIAS_REGEX,
+				'date'=>'('.self::DATE_REGEX.'|сегодня)')));
 			
 		$this->_router->addRoute( 'default_listings_premieres-week', 
 		new Zend_Controller_Router_Route( 'телепрограмма/премьеры/:timespan', array(
 				'module'=>'default',
 				'controller'=>'listings',
 				'action'=>'premieres-week',
-				'timespan'=>'сегодня|неделя|[\d]{2}-[\d]{2}-[\d]{4}',
+				'timespan'=>'сегодня|неделя|'.self::ISO_DATE_REGEX,
 			)));
-			
 		
 		$this->_router->addRoute( 'default_videos_show-video',
 			new Zend_Controller_Router_Route( 'видео/онлайн/:alias/:id', array(
 				'module'=>'default',
 				'controller'=>'videos',
 				'action'=>'show-video',
-				'alias'=>'[\p{Common}\p{Cyrillic}\p{Latin}\d_-]+',
+				'alias'=>self::VIDEO_ALIAS_REGEX,
 				'id'=>'[\w\d]{12}')));
-			
-		$this->_router->addRoute( 'default_error_missing-page', 
-			new Zend_Controller_Router_Route( 'горячие-новости', array(
-				'module'=>'default',
-				'controller'=>'error',
-				'action'=>'missing-page')));
-			
-		$this->_router->addRoute( 'default_error_invalid-input', 
-			new Zend_Controller_Router_Route( 'неверные-данные', array(
-				'module'=>'default',
-				'controller'=>'error',
-				'action'=>'invalid-input')));
 			
 		$this->_router->addRoute( 'default_error_error', 
 			new Zend_Controller_Router_Route( 'ошибка', array(
@@ -226,21 +217,14 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				'controller'=>'comments',
 				'action'=>'create')));
 		
-		/* 	
-		$this->_router->addRoute( 'default_torrents_finder', 
-			new Zend_Controller_Router_Route( 'скачать/', array(
-				'module'=>'default',
-				'controller'=>'torrents',
-				'action'=>'finder')));
-		 */
-		
 		$this->_router->addRoute( 'default_listings_category', 
-			new Zend_Controller_Router_Route( 'передачи/:category/:timespan', array(
+			new Zend_Controller_Router_Route( ':timespan/:category/', array(
 				'module'=>'default',
 				'controller'=>'listings',
 				'action'=>'category',
+			), array(
 				'category'=>self::ALIAS_REGEX,
-				'timespan'=>'/^(сегодня|неделя)$/u'
+				'timespan'=>'(сегодня|неделя)'
 			)));
 		
 		$this->_router->addRoute( 'default_user_login', 
@@ -265,7 +249,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			)));
 		
 		$this->_router->addRoute( 'default_content_blog', 
-			new Zend_Controller_Router_Route( 'теленовости', array(
+			new Zend_Controller_Router_Route( 'новости', array(
 				'module'=>'default',
 				'controller'=>'content',
 				'action'=>'blog',
@@ -273,7 +257,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 		
 		
 		$this->_router->addRoute( 'default_content_blog-category', 
-			new Zend_Controller_Router_Route( 'теленовости/:content_cat', array(
+			new Zend_Controller_Router_Route( 'новости/:content_cat', array(
 				'module'=>'default',
 				'controller'=>'content',
 				'action'=>'blog-category',
@@ -283,14 +267,15 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			)));
 		
 		$this->_router->addRoute( 'default_content_article', 
-			new Zend_Controller_Router_Route( 'теленовости/:content_cat/:article_alias', array(
+			new Zend_Controller_Router_Route( 'новости/:category_id/:article_alias', array(
 				'module'=>'default',
 				'controller'=>'content',
 				'action'=>'article',
 			), array(
-				'content_cat'=>self::ALIAS_REGEX,
+				'category_id'=>'[0-9]+',
 				'article_alias'=>self::ALIAS_REGEX
 			)));
+		
 		
 		$this->_router->addRoute( 'default_content_tag', 
 			new Zend_Controller_Router_Route( 'тема/:tag', array(
@@ -302,20 +287,51 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				'tag'=>self::ALIAS_REGEX
 			)));
 		
-		$this->_router->addRoute( 'default_script_popunder',
-		new Zend_Controller_Router_Route( 'smth/pu.js',
+		$this->_router->addRoute( 'default_script_vk-message',
+		new Zend_Controller_Router_Route( 'msg.js',
 			array(
 				'module'=>'default',
 				'controller'=>'smth',
-				'action'=>'pu'
+				'action'=>'vk-message'
 			)));
 		
 		$this->_router->addRoute( 'default_script_richmedia',
-		new Zend_Controller_Router_Route( 'smth/rich.js',
+		new Zend_Controller_Router_Route( 'rich.js',
 			array(
 				'module'=>'default',
 				'controller'=>'smth',
 				'action'=>'rich'
+			)));
+		
+		
+		$this->_router->addRoute( 'default_script_slider',
+		new Zend_Controller_Router_Route( 'sb.js',
+			array(
+				'module'=>'default',
+				'controller'=>'smth',
+				'action'=>'rollin'
+			)));
+		
+		$this->_router->addRoute( 'default_feed_atom',
+		new Zend_Controller_Router_Route( 'feed/atom/:channel/:timespan',
+			array(
+				'module'=>'default',
+				'controller'=>'feed',
+				'action'=>'atom',
+				'channel'=>null,
+				//'timespan'=>null,
+			),array(
+				'channel'=>'\d+',
+			)));
+		
+		$this->_router->addRoute( 'default_feed_rss',
+		new Zend_Controller_Router_Route( 'feed/rss/:channel/:timespan',
+			array(
+				'module'=>'default',
+				'controller'=>'feed',
+				'action'=>'rss',
+				'channel'=>null,
+				//'timespan'=>null,
 			)));
 		
 		// @todo 

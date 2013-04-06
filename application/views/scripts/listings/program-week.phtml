@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: program-week.phtml,v 1.20 2013-03-14 14:43:23 developer Exp $
+ * @version $Id: program-week.phtml,v 1.21 2013-04-06 22:35:04 developer Exp $
  *
  */
 
@@ -15,11 +15,11 @@ $channelAlias = isset($this->channel['alias']) ? $this->escape( $this->channel['
 
 if ($programTitle){
 	$this->headMeta()->setName( 'title', "$programTitle, $channelTitle" );
-	$this->headTitle( $this->escape( sprintf ('«%s» на этой неделе на канале «%s» :: Всегда на rutvgid.ru', $programTitle, $channelTitle )));
+	$this->headTitle( $this->escape( sprintf ('«%s» на телеканале «%s» :: Всегда на rutvgid.ru', $this->list[0]['title'], $this->channel['title'] )));
 }
 ?>
 <h1><?php if ($programTitle) {
-    printf("«%s» на канале «%s»", $programTitle, $channelTitle);
+    printf("«%s» на канале «%s» на этой неделе", $programTitle, $channelTitle);
 } else {
     echo 'Результаты поиска программы';
 } ?></h1>

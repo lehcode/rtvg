@@ -3,7 +3,7 @@
  * Common layout
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: layout.phtml,v 1.37 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: layout.phtml,v 1.38 2013-04-06 22:35:03 developer Exp $
  *
  */
 
@@ -24,9 +24,6 @@ $this->jQuery()->enable()
 	->setVersion('1.9.1') //jQuery version, automatically 1.5 = 1.5.latest
 	->setUiVersion('1.10.2') //jQuery UI version, automatically 1.8 = 1.8.latest
 	->uiEnable();
-
-$this->headLink()
-	->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
 
 $this->headScript()
 	->appendFile( 'http://yandex.st/share/share.js' )
@@ -67,10 +64,11 @@ if ($pageClass=='show-video'){
  */
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'top_programs'=>$this->top_programs,
-	'cats'=>$this->channels_cats,
+	'channels_categories'=>$this->channels_cats,
 	'channel'=>$this->channel,
 	'announces'=>$this->announces,
 	'show_announces'=>$this->show_announces,
+	'comments'=>$this->comments,
 )));
 
 /*
@@ -213,7 +211,7 @@ else { f(); }
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <?php } ?>
 
-<?php //if (APPLICATION_ENV=='production') {
+<?php if (APPLICATION_ENV=='production') {
 $js ="var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-778789-8']);
 _gaq.push(['_trackPageview']);
@@ -223,18 +221,31 @@ ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www')
 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();"; ?>
 <script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
-<?php //} ?>
+<?php } ?>
+
+<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314"></script>
+
+<?php if ($this->hide_sidebar!='right'): ?>
+<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script>
+<?php endif; ?>
 
 <?php ob_start(); ?>
 $(document).ready(function(){
 	$("#footer .counter_logo").css({ display: "none" });
-	$.getScript("<?php echo $this->url(array(), 'default_script_popunder'); ?>");
-	$.getScript("<?php echo $this->url(array(), 'default_script_richmedia'); ?>");
+	<?php if (!$isFrontpage) { ?>
+	$.getScript("<?php echo $this->url(array(), 'default_script_slider'); ?>");
+	<?php /*$.getScript("<?php echo $this->url(array(), 'default_script_richmedia'); ?>");*/ ?>
+	<?php /*$.getScript("<?php echo $this->url(array(), 'default_script_vk-message'); ?>");*/ ?>
+	<?php } ?>
 });
 <?php
 $js = (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
-$this->inlineScript()->appendScript( $js );
-
-echo $this->inlineScript(); ?>
+$this->inlineScript()->appendScript( $js );?>
+<?php if (mt_rand(0, 1)==1) {
+	$js = file_get_contents(APPLICATION_PATH.'/../public/js/ss/mu/code.js'); ?>
+	<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( $js ) : $js; ?></script>
+<?php 
+}?>
+<?php echo $this->inlineScript(); ?>
 </body>
 </html>

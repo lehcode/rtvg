@@ -4,16 +4,21 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: SitemapController.php,v 1.10 2013-04-03 04:08:15 developer Exp $
+ * @version $Id: SitemapController.php,v 1.11 2013-04-06 22:35:03 developer Exp $
  *
  */
 class SitemapController extends Rtvg_Controller_Action
 {
     
     /**
-     * @var Xmltv_Model_Sitemap
+     * @var Xmltv_Model_Programs
      */
-    private $_model;
+    protected $programsModel;
+    
+    /**
+     * @var Xmltv_Model_Channels
+     */
+    protected $channelsModel;
     
 	/**
 	 * (non-PHPdoc)
@@ -25,9 +30,10 @@ class SitemapController extends Rtvg_Controller_Action
         $this->_request->setParam('format', 'xml');
 		$ajaxContext = $this->_helper->getHelper('contextSwitch');
         $ajaxContext->addActionContext('sitemap', 'xml')->initContext();
+        $this->getResponse()->setHeader('Content-type', 'text/xml');
         $this->_helper->layout->disableLayout();
-        $this->_model = new Xmltv_Model_Sitemap();
-        
+        $this->programsModel = new Xmltv_Model_Programs();
+        $this->channelsModel  = new Xmltv_Model_Channels();
 	}
 	
 	/**
@@ -35,20 +41,18 @@ class SitemapController extends Rtvg_Controller_Action
 	 */
 	public function sitemapAction(){
 		
-	    $channelsModel  = new Xmltv_Model_Channels();
-	    
-		if ($this->cache->enabled){
+	    if ($this->cache->enabled){
 		    
 		    $this->cache->setLifetime(86400*7);
 		    $f = "/Listings";
 		    $hash = 'sitemap';
 		    
 		    if (($list = $this->cache->load( $hash, 'Core', $f ))===false) {
-		        $list = $channelsModel->getPublished( $this->view );
+		        $list = $this->channelsModel->getPublished( $this->view );
 		        $this->cache->save( $list, $hash, 'Core', $f );
 		    }
 		} else {
-		    $list = $channelsModel->getPublished( $this->view );
+		    $list = $this->channelsModel->getPublished( $this->view );
 		}
 		
 		$aliases = array();
@@ -72,11 +76,11 @@ class SitemapController extends Rtvg_Controller_Action
 		    $f = "/Listings";
 		    $hash = 'sitemap_e1';
 		    if (($list = $this->cache->load($hash, 'Core', $f))===false) {
-		    	$list = $this->_model->weekListing( $weekStart, $weekEnd );
+		    	$list = $this->programsModel->rssWeek( $weekStart, $weekEnd );
 		    	$this->cache->save( $list, $hash, 'Core', $f );
 		    }
 		} else {
-		    $list = $this->_model->weekListing( $weekStart, $weekEnd );
+		    $list = $this->programsModel->rssWeek( $weekStart, $weekEnd );
 		}
 		$this->view->assign('week_items', $list);
 		
