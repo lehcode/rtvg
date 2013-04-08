@@ -3,7 +3,7 @@
  * Common layout
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: layout.phtml,v 1.38 2013-04-06 22:35:03 developer Exp $
+ * @version $Id: layout.phtml,v 1.39 2013-04-08 02:51:24 developer Exp $
  *
  */
 
@@ -235,7 +235,7 @@ $(document).ready(function(){
 	<?php if (!$isFrontpage) { ?>
 	$.getScript("<?php echo $this->url(array(), 'default_script_slider'); ?>");
 	<?php /*$.getScript("<?php echo $this->url(array(), 'default_script_richmedia'); ?>");*/ ?>
-	<?php /*$.getScript("<?php echo $this->url(array(), 'default_script_vk-message'); ?>");*/ ?>
+	$.getScript("<?php echo $this->url(array(), 'default_script_vk-message'); ?>");
 	<?php } ?>
 });
 <?php
