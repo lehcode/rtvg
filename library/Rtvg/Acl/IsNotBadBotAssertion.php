@@ -37,20 +37,8 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         	'MJ12bot',
         	'Nutch',
         	'cr4nk',
-        	'Epiphany/2.',
         	'SISTRIXCrawler',
         	'SearchBot',
-        	'Firefox/3.',
-        	'Firefox/4.',
-        	'Firefox/5.',
-        	'Firefox/6.',
-        	'Firefox/7.',
-        	'Firefox/8.',
-        	'Firefox/9.',
-        	'Firefox/10.',
-        	'Firefox/11.',
-        	'Firefox/12.',
-        	'Firefox/13.',
         );
         foreach ($badAgents as $string){
         	if (stristr($userAgent, $string)) {

@@ -9,26 +9,16 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 	 * @var unknown_type
 	 */
     protected $_name = 'programs';
+    protected $_rowClass = 'Rtvg_Listing_Broadcast';
     
-    const FETCH_MODE = Zend_Db::FETCH_OBJ;
-    
-    
-    public function __construct($config=array()){
-    	
-    	parent::__construct();
-    	
+    public function init()
+    {
+    	parent::init();
     }
     
     public function getProgramsCountForWeek(Zend_Date $start=null, Zend_Date $end=null){
     	
-    	//var_dump($this->_db);
-    	/*
-   		if( $this->_profiling ) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$profiler = $this->_db->getProfiler();
-		}
-    	*/
-		if (!$start && !$end) {
+    	if (!$start && !$end) {
 			$d = new Zend_Date();
 			do{
 				if ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
@@ -49,11 +39,7 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 			$weekEnd = $end;
 		}
 		
-		//var_dump($weekStart->toString('YYYY-mm-dd'));
-		//var_dump($weekEnd->toString('YYYY-mm-dd'));
-		//exit();
-		
-    	$select = $this->_db->select();
+		$select = $this->_db->select();
 		$select->from($this->_name, array('count(*) as amount'))
 			->where("`start`>='".$weekStart->toString('yyyy-MM-dd')."' AND `start`<'".$weekEnd->toString('yyyy-MM-dd')." 23:59:59'");
 		try {
@@ -63,15 +49,7 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 			die(__FILE__.': '.__LINE__);
 			
 		}
-		/*
-    	if( $this->_profiling ) {
-			$query = $profiler->getLastQueryProfile();
-			echo 'Method: '.__METHOD__.'<br />Query: '.$query->getQuery().'<br />';
-		}
-		*/
-		
-		//var_dump($result);
-		
+				
 		return (int)$result[0]->amount;
     }
 
@@ -275,19 +253,6 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 		return $result;
     	
     }
-	/**
-	 * @return string
-	 */
-	public function getName() {
-		return $this->_name;
-	}
-
-	/**
-	 * @param string $_name
-	 */
-	public function setName( $string ) {
-		$this->_name = $string;
-	}
 
 }
 

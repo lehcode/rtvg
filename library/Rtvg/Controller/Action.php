@@ -3,7 +3,7 @@
  * Core action controller for frontend
  * 
  * @author  Antony Repin
- * @version $Id: Action.php,v 1.15 2013-04-06 22:35:04 developer Exp $
+ * @version $Id: Action.php,v 1.16 2013-04-10 01:58:37 developer Exp $
  *
  */
 class Rtvg_Controller_Action extends Zend_Controller_Action
@@ -40,6 +40,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	/**
 	 * Url to redirect on error
 	 * @var string
+	 * @deprecated
 	 */
 	protected $errorUrl;
 	
@@ -178,7 +179,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         //var_dump($this->cache->enabled);
         //die();
 		
-        $this->errorUrl = $this->view->url( array(), 'default_error_error' );
+        //$this->errorUrl = $this->view->url( array(), 'default_error_error' );
         
         /**
          * Load bootstrap
@@ -266,11 +267,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			} elseif(APPLICATION_ENV!='production'){
 				throw new Zend_Exception(self::ERR_INVALID_INPUT, 404);
 			}
-			/*
-			$this->_redirect( $this->view->url( array(
-				'params'=>$this->_getAllParams(),
-				'hide_sidebar'=>'right'), 'default_error_invalid-input'), array('exit'=>true));
-			*/
+			
 		} else {
 			
 			$invalid=array();

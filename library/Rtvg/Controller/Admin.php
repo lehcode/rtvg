@@ -4,13 +4,17 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: Admin.php,v 1.6 2013-04-03 18:18:05 developer Exp $
+ * @version    $Id: Admin.php,v 1.7 2013-04-10 01:58:37 developer Exp $
  *
  */
 
 class Rtvg_Controller_Admin extends Zend_Controller_Action
 {
     
+    /**
+     * @deprecated
+     * @var string
+     */
     protected $errorUrl;
     
     /**
@@ -47,9 +51,10 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
     protected $isAllowed;
     
     /**
-     * Main model for controller
+     * Caching object
+     * @var Rtvg_Cache
      */
-    protected $mainModel;
+    protected $cache;
     
     /**
      * (non-PHPdoc)
@@ -63,7 +68,7 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
     public function init(){
         
         $this->isAllowed = $this->_helper->getHelper('IsAllowed')->direct( 'grantAccess', array( 'privilege'=>$this->_getParam('action'), 'module'=>'admin' ) );
-        $this->errorUrl = $this->view->baseUrl( 'admin/error/error' );
+        //$this->errorUrl = $this->view->baseUrl( 'admin/error/error' );
         $this->_helper->layout->setLayout( 'admin' );
         $this->_validator = $this->_helper->getHelper('RequestValidator');
         $this->_flashMessenger = $this->_helper->getHelper('FlashMessenger');
@@ -82,6 +87,12 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
         $this->view->assign('user', $this->user);
         $this->view->inlineScript()
         	->prependFile('http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js');
+        
+        $this->cache = new Rtvg_Cache();
+        $e = ((bool)Zend_Registry::get( 'site_config' )->cache->admin->get( 'enabled' ));
+        $this->cache->enabled = ($e===true) ? true : false;
+        $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->admin->get( 'lifetime' ) );
+        $this->cache->setLocation( ROOT_PATH.'/cache' );
         
 		if (APPLICATION_ENV=='development'){
 			//var_dump($this->user);

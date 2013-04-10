@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: ImportController.php,v 1.26 2013-04-06 22:35:03 developer Exp $
+ * @version    $Id: ImportController.php,v 1.27 2013-04-10 01:55:58 developer Exp $
  *
  */
 class Admin_ImportController extends Rtvg_Controller_Admin
@@ -39,7 +39,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	public function init() {
 	   
 	    parent::init();
-	    
 	    $this->programsModel   = new Admin_Model_Programs();
 	    
 	}
@@ -335,7 +334,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$prog->channel = (int)$node->getAttribute('channel');
 			
 			// Fix category if needed
-			
 			if (!$prog['category']) {
 			    $fixCats = array(
 			    		222=>'Религия',
@@ -383,7 +381,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$prog->end   = $end->toString( "yyyy-MM-dd HH:mm:ss" );
 			
 			//Calculate hash
-			$prog->hash = substr( md5($prog->channel.$prog->start.$prog->end), 0, 16 ) ;
+			$prog->hash = $this->programsModel->getProgramHash();
 			
 			//debug breakpoint
 			$debugAmt=50;

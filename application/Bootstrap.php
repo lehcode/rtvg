@@ -3,7 +3,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.29 2013-04-03 18:26:57 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.30 2013-04-10 01:58:08 developer Exp $
  *
  */
 
@@ -23,7 +23,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
-		Zend_Registry::set( 'rtvg_version', 'beta5.2' );
+		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "beta5.3" );
 		
 		date_default_timezone_set( Zend_Registry::get( 'site_config' )->site->get( 'timezone', 'Europe/Moscow' ) );
 		
@@ -59,13 +59,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-			->returnResponse( true )
+			->returnResponse( false )
 			->throwExceptions( false );
 		
-		
-		if (APPLICATION_ENV=='development'){
-		    $fc->returnResponse( true )
-				->throwExceptions( true );
+		if(APPLICATION_ENV=='production'){
+		    $fc->returnResponse( true );
+		    $fc->throwExceptions( true );
 		}
 		
 		$router->setRouter($fc->getRouter());
@@ -80,12 +79,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		    $response = $fc->dispatch();
 		    
 		    if( $response && $response->isException() ) {
-		    	//die(__FILE__.': '.__LIN);
+		    	//die(__FILE__.': '.__LINE__);
 		    	$exceptions = $response->getException();
 		    	foreach ($exceptions as $e){
 		    		$log->log( $e->getMessage(), Zend_Log::DEBUG, $e->getTraceAsString() );
 		    		if (APPLICATION_ENV=='development'){
-		    			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		    			throw new Exception($e->getMessage(), $e->getCode(), $e);
 		    		}
 		    	}
 		    }

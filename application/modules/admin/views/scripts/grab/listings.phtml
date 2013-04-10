@@ -1,0 +1,9 @@
+<?php
+//var_dump($this->start);
+//die(__FILE__.': '.__LINE__);
+$form = new Xmltv_Form_Admin_SitesToGrab( array(
+	'formClass' => 'form',
+	'formId' => 'parsers',
+	'start' => $this->start
+) );
+echo $form;
