@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @uses    Xmltv_Controller_Action
- * @version $Id: VideosController.php,v 1.30 2013-04-06 22:35:03 developer Exp $
+ * @version $Id: VideosController.php,v 1.31 2013-04-11 06:21:34 developer Exp $
  *
  */
 class VideosController extends Rtvg_Controller_Action
@@ -121,12 +121,13 @@ class VideosController extends Rtvg_Controller_Action
 				        }
 				    }
 				    
+				    if (APPLICATION_ENV=='development'){
+			            //var_dump($mainVideo);
+			            //die(__FILE__.': '.__LINE__);
+			        }
+				    
 				    if ($mainVideo){
 					    if (parent::$videoCache===true){
-					        if (APPLICATION_ENV=='development'){
-					            //var_dump($mainVideo);
-					            //die(__FILE__.': '.__LINE__);
-					        }
 							$this->vCacheModel->saveMainVideo($mainVideo);
 						}
 				    }

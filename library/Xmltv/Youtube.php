@@ -88,7 +88,7 @@ class Xmltv_Youtube {
 		$httpClient = new Zend_Http_Client();
 		$httpClient->setConfig( array('adapter'=>$this->adapter));
 		$this->client  =@ new Zend_Gdata_YouTube( $httpClient );
-		//$this->client->setHttpClient($httpClient);
+		$this->client->setGzipEnabled(true);
 		$this->client->setMajorProtocolVersion(2);
 				
 	}
@@ -133,9 +133,8 @@ class Xmltv_Youtube {
 		try {
 			$result = $this->client->getVideoEntry($yt_id);
 		} catch (Zend_Gdata_App_Exception $e) {
-		    //var_dump($result);
-		    //die(__FILE__.': '.__LINE__);
-		    return false;
+		    var_dump($e->getMessage());
+		    die(__FILE__.': '.__LINE__);
 		}
 		
 		return $result;
@@ -297,11 +296,16 @@ class Xmltv_Youtube {
 		}
 	
 		$params['id'] = base64_decode( strrev($rtvg_id).'=');
-		$filters = array( 'id'=>'Alnum' );
+		
+		if (APPLICATION_ENV=='development'){
+			//var_dump($params['id']);
+			//die(__FILE__.': '.__LINE__);
+		}
+		
 		$validators = array( 'id'=>array(
-			new Zend_Validate_Regex('/^[a-z0-9]+$/i')
+			new Zend_Validate_Regex('/^[a-z0-9-]+$/i')
 		));
-		$input = new Zend_Filter_Input($filters, $validators, $params);
+		$input = new Zend_Filter_Input(array(), $validators, $params);
 		
 		if (APPLICATION_ENV=='development'){
 		    //var_dump($input->isValid('id'));
