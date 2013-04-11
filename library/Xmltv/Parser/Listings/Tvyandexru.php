@@ -146,19 +146,26 @@ class Xmltv_Parser_Listings_Tvyandexru extends Xmltv_Parser_Curl
     }
     
     
-    
-    
-    
-    /*
+    /**
      * Fetch single program page
+     * 
+     * @param  string $url
+     * @param  string $referer // optional
+     * @param  array $proxy // optional
+     * @return string
      */
-    public function fetchBroadcastPage( $url=null, $referer=null ){
+    public function fetchBroadcastPage( $url=null, $referer=null, $proxy=array() ){
         
         $this->setUrl( $url );
         $this->setUserAgent( 'Mozilla/5.0 (Windows; U; Windows CE 5.1; rv:1.8.1a3) Gecko/20060610 Minimo/0.016' );
-        (null !== $referer) ? $this->setReferrer( $referer ) : null ;
+        (!empty($proxy['host']) && !empty($proxy['port'])) ? $this->setProxy( $proxy['host'] , (int)$proxy['port'] ) : null ;
+        (isset($referer) && !empty($referer)) ? $referer : null ;
+        $this->setOption( CURLOPT_TIMEOUT, 20 );
+        $this->setOption( CURLOPT_FOLLOWLOCATION, 1 );
+        $this->setOption( CURLOPT_MAXREDIRS, 5 );
+
         while(!($broadcastPage = $this->fetch())){
-        	usleep(250000);
+        	usleep(500000);
         }
         return $broadcastPage->getDocument();
 		
@@ -190,8 +197,6 @@ class Xmltv_Parser_Listings_Tvyandexru extends Xmltv_Parser_Curl
         		        	preg_match('/,\s(\d{1,2}:\d{2})—(\d{1,2}:\d{2})$/u', $value, $m);
         		        	$bcData['start'] = !empty($m[1]) ? new Zend_Date( $date->toString( "YYYY-MM-dd" ).' '.trim( $m[1] ), 'YYYY-MM-dd H:mm') : null ;
         		        	$bcData['end']   = !empty($m[2]) ? new Zend_Date( $date->toString( "YYYY-MM-dd" ).' '.trim( $m[2] ), 'YYYY-MM-dd H:mm') : null ;
-        		        	$bcData['start'] = $bcData['start']->toString("YYYY-MM-dd HH:mm").':00';
-        		        	$bcData['end']   = $bcData['end']->toString("YYYY-MM-dd HH:mm").':00';
         		        }
         		        
         		        $descNode = $infoNode->childNodes->item(2);
@@ -281,7 +286,7 @@ class Xmltv_Parser_Listings_Tvyandexru extends Xmltv_Parser_Curl
      * @param  array $bc // broadcast data
      * @return array
      */
-    public function fixTitle($bc=array()){
+    public function fixTitles($bc=array()){
     	
         //var_dump($bc['title']);
         //die(__FILE__.': '.__LINE__);
@@ -308,22 +313,28 @@ class Xmltv_Parser_Listings_Tvyandexru extends Xmltv_Parser_Curl
     }
     
     /**
-     * 
-     * @param unknown_type $url
+     * @param  string $url
+     * @param  string $referer
+     * @param  array $proxy // optioanl
+     * @return Zend_Dom_Query
      */
-    public function fetchCollectionPage($url=null){
+    public function fetchCollectionPage($url=null, $referer=null, $proxy=array()){
         
         $this->setUrl( $url );
         $this->setUserAgent( 'Mozilla/5.0 (Windows; U; Windows CE 5.1; rv:1.8.1a3) Gecko/20060610 Minimo/0.016' );
-        $this->setProxy('localhost', 8118);
-        $this->setReferrer('http://m.tv.yandex.ru');
-        $this->setOption( CURLOPT_TIMEOUT, 20 );
+    	(!empty($proxy['host']) && !empty($proxy['port'])) ? $this->setProxy( $proxy['host'] , (int)$proxy['port'] ) : null ;
+        (isset($referer) && !empty($referer)) ? $referer : null ;
+        $this->setOption( CURLOPT_TIMEOUT, 10 );
         $this->setOption( CURLOPT_FOLLOWLOCATION, 1 );
         $this->setOption( CURLOPT_MAXREDIRS, 5 );
         
         while(!($result = $this->fetch())){
-        	usleep(250000);
+        	usleep(500000);
         }
+        
+        //var_dump(func_get_args());
+        //var_dump($result);
+        //die(__FILE__.': '.__LINE__);
         
         return $result;
         

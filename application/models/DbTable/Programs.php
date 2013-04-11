@@ -3,67 +3,14 @@
  * Programs database table class
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Programs.php,v 1.22 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: Programs.php,v 1.23 2013-04-11 05:21:11 developer Exp $
  *
  */
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 {
 
 	protected $_name = 'programs';
-	protected $_primary = 'id';
-
-	/**
-	 * Constructor
-	 * 
-	 * @param array $config
-	 */
-	public function init() {
-		parent::init();
-	}
-	
-	/**
-	 * (non-PHPdoc)
-	 * @see Zend_Db_Table_Abstract::_setup()
-	 */
-	protected function _setup(){
-	
-		parent::_setup();
-		$now = Zend_Date::now();
-		$this->_defaultValues = array(
-				'id'=>0,
-				'title'=>'',
-				'sub_title'=>'',
-				'alias'=>'',
-				'channel'=>null,
-				'start'=>null,
-				'end'=>null,
-				'category'=>null,
-				'rating'=>null,
-				'new'=>0,
-				'live'=>0,
-				'image'=>'',
-				'last_chance'=>0,
-				'previously_shown'=>null,
-				'country'=>'',
-				'actors'=>'',
-				'directors'=>'',
-				'writers'=>'',
-				'adapters'=>'',
-				'producers'=>'',
-				'composers'=>'',
-				'editors'=>'',
-				'presenters'=>'',
-				'commentators'=>'',
-				'guests'=>'',
-				'episode_num'=>null,
-				'premiere'=>0,
-				'date'=>null,
-				'length'=>null,
-				'desc'=>'',
-				'hash'=>'',
-		);
-			
-	}
+	protected $_primary = 'hash';
 	
 	/**
 	 * 
@@ -121,7 +68,7 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 		 */
 		$select = $this->_db->select()
 			->from( array( 'prog'=>$this->getName()), array(
-				'id',
+				//'id',
 				'title',
 				'sub_title',
 				'alias',

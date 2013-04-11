@@ -4,7 +4,7 @@
  *
  * @uses Zend_Db_Table_Abstract
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Abstract.php,v 1.10 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: Abstract.php,v 1.11 2013-04-11 05:21:13 developer Exp $
  */
 class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
     
@@ -18,7 +18,7 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      * Table prefix
      * @var string
      */
-    protected $_pfx = '';
+    protected $_prefix = '';
 
     /**
      * Primary column
@@ -45,13 +45,13 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      */
     public function init(){
         
-        $this->_pfx = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
+        $this->_prefix = (string)Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
         
-        if (!$this->_pfx){
+        if (!$this->_prefix){
             throw new Zend_Exception(self::ERR_WRONG_DB_PREFIX);
         }
         
-        $this->setName($this->_pfx.$this->_name);
+        $this->setName($this->_prefix.$this->_name);
         
     }
     
@@ -91,7 +91,7 @@ class Xmltv_Db_Table_Abstract extends Zend_Db_Table_Abstract {
      */
     protected function getPrefix(){
     	
-        return $this->_pfx;
+        return $this->_prefix;
         
     }
     

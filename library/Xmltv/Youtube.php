@@ -131,8 +131,10 @@ class Xmltv_Youtube {
 		}
 		
 		try {
-			$result = $this->client->getVideoEntry($yt_id);	
+			$result = $this->client->getVideoEntry($yt_id);
 		} catch (Zend_Gdata_App_Exception $e) {
+		    //var_dump($result);
+		    //die(__FILE__.': '.__LINE__);
 		    return false;
 		}
 		

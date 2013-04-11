@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: GrabController.php,v 1.7 2013-04-10 01:55:57 developer Exp $
+ * @version    $Id: GrabController.php,v 1.8 2013-04-11 05:19:15 developer Exp $
  *
  */
 class Admin_GrabController extends Rtvg_Controller_Admin
@@ -102,6 +102,13 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 		    );
 		    
 		    $parser = new Xmltv_Parser_Listings_Tvyandexru();
+		    $proxyHost = null;
+		    $proxyPort = null;
+		    if(true === (bool)Zend_Registry::get('site_config')->proxy->get('active')){
+		        $proxyHost = Zend_Registry::get('site_config')->proxy->get('host');
+		    	$proxyPort = (int)Zend_Registry::get('site_config')->proxy->get('port');
+		    }
+		    $curlRef = null;
 		    
 		    foreach ($collections as $collectionCat=>$collectionUrl){
 		        
@@ -109,15 +116,22 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 		        	echo ('$collectionCat: '.$collectionCat."<br />");
 		        }
 		        
+		        /*
+		         * (1) Fetch collectin page HTML
+		         */ 
 		        $f = '/Grab';
 			    if ($this->cache->enabled){
 			        $hash = $collectionCat.'_'.$date->toString('YYMMdd');
 			        if (false===($page = $this->cache->load($hash, 'Core', $f))){
-			    	    $page = $parser->fetchCollectionPage( $collectionUrl );
+			    	    $page = $parser->fetchCollectionPage( $collectionUrl, $curlRef, array(
+			    	    	'host'=>$proxyHost,
+			    	    	'port'=>$proxyPort) );
 			    	    $this->cache->save($page, $hash, 'Core', $f);
 			    	}
 			    } else {
-			        $page = $parser->fetchCollectionPage( $collectionUrl );
+			        $page = $parser->fetchCollectionPage( $collectionUrl, $curlRef, array(
+			    	    'host'=>$proxyHost,
+			    	    'port'=>$proxyPort) );
 			    }
 			    
 			    $html = $page->getDocument();
@@ -126,6 +140,9 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    $dom->preserveWhiteSpace = false;
 			    $parser->document = $dom;
 			    
+			    /*
+			     * (2) Extract channel tables from collection page
+			     */ 
 			    $tables = $parser->document->getElementsByTagName('table');
 			    $rows   = array();
 			    $broadcasts = array();
@@ -134,9 +151,13 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    {
 			    	if($table->getAttribute('class')=='b-schedule__list'){
 			    	    
+			    	    /*
+			    	     * (3) Find channel title and map to our DB
+			    	     */
 			    		$headers = $table->getElementsByTagName('th');
 			    		$parser->yaTitle( trim( $headers->item(1)->nodeValue ) );
 			    		$mapped = $parser->mapChannel( $channels );
+			    		
 			    		if (false !== (bool)($channel = $this->channelsModel->searchChannel( $mapped, true ))){
 			    			$activeChannels[] = $channel['id'];
 			    		} else {
@@ -150,10 +171,16 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    			'list'          => null
 			    		);
 			    		
+			    		/**
+			    		 * (4) Get broadcast URLs from channel collection page
+			    		 */
 			    		$bsUrls = $parser->extractBroadcastUrls( $table );
 			    		
 			    		foreach ($bsUrls as $bcUrl){
 			    		    
+			    		    /**
+			    		     * (5) Fetch single broabcast page
+			    		     */
 			    		    if ($this->cache->enabled){
 			    		        
 			    		        $dir = APPLICATION_PATH.'/../cache/Grab/'.$channel['id'];
@@ -166,26 +193,54 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        $f = '/Grab/'.$channel['id'];
 			    		        $hash = md5($bcUrl);
 			    		        if (false === (bool)($html = $this->cache->load($hash, 'Core', $f))){
-			    		        	$html   = $parser->fetchBroadcastPage( $bcUrl );
+			    		        	$html   = $parser->fetchBroadcastPage( $bcUrl, null, array(
+			    		        		'host'=>$proxyHost,
+			    		        		'port'=>$proxyPort,
+			    		        	) );
 			    		        	$this->cache->save($html, $hash, 'Core', $f);
 			    		        }
 			    		    } else {
 			    		        $html = $parser->fetchBroadcastPage( $bcUrl );
 			    		    }
 			    		    
+			    		    /**
+			    		     * (6) Parse broadcast page
+			    		     */
 			    		    if (false !== (bool)($data = $parser->parseBroadcastPage( $html, $date ))){
 			    		    	
-			    		        $data = $parser->fixTitle( $data );
+			    		        if (!isset($data['title']) || empty($data['title'])){
+			    		        	break;
+			    		        }
+			    		        if (!isset($data['start']) || empty($data['start'])) {
+			    		            break;
+			    		        }
+			    		        
+			    		        $titles = $this->programsModel->parseTitle( $data['title'] );
+			    		        $data = array_merge($titles, $data);
+			    		        $titles = $parser->fixTitles( $data );
+			    		        $data = array_merge($titles, $data);
+			    		        
+			    		        //Zend_Debug::dump( $data );
+			    		        //die(__FILE__.': '.__LINE__);
+			    		        
+			    		        $data['start']   = $data['start']->toString("YYYY-MM-dd HH:mm").':00';
+        		        		$data['end']     = $data['end']->toString("YYYY-MM-dd HH:mm").':00';
 			    		        $data['alias']   = $this->programsModel->makeAlias( $data['title'] );
 			    		        $data['channel'] = $channel['id'];
 			    		        
-			    		        $newBc = $this->programsModel->newBroadcast( $data );
-			    		        $newBc->hash = $this->programsModel->getProgramHash( $newBc );
+			    		        //Zend_Debug::dump( $data );
+			    		        //die(__FILE__.': '.__LINE__);
 			    		        
-			    		        if (false !== (bool)($found = $this->programsModel->search('hash', $newBc->hash))) {
+			    		        // Create broadcast object
+			    		        $newBc  = $this->programsModel->newBroadcast( $data );
+			    		        $search = $this->programsModel->getProgramHash( $newBc );
+			    		        
+			    		        // Check if object already in DB and
+			    		        // skip to next broadcast if it is
+			    		        if (false !== (bool)$this->programsModel->search( 'hash', $search )) {
 			    		        	break;
 			    		        }
-			    		        
+			    		        $newBc->hash = $search;
 			    		        
 			    		        // Fix category if needed
 			    		        if (!$data['category']) {
@@ -221,6 +276,8 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        	$data['actors'] = implode(',', $persons);
 			    		        }
 			    		         
+			    		        $data['actors']       = is_array( $data['actors']) ? implode(',', $data['actors']) : $data['actors'] ;
+			    		        $data['directors']    = is_array( $data['directors']) ? implode(',', $data['directors']) : $data['directors'] ;
 			    		        $data['commentators'] = is_array( $data['commentators']) ? implode(',', $data['commentators']) : '' ;
 			    		        $data['writers']      = is_array( $data['writers'] ) ? implode( ',', $data['writers'] ) : '' ;
 			    		        $data['operators']    = is_array( $data['operators'] ) ? implode( ',', $data['operators'] ) : '' ;
@@ -228,12 +285,8 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        $data['editors']      = is_array( $data['editors'] ) ? implode( ',', $data['editors'] ) : '' ;
 			    		        $data['presenters']   = is_array( $data['presenters'] ) ? implode( ',', $data['presenters'] ) : '' ;
 			    		        $data['producers']    = is_array( $data['producers' ]) ? implode( ',', $data['producers']) : '' ;
-			    		         
 			    		        
-			    		        
-			    		         
 			    		        if ((int)$newBc->channel==0){
-			    		        	//var_dump($channel);
 			    		        	var_dump($newBc->toArray());
 			    		        	die( "Cannot save row with channel '0'" );
 			    		        }
@@ -252,14 +305,12 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		}
 			    		
 			    		if (APPLICATION_ENV=='development'){
-			    		    //var_dump($info);
 			    			//die(__FILE__.': '.__LINE__);
 			    		}
 			    		
 			    	}
 			    }
 			    if (APPLICATION_ENV=='development'){
-			    	//var_dump($info);
 			    	//die(__FILE__.': '.__LINE__);
 			    }
 		    }

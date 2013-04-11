@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @uses	Zend_Controller_Action
- * @version $Id: ErrorController.php,v 1.19 2013-04-06 22:35:03 developer Exp $
+ * @version $Id: ErrorController.php,v 1.20 2013-04-11 05:21:11 developer Exp $
  *
  */
 class ErrorController extends Zend_Controller_Action
@@ -17,7 +17,7 @@ class ErrorController extends Zend_Controller_Action
 	 */
 	protected $_flashMessenger = null;
 	
-	private static $pageclass='error';
+	private $pageclass='error';
 	
 	public function init(){
 	    
@@ -27,9 +27,8 @@ class ErrorController extends Zend_Controller_Action
 		$this->_flashMessenger = $this->_helper->getHelper( 'FlashMessenger' );
 		$this->_helper->layout->setLayout( 'error' );
 		if (!$this->_request->isXmlHttpRequest()){
-			$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
+			$this->view->assign( 'pageclass', $this->pageclass );
 		}
-		$this->view->pageclass = self::$pageclass;
 		
 	}
 	

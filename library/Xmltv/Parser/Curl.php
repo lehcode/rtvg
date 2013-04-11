@@ -176,10 +176,14 @@ class Xmltv_Parser_Curl extends Xmltv_Parser_StringParser
 	 * @param string $agent
 	 */
 	public function setUserAgent($agent=null){
-		if (!$agent)
-			curl_setopt($this->_session, CURLOPT_USERAGENT, $this->_userAgent);
-		else 
-			curl_setopt($this->_session, CURLOPT_USERAGENT, $agent);
+		if (!$agent){
+		    $a = $this->_userAgent;
+		} else {
+			$a = $agent;
+			$this->_userAgent = $a;
+		}
+		
+		curl_setopt($this->_session, CURLOPT_USERAGENT, $a);
 	}
 	
 	/**

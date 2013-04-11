@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Videos.php,v 1.27 2013-04-03 04:08:16 developer Exp $
+ * @version $Id: Videos.php,v 1.28 2013-04-11 05:21:11 developer Exp $
  *
  */
 class Xmltv_Model_Videos extends Xmltv_Model_Abstract
@@ -101,11 +101,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		if (!self::isRussian( $entry->getVideoTitle())) {
 			return false;
 		}
-		/* 
-		if (!self::isHack( $entry->getVideoTitle())) {
-			return false;
-		}
-		 */
+		
+		//if (self::isHack( $entry->getVideoTitle())) {
+		//	return false;
+		//}
+		
 		return true;
 		
 	}
@@ -196,8 +196,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public static function isHack($title=null){
 		
-	    if (Xmltv_String::stristr($title, 'взлом') || 
-	    	Xmltv_String::stristr($title, 'хак')) {
+	    if (Xmltv_String::stristr($title, ' взлом ') || 
+	    	Xmltv_String::stristr($title, ' хак ') ||
+	    	Xmltv_String::stristr($title, ' накрутка ') ||
+	    	Xmltv_String::stristr($title, ' кряк ')
+	    ){
 	    	return true;
 	    } else {
 	    	if (APPLICATION_ENV=='development'){
@@ -652,12 +655,14 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		//$yt->setUserAgent( Zend_Registry::get('user_agent') );
 		$yt->setAdapter( Zend_Registry::get('http_client') );
 		
-		if ( (bool)Zend_Registry::get('site_config')->proxy->get('active')) {
+		/*
+		if ( (bool)Zend_Registry::get('site_config')->videos->listing->proxy->get('active')) {
 			$yt->setProxy(array(
 				'host'=>Zend_Registry::get('site_config')->proxy->get('host'),
 				'port'=>Zend_Registry::get('site_config')->proxy->get('port'),
 			));
 		}
+		*/
 		
 		$img_width = isset($config['img_width']) && !empty($config['img_width']) ? (int)$config['img_width'] : 120 ;
 		$search = preg_replace('/[^\p{Cyrillic}\p{Latin}\d\s]+/ui', ' ', $search);

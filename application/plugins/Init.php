@@ -4,7 +4,7 @@
  * Application initialization plugin
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Init.php,v 1.27 2013-04-03 18:18:05 developer Exp $
+ * @version $Id: Init.php,v 1.28 2013-04-11 05:21:11 developer Exp $
  */
 class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 {
@@ -79,9 +79,6 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 				printf("%20s = dec %10u\n", $s, $v, $v);
 			}
 			*/
-			Zend_Controller_Front::getInstance()
-				->returnResponse( false )
-				->throwExceptions( true );
 		}
 		
 		if (preg_match('/[^a-z0-9%-]+$/', $controllerName)){

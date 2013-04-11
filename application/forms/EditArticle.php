@@ -4,7 +4,7 @@
  * 
  * @author	 Antony Repin
  * @subpackage backend
- * @version	$Id: EditArticle.php,v 1.4 2013-04-03 04:08:15 developer Exp $
+ * @version	$Id: EditArticle.php,v 1.5 2013-04-11 05:21:11 developer Exp $
  *
  */
 class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
@@ -568,10 +568,10 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 					'tag'=>'div',
 					'class'=>'row-fluid')),
 		))
-			->setAttrib('class', $this->options['class'])
-			->setAttrib('id', $this->options['id'])
-			->setAttrib('action', $this->view->baseUrl('admin/content/edit'))
-			->setMethod('post');
+		->setAttrib('class', $this->options['class'])
+		->setAttrib('id', $this->options['id'])
+		->setAttrib('action', $this->view->baseUrl('admin/content/edit'))
+		->setMethod('post');
 		
 	}
 }

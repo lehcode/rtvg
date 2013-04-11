@@ -3,7 +3,7 @@
  * Common layout
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: layout.phtml,v 1.39 2013-04-08 02:51:24 developer Exp $
+ * @version $Id: layout.phtml,v 1.40 2013-04-11 05:21:11 developer Exp $
  *
  */
 
@@ -232,20 +232,14 @@ var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga
 <?php ob_start(); ?>
 $(document).ready(function(){
 	$("#footer .counter_logo").css({ display: "none" });
-	<?php if (!$isFrontpage) { ?>
-	$.getScript("<?php echo $this->url(array(), 'default_script_slider'); ?>");
-	<?php /*$.getScript("<?php echo $this->url(array(), 'default_script_richmedia'); ?>");*/ ?>
-	$.getScript("<?php echo $this->url(array(), 'default_script_vk-message'); ?>");
-	<?php } ?>
 });
 <?php
 $js = (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
 $this->inlineScript()->appendScript( $js );?>
-<?php if (mt_rand(0, 1)==1) {
-	$js = file_get_contents(APPLICATION_PATH.'/../public/js/ss/mu/code.js'); ?>
-	<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( $js ) : $js; ?></script>
-<?php 
-}?>
+
+<?php $js = file_get_contents(APPLICATION_PATH.'/../public/js/ss/mu/code.js'); ?>
+<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( $js ) : $js; ?></script>
+
 <?php echo $this->inlineScript(); ?>
 </body>
 </html>

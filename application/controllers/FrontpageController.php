@@ -3,7 +3,7 @@
  * Frontend index controller
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: FrontpageController.php,v 1.11 2013-04-06 22:35:03 developer Exp $
+ * @version $Id: FrontpageController.php,v 1.12 2013-04-11 05:21:11 developer Exp $
  *
  */
 
@@ -52,16 +52,24 @@ class FrontpageController extends Rtvg_Controller_Action
 	    if ($this->cache->enabled){
 	        
 	        $this->cache->setLifetime(600);
-	        $this->cache->setLocation(ROOT_PATH.'/cache');
 	        $f = '/Listings/Frontpage';
 	        
 	        $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
 		    if (($this->list = $this->cache->load( $hash, 'Core', $f))===false) {
-		        $this->_getList();
+		        $this->list = $this->programsModel->frontpageListing( $this->_helper->top( 
+					'TopChannels', 
+					array( 'amt'=>self::TOP_CHANNELS_AMT )));
 		        $this->cache->save( $this->list, $hash, 'Core', $f);
 		    }
 	    } else {
-		    $this->_getList();
+		    $this->list = $this->programsModel->frontpageListing( $this->_helper->top( 
+				'TopChannels', 
+				array( 'amt'=>self::TOP_CHANNELS_AMT )));
+	    }
+	    
+	    if (APPLICATION_ENV=='development'){
+	        //var_dump($this->list);
+	        //die(__FILE__.': '.__LINE__);
 	    }
 	    
 	    $this->view->assign( 'list', $this->list );
@@ -99,11 +107,7 @@ class FrontpageController extends Rtvg_Controller_Action
 	    
 	}
 	
-	private function _getList(){
-		$this->list = $this->programsModel->frontpageListing( $this->_helper->top( 
-			'TopChannels', 
-			array( 'amt'=>self::TOP_CHANNELS_AMT )));
-	}
+	
 	
 	/**
 	 * Display single channel listings

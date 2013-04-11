@@ -4,7 +4,7 @@
  * Routing plugin
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Router.php,v 1.18 2013-04-06 22:35:03 developer Exp $
+ * @version $Id: Router.php,v 1.19 2013-04-11 05:21:11 developer Exp $
  */
 
 class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
@@ -174,19 +174,20 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				'action'=>'show-video',
 				'alias'=>self::VIDEO_ALIAS_REGEX,
 				'id'=>'[\w\d]{12}')));
-			
+		/* 	
 		$this->_router->addRoute( 'default_error_error', 
 			new Zend_Controller_Router_Route( 'ошибка', array(
 				'module'=>'default',
 				'controller'=>'error',
 				'action'=>'error')));
-			
+		 */	
+		/* 
 		$this->_router->addRoute( 'default_error_index', 
 			new Zend_Controller_Router_Route( 'ошибка', array(
 				'module'=>'default',
 				'controller'=>'error',
 				'action'=>'error')));
-			
+		 */	
 		$this->_router->addRoute( 'sitemap', 
 			new Zend_Controller_Router_Route( 'sitemap.xml', array(
 				'module'=>'default',
@@ -382,6 +383,18 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'action'=>'delete-programs'),
 		array(
 			'delete_start'=>'/\d{2}-\d{2}-\d{4}/',
+		)));
+		
+		
+		$this->_router->addRoute( 'admin_grab_do',
+		new Zend_Controller_Router_Route( 'admin/grab-site',
+		array(
+			'module'=>'admin',
+			'controller'=>'grab',
+			'action'=>'do'),
+		array(
+			'site'=>'/\p{Ll}\d{1,16}/u',
+			'weekstart'=>'/\d{2}\.\d{2}\.\d{2}/',
 		)));
 		
 		

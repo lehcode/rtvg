@@ -193,8 +193,8 @@ abstract class Xmltv_Model_Abstract
 	protected static function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
 	    
 	    // Use this in your model, view and controller files
-	    Zend_Registry::get('console_log')->log($select->assemble(), Zend_Log::INFO);
-		//Zend_Debug::dump($select->assemble());
+	    //Zend_Registry::get('console_log')->log($select->assemble(), Zend_Log::INFO);
+		Zend_Debug::dump($select->assemble());
         
 	}
 

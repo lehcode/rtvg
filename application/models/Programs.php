@@ -4,7 +4,7 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: Programs.php,v 1.30 2013-04-06 22:35:03 developer Exp $
+ * @version $Id: Programs.php,v 1.31 2013-04-11 05:19:30 developer Exp $
  *
  */
 class Xmltv_Model_Programs extends Xmltv_Model_Abstract
@@ -217,7 +217,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    $where = count($where) ? implode(' AND ', $where) : '' ;
 	    $select = $this->db->select()
 	    ->from(array('prog'=>$this->programsTable->getName()), array(
-	    		'id',
+	    		//'id',
 	    		'title',
 	    		'sub_title',
 	    		'alias',
@@ -452,7 +452,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    }
 	    
 	    $select
-			->where( "`prog`.`start` LIKE '".$date->toString('YYYY-MM-dd')." %'" )
+			->where( "`prog`.`start` >= '".$date->toString('YYYY-MM-dd')." 00:00:00'" )
 			->where( "`channel`.`published`='1'")
 			->where( "`channel`.`lang`='ru'")
 			->group( "prog.hash")
@@ -644,7 +644,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		
 	    $select = $this->db->select()
 		    ->from( array('prog'=>$this->programsTable->getName()), array(
-		    		'id',
+		    		//'id',
 		    		'title',
 		    		'sub_title',
 		    		'alias',
@@ -739,8 +739,12 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    $where = array(
 	    	"`prog`.`start` >= '".Zend_Date::now()->toString("YYYY-MM-dd")." 00:00:00'",
 	    	"`prog`.`start` < '".Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm").":00'",
-	    	"`prog`.`channel` IN ($ids)",
 	    );
+	    
+	    if (is_array($channels) && !empty($channels)){
+	        $where[] = "`prog`.`channel` IN ($ids)";
+	    }
+	    
 	    $where = implode(" AND ", $where);
 	    
 	    $select = $this->db->select()
@@ -769,7 +773,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    	->order(array("prog.channel ASC", "prog.start ASC"));
 	    
 	    if (APPLICATION_ENV=='development'){
-	        //parent::debugSelect($select, __METHOD__);
+	        parent::debugSelect($select, __METHOD__);
 	        //die(__FILE__.': '.__LINE__);
 	    }
 	    
@@ -814,9 +818,13 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    }
 	    
 	    if ($single){
-	    	return $this->table->fetchRow("`$key` LIKE '$search'")->toArray();
+	    	if(false !== (bool)($result =  $this->table->fetchRow("`$key` LIKE '$search'"))) {
+	    	    return $result;
+	    	}
 	    } else {
-	        return $this->table->fetchAll("`$key` LIKE '$search'")->toArray();
+	        if (false !== (bool)($result = $this->table->fetchAll("`$key` LIKE '$search'"))) {
+	            return $result;
+	        }
 	    }
 	    
 	}
@@ -828,7 +836,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    
 		$select = $this->db->select()
 			->from( array('prog'=>$this->table->getName()), array(
-				'id',
+				//'id',
 				'title',
 				'desc',
 				'alias',
@@ -908,7 +916,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		
 	    $select = $this->db->select()
 	    ->from(array('prog'=>$this->programsTable->getName()), array(
-	    		'id',
+	    		//'id',
 	    		'title',
 	    		'live',
 	    		'episode_num',

@@ -3,7 +3,7 @@
  * Application bootstrap
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: Bootstrap.php,v 1.30 2013-04-10 01:58:08 developer Exp $
+ * @version $Id: Bootstrap.php,v 1.31 2013-04-11 05:21:11 developer Exp $
  *
  */
 
@@ -23,7 +23,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
-		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "beta5.3" );
+		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "beta5.4" );
 		
 		date_default_timezone_set( Zend_Registry::get( 'site_config' )->site->get( 'timezone', 'Europe/Moscow' ) );
 		

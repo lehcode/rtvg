@@ -4,7 +4,7 @@
  * Request validation action helper
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: RequestValidator.php,v 1.28 2013-04-06 22:35:03 developer Exp $
+ * @version $Id: RequestValidator.php,v 1.29 2013-04-11 05:21:11 developer Exp $
  */
 class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Action_Helper_Abstract
 {
@@ -572,6 +572,19 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					
 					case 'system':
 						default: break;
+					break;
+					
+					case 'grab':
+					    switch ($action){
+					    	case 'do':
+					    	    $validators['site'] = array( 
+					    	    	new Zend_Validate_Alpha(),
+					    	    	new Zend_Validate_StringLength(array(4,255))
+					    	    );
+					    	break;
+					    	default:
+					    		throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION.': '.$action, 404);
+					    }
 					break;
 					
 					default: break;

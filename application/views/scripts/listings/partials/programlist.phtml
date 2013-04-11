@@ -3,7 +3,7 @@
  * Передачи сегодня
  * 
  * @author  Antony Repin
- * @version $Id: programlist.phtml,v 1.4 2013-04-06 22:35:04 developer Exp $
+ * @version $Id: programlist.phtml,v 1.5 2013-04-11 05:21:11 developer Exp $
  *
  */
 
@@ -176,9 +176,11 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 		 * Описание программы
 		 */
 		if ( isset($prog['desc']) && !empty($prog['desc'])) { ?>
-		<p class="desc">
-			<?php echo $this->escape( $prog['desc'] ); ?>
-		</p>
+		<div class="wrapper">
+			<p class="description">
+				<?php echo $this->truncateString( $this->escape( $prog['desc'] ), 50, 'words', '.' ); ?>
+			</p>
+		</div>
 		<?php } ?>
 		
 		

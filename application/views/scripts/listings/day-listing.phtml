@@ -4,7 +4,7 @@
  * 
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: day-listing.phtml,v 1.31 2013-04-06 22:35:04 developer Exp $
+ * @version $Id: day-listing.phtml,v 1.32 2013-04-11 05:21:11 developer Exp $
  *
  */
 
@@ -12,10 +12,22 @@ $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
 $channelCat   = $this->escape( $this->channel['cat_title'] );
 
-
 $this->headMeta()->setName('description', sprintf ('Передачи сегодня на канале «%s»', $channelTitle ));
 
-
+$js = "$(function(){
+	var minHeight = 0;
+	$('#programlist .item').each(function(){
+		var p      = $(this).find('p.description');
+		$(this).find('.inner').append($('<a/>').attr({ 'href':'#' }).html('Полностью'));
+		var height = $(this).height();
+		if (height<minHeight){
+			minHeight = height;
+		}
+	});
+	console.log(minHeight);
+});";
+$js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js): $js ;
+$this->headScript()->appendScript($js);
 
 
 $css="#content.day-listing .top form {

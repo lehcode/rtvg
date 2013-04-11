@@ -3,7 +3,7 @@
  * Frontend channels model
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @version    $Id: Channels.php,v 1.27 2013-04-06 22:35:03 developer Exp $
+ * @version    $Id: Channels.php,v 1.28 2013-04-11 05:21:11 developer Exp $
  */
 class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
@@ -391,7 +391,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 * 
 	 * @param string $string // Search string
 	 */
-	public function searchChannel( $string=null){
+	public function searchChannel( $string=null, $strict=false){
 		
 	    if ($string){
 	        $pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
@@ -400,17 +400,19 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	        	->joinLeft( array('cat'=>$pfx.'channels_categories'), '`ch`.`category`=`cat`.`id`', array(
 	        		'category_title'=>'title',
 	        		'category_alias'=>'alias',
-	        		'category_icon'=>'image'))
-	        	->where("`ch`.`title` LIKE '%$string%'");
+	        		'category_icon'=>'image'));
+	        
+	        if ($strict===true){
+	            $select->where("`ch`.`title` = '$string'");
+	            $result = $this->db->fetchRow( $select );
+	        } else {
+	            $select->where("`ch`.`title` LIKE '%$string%'");
+	            $result = $this->db->fetchAll( $select);
+	        }
+	        
 	        
 	        if (APPLICATION_ENV=='development'){
 		        var_dump($select->assemble());
-		        //die(__FILE__.': '.__LINE__);
-	        }
-	        
-	        $result = $this->db->fetchAll( $select);
-	        
-	        if (APPLICATION_ENV=='development'){
 		        //var_dump($result);
 		        //die(__FILE__.': '.__LINE__);
 	        }
@@ -465,7 +467,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		try {
 		    $result = $this->db->fetchAll( $select );
 		} catch (Zend_Db_Table_Exception $e) {
-		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+		    throw new Zend_Exception($e->getMessage());
 		}
 		
 		if (APPLICATION_ENV=='development'){
@@ -537,6 +539,40 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    
 	    return $result;
 	    
+	}
+	
+	public function makeAlias($title=null){
+	    
+	    if (!$title){
+	        throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM );
+	    }
+	    
+		//Generate channel alias
+		$alias = $title;
+		$toDash = new Xmltv_Filter_SeparatorToDash();
+		$alias = $toDash->filter( $alias );
+		$plusToPlus = new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
+		$alias = $plusToPlus->filter( $alias );
+		$alias = str_replace('--', '-', trim( $alias, ' -'));
+		return $alias;
+	}
+	
+	/**
+	 * Unpublish multiple channels at once
+	 * 
+	 * @param  array $channels
+	 * @throws Zend_Controller_Action_Exception
+	 * @return bool
+	 */
+	public function unpublishMulti($channels=array()){
+	
+	    var_dump($channels);
+	    die(__FILE__.': '.__LINE__);
+	    
+		$sql = "UPDATE ".$this->channelsTable->getName()." SET `published`='0' WHERE `id` IN ( ".implode(',', $channels)." )";
+		$this->db->query($sql);
+		return true;
+		 
 	}
 }
 

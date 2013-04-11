@@ -2,7 +2,7 @@
 /**
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: AdCode.php,v 1.3 2013-04-06 22:35:15 developer Exp $
+ * @version $Id: AdCode.php,v 1.4 2013-04-11 05:21:23 developer Exp $
  *
  */
 class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
@@ -117,20 +117,7 @@ class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
 		</noembed>
 		</noscript>
 		<!-- /admitad.banner -->';
-		$codes['boutique-ru-1']['code'] = '<!-- admitad.banner: e602fa22d543631d2075d908a9ba75 Boutique - RU -->
-		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/e602fa22d543631d2075d908a9ba75/">
-		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/e602fa22d543631d2075d908a9ba75/" alt="Boutique - RU" />
-		</a><!-- /admitad.banner -->';
-		/*
-		$codes['boutique-ru-2']['code'] = '<!-- admitad.banner: c6903584ec43631d2075d908a9ba75 Boutique - RU -->
-		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/c6903584ec43631d2075d908a9ba75/">
-		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/c6903584ec43631d2075d908a9ba75/" alt="Boutique - RU" />
-		</a><!-- /admitad.banner -->';
-		$codes['boutique-ru-3']['code'] = '<!-- admitad.banner: 0bcb69f36f43631d2075d908a9ba75 Boutique - RU -->
-		<a target="_blank" rel="nofollow" href="http://ad.admitad.com/goto/0bcb69f36f43631d2075d908a9ba75/">
-		<img width="300" height="250" border="0" src="http://ad.admitad.com/b/0bcb69f36f43631d2075d908a9ba75/" alt="Boutique - RU" />
-		</a><!-- /admitad.banner -->';
-		*/
+		
 		
 		switch ($this->output){
 			default:

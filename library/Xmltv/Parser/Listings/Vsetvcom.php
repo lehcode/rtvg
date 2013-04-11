@@ -4,12 +4,11 @@ class Xmltv_Parser_Listings_Vsetvcom
 {
 
 	private $_wrap;
-	private $_debug;
 	private $_counter=0;
 	protected $channels_info=array();
 
 	public function __construct(){
-		$this->_debug = Xmltv_Config::getDebug();
+		
 	}
 	
 	public function setWrap(Zend_Dom_Query_Result $domElement){
