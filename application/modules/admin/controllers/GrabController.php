@@ -4,7 +4,7 @@
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
- * @version    $Id: GrabController.php,v 1.8 2013-04-11 05:19:15 developer Exp $
+ * @version    $Id: GrabController.php,v 1.9 2013-04-12 06:58:27 developer Exp $
  *
  */
 class Admin_GrabController extends Rtvg_Controller_Admin
@@ -243,48 +243,52 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        $newBc->hash = $search;
 			    		        
 			    		        // Fix category if needed
-			    		        if (!$data['category']) {
+			    		        if (!isset($newBc->category) || (false===(bool)$newBc->category)) {
 			    		        	$fixCats = array(
 			    		        			222=>'Религия',
 			    		        			300006=>'Религия',
 			    		        			300037=>'Музыка' );
-			    		        	if (array_key_exists($data['channel'], $fixCats)){
-			    		        		$data['category'] = $this->programsModel->getProgramCategory( $fixCats[$data['channel']]);
+			    		        	if (array_key_exists($newBc->channel, $fixCats)){
+			    		        		$newBc->category = $this->programsModel->getProgramCategory( $fixCats[$newBc->channel]);
 			    		        	} else {
-			    		        		$data['category'] = null;
+			    		        		$newBc->category = null;
 			    		        	}
 			    		        }
 			    		        
-			    		        if (is_array($data['directors']) && count($data['directors'])) {
+			    		        if (is_array($newBc->directors) && count($newBc->directors)) {
 			    		            $persons = array();
-			    		        	foreach ($data['directors'] as $p){
+			    		        	foreach ($newBc->directors as $p){
 			    		        		if(!$id = $this->programsModel->personId($p, 'director')){
 			    		        			$persons[]=(int)$id;
 			    		        		}
 			    		        	}
-			    		        	$data['directors'] = $persons;
+			    		        	$newBc->directors = $persons;
+			    		        } else {
+			    		            $newBc->directors = '';
 			    		        }
 			    		         
 			    		         
-			    		        if (is_array($data['actors']) && count($data['actors'])) {
+			    		        if (is_array($newBc->actors) && count($newBc->actors)) {
 			    		            $persons = array();
-			    		        	foreach ($data['actors'] as $p){
+			    		        	foreach ($newBc->actors as $p){
 			    		        		if(!$id = $this->programsModel->personId($p, 'actor')){
 			    		        			$persons[]=(int)$id;
 			    		        		}
 			    		        	}
-			    		        	$data['actors'] = implode(',', $persons);
+			    		        	$newBc->actors = implode(',', $persons);
+			    		        }else {
+			    		            $newBc->actors = '';
 			    		        }
-			    		         
-			    		        $data['actors']       = is_array( $data['actors']) ? implode(',', $data['actors']) : $data['actors'] ;
-			    		        $data['directors']    = is_array( $data['directors']) ? implode(',', $data['directors']) : $data['directors'] ;
-			    		        $data['commentators'] = is_array( $data['commentators']) ? implode(',', $data['commentators']) : '' ;
-			    		        $data['writers']      = is_array( $data['writers'] ) ? implode( ',', $data['writers'] ) : '' ;
-			    		        $data['operators']    = is_array( $data['operators'] ) ? implode( ',', $data['operators'] ) : '' ;
-			    		        $data['composers']    = is_array( $data['composers'] ) ? implode( ',', $data['composers'] ) : '' ;
-			    		        $data['editors']      = is_array( $data['editors'] ) ? implode( ',', $data['editors'] ) : '' ;
-			    		        $data['presenters']   = is_array( $data['presenters'] ) ? implode( ',', $data['presenters'] ) : '' ;
-			    		        $data['producers']    = is_array( $data['producers' ]) ? implode( ',', $data['producers']) : '' ;
+			    		        
+			    		        $newBc->actors       = is_array( $newBc->actors) ? implode(',', $newBc->actors) : $newBc->actors ;
+			    		        $newBc->directors    = is_array( $newBc->directors) ? implode(',', $newBc->directors) : $newBc->directors ;
+			    		        $newBc->commentators = is_array( $newBc->commentators) ? implode(',', $newBc->commentators) : '' ;
+			    		        $newBc->writers      = is_array( $newBc->writers ) ? implode( ',', $newBc->writers ) : '' ;
+			    		        $newBc->operators    = is_array( $newBc->operators ) ? implode( ',', $newBc->operators ) : '' ;
+			    		        $newBc->composers    = is_array( $newBc->composers ) ? implode( ',', $newBc->composers ) : '' ;
+			    		        $newBc->editors      = is_array( $newBc->editors ) ? implode( ',', $newBc->editors ) : '' ;
+			    		        $newBc->presenters   = is_array( $newBc->presenters ) ? implode( ',', $newBc->presenters ) : '' ;
+			    		        $newBc->producers    = is_array( $newBc->producers) ? implode( ',', $newBc->producers) : '' ;
 			    		        
 			    		        if ((int)$newBc->channel==0){
 			    		        	var_dump($newBc->toArray());
@@ -394,8 +398,6 @@ class Admin_GrabController extends Rtvg_Controller_Admin
     	$siteKey = $this->_getParam('site', null);
     	$debug   = $this->_getParam('debug', 0);
     	
-    	
-    	
     	//$use_proxy = $this->_getParam('proxy', 0);
     	var_dump($request);
     	var_dump($siteKey);
@@ -444,14 +446,6 @@ class Admin_GrabController extends Rtvg_Controller_Admin
     	
 		die(__METHOD__.': '.__LINE__);
     }
-    
-    public function grabSeriesAction() {
-		die(__METHOD__);
-    }
-    
-    
-    
-
-    
+        
 }
 
