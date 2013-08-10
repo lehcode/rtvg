@@ -171,7 +171,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			        }
 			        
 			    } else {
-			        echo "<h3>Warning!</h3><br />";
+			        echo "<h3>Неверный канал!</h3><br />";
 			        print_r($channelsTable->find($info['id'])->toArray());
 			        print_r($info);
 			        die();
