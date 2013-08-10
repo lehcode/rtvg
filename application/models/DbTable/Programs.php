@@ -165,8 +165,6 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 		return $result;
 		
 	}
-	
-	
 
 }
 

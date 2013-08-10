@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Devart (www.devart.com), the Project File -->
+<!-- Modifying this generated file will probably render it invalid -->
+<DatabaseProject Version="1.0.1" Guid="9e7bb24f-31c9-4324-a279-ad15dc8b391f">
+  <Provider Guid="59f90733-4d68-4fdf-82a7-f0fcbf5460aa" />
+  <Include>
+    <File RelPath="" Link=".\PostDeployment.sql" />
+    <File RelPath="" Link=".\PreDeployment.sql" />
+    <File RelPath="" Link=".\rtvg_3rdparty_feeds.Table.sql" />
+    <File RelPath="" Link=".\rtvg_actors.Table.sql" />
+    <File RelPath="" Link=".\rtvg_actors_bios.Table.sql" />
+    <File RelPath="" Link=".\rtvg_ads.Table.sql" />
+    <File RelPath="" Link=".\rtvg_ads_stats.Table.sql" />
+    <File RelPath="" Link=".\rtvg_articles.Table.sql" />
+    <File RelPath="" Link=".\rtvg_bc_events.Table.sql" />
+    <File RelPath="" Link=".\rtvg_broadcasts.Table.sql" />
+    <File RelPath="" Link=".\rtvg_channels.Table.sql" />
+    <File RelPath="" Link=".\rtvg_channels_categories.Table.sql" />
+    <File RelPath="" Link=".\rtvg_channels_comments.Table.sql" />
+    <File RelPath="" Link=".\rtvg_channels_ratings.Table.sql" />
+    <File RelPath="" Link=".\rtvg_content_categories.Table.sql" />
+    <File RelPath="" Link=".\rtvg_directors.Table.sql" />
+    <File RelPath="" Link=".\rtvg_directors_bios.Table.sql" />
+    <File RelPath="" Link=".\rtvg_persons.Table.sql" />
+    <File RelPath="" Link=".\rtvg_programs.Table.sql" />
+    <File RelPath="" Link=".\rtvg_programs_categories.Table.sql" />
+    <File RelPath="" Link=".\rtvg_programs_descs.Table.sql" />
+    <File RelPath="" Link=".\rtvg_programs_ratings.Table.sql" />
+    <File RelPath="" Link=".\rtvg_torrents.Table.sql" />
+    <File RelPath="" Link=".\rtvg_users.Table.sql" />
+    <File RelPath="" Link=".\rtvg_vcache_listings.Table.sql" />
+    <File RelPath="" Link=".\rtvg_vcache_main.Table.sql" />
+    <File RelPath="" Link=".\rtvg_vcache_related.Table.sql" />
+    <File RelPath="" Link=".\rtvg_vcache_sidebar.Table.sql" />
+  </Include>
+  <Configurations Active="По умолчанию">
+    <Configuration Name="По умолчанию" CheckReferences="True" IgnoreErrors="False" OutputPath="" Target="" OutputType="SingleFile" KeepOriginalObjects="True" RecreateObjects="False" RecreateDatabase="False" ServerVersion="5.1.60" Database="dev_rutvgid" UseRegions="False" FullPaths="False" Definer="CURRENT_USER" ScriptDelimiter="$$" StorageEngine="MYISAM" Collation="utf8_unicode_ci" ConvertToLowercase="False" DefinerEffect="Keep">
+      <Connection Name="172.16.78.1" ConnectionString="User Id=takeshi;Host=172.16.78.1;Compress=True;Ping Interval=240;Character Set=utf8;" />
+      <Build>
+        <File RelPath="" Name="PreDeployment.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_3rdparty_feeds.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_actors.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_actors_bios.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_ads.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_ads_stats.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_articles.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_bc_events.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_broadcasts.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_channels.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_channels_categories.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_channels_comments.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_channels_ratings.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_content_categories.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_directors.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_directors_bios.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_persons.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_programs.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_programs_categories.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_programs_descs.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_programs_ratings.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_torrents.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_users.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_vcache_listings.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_vcache_main.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_vcache_related.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="rtvg_vcache_sidebar.Table.sql" BuildAction="Build" />
+        <File RelPath="" Name="PostDeployment.sql" BuildAction="Build" />
+      </Build>
+    </Configuration>
+  </Configurations>
+</DatabaseProject>

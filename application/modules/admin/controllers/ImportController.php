@@ -33,13 +33,13 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	private $programsModel;
 	
 	/**
-	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
 	 */
 	public function init() {
 	   
 	    parent::init();
 	    $this->programsModel   = new Admin_Model_Programs();
+	    $this->_xmlFolder = APPLICATION_PATH.'/../uploads/parse/';
 	    
 	}
 
@@ -108,7 +108,9 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		$channelsTable   = new Admin_Model_DbTable_Channels();
 		$newChannels	 = array();
 		$updatedChannels = array();
-					
+		$channelsModel = new Admin_Model_Channels();
+		$channelsRows = $channelsTable->fetchAll()->toArray();
+		$channelsMap = $channelsModel->getChannelMap();	
 		foreach ($xml->getElementsByTagName('channel') as $item){
 			
 			$info = array();
@@ -135,29 +137,46 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			
 			//var_dump($info);
 			//die(__FILE__.': '.__LINE__);
+			//var_dump( $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'")));
+			
+			$channelsTitles = array();
+			foreach ($channelsRows as $row){
+				$channelsTitles[] = $row['title'];
+			}
+			
+			//die(__FILE__.': '.__LINE__);
+			
+			if (($mapped = $this->_mapChannel($info['title'], $channelsTitles, $channelsMap))!==false){
+			    $info['title'] = $mapped;
+			}
 			
 			//Generate channel alias
-			$toDash		= new Xmltv_Filter_SeparatorToDash();
+			$toDash = new Xmltv_Filter_SeparatorToDash();
 			$info['alias'] = $toDash->filter($info['title']);
 			$plusToPlus	   = new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
 			$info['alias'] = $plusToPlus->filter($info['alias']);
 			$info['alias'] = str_replace('--', '-', trim($info ['alias'], ' -'));
 			
-			//var_dump( $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'")));
-			//die(__FILE__.': '.__LINE__);
-			
-			if ( !$present = $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'"))) {
+			if ( !($present = $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'") ))) {
 				
-				//die(__FILE__.': '.__LINE__);
-				//Save if new
-				try {
-					$channelsTable->insert($info);
-					$newChannels[] = $info;
-				} catch (Exception $e) {
-					if ($e->getCode()!=1062) {
-						die($e->getMessage());
-					}
-				}
+			    if ((bool)$channelsTable->find($info['id'])->toArray()===false){
+			        //Save if new
+			        try {
+			        	$channelsTable->insert($info);
+			        	$newChannels[] = $info;
+			        } catch (Exception $e) {
+			        	if ($e->getCode()!=1062) {
+			        		die($e->getMessage());
+			        	}
+			        }
+			        
+			    } else {
+			        echo "<h3>Warning!</h3><br />";
+			        print_r($channelsTable->find($info['id'])->toArray());
+			        print_r($info);
+			        die();
+			    }
+			    
 				$allChannels[]=$info; //for debugging
 				
 			} else {
@@ -242,7 +261,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		foreach ($programs as $node){
 			
 			//$prog  = array('id'=>"'NULL'");
-			$prog = $programsModel->newProgram();
+			$prog = $programsModel->newBroadcast();
 			
 			if (APPLICATION_ENV=='development'){
 				//var_dump($prog);
@@ -336,9 +355,9 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			// Fix category if needed
 			if (!$prog['category']) {
 			    $fixCats = array(
-			    		222=>'Религия',
-			    		300006=>'Религия',
-			    		300037=>'Музыка' );
+			    	222=>'Религия',
+			    	300006=>'Религия',
+			    	300037=>'Музыка' );
 			    if (array_key_exists($prog['channel'], $fixCats)){
 			    	$prog['category'] = $this->programsModel->getProgramCategory( $fixCats[$prog['channel']]);
 			    } else {
@@ -381,7 +400,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$prog->end   = $end->toString( "yyyy-MM-dd HH:mm:ss" );
 			
 			//Calculate hash
-			$prog->hash = $this->programsModel->getProgramHash();
+			$prog->hash = $this->programsModel->getBroadcastHash($prog);
 			
 			//debug breakpoint
 			$debugAmt=50;
@@ -392,7 +411,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				}
 			}
 			
-			
 			// Check data validity
 			$logger = $this->getLog();
 			if (!isset($prog->alias) || empty($prog->alias)){
@@ -402,14 +420,15 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				}
 				continue;
 			} else {
+			    
 			    // Save
 				try {
 					$prog->save();
-				} catch (Zend_Db_Table_Row_Exception $e) {
+				} catch (Exception $e) {
 				    if ($logger) {
 				    	$logger->log( $e->getTraceAsString(), Zend_Log::DEBUG );
 				    }
-					die( __FILE__.': '.__LINE__ . PHP_EOL . $e->getMessage() );
+					continue;
 				}
 			}
 			
@@ -608,8 +627,18 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				
 				$gzFile  = $this->_xmlFolder.'current.xml.gz';
 				$xmlFile = Xmltv_String::substr_replace( $gzFile, '', Xmltv_String::strlen($gzFile)-3);
+				
+				//var_dump($gzFile);
+				//var_dump($xmlFile);
+				//var_dump(file_exists($gzFile));
+				//var_dump(file_exists($xmlFile));
+				//var_dump($this->_teleguideUrl);
+				//die(__FILE__.': '.__LINE__);
+				
 				if ( !file_exists($gzFile) && !file_exists($xmlFile)) {
 					
+				    //die(__FILE__.': '.__LINE__);
+				    
 					$curl = new Zend_Http_Client_Adapter_Curl();
 					$curl->setCurlOption( CURLOPT_HEADER, false );
 					$curl->setCurlOption( CURLOPT_RETURNTRANSFER, 1 );
@@ -621,6 +650,10 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 					system("gzip -d $gzFile");
 					
 				} 
+				
+				//var_dump(file_exists($gzFile));
+				//var_dump(file_exists($xmlFile));
+				
 				if(file_exists($gzFile) && !file_exists($xmlFile)) {
 					system("gzip -d $gzFile");
 				} 
@@ -649,6 +682,27 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		echo "Готово!";
 		die();
 		
+	}
+	
+	/**
+	 * Map some changed titles to existing ones
+	 * 
+	 * @param array $siteChannels
+	 * @throws Zend_Exception
+	 * @return string|boolean
+	 */
+	private function _mapChannel($search, array $titles=array(), array $map=array()){
+	
+	    if (array_key_exists($search, $map)){
+			return $map[$search];
+		} else {
+			foreach ($titles as $ch){
+				if (Xmltv_String::strtolower($ch) == Xmltv_String::strtolower($search) ){
+					return $ch;
+				}
+			}
+		}
+		return false;
 	}
 	
 }

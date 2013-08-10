@@ -11,31 +11,6 @@
 class Admin_Model_Programs extends Xmltv_Model_Programs
 {
 	
-	protected $countriesList = array(
-		'Австралия'=>'au',
-		'Аргентина'=>'ar',
-		'Бельгия'=>'be',
-		'Великобритания'=>'gb',
-		'Германия'=>'de',
-		'Дания'=>'dk',
-		'Индия'=>'in',
-		'Индонезия'=>'id',
-		'Испания'=>'es',
-		'Ирландия'=>'ie',
-		'Италия'=>'it',
-		'Канада'=>'ca',
-		'Китай'=>'cn',
-		'Мексика'=>'mx',
-		'Нидерланды'=>'nl',
-		'Россия'=>'ru',
-		'США'=>'us',
-		'Украина'=>'ua',
-		'Финляндия'=>'fi',
-		'Франция'=>'fr',
-		'Южная Корея'=>'kp',
-		'Япония'=>'jp',
-	);
-	
 	protected $categoriesMap = array(
 			'анимационный фильм'=>'Анимационные фильмы',
 			'биографический фильм'=>'Биографические фильмы',
@@ -532,238 +507,149 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 * @param string $hash
 	 * @return void
 	 */
-	public function parseDescription (array $data) {
+	public function parseDescription ($desc=null) {
 		
-	    if (!$data['desc']){
-	        $data['desc'] = '';
-	        return $data;
-	    }
-	    
-	    $desc = $data['desc'];
-	    $result = array();
-		
-		//Проверка возрастного рейтинга в названии
-		if (($r = $this->extractAgeRating($desc))>0) {
-			$result['rating'] = $r;
-			$desc = $this->stripAgeRating($desc);
-		}
-		
-		if (Xmltv_String::stristr($desc, "ЗАКАЖИ и СМОТРИ +7(495)775-5620")) {
-			$desc = Xmltv_String::str_ireplace( ' ЗАКАЖИ и СМОТРИ +7(495)775-5620', '', $desc);
-		}
-		
-		
-		//'([-\w+\s\w+,^A-Z]+,?)'
-		$regex= array(
-			'/^([\w\s]+)\s-\s(комедия)\.?\sВ главной роли\s([-\w+\s\w+,^A-Z]+)\.(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //ПОМЕСТЬЕ - комедия. В главной роли Гэбриэл Диани. США, 2011г. 16+
-			'/^([\w\s,]+)\s-\s(фильм-фэнтези)(\s)([-\w+\s\w+,^A-Z]+)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', //ЛЕВ, КОЛДУНЬЯ И ВОЛШЕБНЫЙ ШКАФ - фильм-фэнтези Эндрю Эдамсона. США-Новая Зеландия, 2005г. 0+
-			'/^([\w\s,]+)\s-\s(фильм-фэнтези)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+ и [-\w+\s\w+,^A-Z]+)\.(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //ПРИНЦ КАСПИАН - фильм-фэнтези. В ролях: Бен Барнс, Джорджи Хенли, Уильям Мозли, Скандер Кейнс и Анна Попплуэлл. Великобритания-США, 2008г. 0+
-			'/^-(\s)фантастический\s(анимационный фильм)(\.)(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //- фантастический анимационный фильм. США, 2011г. 6+
-		);
-		foreach ($regex as $r) {
-			if (preg_match($r, $desc, $m)) {
-				 
-				// Breakpoint
-				if (APPLICATION_ENV=='development'){
-				    //var_dump($desc);
-					//var_dump($m);
-				}
-				 
-				$result['category'] = $this->catIdFromTitle(trim($m[2]));
-				$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
-				$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
-				$result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[4]), 'director') );
-				$desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
-				$result['country'] = self::countryRuToIso(trim($m[5]));
-				$result['year'] = (int)trim($m[6]);
-				$result['title'] = Xmltv_String::ucfirst( Xmltv_String::strtolower(trim($m[1])));
-				$desc = preg_replace('/^.+$/ui', '', $desc);
-				
-				if (APPLICATION_ENV=='development'){
-					//var_dump($result);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
-				return $result;
-					  
-			}
-		}
-		
-		
-		$regex = array(
-			//Детективный сериал. Великобритания, 2001 - 2004гг. Режиссер Мартин Хатчингс. В ролях Тревор Ив, Сью Джонстон, Холи Эйрд, Клэр Гуз. Самые страшные слова для любого следователя “ "убийство раскрыть нельзя". Однако новые технологии позволяют решать самые непростые задачи, в том числе раскрывать преступления, совершенные много лет назад. Именно с этой целью был создан специальный "убойный" отдел под руководством старшего детектива Бойда. Бойду и его команде предстоит расследовать загадочную смерть фотожурналиста в автокатастрофе, двойное убийство, за которое женщина провела 25 лет в тюрьме, убийство полицейского и многие другие страшные преступления.
-			'/^(Детективный сериал)\.(\s)(\w+),\s+[\d]{4}\s+-\s+([\d]{4})\w+\.\sРежиссер:?\s+([\w\s-]+)\.\sВ ролях\s([-\w+\s\w+,^A-Z]+,?)\.\s(.+)/ui',
-			//Триллер, детектив. Studio Canal, Франция, 2005г. Режиссер: Жером Саль.Интерпол преследует неуловимого мошенника Энтони Циммера, специализирующегося на отмывании денег для русской мафии. Недавно Циммер сделал пластическую операцию, которая целиком изменила его внешность. Теперь единственная ниточка - любовница Энтони, обворожительная красотка Кьяра. Но Кьяра это тоже понимает, и заводит интрижку напоказ с ничего не подозревающим простаком Франсуа. Он того же роста и того же возраста, что и Циммер. И для спецслужб, и для мафии это достаточное основание, чтобы попытаться убить Франсуа.
-			'/^(Триллер|детектив).+\.\s([\w\s]+),\s(\w+),\s([\d]{4})г\.\sРежиссер:\s([\w\s-]+)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+,?)\.\s(.+)$/ui',
-			//Комедия. Великобритания, 2004г. Режиссер: Джон МакКэй. В ролях: Сэм Рокуэлл, Кассандра Белл, Том Уилкинсон. Джим Крокер, дебошир и постоянный персонаж скандальной хроники лондонских газет, впервые в жизни влюбляется. Но дело в том, что избранница - американка и заочно терпеть Крокера не может. Джимми прикидывается сыном своего дворецкого, садится на атлантический лайнер и отправляется за девушкой своей мечты. Положение сильно осложняется тем, что и в Нью - Йорке немало людей, которые близко знакомы с Крокером.
-			'/^(Комедия)\.\(s+\)(\w+),\s+([\d]+).+\s+Режиссер:\s+(.+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.(.+)$/ui',
-			//Приключения. Таллинфильм, 1969г. Режиссер: Григорий Кроманов. В ролях: Александр Голобородько, Ингрид Андринь, Эльзе Радзиня, Ролан Быков, Ээве Киви, Улдис Ваздикс ХVI век. Лифляндия. В одном из аристократических домов умирает старый рыцарь Рисбитер. Он завещал сыну шкатулку с семейной реликвией. Духовные пастыри ближайшего монастыря хотят завладеть шкатулкой, чтобы приумножить славу обители. Молодой наследник согласен уступить церкви реликвию, но с одним условием: ему должны отдать в жены прекрасную Агнес, племянницу аббатисы женского монастыря. А сердце юной красавицы принадлежит свободолюбивому рыцарю в Габриэлю, другу всех обманутых и беззащитных.... Фильм снят по роману эстонского писателя Э. Борнхeэ "Последний день монастыря святой Бригитты".
-			'/^([\w\s,]+)\.(\s+)([\w\s-?\.?]+),\s+([\d]{4})г\.?\s+Режиссер:\s+(\w+\s\w+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.?\s+(.+)/ui',
-		);
-		foreach ($regex as $r){
-			if (preg_match($r, $desc, $m)){
-				
-				// Breakpoint
-				if (APPLICATION_ENV=='development'){
-					//var_dump($m);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
-				$result['category'] = $this->catIdFromTitle(trim($m[1]));
-				$result['studio']   = trim($m[2]);
-				$result['country'] = self::countryRuToIso(trim($m[3]));
-				$result['year'] = (int)trim($m[4]);
-				$desc = trim($m[7]);
-				$result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[6]), 'actor') );
-				$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
-				$result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[5]), 'director') );
-				$desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
-		    	
-				// Breakpoint
-				if (APPLICATION_ENV=='development'){
-					//var_dump($result);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
-			}
-		}
-		
-		//ЗАТЕРЯННЫЙ МИР - фантастико-приключенческий фильм Стивена Спилберга. В ролях: Джефф Голдблюм, Джулианна Мур и Ричард Аттенборо. США, 1997г. 12+
-		if (preg_match('/^([\w\s,]+)\s-\s(фантастико-приключенческий фильм)\s([\w\s-]+)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+ и [-\w+\s\w+,^A-Z]+)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', $desc, $m)){
+		if ($desc){
 			
-		    $result['title']     = Xmltv_String::ucfirst( Xmltv_String::strtolower(trim($m[1])));
-		    $result['category']  = $this->catIdFromTitle(trim($m[2]));
-		    $result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'director') );
-		    $desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
-		    $result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[4]), 'actor') );
-		    $desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
+		    //var_dump($desc);
 		    
-			// Breakpoint
-			if (APPLICATION_ENV=='development'){
-				//var_dump($m);
-				//die(__FILE__.': '.__LINE__);
+			$result = array();
+			
+			//Проверка возрастного рейтинга в названии
+			if (($r = $this->extractAgeRating($desc))>0) {
+				$result['rating'] = $r;
+				$desc = $this->stripAgeRating($desc);
 			}
 			
-			$result['country'] = self::countryRuToIso(trim($m[5]));
-			$result['year']    = (int)trim($m[6]);
-			
-			$desc = preg_replace('/^.+$/ui', '', $desc);
-			
-			// Breakpoint
-			if (APPLICATION_ENV=='development'){
-				//var_dump($result);
-				//die(__FILE__.': '.__LINE__);
+			if (Xmltv_String::stristr($desc, "ЗАКАЖИ и СМОТРИ +7(495)775-5620")) {
+				$desc = Xmltv_String::str_ireplace( ' ЗАКАЖИ и СМОТРИ +7(495)775-5620', '', $desc);
 			}
 			
-		} elseif (preg_match('/^([\w\s,]+)\.\s+(.+)\,\s+(\w+),\s+([\d]{4})г\.\s+Режиссер:\s+([-\w+\s\w+,^A-Z]+)\.\sСценарий:\s+([-\w+\s\w+,^A-Z]+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.\s(.+)/ui', $desc, $m)){
-			//Фантастика, приключения, мелодрама. Warner Bros. - DreamWorks SKG, США, 2001г. Режиссер: Стивен Спилберг. Сценарий: Стивен Спилберг. В ролях: Стивен Спилберг, Бонни Кертис, Хэйли Джоэл Осмент, Джуд Ло, Фрэнсис О"Коннор, Брендан Глисон, Сэм Робардс, Уильям Херт, Джейк Томас, Кен Леунг. Середина 21 века. Из - за глобального потепления климат на планете становится непредсказуемым. Люди создают новое поколение роботов, способное помочь им в борьбе за выживание. И, хотя природные ресурсы скудеют, высокие технологии развиваются со стремительной скоростью. Киборги живут бок о бок с людьми и выручают их во всех сферах деятельности. И тут наука преподносит человечеству очередной сюрприз - создается чудо - робот совершенно иного порядка: с разумом, нервной системой, способный испытывать все человеческие эмоции и главное - любить. Это настоящий подарок для супружеских пар, не имеющих детей. Творение нарекают Дэвидом. Кибернетический мальчик, по виду ничем не отличающийся от живого ребенка, попадает в семью ученых Генри и Моники, участвовавших в работе над проектом, и становится их сыном. Но готовы ли его новые родители ко всем последствиям такого рискованного эксперимента?
 			
-			// Breakpoint
-			if (APPLICATION_ENV=='development'){
-				//var_dump($m);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
-			$genres = explode(', ', $m[1]);
-			$result['category']  = mt_rand( 0, count($genres)-1);
-			$result['producer']  = trim($m[2]);
-			$result['country']   = self::countryRuToIso(trim($m[3]));
-			$result['year']      = (int)trim($m[4]);
-			$result['writer']    = trim($m[6]);
-			$result['directors'] = implode( ",", $this->_parsePersonsNames( trim($m[5]), 'director') );
-			$desc = $this->_removePersonsNames( $desc, $result['directors'], 'director');
-			
-			$result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[7]), 'actor') );
-			$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
-			$result['desc'] = $desc = trim($m[8]);
-
-			// Breakpoint
-			if (APPLICATION_ENV=='development'){
-				//var_dump($result);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
-		}
-		
-		$movies = array(
-				'фантастико-приключенческий фильм',
-				'приключенческая комедия',
-				'историческая мелодрама',
-				'фантастический боевик',
-				'триллер',
-				'фильм-фэнтези',
-				'биографический фильм',
-				'драма',
-				'анимационный фильм',
-				'комедийный боевик',
-				'романтическая комедия',
-		);
-		$regex= array(
-				'/^-?\s*('.implode('|', $movies).')(\.)(\s)([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм-фэнтези. Индия, 2011г. 12+
-				'/^-?\s*('.implode('|', $movies).')\.?\s(\w+\s\w+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
-				'/^-?\s*('.implode('|', $movies).')\.(\s)В главной роли\s([\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$$/ui',
-				'/^-?\s*(боевик)\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
-				'/^-?\s*(боевик)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
-				'/^-?\s*('.implode('|', $movies).')\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- приключенческая комедия. В ролях: Зэвьер Сэмюэл и Кевин Бишоп. Австралия-Великобритания, 2011г. 18+
-				'/^-?\s*(комедия)\s([\w\s-]+)\.(\s)([\w\s-]+),\s([\d]{4}).+$/ui',
-				'/^-?\s*(фильм)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм Джеймса Кэмерона. В ролях: Леонардо Ди Каприо, Кейт Уинслет, Билли Зейн и Кэти Бэйтс. США, 1997г. 12+
-				'/^-?\s*(фильм)\s([\w\s-]+)\.\sВ главной роли:?\s([\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм братьев Коэн. В главной роли Майкл Стулбарг. США-Великобритания-Франция, 2009. 16+
-				'/^-?\s*(комедия)\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- комедия. В ролях: Гэри Энтин, Линдси Шоу и Роберт Адамсон. США, 2010г. 18+
-				'/^-?\s*(вестерн)\.(\s)В ролях:\s([\w\s,-]+,?)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', //- вестерн. В ролях: Кристиан Бейл, Расселл Кроу, Чад Брамметт, Крис Браунинг, Кевин Дьюранд. США, 2007. 12+
-		);
-		foreach ($regex as $r){
-			 
-			if (preg_match($r, $desc, $m)){
+			//'([-\w+\s\w+,^A-Z]+,?)'
+			$regex= array(
+				'/^([\w\s]+)\s-\s(комедия)\.?\sВ главной роли\s([-\w+\s\w+,^A-Z]+)\.(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //ПОМЕСТЬЕ - комедия. В главной роли Гэбриэл Диани. США, 2011г. 16+
+				'/^([\w\s,]+)\s-\s(фильм-фэнтези)(\s)([-\w+\s\w+,^A-Z]+)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', //ЛЕВ, КОЛДУНЬЯ И ВОЛШЕБНЫЙ ШКАФ - фильм-фэнтези Эндрю Эдамсона. США-Новая Зеландия, 2005г. 0+
+				'/^([\w\s,]+)\s-\s(фильм-фэнтези)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+ и [-\w+\s\w+,^A-Z]+)\.(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //ПРИНЦ КАСПИАН - фильм-фэнтези. В ролях: Бен Барнс, Джорджи Хенли, Уильям Мозли, Скандер Кейнс и Анна Попплуэлл. Великобритания-США, 2008г. 0+
+				'/^-(\s)фантастический\s(анимационный фильм)(\.)(\s)([\w\s-]+),\s([\d]{4}).*$/ui', //- фантастический анимационный фильм. США, 2011г. 6+
+			);
+			foreach ($regex as $r) {
+				if (preg_match($r, $desc, $m)) {
+					 
+					// Breakpoint
+					if (APPLICATION_ENV=='development'){
+					    //var_dump($desc);
+						//var_dump($m);
+					}
+					 
+					$result['category'] = $this->catIdFromTitle(trim($m[2]));
+					$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
+					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
+					$result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[4]), 'director') );
+					$desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
+					$result['country'] = parent::countryRuToIso(trim($m[5]));
+					$result['year'] = (int)trim($m[6]);
+					$result['title'] = Xmltv_String::ucfirst( Xmltv_String::strtolower(trim($m[1])));
+					$desc = preg_replace('/^.+$/ui', '', $desc);
 					
+					if (APPLICATION_ENV=='development'){
+						//var_dump($result);
+						//die(__FILE__.': '.__LINE__);
+					}
+					
+					return $result;
+						  
+				}
+			}
+			
+			
+			$regex = array(
+				//Детективный сериал. Великобритания, 2001 - 2004гг. Режиссер Мартин Хатчингс. В ролях Тревор Ив, Сью Джонстон, Холи Эйрд, Клэр Гуз. Самые страшные слова для любого следователя “ "убийство раскрыть нельзя". Однако новые технологии позволяют решать самые непростые задачи, в том числе раскрывать преступления, совершенные много лет назад. Именно с этой целью был создан специальный "убойный" отдел под руководством старшего детектива Бойда. Бойду и его команде предстоит расследовать загадочную смерть фотожурналиста в автокатастрофе, двойное убийство, за которое женщина провела 25 лет в тюрьме, убийство полицейского и многие другие страшные преступления.
+				'/^(Детективный сериал)\.(\s)(\w+),\s+[\d]{4}\s+-\s+([\d]{4})\w+\.\sРежиссер:?\s+([\w\s-]+)\.\sВ ролях\s([-\w+\s\w+,^A-Z]+,?)\.\s(.+)/ui',
+				//Триллер, детектив. Studio Canal, Франция, 2005г. Режиссер: Жером Саль.Интерпол преследует неуловимого мошенника Энтони Циммера, специализирующегося на отмывании денег для русской мафии. Недавно Циммер сделал пластическую операцию, которая целиком изменила его внешность. Теперь единственная ниточка - любовница Энтони, обворожительная красотка Кьяра. Но Кьяра это тоже понимает, и заводит интрижку напоказ с ничего не подозревающим простаком Франсуа. Он того же роста и того же возраста, что и Циммер. И для спецслужб, и для мафии это достаточное основание, чтобы попытаться убить Франсуа.
+				'/^(Триллер|детектив).+\.\s([\w\s]+),\s(\w+),\s([\d]{4})г\.\sРежиссер:\s([\w\s-]+)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+,?)\.\s(.+)$/ui',
+				//Комедия. Великобритания, 2004г. Режиссер: Джон МакКэй. В ролях: Сэм Рокуэлл, Кассандра Белл, Том Уилкинсон. Джим Крокер, дебошир и постоянный персонаж скандальной хроники лондонских газет, впервые в жизни влюбляется. Но дело в том, что избранница - американка и заочно терпеть Крокера не может. Джимми прикидывается сыном своего дворецкого, садится на атлантический лайнер и отправляется за девушкой своей мечты. Положение сильно осложняется тем, что и в Нью - Йорке немало людей, которые близко знакомы с Крокером.
+				'/^(Комедия)\.\(s+\)(\w+),\s+([\d]+).+\s+Режиссер:\s+(.+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.(.+)$/ui',
+				//Приключения. Таллинфильм, 1969г. Режиссер: Григорий Кроманов. В ролях: Александр Голобородько, Ингрид Андринь, Эльзе Радзиня, Ролан Быков, Ээве Киви, Улдис Ваздикс ХVI век. Лифляндия. В одном из аристократических домов умирает старый рыцарь Рисбитер. Он завещал сыну шкатулку с семейной реликвией. Духовные пастыри ближайшего монастыря хотят завладеть шкатулкой, чтобы приумножить славу обители. Молодой наследник согласен уступить церкви реликвию, но с одним условием: ему должны отдать в жены прекрасную Агнес, племянницу аббатисы женского монастыря. А сердце юной красавицы принадлежит свободолюбивому рыцарю в Габриэлю, другу всех обманутых и беззащитных.... Фильм снят по роману эстонского писателя Э. Борнхeэ "Последний день монастыря святой Бригитты".
+				'/^([\w\s,]+)\.(\s+)([\w\s-?\.?]+),\s+([\d]{4})г\.?\s+Режиссер:\s+(\w+\s\w+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.?\s+(.+)/ui',
+			);
+			foreach ($regex as $r){
+				if (preg_match($r, $desc, $m)){
+					
+					// Breakpoint
+					if (APPLICATION_ENV=='development'){
+						//var_dump($m);
+						//die(__FILE__.': '.__LINE__);
+					}
+					
+					$result['category'] = $this->catIdFromTitle(trim($m[1]));
+					$result['studio']   = trim($m[2]);
+					$result['country'] = self::countryRuToIso(trim($m[3]));
+					$result['year'] = (int)trim($m[4]);
+					$desc = trim($m[7]);
+					$result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[6]), 'actor') );
+					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
+					$result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[5]), 'director') );
+					$desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
+			    	
+					// Breakpoint
+					if (APPLICATION_ENV=='development'){
+						//var_dump($result);
+						//die(__FILE__.': '.__LINE__);
+					}
+					
+				}
+			}
+			
+			//ЗАТЕРЯННЫЙ МИР - фантастико-приключенческий фильм Стивена Спилберга. В ролях: Джефф Голдблюм, Джулианна Мур и Ричард Аттенборо. США, 1997г. 12+
+			if (preg_match('/^([\w\s,]+)\s-\s(фантастико-приключенческий фильм)\s([\w\s-]+)\.\sВ ролях:\s([-\w+\s\w+,^A-Z]+ и [-\w+\s\w+,^A-Z]+)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', $desc, $m)){
+				
+			    $result['title']     = Xmltv_String::ucfirst( Xmltv_String::strtolower(trim($m[1])));
+			    $result['category']  = $this->catIdFromTitle(trim($m[2]));
+			    $result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'director') );
+			    $desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
+			    $result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[4]), 'actor') );
+			    $desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
+			    
 				// Breakpoint
 				if (APPLICATION_ENV=='development'){
-					//var_dump($desc);
 					//var_dump($m);
+					//die(__FILE__.': '.__LINE__);
 				}
 				
-				/*
-				 * Категория
-				 */
-				$f = array(
-					'фильм'=>'художественные фильмы',
-					'драма'=>'кинодрамы',
-				);
-				$c = trim($m[1]);
-				if (array_key_exists($c, $f)) {
-					$result['category']  = $this->catIdFromTitle( $f[$c] );
-				} else {
-					$result['category']  = $this->catIdFromTitle(trim($m[1]));
-				}
-					
-				$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
-				$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
-				$result['country'] = self::countryRuToIso(trim($m[4]));
-				$result['year'] = (int)trim($m[5]);
+				$result['country'] = self::countryRuToIso(trim($m[5]));
+				$result['year']    = (int)trim($m[6]);
+				
 				$desc = preg_replace('/^.+$/ui', '', $desc);
-					
+				
+				// Breakpoint
 				if (APPLICATION_ENV=='development'){
 					//var_dump($result);
 					//die(__FILE__.': '.__LINE__);
 				}
 				
-				return $result;
-					
-			}
-		}
-		
-		
-		if (Xmltv_String::stristr($desc, 'В ролях') || Xmltv_String::stristr($desc, 'Звезды кино')){
-			if (preg_match('/^(.*)\s(В ролях|Звезды кино):\s([-\w+\s\w+,^A-Z]+,?)\.?\s*(.*)$/ui', $desc, $m)){
-			    
-			    if (APPLICATION_ENV=='development'){
-			        //var_dump($desc);
-			    	//var_dump($m);
-			    }
-			    
-				$result['actors'] = implode(",", $this->_parsePersonsNames( $desc, 'actor'));
-				$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
-				$result['desc'] = trim( trim($m[1]).' '.trim($m[4]));
+			} elseif (preg_match('/^([\w\s,]+)\.\s+(.+)\,\s+(\w+),\s+([\d]{4})г\.\s+Режиссер:\s+([-\w+\s\w+,^A-Z]+)\.\sСценарий:\s+([-\w+\s\w+,^A-Z]+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.\s(.+)/ui', $desc, $m)){
+				//Фантастика, приключения, мелодрама. Warner Bros. - DreamWorks SKG, США, 2001г. Режиссер: Стивен Спилберг. Сценарий: Стивен Спилберг. В ролях: Стивен Спилберг, Бонни Кертис, Хэйли Джоэл Осмент, Джуд Ло, Фрэнсис О"Коннор, Брендан Глисон, Сэм Робардс, Уильям Херт, Джейк Томас, Кен Леунг. Середина 21 века. Из - за глобального потепления климат на планете становится непредсказуемым. Люди создают новое поколение роботов, способное помочь им в борьбе за выживание. И, хотя природные ресурсы скудеют, высокие технологии развиваются со стремительной скоростью. Киборги живут бок о бок с людьми и выручают их во всех сферах деятельности. И тут наука преподносит человечеству очередной сюрприз - создается чудо - робот совершенно иного порядка: с разумом, нервной системой, способный испытывать все человеческие эмоции и главное - любить. Это настоящий подарок для супружеских пар, не имеющих детей. Творение нарекают Дэвидом. Кибернетический мальчик, по виду ничем не отличающийся от живого ребенка, попадает в семью ученых Генри и Моники, участвовавших в работе над проектом, и становится их сыном. Но готовы ли его новые родители ко всем последствиям такого рискованного эксперимента?
 				
+				// Breakpoint
+				if (APPLICATION_ENV=='development'){
+					//var_dump($m);
+					//die(__FILE__.': '.__LINE__);
+				}
+				
+				$genres = explode(', ', $m[1]);
+				$result['category']  = mt_rand( 0, count($genres)-1);
+				$result['producer']  = trim($m[2]);
+				$result['country']   = self::countryRuToIso(trim($m[3]));
+				$result['year']      = (int)trim($m[4]);
+				$result['writer']    = trim($m[6]);
+				$result['directors'] = implode( ",", $this->_parsePersonsNames( trim($m[5]), 'director') );
+				$desc = $this->_removePersonsNames( $desc, $result['directors'], 'director');
+				
+				$result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[7]), 'actor') );
+				$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
+				$result['desc'] = $desc = trim($m[8]);
+
 				// Breakpoint
 				if (APPLICATION_ENV=='development'){
 					//var_dump($result);
@@ -772,40 +658,127 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 				
 			}
 			
+			$movies = array(
+					'фантастико-приключенческий фильм',
+					'приключенческая комедия',
+					'историческая мелодрама',
+					'фантастический боевик',
+					'триллер',
+					'фильм-фэнтези',
+					'биографический фильм',
+					'драма',
+					'анимационный фильм',
+					'комедийный боевик',
+					'романтическая комедия',
+			);
+			$regex= array(
+					'/^-?\s*('.implode('|', $movies).')(\.)(\s)([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм-фэнтези. Индия, 2011г. 12+
+					'/^-?\s*('.implode('|', $movies).')\.?\s(\w+\s\w+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
+					'/^-?\s*('.implode('|', $movies).')\.(\s)В главной роли\s([\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$$/ui',
+					'/^-?\s*(боевик)\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
+					'/^-?\s*(боевик)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui',
+					'/^-?\s*('.implode('|', $movies).')\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- приключенческая комедия. В ролях: Зэвьер Сэмюэл и Кевин Бишоп. Австралия-Великобритания, 2011г. 18+
+					'/^-?\s*(комедия)\s([\w\s-]+)\.(\s)([\w\s-]+),\s([\d]{4}).+$/ui',
+					'/^-?\s*(фильм)\s([\w\s-]+)\.\sВ ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм Джеймса Кэмерона. В ролях: Леонардо Ди Каприо, Кейт Уинслет, Билли Зейн и Кэти Бэйтс. США, 1997г. 12+
+					'/^-?\s*(фильм)\s([\w\s-]+)\.\sВ главной роли:?\s([\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- фильм братьев Коэн. В главной роли Майкл Стулбарг. США-Великобритания-Франция, 2009. 16+
+					'/^-?\s*(комедия)\.(\s)В ролях:\s([\w\s,-]+ и [\w\s-]+)\.\s([\w\s-]+),\s([\d]{4}).+$/ui', //- комедия. В ролях: Гэри Энтин, Линдси Шоу и Роберт Адамсон. США, 2010г. 18+
+					'/^-?\s*(вестерн)\.(\s)В ролях:\s([\w\s,-]+,?)\.\s([\w\s-]+),\s([\d]{4}).*$/ui', //- вестерн. В ролях: Кристиан Бейл, Расселл Кроу, Чад Брамметт, Крис Браунинг, Кевин Дьюранд. США, 2007. 12+
+			);
+			foreach ($regex as $r){
+				 
+				if (preg_match($r, $desc, $m)){
+						
+					// Breakpoint
+					if (APPLICATION_ENV=='development'){
+						//var_dump($desc);
+						//var_dump($m);
+					}
+					
+					/*
+					 * Категория
+					 */
+					$f = array(
+						'фильм'=>'художественные фильмы',
+						'драма'=>'кинодрамы',
+					);
+					$c = trim($m[1]);
+					if (array_key_exists($c, $f)) {
+						$result['category']  = $this->catIdFromTitle( $f[$c] );
+					} else {
+						$result['category']  = $this->catIdFromTitle(trim($m[1]));
+					}
+						
+					$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
+					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
+					$result['country'] = self::countryRuToIso(trim($m[4]));
+					$result['year'] = (int)trim($m[5]);
+					$desc = preg_replace('/^.+$/ui', '', $desc);
+						
+					if (APPLICATION_ENV=='development'){
+						//var_dump($result);
+						//die(__FILE__.': '.__LINE__);
+					}
+					
+					return $result;
+						
+				}
+			}
+			
+			
+			if (Xmltv_String::stristr($desc, 'В ролях') || Xmltv_String::stristr($desc, 'Звезды кино')){
+				if (preg_match('/^(.*)\s(В ролях|Звезды кино):\s([-\w+\s\w+,^A-Z]+,?)\.?\s*(.*)$/ui', $desc, $m)){
+				    
+				    if (APPLICATION_ENV=='development'){
+				        //var_dump($desc);
+				    	//var_dump($m);
+				    }
+				    
+					$result['actors'] = implode(",", $this->_parsePersonsNames( $desc, 'actor'));
+					$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
+					$result['desc'] = trim( trim($m[1]).' '.trim($m[4]));
+					
+					// Breakpoint
+					if (APPLICATION_ENV=='development'){
+						//var_dump($result);
+						//die(__FILE__.': '.__LINE__);
+					}
+					
+				}
+				
+				
+			}
+			
+			if (Xmltv_String::stristr($desc, 'Детективный сериал') || 
+			Xmltv_String::stristr($desc, 'сериала "Детективы"')){
+				$result['category'] = $this->catIdFromTitle('детективный сериал');
+			} elseif(Xmltv_String::stristr($desc, 'Информационная программа')){
+				$result['category'] = $this->catIdFromTitle('информационные');
+			} elseif (Xmltv_String::stristr($desc, 'Новости спорта')){
+				$result['category'] = $this->catIdFromTitle('спортивные новости');
+			}
+			
+			if (($rating=$this->extractAgeRating($desc))>0){
+			    $result['rating'] = $rating;
+			    $desc = $this->stripAgeRating($desc);
+			}
+			
+			$trim = new Zend_Filter_StringTrim(array('charlist'=>' -,'));
+			$result['text'] = $trim->filter( Xmltv_String::str_ireplace('...', '…', $desc) );
+			
+			if (preg_match('/([\d]{2}-плюс)$/u', $result['alias'], $m)) {
+			    $result['alias'] = Xmltv_String::str_ireplace($m[1], '', $result['alias']);
+			    var_dump($result);
+			    die(__FILE__.': '.__LINE__);
+			}
+			
+			$result['actors'] = $this->_parsePersonsNames( $desc, 'actor');
+			if (!empty($result['actors'])) {
+				$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
+			}
+			
+			return $result;
 			
 		}
-		
-		if (Xmltv_String::stristr($desc, 'Детективный сериал') || 
-		Xmltv_String::stristr($desc, 'сериала "Детективы"')){
-			$result['category'] = $this->catIdFromTitle('детективный сериал');
-		} elseif(Xmltv_String::stristr($desc, 'Информационная программа')){
-			$result['category'] = $this->catIdFromTitle('информационные');
-		} elseif (Xmltv_String::stristr($desc, 'Новости спорта')){
-			$result['category'] = $this->catIdFromTitle('спортивные новости');
-		}
-		
-		if (($rating=$this->extractAgeRating($desc))>0){
-		    $result['rating'] = $rating;
-		    $desc = $this->stripAgeRating($desc);
-		}
-		
-		$trim = new Zend_Filter_StringTrim(array('charlist'=>' -,'));
-		$result['text'] = $trim->filter( Xmltv_String::str_ireplace('...', '…', $desc) );
-		
-		if (preg_match('/([\d]{2}-плюс)$/u', $result['alias'], $m)) {
-		    $result['alias'] = Xmltv_String::str_ireplace($m[1], '', $result['alias']);
-		    var_dump($result);
-		    die(__FILE__.': '.__LINE__);
-		}
-		
-		$result['actors'] = $this->_parsePersonsNames( $desc, 'actor');
-		if (!empty($result['actors'])) {
-			$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
-		}
-		
-		return $result;
-		
-		
 	}
 	
 	/**
@@ -2382,7 +2355,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		return $this->namesRegex;
 	}
 	
-	public function getProgramHash($prog){
+	public function getBroadcastHash($prog){
 		
 	    //Calculate hash
 	    return md5($prog->alias.$prog->channel.$prog->start.$prog->end);

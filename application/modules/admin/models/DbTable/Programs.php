@@ -9,11 +9,25 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 	 * @var unknown_type
 	 */
     protected $_name = 'programs';
-    protected $_rowClass = 'Rtvg_Listing_Broadcast';
     
-    public function init()
-    {
-    	parent::init();
+    const FETCH_MODE = Zend_Db::FETCH_OBJ;
+    
+    
+    public function __construct($config=array()){
+    	
+    	parent::__construct();
+		
+    	if (isset($config['tbl_prefix'])) {
+    		$pfx = (string)$config['tbl_prefix'];
+    	} else {
+    		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix', 'rtvg_');
+    	}
+    	
+    	//var_dump($this);
+    	//die();
+    	
+    	$this->setName($this->_name);
+    	
     }
     
     public function getProgramsCountForWeek(Zend_Date $start=null, Zend_Date $end=null){

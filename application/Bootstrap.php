@@ -60,11 +60,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
 			->returnResponse( false )
-			->throwExceptions( false );
+		;
 		
-		if(APPLICATION_ENV=='production'){
-		    $fc->returnResponse( true );
-		    $fc->throwExceptions( true );
+		if( APPLICATION_ENV == 'production' ) {
+			$fc->throwExceptions( false ); // disable ErrorController and logging
+			$fc->returnResponse( true );
+		} else {
+			$fc->throwExceptions( false ); // enable ErrorController and logging
+			$fc->returnResponse (false);
 		}
 		
 		$router->setRouter($fc->getRouter());
@@ -74,32 +77,30 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		/*
 		 * http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
 		*/
+		
 		try {
-		    
 		    $response = $fc->dispatch();
-		    
-		    if( $response && $response->isException() ) {
-		    	//die(__FILE__.': '.__LINE__);
-		    	$exceptions = $response->getException();
-		    	foreach ($exceptions as $e){
-		    		$log->log( $e->getMessage(), Zend_Log::DEBUG, $e->getTraceAsString() );
-		    		if (APPLICATION_ENV=='development'){
-		    			throw new Exception($e->getMessage(), $e->getCode(), $e);
-		    		}
-		    	}
-		    }
 		} catch (Exception $e) {
-		    
-		    if( APPLICATION_ENV == 'development' ) {
-		    	die($e->getMessage());
-		    } else {
-		        $log->log( $e->getMessage(), Zend_Log::DEBUG, $e->getTraceAsString() );
+		    if( APPLICATION_ENV != 'production' ) {
+		    	echo $e->getMessage();
+		    	Zend_Debug::dump($e->getTrace());
 		    }
 		}
 		
 		if (isset($response)) {
-		    $response->sendHeaders();
-			$response->outputBody();
+			if( $response->isException() ) {
+				$exception = $response->getException();
+				if( APPLICATION_ENV != 'production' ) {
+					print_r($response);
+					print_r($exception);
+					die();
+				}
+				$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+				$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
+			} else {
+				$response->sendHeaders();
+				$response->outputBody();
+			}
 		}
 				
 	}
