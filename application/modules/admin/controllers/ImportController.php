@@ -423,7 +423,9 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			    
 			    // Save
 				try {
-					$prog->save();
+				    if (!$programsModel->findProgram($prog->hash)){
+				        $prog->save();
+				    }
 				} catch (Exception $e) {
 				    if ($logger) {
 				    	$logger->log( $e->getTraceAsString(), Zend_Log::DEBUG );
