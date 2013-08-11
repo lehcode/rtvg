@@ -6,7 +6,7 @@
   <DatabaseProvider>59f90733-4d68-4fdf-82a7-f0fcbf5460aa</DatabaseProvider>
   <Connection>
     <Name>172.16.78.1</Name>
-    <ConnectionString>User Id=takeshi;Host=172.16.78.1;Compress=True;Ping Interval=240;Character Set=utf8;</ConnectionString>
+    <ConnectionString>User Id=takeshi;Host=172.16.78.1;Ping Interval=240;Character Set=AUTO;</ConnectionString>
   </Connection>
   <Settings>
     <DbDiagramOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -38,7 +38,7 @@
   <VirtualRelations>
     <RelationCount>0</RelationCount>
   </VirtualRelations>
-  <Diagram Version="1.10.0.92">
+  <Diagram Version="1.10.0.93">
     <DiagramModel>
       <Model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:type="RootModel">
         <CustomProperties>
@@ -51,12 +51,12 @@
               <Parent>0</Parent>
             </CustomProperties>
             <Location>
-              <X>380 px</X>
-              <Y>60 px</Y>
+              <X>280 px</X>
+              <Y>50 px</Y>
             </Location>
             <Size>
               <Width>182 px</Width>
-              <Height>556 px</Height>
+              <Height>520 px</Height>
             </Size>
             <DbOid>
               <Path>dev_rutvgid.rtvg_channels</Path>
@@ -74,8 +74,8 @@
               <Parent>0</Parent>
             </CustomProperties>
             <Location>
-              <X>890 px</X>
-              <Y>70 px</Y>
+              <X>1210 px</X>
+              <Y>210 px</Y>
             </Location>
             <Size>
               <Width>163 px</Width>
@@ -97,8 +97,8 @@
               <Parent>0</Parent>
             </CustomProperties>
             <Location>
-              <X>610 px</X>
-              <Y>60 px</Y>
+              <X>1160 px</X>
+              <Y>-90 px</Y>
             </Location>
             <Size>
               <Width>163 px</Width>
@@ -120,8 +120,8 @@
               <Parent>0</Parent>
             </CustomProperties>
             <Location>
-              <X>60 px</X>
-              <Y>70 px</Y>
+              <X>-10 px</X>
+              <Y>80 px</Y>
             </Location>
             <Size>
               <Width>230 px</Width>
@@ -137,13 +137,36 @@
               <TriggersCollapsed>True</TriggersCollapsed>
             </Compartments>
           </Model>
+          <Model xsi:type="TableModel">
+            <CustomProperties>
+              <OID>5</OID>
+              <Parent>0</Parent>
+            </CustomProperties>
+            <Location>
+              <X>840 px</X>
+              <Y>40 px</Y>
+            </Location>
+            <Size>
+              <Width>224 px</Width>
+              <Height>603 px</Height>
+            </Size>
+            <DbOid>
+              <Path>dev_rutvgid.rtvg_programs</Path>
+              <TypeName>Table</TypeName>
+            </DbOid>
+            <Compartments>
+              <ConstraintsCollapsed>True</ConstraintsCollapsed>
+              <IndexesCollapsed>True</IndexesCollapsed>
+              <TriggersCollapsed>True</TriggersCollapsed>
+            </Compartments>
+          </Model>
         </Children>
         <ViewPort>
           <ScaleMode>Free</ScaleMode>
-          <Scale>1</Scale>
+          <Scale>0.76</Scale>
           <Location>
-            <X>0 px</X>
-            <Y>38 px</Y>
+            <X>-75.00000690093 px</X>
+            <Y>-163.157891204813 px</Y>
           </Location>
         </ViewPort>
       </Model>

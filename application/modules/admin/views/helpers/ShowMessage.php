@@ -1,18 +1,17 @@
 <?php
 /**
- * 
+ *
  * Helper to display notice/alert/error message
- * 
+ *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package sosedionline
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/modules/admin/views/helpers/ShowMessage.php,v $
+ * @package rutvgid
  * @version $Id: ShowMessage.php,v 1.5 2013-03-24 03:02:28 developer Exp $
  */
 class Zend_View_Helper_ShowMessage extends Zend_View_Helper_Abstract
 {
     /**
      * Show message on page
-     * 
+     *
      * @param  string $msg
      * @param  string $type // 'message'|'warning'|'error'
      * @return string
@@ -37,6 +36,6 @@ class Zend_View_Helper_ShowMessage extends Zend_View_Helper_Abstract
 			<h4 class="alert-heading"><?php echo $heading ?></h4>
 			<?php echo $msg; ?>
 		</div>
-		<?php 
+		<?php
 	}
 }

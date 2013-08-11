@@ -1,11 +1,10 @@
 <?php
 /**
- * 
- * Logout from class
- * 
+ *
+ * Logout form class
+ *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @package sosedionline
- * @filesource $Source: /home/developer/cvs/rutvgid.ru/application/forms/Logout.php,v $
+ * @package rutvgid
  * @version $Id: Logout.php,v 1.3 2013-03-17 17:19:11 developer Exp $
  */
 class Xmltv_Form_Logout extends Zend_Form
@@ -31,7 +30,7 @@ class Xmltv_Form_Logout extends Zend_Form
 
     /**
      * Base logout form
-     * 
+     *
      * @param array $options
      */
     public function __construct(array $options=null) {
@@ -53,7 +52,7 @@ class Xmltv_Form_Logout extends Zend_Form
 		$submit = new Zend_Form_Element_Submit('submit');
         $submit->setAttribs( array('class'=>'btn'))
         	->setAttrib( 'type', 'submit' )
-        	->setDecorators( array( 
+        	->setDecorators( array(
         		array('ViewHelper') ))
         	->setLabel( $this->submitLabel );
         
