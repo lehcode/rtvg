@@ -1,8 +1,8 @@
 <?php
 /**
- * 
+ *
  * Programs model for Admin module
- * 
+ *
  * @author     Antony Repin <egeshisolutions@gmail.com>
  * @subpackage backend
  * @version    $Id: Programs.php,v 1.31 2013-04-11 05:19:16 developer Exp $
@@ -102,7 +102,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	}
 	
 	/**
-	 * 
+	 *
 	 * Archive routines
 	 * @param  Zend_Date $start
 	 * @param  Zend_Date $end
@@ -152,13 +152,13 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 					$descData = $this->programsDescTable->fetchRow("`hash`='".$programData['hash']."'");
 					if ($descData)
 						$descData = $descData->toArray();
-					else 
+					else
 						$descData = array();
 					
 					$propsData = $this->programsPropsTable->fetchRow("`hash`='".$programData['hash']."'");
 					if ($propsData)
 						$propsData = $propsData->toArray();
-					else 
+					else
 						$propsData = array();
 					
 					//var_dump($programData);
@@ -226,7 +226,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Parse string for age rating
-	 * 
+	 *
 	 * @param  string $input
 	 * @return int
 	 */
@@ -269,7 +269,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Process program title and detect properties
-	 * 
+	 *
 	 * @param string $string //Program title
 	 * @return array // broadcast data
 	 */
@@ -301,7 +301,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		}
 		
 		// Live program
-		$result = $this->detectLive( $result );		
+		$result = $this->detectLive( $result );
 		if (APPLICATION_ENV=='development'){
 			//var_dump($result);
 			//die(__FILE__.': '.__LINE__);
@@ -315,7 +315,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		}
 		
 		// Сериалы
-		$result = $this->parseSeriesTitle( $result );		
+		$result = $this->parseSeriesTitle( $result );
 		if (APPLICATION_ENV=='development'){
 			//var_dump($result);
 			//die(__FILE__.': '.__LINE__);
@@ -424,7 +424,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 
 
 	/**
-	 * 
+	 *
 	 * Detect program category
 	 * @param  array  $info
 	 * @param  string $xml_title
@@ -502,7 +502,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Parse XML description
-	 * 
+	 *
 	 * @param string $desc
 	 * @param string $hash
 	 * @return void
@@ -748,7 +748,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 				
 			}
 			
-			if (Xmltv_String::stristr($desc, 'Детективный сериал') || 
+			if (Xmltv_String::stristr($desc, 'Детективный сериал') ||
 			Xmltv_String::stristr($desc, 'сериала "Детективы"')){
 				$result['category'] = $this->catIdFromTitle('детективный сериал');
 			} elseif(Xmltv_String::stristr($desc, 'Информационная программа')){
@@ -783,7 +783,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Convert russian country name to ISO format
-	 * 
+	 *
 	 * @deprecated
 	 * @param string $string
 	 */
@@ -809,7 +809,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    	if ($result && is_array($result)){
 	    		$result = implode(',', $result['country']);
 	    		return $result;
-	    	} 
+	    	}
 	    	return null;
 	    } else {
 	    	$country = $string;
@@ -829,10 +829,10 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	}
 	
 	/**
-	 * 
+	 *
 	 * Удаление имени режисера/ов из описания передачи
 	 * с использованием регулярных выражений
-	 * 
+	 *
 	 * @param  string $desc
 	 * @param  array $actors
 	 * @return string
@@ -845,7 +845,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	}
 	
 	/**
-	 * 
+	 *
 	 * @deprecated
 	 * @param unknown_type $desc
 	 * @param unknown_type $actors
@@ -859,7 +859,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	}
 	
 	/**
-	 * 
+	 *
 	 * @param  string $text
 	 * @param  array $persons
 	 * @return string
@@ -926,7 +926,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Парсинг имен с использованием регулярных выражений
-	 * 
+	 *
 	 * @param  string $string
 	 * @param  string $type
 	 * @return array
@@ -998,7 +998,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Check if director exists in database and save if new.
-	 * 
+	 *
 	 * @param  string $name
 	 * @throws Zend_Exception
 	 * @return int
@@ -1036,7 +1036,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	public function saveCredits ($credits=array(), $info=array()) {
 		
-		if( empty( $credits ) || empty( $info ) ) 
+		if( empty( $credits ) || empty( $info ) )
 		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);;
 		
 		$table   = new Admin_Model_DbTable_Actors();
@@ -1054,7 +1054,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 			
 			if( count( $parts ) == 2 ) {
 				
-				$snames=$table->fetchAll( 
+				$snames=$table->fetchAll(
 				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "'
 				AND `s_name` LIKE '" . $tolower->filter( $parts[1] ) . "'" );
 				
@@ -1088,9 +1088,9 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 				
 				//die(__FILE__.': '.__LINE__);
 				
-				$snames = $table->fetchAll( 
-				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "' 
-				AND `m_name` LIKE '" . $tolower->filter( $parts[1] ) . "' 
+				$snames = $table->fetchAll(
+				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "'
+				AND `m_name` LIKE '" . $tolower->filter( $parts[1] ) . "'
 				AND `s_name` LIKE '" . $tolower->filter( $parts[2] ) . "'" );
 			
 				if( count( $snames ) ) {
@@ -1127,7 +1127,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 			
 			if( count( $parts ) == 2 ) {
 				
-				$snames=$table->fetchAll( 
+				$snames=$table->fetchAll(
 				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "' AND `s_name` LIKE '" . $tolower->filter( $parts[1] ) . "'" );
 				
 				if( count( $snames ) ) {
@@ -1150,9 +1150,9 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 				
 				
 			} elseif( count( $parts ) == 3 ) {
-				$snames=$table->fetchAll( 
-				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "' 
-					AND `m_name` LIKE '" . $tolower->filter( $parts[1] ) . "' 
+				$snames=$table->fetchAll(
+				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "'
+					AND `m_name` LIKE '" . $tolower->filter( $parts[1] ) . "'
 					AND `s_name` LIKE '" . $tolower->filter( $parts[2] ) . "'" );
 				
 				if( count( $snames ) ) {
@@ -1203,7 +1203,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 			}
 			
 			if( count( $parts ) == 3 ) {
-				$found=$table->fetchRow( 
+				$found=$table->fetchRow(
 				"`f_name`='%" . $parts[0] . "%' AND `m_name`='%" . $parts[1] . "%' AND `s_name`='%" . $parts[2] . "%'" );
 				if(  !$found )
 				$new=$table->createRow( array('f_name'=>$parts[0], 'm_name'=>$parts[1], 's_name'=>$parts[2]) );
@@ -1228,7 +1228,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	private function _updateProgramActors ($existing = array(), $info = array()) {
 		
-		if( empty( $existing ) || empty( $info ) ) 
+		if( empty( $existing ) || empty( $info ) )
 		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
 		
 		if (!is_array($existing))
@@ -1300,7 +1300,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	private function _updateProgramDirectors ($existing = array(), $info = array()) {
 		
-		if( empty($existing) || empty( $info ) ) 
+		if( empty($existing) || empty( $info ) )
 		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
 		
 		//var_dump(func_get_args());
@@ -1389,7 +1389,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	}
 	
 	/**
-	 * 
+	 *
 	 * @param  string $input
 	 * @throws Exception
 	 * @return string
@@ -1436,7 +1436,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Save new program to DB
-	 * 
+	 *
 	 * @param  array $info
 	 * @throws Exception
 	 * @return unknown|Ambigous <mixed, multitype:>
@@ -1469,7 +1469,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Search for particular program by it's cache
-	 * 
+	 *
 	 * @param  string $hash
 	 * @throws Exception
 	 * @throws Zend_Exception
@@ -1490,7 +1490,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	
 	/**
-	 * 
+	 *
 	 * Convert date string to Zend_Date object
 	 * @param string $string
 	 * @return Zend_Date
@@ -1540,7 +1540,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Generate alias
-	 * 
+	 *
 	 * @param  string $input
 	 * @param  bool   $replace_plus //Заменять + на слово
 	 * @return string|null
@@ -1596,7 +1596,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Parse spor program title
-	 * 
+	 *
 	 * @param  array $input
 	 * @return array
 	 */
@@ -1743,7 +1743,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Parse news program title
-	 * 
+	 *
 	 * @param  array $input
 	 * @return array
 	 */
@@ -1796,7 +1796,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Detect live program
-	 * 
+	 *
 	 * @param  array $input
 	 * @return array
 	 */
@@ -1837,7 +1837,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Detect premiere
-	 * 
+	 *
 	 * @param  array $input
 	 * @return int
 	 */
@@ -1874,7 +1874,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Parse music program title
-	 * 
+	 *
 	 * @param  array $input
 	 * @return array
 	 */
@@ -1962,7 +1962,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Parse series title
-	 * 
+	 *
 	 * @param  array $input
 	 * @return array
 	 */
@@ -2184,19 +2184,29 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    	}
 	    }
 	    
-	    $regex = '/^(.+)\s\((Фильм\s+[\d]+)-[\w]\s+-\s+"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui'; //Шериф (Фильм 5-й - "Сто тысяч для сына", 1-я и 2-я серии)
+	    /**
+	     * Checked out
+	     * Шпионские игры (Фильм 9-й - "Живая бомба", 1-я и 2-я серии)
+	     * Шериф (Фильм 5-й - "Сто тысяч для сына", 1-я и 2-я серии)
+	     */
+	    $regex = '/^(.+)\s\((Фильм\s+[\d]+)-[\w]\s+-\s+"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui';
 	    if (preg_match($regex, $input['title'], $m)){
-	        die(__FILE__.': '.__LINE__);
 	        $result = $input;
 	    	$result['title'] = trim($m[1]);
 	    	$result['sub_title'] = trim($m[2]).'. '.trim($m[3]);
 	    	$result['episode'] = (int)trim($m[4]).','.(int)trim($m[5]);
 	    	$result['category'] = $this->catIdFromTitle('Сериал');
 	    }
-	    
-	    
-	    $regex = '/^(.+)\s+\(Фильм\s+([\w]+):?\s+"(.+)"\)/ui'; //Предлагаемые обстоятельства (Фильм третий: "Богатый наследник")
+		
+	    /**
+	     * Предлагаемые обстоятельства (Фильм третий: "Богатый наследник")
+	     */
+	    $regex = '/^(.+)\s+\(Фильм\s+([\w]+):?\s+"(.+)"\)/ui';
 	    if (preg_match($regex, $result['title'], $m)){
+	        var_dump($regex);
+	        var_dump($input['title']);
+	        var_dump($m);
+	        die(__FILE__.': '.__LINE__);
 	        die(__FILE__.': '.__LINE__);
 	        $result = $input;
 	    	$result['title'] = trim($m[1]);
@@ -2222,7 +2232,10 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    
 	    
 	    if ( preg_match('/^(.+)\s?\(([\d]+)-?я?\s+серия\s-\s"([\w\d\s]+)"\.?\)/ui', $result['title'], $m)) { //(25-я серия - "Рейдерский захват".
-	    	die(__FILE__.': '.__LINE__);
+	    	var_dump($regex);
+	        var_dump($input['title']);
+	        var_dump($m);
+	        die(__FILE__.': '.__LINE__);
 	    	$result = $input;
 	    	$result['title']     = trim($m[1]).'. «'.trim($m[3]).'»';
 	    	$result['sub_title'] = '';
@@ -2276,7 +2289,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Parse break
-	 * 
+	 *
 	 * @param  array $input
 	 * @return array
 	 */
@@ -2300,7 +2313,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	
 	/**
 	 * Detect and strip age rating
-	 * 
+	 *
 	 * @param  array $input
 	 * @return array
 	 */
@@ -2331,7 +2344,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	}
 	
 	/**
-	 * 
+	 *
 	 * @param  string $input
 	 * @return string
 	 */
@@ -2348,7 +2361,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	}
 	
 	/**
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getNamesRegex(){

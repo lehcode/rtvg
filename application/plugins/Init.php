@@ -54,7 +54,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	 */
 	protected function _initActionHelpers () {
 		
-		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Xmltv_Controller_Helper' );
+		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Xmltv_Controller_Action_Helper' );
 		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Rtvg_Controller_Action_Helper' );
 		
 	}
