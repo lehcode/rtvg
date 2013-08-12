@@ -9,31 +9,31 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 {
     
     /**
-     * 
+     *
      * @var Xmltv_Model_DbTable_Channels
      */
     protected $channelsTable;
     
     /**
-     * 
+     *
      * @var Xmltv_Model_DbTable_ChannelsRatings
      */
     protected $ratingsTable;
 
     /**
-     * 
+     *
      * @var Xmltv_Model_DbTable_ChannelsComments
      */
     protected $commentsTable;
 
     /**
-     * 
+     *
      * @var Xmltv_Model_DbTable_ChannelsCategories
      */
     protected $channelsCategoriesTable;
 
     /**
-     * 
+     *
      * @var Xmltv_Model_DbTable_ProgramsCategories
      */
     protected $programsCategoriesTable;
@@ -49,12 +49,16 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         $this->ratingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
         $this->programsCategoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
         $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
-        $this->commentsTable = new Xmltv_Model_DbTable_ChannelsComments();
+		/**
+		 * @TODO Add test for production system to
+		 * load coments without errors
+		 */
+        //$this->commentsTable = new Xmltv_Model_DbTable_ChannelsComments();
         
     }
     
 	/**
-	 * 
+	 *
 	 * Load all published channels
 	 */
 	public function getPublished( Zend_View &$view=null ){
@@ -73,7 +77,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	}
 	
 	/**
-	 * 
+	 *
 	 * @param  array $channel
 	 * @param  string $baseUrl
 	 * @return void|string
@@ -88,7 +92,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	}
 	
 	/**
-	 * 
+	 *
 	 * @param  string $alias
 	 * @return stdClass
 	 */
@@ -138,7 +142,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		// Breakpoint
 		if (APPLICATION_ENV=='development'){
 			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);	
+			//die(__FILE__.': '.__LINE__);
 		}
 
 		return $result;
@@ -147,7 +151,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 
 	/**
 	 * Get channel properties by channel title
-	 * 
+	 *
 	 * @param  string $title
 	 * @throws Zend_Exception
 	 * @return Zend_Db_Table_Row
@@ -163,7 +167,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 		if (APPLICATION_ENV=='development'){
 			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);	
+			//die(__FILE__.': '.__LINE__);
 		}
 		
 		return $result;
@@ -207,7 +211,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	
 	/**
 	 * Add hit to channel rating
-	 * 
+	 *
 	 * @param  int $id // channel ID
 	 * @throws Zend_Exception
 	 */
@@ -224,7 +228,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	
 	/**
 	 * Load channel description
-	 * 
+	 *
 	 * @param  int $id
 	 * @throws Zend_Exception
 	 */
@@ -243,9 +247,9 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	
 	
 	/**
-	 * 
+	 *
 	 * Channels belonging to particular category
-	 * 
+	 *
 	 * @param  string $cat_alias
 	 * @throws Zend_Exception
 	 * @return array
@@ -373,7 +377,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	}
 	
 	/**
-	 * 
+	 *
 	 * @param string $alias
 	 */
 	public function category($alias=null){
@@ -388,7 +392,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	
 	/**
 	 * Search for channel
-	 * 
+	 *
 	 * @param string $string // Search string
 	 */
 	public function searchChannel( $string=null, $strict=false){
@@ -481,16 +485,16 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	
 	/**
 	 * Top channels list
-	 * 
+	 *
 	 * @param int $amt
 	 */
 	public function topChannels($amt=10){
 		
 		$select = $this->db->select()
-	    	->from( array('ch'=>$this->channelsTable->getName()), 
+	    	->from( array('ch'=>$this->channelsTable->getName()),
 	    		array( 'id', 'title', 'alias'=>'LOWER(`ch`.`alias`)', 'featured', 'icon', ''))
 	    	->join( array('r'=>$this->channelsRatingsTable->getName()), "`r`.`id`=`ch`.`id`", array('hits'))
-	    	->join( array('cat'=>$this->channelsCategoriesTable->getName()), "`ch`.`category`=`cat`.`id`", 
+	    	->join( array('cat'=>$this->channelsCategoriesTable->getName()), "`ch`.`category`=`cat`.`id`",
 	    		array('category_title'=>'title', 'category_alias'=>'alias', 'category_image'=>'image'))
 	    	->limit($amt)
 	    	->where("`ch`.`published`='1'")
@@ -514,13 +518,13 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 
 	/**
 	 * Featured channels list
-	 * 
+	 *
 	 * @param int $amt
 	 */
 	public function featuredChannels($amt=null){
 		
 	    $select = $this->db->select()
-    		->from( array( 'ch'=>$this->channelsTable->getName()), array( 
+    		->from( array( 'ch'=>$this->channelsTable->getName()), array(
     			'id',
     			'title',
     			'alias'=>'LOWER(`ch`.`alias`)'
@@ -535,7 +539,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		    //die(__FILE__.': '.__LINE__);
 	    }
 	    
-	    $result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);	    	
+	    $result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
 	    
 	    return $result;
 	    
@@ -559,7 +563,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	
 	/**
 	 * Unpublish multiple channels at once
-	 * 
+	 *
 	 * @param  array $channels
 	 * @throws Zend_Controller_Action_Exception
 	 * @return bool

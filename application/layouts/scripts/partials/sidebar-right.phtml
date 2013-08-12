@@ -1,7 +1,7 @@
-<?php 
+<?php
 /**
  * Right sidebar view script
- * 
+ *
  * @author  Antony Repin
  * @package rutvgid
  * @version $Id: sidebar-right.phtml,v 1.12 2013-04-06 22:35:03 developer Exp $
@@ -9,7 +9,7 @@
  */
 ?>
 
-<?php 
+<?php
 $this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').show(300); });");
 ?>
 <div class="module" id="rumor-ads">
@@ -17,7 +17,7 @@ $this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads
 	<div class="content" id="DIV_DA_85753"></div>
 </div>
 
-<?php 
+<?php
 if ($this->gcse===true){
     $js = "(function() {
     var cx = '006526203727824860247:vdzpxf_4n5a';
@@ -25,7 +25,7 @@ if ($this->gcse===true){
     gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
     '//www.google.ru/cse/cse.js?cx=' + cx;
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
-    })();"; 
+    })();";
     $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js;
     $this->inlineScript()->prependScript( $js );
     ?>
@@ -33,7 +33,7 @@ if ($this->gcse===true){
 		<h4>Поиск по сайту</h4>
 		<gcse:searchbox></gcse:searchbox>
 	</div>
-    <?php 
+    <?php
 }
 ?>
 
@@ -47,7 +47,7 @@ if (count($this->videos) && $this->videos!==false) {
     }
     
     $channelTitle = $this->escape($this->channel['title']);
-	$this->headScript()->appendScript( Rtvg_Compressor_JSMin::minify("$(function() { 
+	$this->headScript()->appendScript( Rtvg_Compressor_JSMin::minify("$(function() {
 	var icons = { header: 'ui-icon-circle-arrow-e', activeHeader: 'ui-icon-circle-arrow-s' };
 	$( '#col_r .videos_sidebar' ).accordion({
 		header: 'h4',
@@ -66,7 +66,7 @@ if (count($this->videos) && $this->videos!==false) {
 		<h3 class="mediumheading">Онлайн-видео <?php echo $channelTitle ?></h3>
 		
 		<div class="videos_sidebar">
-		<?php 
+		<?php
 		
 		foreach ($this->videos as $video) {
 			
@@ -75,7 +75,7 @@ if (count($this->videos) && $this->videos!==false) {
 		        //die(__FILE__.': '.__LINE__);
 		    }
 		    
-		    $videoTitle = $this->escape( $this->truncateString( $video['title'], 38, 'letters' )); 
+		    $videoTitle = $this->escape( $this->truncateString( $video['title'], 38, 'letters' ));
 		    $videoAlias = $this->escape( $video['alias'] );
 		    $videoPublished = $video['published']->toString( 'd MMMM YYYY');
 		    $videoDuration  = $video['duration']->toString( 'MM мин ss сек');
@@ -112,38 +112,38 @@ if (count($this->videos) && $this->videos!==false) {
 				
 				<?php  if (!empty($video['desc'])): ?>
 				<p class="desc">
-					<?php 
-					$desc = $this->truncateString( $videoDesc, 30, 'words') ; 
+					<?php
+					$desc = $this->truncateString( $videoDesc, 30, 'words') ;
 					if (stristr($desc, $this->channel['title'])) {
-						$channelHref = '<a href="'.$this->url(array('channel'=>$this->channel['alias']), 'default_listings_day-listing') . '" 
-							target="_blank" 
+						$channelHref = '<a href="'.$this->url(array('channel'=>$this->channel['alias']), 'default_listings_day-listing') . '"
+							target="_blank"
 							title="Программа канала '.$this->channel['title'].'">'.$this->channel['title'].'</a>';
-						echo Xmltv_String::str_ireplace($this->channel['title'], $channelHref, $desc); 
+						echo Xmltv_String::str_ireplace($this->channel['title'], $channelHref, $desc);
 					}
 					echo $desc;
 					?>
 				</p>
 				<?php endif; ?>
 				
-			</div> 
-		<?php 
+			</div>
+		<?php
 		
 		}
 		?>
 			
 	</div>
 </div>
-<?php 
+<?php
 }
 ?>
 
-<?php 
+<?php
 echo $this->adCode(array(
 	'w'=>300,
 	'h'=>300,
 	'type'=>'cpa',
 	'output'=>'stack',
-	'amt'=>2,
+	'amt'=>1,
 ));
 ?>
 

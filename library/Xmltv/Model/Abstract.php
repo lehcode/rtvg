@@ -1,4 +1,4 @@
-<?php 
+<?php
 abstract class Xmltv_Model_Abstract
 {
     /**
@@ -86,7 +86,7 @@ abstract class Xmltv_Model_Abstract
     
 	/**
      * Model constructor
-     * 
+     *
      * @param array $config
      */
 	public function __construct($config=array()){
@@ -106,7 +106,7 @@ abstract class Xmltv_Model_Abstract
 		// Set table prefix
 		$pfx = $this->dbConf->get('tbl_prefix');
 		if(false !== (bool)$pfx) {
-		    self::$tblPfx = $pfx; 
+		    self::$tblPfx = $pfx;
 		}
 		
 		$this->initTables();
@@ -116,7 +116,7 @@ abstract class Xmltv_Model_Abstract
 	
 	/**
 	 * Set row value
-	 * 
+	 *
 	 * @param  string $name
 	 * @param  string $value
 	 * @throws Exception
@@ -132,7 +132,7 @@ abstract class Xmltv_Model_Abstract
 	
 	/**
 	 * Get row value
-	 * 
+	 *
 	 * @param  string $name
 	 * @throws Exception
 	 */
@@ -178,15 +178,18 @@ abstract class Xmltv_Model_Abstract
 	    $this->vcacheSidebarTable  = new Xmltv_Model_DbTable_VcacheSidebar();
 	    $this->vcacheRelatedTable  = new Xmltv_Model_DbTable_VcacheRelated();
 	    $this->vcacheMainTable     = new Xmltv_Model_DbTable_VcacheMain();
-	    
-	    $this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
+	    /**
+		 * @TODO Add test for production system to
+		 * load coments without errors
+		 */
+	    //$this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
 	    
 	    $this->programsRatingsTable = new Xmltv_Model_DbTable_ProgramsRatings();
 	}
 	
 	/**
 	 * Debug select statement
-	 * 
+	 *
 	 * @param Zend_Db_Select $select
 	 * @param string $method
 	 */
