@@ -1,0 +1,84 @@
+SetEnv APPLICATION_ENV development
+
+#php_value error_reporting 0
+#php_flag display_errors off
+#php_value error_reporting 30711
+#php_flag display_errors on
+#php_value memory_limit 256M
+
+#DirectoryIndex 503.php
+
+#AuthUserFile /home/web/.htpasswd
+#AuthName "Administration"
+#AuthType Basic
+#require user egeshi
+
+<ifModule mod_deflate.c>
+  Addtype font/opentype .otf
+  Addtype font/truetype .ttf
+  Addtype stylesheet/less .less
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css stylesheet/less font/opentype font/truetype
+</ifModule>
+
+<ifModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault A3600
+  ExpiresByType image/x-icon A2592000
+  ExpiresByType application/x-javascript A2592000
+  ExpiresByType stylesheet/less A2592000
+  ExpiresByType stylesheet/css A2592000
+  ExpiresByType text/css A2592000
+  ExpiresByType image/gif A604800
+  ExpiresByType image/png A604800
+  ExpiresByType image/jpeg A604800
+  #ExpiresByType text/plain A300
+  ExpiresByType application/x-shockwave-flash A604800
+  ExpiresByType video/x-flv A604800
+  ExpiresByType application/pdf A604800
+  ExpiresByType text/html A60
+</ifModule>
+
+RewriteEngine On
+Options +FollowSymLinks
+RewriteBase /
+
+RewriteCond %{ENV:REDIRECT_STATUS} !^$
+RewriteRule .* - [L]
+
+RewriteRule %D0%B2%D0%B8%D0%B4%D0%B5%D0%BE/%D1%82%D0%B5%D0%BC%D0%B0 / [R=301,L]
+RewriteRule index.php/(.*) /$1 [R=301,L]
+
+#RewriteCond %{HTTP_USER_AGENT} baiduspider [NC]
+#RewriteCond %{REQUEST_URI} телепрограмма [NC]
+#RewriteRule .* http://rutvgid.ru/ [R=301,L]
+
+
+RewriteCond %{REQUEST_URI} -$ [OR,NC]
+RewriteCond %{REQUEST_URI} ^.+3D$ [OR,NC]
+RewriteCond %{QUERY_STRING} id=.+3D$ [OR,NC]
+RewriteCond %{QUERY_STRING} date [OR,NC]
+RewriteCond %{QUERY_STRING} tag [OR,NC]
+RewriteCond %{QUERY_STRING} start [OR,NC]
+RewriteCond %{QUERY_STRING} layout
+RewriteRule .* /телепрограмма? [R=301,L]
+
+RewriteRule ^каналы/новости$ /каналы/информационные [R=301,L]
+RewriteRule ^каналы$ /телепрограмма [R=301,L]
+RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]
+RewriteRule ^телепрограмма/лад-беларусь(.*)$ /телепрограмма/беларусь-2$1 [R=301,L]
+RewriteRule ^телепрограмма/jetix(.*)$ /телепрограмма [R=301,L]
+RewriteRule ^телепрограмма/первый-канал-снг(.*)$ /телепрограмма/первый-канал$1 [R=301,L]
+
+
+RewriteCond %{REQUEST_FILENAME} -s [OR]
+RewriteCond %{REQUEST_FILENAME} -l [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^.*$ - [NC,L]
+RewriteRule ^.*$ index.php [NC,L]
+
+
+
+
+
+
+
