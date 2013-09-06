@@ -4,7 +4,7 @@
  * View helper to display system info
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: Sysinfo.php,v 1.2 2013-03-16 23:40:42 developer Exp $
  */
 class Admin_View_Helper_Sysinfo extends Zend_View_Helper_Abstract

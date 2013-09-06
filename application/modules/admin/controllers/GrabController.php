@@ -3,7 +3,7 @@
  * Manage listings grabbing
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: GrabController.php,v 1.9 2013-04-12 06:58:27 developer Exp $
  *
  */

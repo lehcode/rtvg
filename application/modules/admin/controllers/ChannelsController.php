@@ -4,7 +4,7 @@
  * Backend channels management
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: ChannelsController.php,v 1.4 2013-03-17 18:34:58 developer Exp $
  */
 class Admin_ChannelsController extends Rtvg_Controller_Admin

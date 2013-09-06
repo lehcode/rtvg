@@ -3,7 +3,7 @@
  * Articles model
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: Articles.php,v 1.4 2013-04-03 04:08:16 developer Exp $
  *
  */

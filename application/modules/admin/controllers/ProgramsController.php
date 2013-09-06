@@ -4,7 +4,7 @@
  * Manage listing programs
  *
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version $Id: ProgramsController.php,v 1.8 2013-03-16 12:46:19 developer Exp $
  */
 

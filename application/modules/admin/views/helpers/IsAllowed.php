@@ -3,7 +3,8 @@
  * View helper to check if user is alowed to access
  * particular parts of view script output
  *
- * @version $Id: IsAllowed.php,v 1.2 2013-03-16 20:03:36 developer Exp $
+ * @package backend
+ * @version $Id$
  *
  */
 class Admin_View_Helper_IsAllowed extends Zend_View_Helper_Abstract

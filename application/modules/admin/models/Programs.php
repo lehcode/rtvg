@@ -4,7 +4,7 @@
  * Programs model for Admin module
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: Programs.php,v 1.31 2013-04-11 05:19:16 developer Exp $
  */
 

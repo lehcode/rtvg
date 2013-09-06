@@ -3,7 +3,7 @@
  * Backend content controller
  * 
  * @author	 Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version	$Id: ContentController.php,v 1.5 2013-04-03 04:08:16 developer Exp $
  *
  */

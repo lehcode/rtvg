@@ -3,7 +3,7 @@
  * Index controller for admin backend
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: IndexController.php,v 1.11 2013-03-22 17:51:44 developer Exp $
  *
  */

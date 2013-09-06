@@ -4,7 +4,7 @@
  * Backend movies management
  *
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: MoviesController.php,v 1.2 2013-03-16 12:46:19 developer Exp $
  */
 class Admin_MoviesController extends Rtvg_Controller_Admin

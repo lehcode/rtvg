@@ -3,7 +3,7 @@
  * Duplicates Controller
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: DuplicatesController.php,v 1.6 2013-03-16 12:46:19 developer Exp $
  *
  */

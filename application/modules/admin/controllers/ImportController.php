@@ -3,7 +3,7 @@
  * Backend import controller
  * 
  * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
+ * @package backend
  * @version    $Id: ImportController.php,v 1.27 2013-04-10 01:55:58 developer Exp $
  *
  */

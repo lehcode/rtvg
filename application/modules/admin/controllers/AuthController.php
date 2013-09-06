@@ -96,8 +96,7 @@ class Admin_AuthController extends Rtvg_Controller_Admin
 	            
                 parent::validateRequest();
                 
-                $openId = null;
-	            if ((bool)$this->input->getEscaped('openid')===false) {
+                if ($this->input->getEscaped('openid')===null || $this->input->getEscaped('pw')===null) {
 	            	$this->render('wrong-credentials');
 	            	return;
 	            }
@@ -109,9 +108,9 @@ class Admin_AuthController extends Rtvg_Controller_Admin
 	            	->setIdentityColumn( 'email')
 	            	->setIdentity( $this->input->getEscaped('openid'))
 	            	->setCredentialColumn( 'hash')
-	            	->setCredential( md5($this->input->getEscaped('passwd')) );
-	            
-	            // Perform the authentication query, saving the result
+	            	->setCredential( md5($this->input->getEscaped('pw')) );
+                
+                // Perform the authentication query, saving the result
 	            $auth = Zend_Auth::getInstance();
 	            $result = $auth->authenticate($authAdapter);
 	            

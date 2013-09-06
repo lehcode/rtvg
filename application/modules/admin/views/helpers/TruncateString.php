@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * @package backend
+ */
 class Zend_View_Helper_TruncateString extends Zend_View_Helper_Abstract
 {
 

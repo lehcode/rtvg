@@ -3,7 +3,7 @@
  * Редактирование статьи
  * 
  * @author	 Antony Repin
- * @subpackage backend
+ * @package backend
  * @version	$Id: EditArticle.php,v 1.5 2013-04-11 05:21:11 developer Exp $
  *
  */
