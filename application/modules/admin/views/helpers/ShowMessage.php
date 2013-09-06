@@ -7,7 +7,7 @@
  * @package rutvgid
  * @version $Id: ShowMessage.php,v 1.5 2013-03-24 03:02:28 developer Exp $
  */
-class Zend_View_Helper_ShowMessage extends Zend_View_Helper_Abstract
+class Admin_View_Helper_ShowMessage extends Zend_View_Helper_Abstract
 {
     /**
      * Show message on page
