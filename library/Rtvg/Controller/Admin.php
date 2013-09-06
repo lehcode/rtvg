@@ -2,9 +2,9 @@
 /**
  * Base class for backend controllers
  * 
- * @author     Antony Repin <egeshisolutions@gmail.com>
- * @subpackage backend
- * @version    $Id: Admin.php,v 1.7 2013-04-10 01:58:37 developer Exp $
+ * @author Antony Repin <egeshisolutions@gmail.com>
+ * @package backend
+ * @version $Id$
  *
  */
 
@@ -104,6 +104,7 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
         	return false;
         }
         
+        $this->errorUrl = $this->view->baseUrl( 'admin/error/error' );
         
     }
     
