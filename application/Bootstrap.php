@@ -59,7 +59,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-			->returnResponse( false )
+			//->returnResponse( false )
 		;
 		
 		if( APPLICATION_ENV == 'production' ) {
@@ -67,7 +67,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			$fc->returnResponse( true );
 		} else {
 			$fc->throwExceptions( false ); // enable ErrorController and logging
-			$fc->returnResponse (false);
+			//$fc->returnResponse (false);
 		}
 		
 		$router->setRouter($fc->getRouter());
@@ -95,8 +95,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 					print_r($exception);
 					die();
 				}
-				$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-				$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
+				//$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+				//$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
 			} else {
 				$response->sendHeaders();
 				$response->outputBody();
@@ -134,6 +134,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		return $log;
 		
 	}
+    
+    protected function _initFirebugLog(){
+        Zend_Registry::set('fireLog', new Zend_Log( new Zend_Log_Writer_Firebug() ));
+    }
 	
 	/**
 	 * 

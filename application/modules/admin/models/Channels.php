@@ -77,6 +77,7 @@ class Admin_Model_Channels extends Xmltv_Model_Channels {
     	'ОТВ - Областное телевидение'=>'ОТВ',
     	'ТВ-Центр-Международное'=>'ТВ Центр',
     	'ПЛЮСПЛЮС'=>'Citi',
+    	'Теле24'=>'Теле"24"',
     );
     
     public function getChannelMap(){

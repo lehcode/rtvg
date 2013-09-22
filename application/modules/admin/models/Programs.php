@@ -2335,11 +2335,24 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	}
 	
 	/**
-	 * @param array $input
+     * Create new broadcast row
+	 * @param array $data
+     * @return Zend_Db_Table_Row
 	 */
-	public function newBroadcast(array $input=array()){
-		
-	    return $this->programsTable->createRow( $input );
+	public function newBroadcast($data=array()){
+		if(!is_array($data)){
+            if(!is_object($data)){
+                throw new Zend_Exception("Wrong broadcast data!", 500);
+            }
+            $d = array();
+            foreach ($data as $k=>$v){
+                $d[$k] = $v;
+            }
+            $data = $d;
+        }
+        //var_dump($data);
+        //die(__FILE__.': '.__LINE__);
+	    return $this->programsTable->createRow( $data );
 		
 	}
 	
@@ -2368,11 +2381,18 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		return $this->namesRegex;
 	}
 	
-	public function getBroadcastHash($prog){
-		
-	    //Calculate hash
-	    return md5($prog->alias.$prog->channel.$prog->start.$prog->end);
-	    
+    /**
+     * Generate unique hash for broadcast
+     * 
+     * @param type $data
+     * @return string
+     * @throws Zend_Exception
+     */
+	public function getBroadcastHash($data){
+        if(!is_object($data)){
+            throw new Zend_Exception("Cannot create hash, wrong data provided!", 500);
+        }
+	    return md5($data->title.$data->sub_title.$data->alias);
 	}
 	
 	

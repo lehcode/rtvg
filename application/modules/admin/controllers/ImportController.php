@@ -157,7 +157,10 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$info['alias'] = $plusToPlus->filter($info['alias']);
 			$info['alias'] = str_replace('--', '-', trim($info ['alias'], ' -'));
 			
-			if ( !($present = $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'") ))) {
+            //var_dump($channelsTable->fetchRow( array("`alias` LIKE 'cbs-drama' OR `title` LIKE '%CBS Drama%'") ));
+            //die(__FILE__.': '.__LINE__);
+            
+			if ( !($present = $channelsTable->fetchRow( array("`alias` LIKE '".$info['alias']."' OR `title` LIKE '%".$info['title']."%'") ))) {
 				
 			    if ((bool)$channelsTable->find($info['id'])->toArray()===false){
 			        //Save if new
@@ -166,14 +169,15 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			        	$newChannels[] = $info;
 			        } catch (Exception $e) {
 			        	if ($e->getCode()!=1062) {
-			        		die($e->getMessage());
+                            Zend_Registry::get('fireLog')->log($info, Zend_Log::DEBUG);
+			        		throw new Zend_Exception($e->getMessage(), $e->getCode());
 			        	}
 			        }
 			        
 			    } else {
-			        echo "<h3>Неверный канал!</h3><br />";
-			        print_r($channelsTable->find($info['id'])->toArray());
-			        print_r($info);
+			        echo "<h3>Канал отсутствует!</h3><br />";
+			        Zend_Debug::dump($info);
+                    //Zend_Debug::dump($channelsTable->find($info['id'])->toArray());
 			        die();
 			    }
 			    
@@ -230,7 +234,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	 */
 	public function xmlParsePrograms($xml_file=null){
 		
-		ini_set('max_execution_time', 0);
+        ini_set('max_execution_time', 0);
 		ini_set('max_input_time', -1);	
 		
 		/*
@@ -257,60 +261,63 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		
 		$programs = $xml->getElementsByTagName('programme');
 		$programsModel = new Admin_Model_Programs();
+		$eventsModel = new Xmltv_Model_Event();
 		$i=0; //for debug
 		foreach ($programs as $node){
 			
-			//$prog  = array('id'=>"'NULL'");
-			$prog = $programsModel->newBroadcast();
+			$bc  = new stdClass();
+            $evt = $eventsModel->create();
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($prog);
-				//die(__FILE__.': '.__LINE__);
-			}
+			/*if (APPLICATION_ENV=='development'){
+				var_dump($bc);
+				var_dump($evt);
+				die(__FILE__.': '.__LINE__);
+			}*/
 			
 			//Process program title and detect some properties
 			$parsed = $programsModel->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
 			
-			if (APPLICATION_ENV=='development'){
+			/*if (APPLICATION_ENV=='development'){
 				if ($node->getElementsByTagName('title')->item(0)->nodeValue=='Биатлон. Кубок мира. Трансляция из Ханты-Мансийска'){
-					//var_dump($parsed);
-					//die(__FILE__.': '.__LINE__);
+					var_dump($parsed);
+					die(__FILE__.': '.__LINE__);
 				}
-			}
+			}*/
 			
-			$prog->title = $parsed['title'];
-			$prog->sub_title = $parsed['sub_title'];
-			$prog->rating = isset($parsed['rating']) ? $parsed['rating']   : null ;
-			$prog->premiere = isset($parsed['premiere']) || (int)$parsed['premiere']!=0 ? $parsed['premiere'] : 0 ;
-			$prog->live = isset($parsed['live']) ? $parsed['live']     : 0 ;
-			$prog->episode_num = isset($parsed['episode']) && $parsed['episode']!==null  ? (int)$parsed['episode'] : null;
+			$bc->title = $parsed['title'];
+			$bc->sub_title = $parsed['sub_title'];
+			//$prog->rating = isset($parsed['rating']) ? $parsed['rating']   : null ;
+			$evt->premiere = (isset($parsed['premiere']) || (bool)$parsed['premiere']!==false) ? 1 : 0 ;
+			$evt->live = (isset($parsed['live']) && (bool)$parsed['live']!==false) ? 1 : 0 ;
+			$bc->episode_num = isset($parsed['episode']) && $parsed['episode']!==null  ? (int)$parsed['episode'] : null;
 			
 			// Detect category ID
-			$prog->category = (isset($parsed['category']) && (bool)$parsed['category']===true) ? $parsed['category'] : $node->getElementsByTagName('category')->item(0)->nodeValue ;
-			if (!is_int($prog->category)) {
-				$prog['category'] = $programsModel->catIdFromTitle( $prog['category']);
+			$bc->category = (isset($parsed['category']) && (bool)$parsed['category']===true) ? $parsed['category'] : $node->getElementsByTagName('category')->item(0)->nodeValue ;
+			if (!is_int($bc->category)) {
+				$bc->category = $programsModel->catIdFromTitle( $bc->category );
 			}
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($prog);
-				//die(__FILE__.': '.__LINE__);
-			}
+			/*if (APPLICATION_ENV=='development'){
+				var_dump($bc->toArray());
+				var_dump($evt->toArray());
+				die(__FILE__.': '.__LINE__);
+			}*/
 			
 			//Parse description
 			if (@$node->getElementsByTagName('desc')->item(0)){
 				
 			    $parseDesc = $programsModel->parseDescription( $node->getElementsByTagName('desc')->item(0)->nodeValue );
 				
-			    $prog->title = isset($parseDesc['title']) && !empty($parseDesc['title']) ?  $prog->title.' '.$parseDesc['title'] : $prog->title;
-				$prog->desc  = isset($parseDesc['text']) ? $parseDesc['text'] : '' ;
+			    $bc->title = isset($parseDesc['title']) && !empty($parseDesc['title']) ?  $bc->title.' '.$parseDesc['title'] : $bc->title;
+				$bc->desc  = isset($parseDesc['text']) ? $parseDesc['text'] : '' ;
 				
 				if (!empty($parseDesc['actors'])) {
 					if (is_array($parseDesc['actors'])){
-					    $prog->actors = implode(',', $parseDesc['actors']);
+					    $bc->actors = implode(',', $parseDesc['actors']);
 					} elseif (is_numeric($parseDesc['actors'])) {
-					    $prog->actors = $parseDesc['actors'];
+					    $bc->actors = $parseDesc['actors'];
 					} elseif(stristr($parseDesc['actors'], ',')){
-					    $prog->actors = $parseDesc['actors'];
+					    $bc->actors = $parseDesc['actors'];
 					} else {
 					    var_dump($parseDesc['actors']);
 					    die(__FILE__.': '.__LINE__);
@@ -319,122 +326,123 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				
 				if (!empty($parseDesc['directors'])) {
 					if (is_array($parseDesc['directors'])){
-						$prog->directors = implode(',', $parseDesc['directors']);
+						$bc->directors = implode(',', $parseDesc['directors']);
 					} elseif (is_numeric($parseDesc['directors'])) {
-						$prog->directors = $parseDesc['directors'];
+						$bc->directors = $parseDesc['directors'];
 					} elseif(stristr($parseDesc['directors'], ',')){
-						$prog->directors = $parseDesc['directors'];
+						$bc->directors = $parseDesc['directors'];
 					} else {
 						var_dump($parseDesc['directors']);
 						die(__FILE__.': '.__LINE__);
 					}
 				}
 				
-				$prog->writers = isset( $parseDesc['writers'] ) ? implode(',', $parseDesc['writers']) : '' ;
-				$prog->rating  = isset( $parseDesc['rating'] ) && (bool)$prog['rating']===false  ? $parseDesc['rating'] : (int)$prog->rating ;
-				$prog->writers = isset( $parseDesc['writers'] ) ? $parseDesc['writers'] : '' ;
-				$prog->country = isset( $parseDesc['country'] ) ? $parseDesc['country'] : null ;
-				$prog->date = isset( $parseDesc['year'] ) ? $parseDesc['year'] : null ;
-				$prog->episode_num = isset( $parseDesc['episode'] ) && (int)$prog->episode_num==0 ? (int)$parseDesc['episode'] : $prog->episode_num;
-				$prog->country  = isset( $parseDesc['country'] ) ? $parseDesc['country'] : '' ;
-				$prog->category = isset( $parseDesc['category'] ) && (bool)$prog->category===false ? $parseDesc['category'] : $prog->category ;
+				$bc->writers = (isset( $parseDesc['writers']) && (bool)$parseDesc['writers']!==false ) ? implode(',', $parseDesc['writers']) : '' ;
+				$bc->country = (isset( $parseDesc['country']) && (bool)$parseDesc['country']!==false) ? $parseDesc['country'] : 'na' ;
+                $bc->date = isset( $parseDesc['year'] ) ? $parseDesc['year'] : null ;
+				$bc->episode_num = isset( $parseDesc['episode'] ) && (int)$bc->episode_num==0 ? (int)$parseDesc['episode'] : $bc->episode_num;
+				$bc->category = isset( $parseDesc['category'] ) && (bool)$bc->category===false ? $parseDesc['category'] : $bc->category ;
+				//$rating = isset( $parseDesc['rating'] ) && (bool)$prog['rating']===false  ? $parseDesc['rating'] : (int)$prog->rating ;
+				/*if (APPLICATION_ENV=='development'){
+					var_dump($bc->toArray());
+					die(__FILE__.': '.__LINE__);
+				}*/
 				
-				if (APPLICATION_ENV=='development'){
-					//var_dump($prog);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
-			}
+			} else {
+                $bc->country = 'na';
+            }
+            
+            
 			
 			// Alias
-			$prog->alias = $programsModel->makeAlias( $prog->title );
+			$bc->alias = $programsModel->makeAlias( $bc->title );
 			
 			//Channel
-			$prog->channel = (int)$node->getAttribute('channel');
+			$evt->channel = (int)$node->getAttribute('channel');
 			
 			// Fix category if needed
-			if (!$prog['category']) {
+			if ((bool)$bc->category===false) {
+                $bc->category = null;
 			    $fixCats = array(
 			    	222=>'Религия',
 			    	300006=>'Религия',
 			    	300037=>'Музыка' );
-			    if (array_key_exists($prog['channel'], $fixCats)){
-			    	$prog['category'] = $this->programsModel->getProgramCategory( $fixCats[$prog['channel']]);
-			    } else {
-			    	$prog['category'] = null;
+			    if (array_key_exists($evt->channel, $fixCats)){
+			    	$bc->category = $this->programsModel->getProgramCategory( $fixCats[$evt->channel]);
 			    }
 			}
 			
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($prog);
-				//die(__FILE__.': '.__LINE__);
-			}
+			/*if (APPLICATION_ENV=='development'){
+				var_dump($bc->toArray());
+				var_dump($evt->toArray());
+				die(__FILE__.': '.__LINE__);
+			}*/
 			
 			/*
 			 * Fix split title for particular channels
 			 * mostly movies
 			 */
 			$splitTitles = array(100037);
-			if (in_array($prog->channel, $splitTitles) && Xmltv_String::strlen($prog->sub_title)){
-				$prog->title .= ' '.$prog->sub_title;
-				$prog->sub_title = '';
+			if (in_array($evt->channel, $splitTitles) && Xmltv_String::strlen($bc->sub_title)){
+				$bc->title .= ' '.$bc->sub_title;
+				$bc->sub_title = '';
 			}
 			
-			$e = explode('. ', $prog->title);
+            /*
+			$e = explode('. ', $bc->title);
 			if (count($e)>2){
-				$prog->title = trim($e[0]).'. '.trim($e[1]).'.';
+				$bc->title = trim($e[0]).'. '.trim($e[1]).'.';
 				unset($e[0]);
 				unset($e[1]);
-				if (isset($prog->sub_title))
-					$prog->sub_title .= implode('. ', $e);
+				if (isset($bc->sub_title))
+					$bc->sub_title .= implode('. ', $e);
 				else
-					$prog->sub_title = implode('. ', $e);
+					$bc->sub_title = implode('. ', $e);
 			}
-				
+            */
 			
-			//Start and end datetime
+			// Start and end datetime
 			$start = $programsModel->startDateFromAttr( $node->getAttribute( 'start' ) );
 			$end   = $programsModel->endDateFromAttr( $node->getAttribute( 'stop' ) );
-			$prog->start = $start->toString( "yyyy-MM-dd HH:mm:ss" );
-			$prog->end   = $end->toString( "yyyy-MM-dd HH:mm:ss" );
+			$evt->start = $start->toString( "yyyy-MM-dd HH:mm:ss" );
+			$evt->end   = $end->toString( "yyyy-MM-dd HH:mm:ss" );
 			
-			//Calculate hash
-			$prog->hash = $this->programsModel->getBroadcastHash($prog);
+            // Calculate hash
+			$bc->hash = $this->programsModel->getBroadcastHash($bc);
+            
+            // Create records
+            $bc  = $programsModel->newBroadcast($bc);
+            $evt->hash = $bc->hash;
 			
-			//debug breakpoint
-			$debugAmt=50;
+			// debug breakpoint
+			$debugAmt=10;
 			if ($i<$debugAmt){
 				if (APPLICATION_ENV=='development'){
 					//echo $i;
-					//var_dump($prog->toArray());
+					//var_dump($bc->toArray());
+					//var_dump($evt->toArray());
 				}
 			}
+            
+            // Save records
+            try {
+                $bc->save();
+            } catch (Zend_Exception $e){
+                echo $e->getMessage().'<br />';
+                Zend_Debug::dump($bc->toArray());
+                die("Broadcast save failed!");
+            }
 			
-			// Check data validity
-			$logger = $this->getLog();
-			if (!isset($prog->alias) || empty($prog->alias)){
-				$msg = "Wrong parse!".$node->getElementsByTagName('title')->item(0)->nodeValue."\n".Zend_Debug::dump($parsed);
-				if ($logger) {
-				    $logger->log( $msg, Zend_Log::DEBUG );
-				}
-				continue;
-			} else {
-			    
-			    // Save
-				try {
-				    if (!$programsModel->findProgram($prog->hash)){
-				        $prog->save();
-				    }
-				} catch (Exception $e) {
-				    if ($logger) {
-				    	$logger->log( $e->getTraceAsString(), Zend_Log::DEBUG );
-				    }
-					continue;
-				}
-			}
-			
-			//debug breakpoint
+            if (isset($evt->channel) && !empty($evt->channel)){
+                try {
+                    $evt->save();
+                } catch (Zend_Exception $e){
+                    throw new Zend_Exception("Cannot save Event with channel ".$evt->channel);
+                }
+            }
+            
+			// debug breakpoint
 			if ($i>=$debugAmt){
 				if (APPLICATION_ENV=='development'){
 					//die(__FILE__.': '.__LINE__);

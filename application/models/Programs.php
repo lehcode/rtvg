@@ -13,31 +13,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
     protected $weekDays;
 	protected static $videoCache=false;
 	protected $programsCategoriesList;
-
-	protected $countriesList = array(
-		'Австралия'=>'au',
-		'Аргентина'=>'ar',
-		'Бельгия'=>'be',
-		'Великобритания'=>'gb',
-		'Германия'=>'de',
-		'Дания'=>'dk',
-		'Индия'=>'in',
-		'Индонезия'=>'id',
-		'Испания'=>'es',
-		'Ирландия'=>'ie',
-		'Италия'=>'it',
-		'Канада'=>'ca',
-		'Китай'=>'cn',
-		'Мексика'=>'mx',
-		'Нидерланды'=>'nl',
-		'Россия'=>'ru',
-		'США'=>'us',
-		'Украина'=>'ua',
-		'Финляндия'=>'fi',
-		'Франция'=>'fr',
-		'Южная Корея'=>'kp',
-		'Япония'=>'jp',
-	);
+    protected $countriesList = array();
 	
 	
 	/**
@@ -59,6 +35,8 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    $this->table    = new Xmltv_Model_DbTable_Programs();
 	    $this->weekDays = isset($config['week_days']) ? $config['week_days'] : null ;
 	    $this->programsCategoriesList = $this->getCategoriesList();
+        $refCountries = new Xmltv_Model_DbTable_RefCountries();
+        $this->countriesList = $refCountries->fetchAll()->toArray();
 			
 	}
 	
@@ -1033,13 +1011,8 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 * @return string
 	 */
 	protected function countryRuToIso($ru_title){
-		
-	    foreach ($this->countriesList as $ru=>$iso){
-	        if (Xmltv_String::strtolower($ru_title)==Xmltv_String::strtolower($ru)){
-	            return $iso;
-	        }
-	    }
-	    
+        var_dump($this->countriesList);
+        die(__FILE__.': '.__LINE__);
 	}
 	
 }
