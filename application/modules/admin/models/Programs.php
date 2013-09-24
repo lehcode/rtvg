@@ -2364,18 +2364,29 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
      * @return Rtvg_Broadcast
      */
     public function create($data=array()){
+        
+        $row = $this->bcTable->createRow();
         if(!is_array($data)){
             if(!is_a($data, 'stdClass')){
                 throw new Zend_Exception("Wrong broadcast data!", 500);
             }
-            $d = array();
+            
             foreach ($data as $k=>$v){
-                $d[$k] = $v;
+                $row->$k = $v;
             }
-            $data = $d;
         }
         
-        return $this->bcTable->createRow( $data );
+        $found = $this->bcTable->find($row->hash);
+        if (!count($found)){
+            try{
+                $hash = $row->save();
+            } catch (Zend_Exception $e){
+                throw new Zend_Exception("Cannot save broadcast. Data: " . print_r($row->toArray(), true));
+            }
+            
+        }
+        
+        return $hash;
     }
 	
 	public function setBcTable(){

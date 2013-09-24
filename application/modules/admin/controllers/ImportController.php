@@ -412,24 +412,25 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$bc->hash  = $this->broadcasts->getBroadcastHash($bc);
             $evt->hash = $bc->hash;
             
-            // Create broadcast row
-            $bc = $broadcasts->create($bc);
-            
             // debug breakpoint
-			$debugAmt=10;
+			$debugAmt=5;
 			if ($i<$debugAmt){
 				if (APPLICATION_ENV=='development'){
 					//echo $i;
-					var_dump($bc->toArray());
-					var_dump($evt->toArray());
+					//var_dump($bc->toArray());
+					//var_dump($evt->toArray());
 				}
 			}
             
             // Save records
             try {
-                $broadcasts->create($bc->toArray());
+                $broadcasts->create($bc);
             } catch (Zend_Db_Table_Row_Exception $e){
-                throw new Zend_Exception("Cannot save Broadcast: ". print_r($bc->toArray(), true));
+                echo $e->getMessage().'<br />';
+                Zend_Debug::dump( $e->getPrevious() );
+                Zend_Debug::dump($bc->toArray());
+                die("Broadcast save failed!");
+                //throw new Zend_Exception("Cannot save Broadcast: ". print_r($bc->toArray(), true));
             }
 			
             
@@ -437,14 +438,18 @@ class Admin_ImportController extends Rtvg_Controller_Admin
                 try {
                     $evt->save();
                 } catch (Zend_Exception $e){
-                    throw new Zend_Exception("Cannot save Event: ". print_r($evt->toArray(), true));
+                    echo $e->getMessage().'<br />';
+                    Zend_Debug::dump( $e->getPrevious() );
+                    Zend_Debug::dump($evt->toArray());
+                    die("Event save failed!");
+                    //throw new Zend_Exception("Cannot save Event: ". print_r($evt->toArray(), true));
                 }
             }
             
 			// debug breakpoint
 			if ($i>=$debugAmt){
 				if (APPLICATION_ENV=='development'){
-					die(__FILE__.': '.__LINE__);
+					//die(__FILE__.': '.__LINE__);
 				}
 			}
 			

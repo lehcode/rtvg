@@ -263,6 +263,7 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
     
     public function insert(array $data)
     {
+        return parent::insert($data);
         /*$row = parent::createRow($data);
         $keys = array();
         $vals = array();
