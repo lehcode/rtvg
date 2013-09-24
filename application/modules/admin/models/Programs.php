@@ -97,7 +97,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    parent::__construct();
 	    $this->actorsTable    = new Admin_Model_DbTable_Actors();
 	    $this->directorsTable = new Admin_Model_DbTable_Directors();
-	    $this->programsTable  = new Admin_Model_DbTable_Programs();
+        $this->bcTable = new Admin_Model_DbTable_Programs();
 		
 	}
 	
@@ -130,13 +130,13 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		$programsAcrhive	 = new Admin_Model_DbTable_ProgramsArchive();
 		$descriptionsAcrhive = new Admin_Model_DbTable_ProgramsDescriptionsArchive();
 		$propsAcrhive		= new Admin_Model_DbTable_ProgramsPropsArchive();
-		$select = $this->programsTable->select(false)
-			->from(array('prog'=>$this->programsTable->getName()))
+		$select = $this->bcTable->select(false)
+			->from(array('prog'=>$this->bcTable->getName()))
 			->where($where)
 			->order('prog.start ASC');
 		
 		//var_dump($select->assemble());
-		$list = $this->programsTable->fetchAll($select);
+		$list = $this->bcTable->fetchAll($select);
 		
 		var_dump(count($list));
 		
@@ -203,7 +203,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 						}
 					}
 					
-					$this->programsTable->delete("`hash`='".$programData['hash']."'");
+					$this->bcTable->delete("`hash`='".$programData['hash']."'");
 					
 					if (!empty($descData)) {
 						$this->programsDescTable->delete("`hash`='".$programData['hash']."'");
@@ -273,73 +273,66 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 * @param string $string //Program title
 	 * @return array // broadcast data
 	 */
-	public function parseTitle ($input=null) {
+	public function parseTitle ($title=null) {
 		
-		if(!$input)
+		if(!$title)
 			throw new Zend_Exception("No input provided!");
 		
-		$result['title'] = trim($input);
-		
-		$result = $this->detectAgeRating( $result );
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+		$result['title'] = trim($title);
+        
+        $result = $this->detectAgeRating( $result );
+		if($result['title']=='' || !isset($result['title'])){
+            throw new Zend_Exception("Error detecting Age Rating in title '" . $title . "'");
+        }
 		
 		// Премьера
 		$result = $this->detectPremiere( $result );
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+		
 
 		// Перерыв, профилактика
 		$result = $this->parseBreak( $result );
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+		if($result['title']=='' || !isset($result['title'])){
+            throw new Zend_Exception("Error parsing Break with title '" . $title . "'");
+        }
 		
 		// Live program
 		$result = $this->detectLive( $result );
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+		if($result['title']=='' || !isset($result['title'])){
+            throw new Zend_Exception("Error parsing Live broadcast with title '" . $title . "'");
+        }
 		
 		// Новости
 		$result = $this->parseNewsTitle( $result );
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+		if($result['title']=='' || !isset($result['title'])){
+            throw new Zend_Exception("Error parsing News broadcast with title '" . $title . "'");
+        }
 		
 		// Сериалы
 		$result = $this->parseSeriesTitle( $result );
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+		if($result['title']=='' || !isset($result['title'])){
+            throw new Zend_Exception("Error parsing Series broadcast with title '" . $title . "'");
+        }
 		
 		// Спортивные программы
 		$result = $this->parseSportsTitle( $result );
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+		if($result['title']=='' || !isset($result['title'])){
+            throw new Zend_Exception("Error parsing Sports broadcast with title '" . $title . "'");
+        }
 		
 		// Музыкальные программы
 		$result = $this->parseMusicTitle( $result );
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+		if($result['title']=='' || !isset($result['title'])){
+            throw new Zend_Exception("Error parsing Music broadcast with title '" . $title . "'");
+        }
 		
 		//Название с восклицательным знаком
 		if (strstr($result['title'], '!')){
 			$trim = new Zend_Filter_StringTrim( array('charlist'=>'" ') );
 			$r = explode( '!', $result['title'] );
 			$result['title']	 = $trim->filter( $r[0] ).'!';
+            if($result['title']=='' || !isset($result['title'])){
+                throw new Zend_Exception("Error parsing broadcast with title '" . $title . "'");
+            }
 			$result['sub_title'] = Xmltv_String::ucfirst( $trim->filter($r[1]) );
 		}
 		
@@ -366,6 +359,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 			$result['title'] = Xmltv_String::str_ireplace('+', 'плюс', $result['title']);
 		}
 		
+        /*
 		if (preg_match('/^"([\p{Common}\p{Cyrillic}\p{Latin}]+)"\.\s+(.+)$/ui', $result['title'], $m)){
 		    if (APPLICATION_ENV=='development'){
 		    	//var_dump($m);
@@ -374,6 +368,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		    $result['title']     = $m[1];
 		    $result['sub_title'] = $m[2];
 		}
+        */
 		
 		$result['title'] = str_replace('...', '…', $result['title']);
 		$trim = new Zend_Filter_StringTrim(array('charlist'=>',!?:;- \/\''));
@@ -381,8 +376,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		$result['sub_title'] = trim($result['sub_title']);
 		
 		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
+            
 		}
 		
 		return $result;
@@ -709,15 +703,12 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 					}
 						
 					$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
-					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
+					
+                    $d = $this->_removePersonsNames($desc, $result['actors'], 'actor');
+                    $desc = preg_replace('/^.+$/ui', '', $d);
+                    
 					$result['country'] = self::countryRuToIso(trim($m[4]));
 					$result['year'] = (int)trim($m[5]);
-					$desc = preg_replace('/^.+$/ui', '', $desc);
-						
-					if (APPLICATION_ENV=='development'){
-						//var_dump($result);
-						//die(__FILE__.': '.__LINE__);
-					}
 					
 					return $result;
 						
@@ -728,21 +719,9 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 			if (Xmltv_String::stristr($desc, 'В ролях') || Xmltv_String::stristr($desc, 'Звезды кино')){
 				if (preg_match('/^(.*)\s(В ролях|Звезды кино):\s([-\w+\s\w+,^A-Z]+,?)\.?\s*(.*)$/ui', $desc, $m)){
 				    
-				    if (APPLICATION_ENV=='development'){
-				        //var_dump($desc);
-				    	//var_dump($m);
-				    }
-				    
-					$result['actors'] = implode(",", $this->_parsePersonsNames( $desc, 'actor'));
+				    $result['actors'] = implode(",", $this->_parsePersonsNames( $desc, 'actor'));
 					$desc = $this->_removePersonsNames( $desc, $result['actors'], 'actor');
 					$result['desc'] = trim( trim($m[1]).' '.trim($m[4]));
-					
-					// Breakpoint
-					if (APPLICATION_ENV=='development'){
-						//var_dump($result);
-						//die(__FILE__.': '.__LINE__);
-					}
-					
 				}
 				
 				
@@ -789,7 +768,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	private function _parseCountry($string=null){
 		
-	    
+	    $result = array();
 	    if( stristr($string, '-')){
 	    	$country = preg_replace('/(\s-\s)/ui', '-', $string);
 	    	$ex = explode( '-', $country);
@@ -806,7 +785,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    			}
 	    		}
 	    	}
-	    	if ($result && is_array($result)){
+	    	if (count($result) && is_array($result)){
 	    		$result = implode(',', $result['country']);
 	    		return $result;
 	    	}
@@ -1369,7 +1348,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 		} while ($d->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')>0);
 		$weekEnd = $d;
 		
-		$result = $this->programsTable->fetchAll(array(
+		$result = $this->bcTable->fetchAll(array(
 			"`start`>='".$weekStart->toString('yyyy-MM-dd')." 00:00:00'",
 			"`end`<='".$weekEnd->toString('yyyy-MM-dd')." 23:59:59'",
 			"`title` LIKE '%премьера%'"
@@ -1459,7 +1438,7 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	        $data['presenters']   = !isset($data['presenters'])   || empty($data['presenters'])   ? '' : $data['presenters'] ;
 	        $data['commentators'] = !isset($data['commentators']) || empty($data['commentators']) ? '' : $data['commentators'] ;
 	        $data['guests']       = !isset($data['guests'])       || empty($data['guests'])       ? '' : $data['guests'] ;
-	        $hash = $this->programsTable->insert($data);
+	        $hash = $this->bcTable->insert($data);
 	        return $hash;
 	    }
 	    
@@ -1478,14 +1457,14 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	public function findProgram($hash=null){
 	
 		if ($hash) {
-			return $this->programsTable->find($hash)->current();
+			return $this->bcTable->find($hash)->current();
 		}
 		
 	}
 	
 	
 	public function getProgramsCountForWeek(Zend_Date $weekStart, Zend_Date $weekEnd){
-		return $this->programsTable->getProgramsCountForWeek($weekStart, $weekEnd);
+		return $this->bcTable->getProgramsCountForWeek($weekStart, $weekEnd);
 	}
 	
 	
@@ -1526,9 +1505,9 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    if ($start && $end){
 	        
 			if ($linked) {
-			    $this->programsTable->deleteProgramsLinked($start, $end);
+			    $this->bcTable->deleteProgramsLinked($start, $end);
 			} else {
-				$this->programsTable->delete(array(
+				$this->bcTable->delete(array(
 					"`start` >= '$start'",
 					"`start` < '$end'"
 				));
@@ -1797,13 +1776,13 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	/**
 	 * Detect live program
 	 *
-	 * @param  array $input
+	 * @param  array $data
 	 * @return array
 	 */
-	protected function detectLive($input){
+	protected function detectLive($data){
 		
-	    $result = $input;
-	    $result['live'] = 0;
+	    $result = $data;
+	    $result['live'] = null;
 	    
 	    $search = array(
 	    	'Прямая трансляция',
@@ -1812,26 +1791,31 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    	'Утро на канале',
 	    );
 	    foreach ($search as $string){
-	        if ( Xmltv_String::stristr( $input['title'], $string )) {
-	            $result['live'] = 1;
+	        if ( Xmltv_String::stristr( $data['title'], $string )) {
+	            $result['live'] = '1';
 	        }
 	    }
 	    
-	    if ( preg_match( '/^(Прямая трансляция:\s)(.+)$/ui', $input['title'], $m)){
-	    	$result['title'] = Xmltv_String::str_ireplace( $m[1], '', $input['title']);
-	    	$result['live'] = 1;
-	    } elseif( preg_match('/^(.+)\s(Прямая трансляция).*$/ui', $input['title'], $m)){
-	    	$result['title'] = Xmltv_String::str_ireplace( $m[2], '', $input['title']);
-	    	$result['live'] = 1;
+	    if ( preg_match( '/^(Прямая трансляция:\s)(.+)$/ui', $data['title'], $m)){
+	    	$result['title'] = Xmltv_String::str_ireplace( $m[1], '', $data['title']);
+	    	$result['live'] = '1';
+	    } elseif( preg_match('/^(.+)\s(Прямая трансляция).*$/ui', $data['title'], $m)){
+	    	$result['title'] = Xmltv_String::str_ireplace( $m[2], '', $data['title']);
+	    	$result['live'] = '1';
 	    }
 	    
-	    if (Xmltv_String::stristr($input['title'], 'Live')){
-	    	$result['title'] = str_replace( 'Live. ', '', $input['title'] );
-	    	$result['title'] = str_replace( 'Live ', '', $input['title'] );
-	    	$result['live']  = 1;
+	    if (Xmltv_String::stristr($data['title'], 'Live')){
+	    	$result['title'] = str_replace( 'Live. ', '', $data['title'] );
+	    	$result['title'] = str_replace( 'Live ', '', $data['title'] );
+	    	$result['live']  = '1';
 	    }
 	    
-	    return $result;
+        if((int)$result['live']===1){
+            return $result;
+        }
+        
+        $data['live'] = null;
+        return $data;
 	    
 	}
 	
@@ -1841,33 +1825,32 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 * @param  array $input
 	 * @return int
 	 */
-	protected function detectPremiere($input){
+	protected function detectPremiere($data){
 	    
-	    $result = $input;
-	    $result['premiere'] = 0;
-	    
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($result);
-	    }
-	    
-	    $regex = array(
+	    $result = array('premiere'=>null);
+	    $regex  = array(
 	    		'/\s+Нов(ые|ая)\s+сери(и|я)/ui',
 	    		'/\s+премьера/ui',
 	    		'/^Премьера\.?\s/ui',
 	    		'/^Премьера сезона\.?\s*/ui',
 	    );
 	    foreach ($regex as $r) {
-	    	if ( preg_match($r, $input['title'], $m) ){
-	    	    $result['title'] = Xmltv_String::str_ireplace($m[0], '', $result['title']);
-	    		$result['premiere'] = 1;
-	    		
-	    		if (APPLICATION_ENV=='development'){
-	    			//var_dump($result);
-	    			//die(__FILE__.': '.__LINE__);
-	    		}
+	    	if ( preg_match($r, $data['title'], $m) ){
+	    	    $result['title'] = Xmltv_String::str_ireplace($m[0], '', $data['title']);
+	    		$result['premiere'] = '1';
 	    	}
 	    }
-	    
+        
+        if ((int)$result['premiere']===1){
+            if($result['title']=='' || !isset($result['title'])){
+                throw new Zend_Exception("Error detecting Premiere in title '" . $data['title'] . "'");
+            }
+        } else {
+            $result = $data;
+            $result['premiere'] = null;
+            
+        }
+        
 	    return $result;
 	}
 	
@@ -2300,60 +2283,40 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    	 || Xmltv_String::stristr($data['title'], "Перерыв") ){
 	        $result['title'] = 'Перерыв';
 	    	$result['sub_title'] = '';
+            return $result;
 	    }
 	    
 	    if (Xmltv_String::stristr($data['title'], 'профилактика на канале! ') || (Xmltv_String::strtolower($data['title'])=="Профилактические работы")){
 	        $result['title'] = 'Профилактика';
 	        $result['sub_title'] = '';
+            return $result;
 	    }
 	    
-	    return $result;
+	    return $data;
 	    
 	}
 	
 	/**
 	 * Detect and strip age rating
 	 *
-	 * @param  array $input
+	 * @param  array $data
 	 * @return array
 	 */
-	protected function detectAgeRating($input){
+	protected function detectAgeRating($data){
 		
 	    //Проверка возрастного рейтинга в названии
-	    if (($rating = $this->extractAgeRating($input['title']))>0) {
-	        $result['title']  = Xmltv_String::ucfirst($this->stripAgeRating($input['title']));
+	    if (($rating = $this->extractAgeRating($data['title']))>0) {
+	        $result['title']  = Xmltv_String::ucfirst($this->stripAgeRating($data['title']));
 	    	$result['rating'] = $rating;
 	    }
 	    
-	    if ($result) {
+	    if (count($result)) {
 	    	return $result;
 	    }
 	    
-	    $input['rating'] = null;
-	    return $input;
+	    $data['rating'] = 0;
+	    return $data;
 	    
-	}
-	
-	/**
-     * Create new broadcast row
-	 * @param array $data
-     * @return Zend_Db_Table_Row
-	 */
-	public function newBroadcast($data=array()){
-		if(!is_array($data)){
-            if(!is_object($data)){
-                throw new Zend_Exception("Wrong broadcast data!", 500);
-            }
-            $d = array();
-            foreach ($data as $k=>$v){
-                $d[$k] = $v;
-            }
-            $data = $d;
-        }
-        //var_dump($data);
-        //die(__FILE__.': '.__LINE__);
-	    return $this->programsTable->createRow( $data );
-		
 	}
 	
 	/**
@@ -2394,8 +2357,34 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
         }
 	    return md5($data->title.$data->sub_title.$data->alias);
 	}
+    
+    /**
+     * Create new brodcast
+     * @param array|stdClass $data
+     * @return Rtvg_Broadcast
+     */
+    public function create($data=array()){
+        if(!is_array($data)){
+            if(!is_a($data, 'stdClass')){
+                throw new Zend_Exception("Wrong broadcast data!", 500);
+            }
+            $d = array();
+            foreach ($data as $k=>$v){
+                $d[$k] = $v;
+            }
+            $data = $d;
+        }
+        
+        return $this->bcTable->createRow( $data );
+    }
 	
-	
+	public function setBcTable(){
+        $this->bcTable = new Admin_Model_DbTable_Programs();
+    }
+    
+    public function getBcTable(){
+        return $this->bcTable;
+    }
 	
 }
 

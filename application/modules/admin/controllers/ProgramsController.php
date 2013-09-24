@@ -69,36 +69,6 @@ class Admin_ProgramsController extends Rtvg_Controller_Admin
         
         die();
 	}
-    
-    public function cleanDescriptionsAction(){
-    	
-    	$descriptionsTable = new Admin_Model_DbTable_ProgramsDescriptions();
-    	$programsTable     = new Admin_Model_DbTable_Programs();
-    	$c=0;
-    	foreach ($descriptionsTable->fetchAll() as $row) {
-    		
-    		//if ($c==1000)
-    		//die(__FILE__.': '.__LINE__);
-    		
-    		$found = $programsTable->find($row->hash)->toArray();
-    		if (empty($found)){
-    			try {
-    				$descriptionsTable->delete("`hash`='$row->hash'");
-    			} catch (Exception $e) {
-    				echo $e->getMessage();
-    				die(__FILE__.': '.__LINE__);
-    			}
-    		} else {
-    			//var_dump($found);
-    		}
-    		$c++;
-    	}
-    	echo "Завершено";
-    	exit();
-    	//var_dump($count);
-    	//die(__FILE__.': '.__LINE__);
-    	
-    }
 
     /**
      * @deprecated

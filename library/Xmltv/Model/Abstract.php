@@ -42,10 +42,10 @@ abstract class Xmltv_Model_Abstract
     protected $channelsTable;
     
     /**
-     * Programs
+     * Broadcasts table
      * @var Xmltv_Model_DbTable_Programs
      */
-    protected $programsTable;
+    protected $broadcasts;
     
     /**
      * Video cache for sidebar
@@ -164,27 +164,22 @@ abstract class Xmltv_Model_Abstract
 	
 	protected function initTables(){
 		
-	    $this->descriptionsTable       = new Xmltv_Model_DbTable_ProgramsDescriptions();
-	    $this->categoriesTable         = new Xmltv_Model_DbTable_ProgramsCategories();
-	    $this->channelsTable           = new Xmltv_Model_DbTable_Channels();
+	    $this->categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+	    $this->channelsTable = new Xmltv_Model_DbTable_Channels();
 	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
-	    $this->channelsRatingsTable    = new Xmltv_Model_DbTable_ChannelsRatings();
-	    
-	    //$this->actorsTable    = new Xmltv_Model_DbTable_Actors();
-	    //$this->directorsTable = new Xmltv_Model_DbTable_Directors();
-	    $this->programsTable  = new Xmltv_Model_DbTable_Programs();
-	    
+	    $this->channelsRatingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
+	    $this->broadcasts  = new Xmltv_Model_DbTable_Programs();
 	    $this->vcacheListingsTable = new Xmltv_Model_DbTable_VcacheListings();
-	    $this->vcacheSidebarTable  = new Xmltv_Model_DbTable_VcacheSidebar();
-	    $this->vcacheRelatedTable  = new Xmltv_Model_DbTable_VcacheRelated();
-	    $this->vcacheMainTable     = new Xmltv_Model_DbTable_VcacheMain();
+	    $this->vcacheSidebarTable = new Xmltv_Model_DbTable_VcacheSidebar();
+	    $this->vcacheRelatedTable = new Xmltv_Model_DbTable_VcacheRelated();
+	    $this->vcacheMainTable = new Xmltv_Model_DbTable_VcacheMain();
+        $this->programsRatingsTable = new Xmltv_Model_DbTable_ProgramsRatings();
 	    /**
-		 * @TODO Add test for production system to
-		 * load coments without errors
+		 * @TODO Add test for production system to load coments without errors
 		 */
-	    //$this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
+	    $this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
 	    
-	    $this->programsRatingsTable = new Xmltv_Model_DbTable_ProgramsRatings();
+	    
 	}
 	
 	/**

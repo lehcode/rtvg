@@ -464,8 +464,8 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 		else 
 		$this->_channels = array($site_config->channels->series);
 		
-		$programsTable = new Admin_Model_DbTable_Programs();
-		$result = $programsTable->fetchSeries($start, $end, $this->_classCategories, $this->_channels);
+		$broadcasts = new Admin_Model_DbTable_Programs();
+		$result = $broadcasts->fetchSeries($start, $end, $this->_classCategories, $this->_channels);
 		
 		//var_dump(count($result));
 		//die(__FILE__.': '.__LINE__);

@@ -9,8 +9,9 @@
 class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 {
 
-	protected $_name = 'programs';
+	protected $_name = 'bc';
 	protected $_primary = 'hash';
+    protected $_rowClass = 'Rtvg_Broadcast';
 	
 	/**
 	 * 
@@ -18,6 +19,7 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	 * @param  Zend_Date $start
 	 * @param  Zend_Date $end
 	 * @return array
+     * @deprecated since version 5.4
 	 */
 	public function getPremieres (Zend_Date $start, Zend_Date $end) {
 
@@ -165,65 +167,6 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 		return $result;
 		
 	}
-    
-    /**
-     * Fetches a new blank row (not from the database).
-     *
-     * @param  array $data OPTIONAL data to populate in the new row.
-     * @param  string $defaultSource OPTIONAL flag to force default values into new row
-     * @return Zend_Db_Table_Row_Abstract
-     */
-    public function createRow(array $data = array(), $defaultSource = null)
-    {
-        
-        if(empty($data) || !$data['hash'] || empty($data['hash'])){
-            throw new Zend_Exception("Wrong hash for Broadcast! Data:". ($d=print_r($data, true)));
-        }
-        
-        $cols     = $this->_getCols();
-        $defaults = array_combine($cols, array_fill(0, count($cols), null));
-
-        // nothing provided at call-time, take the class value
-        if ($defaultSource == null) {
-            $defaultSource = $this->_defaultSource;
-        }
-
-        if (!in_array($defaultSource, array(self::DEFAULT_CLASS, self::DEFAULT_DB, self::DEFAULT_NONE))) {
-            $defaultSource = self::DEFAULT_NONE;
-        }
-
-        if ($defaultSource == self::DEFAULT_DB) {
-            foreach ($this->_metadata as $metadataName => $metadata) {
-                if (($metadata['DEFAULT'] != null) &&
-                    ($metadata['NULLABLE'] !== true || ($metadata['NULLABLE'] === true && isset($this->_defaultValues[$metadataName]) && $this->_defaultValues[$metadataName] === true)) &&
-                    (!(isset($this->_defaultValues[$metadataName]) && $this->_defaultValues[$metadataName] === false))) {
-                    $defaults[$metadataName] = $metadata['DEFAULT'];
-                }
-            }
-        } elseif ($defaultSource == self::DEFAULT_CLASS && $this->_defaultValues) {
-            foreach ($this->_defaultValues as $defaultName => $defaultValue) {
-                if (array_key_exists($defaultName, $defaults)) {
-                    $defaults[$defaultName] = $defaultValue;
-                }
-            }
-        }
-
-        $config = array(
-            'table'    => $this,
-            'data'     => $defaults,
-            'readOnly' => false,
-            'stored'   => true
-        );
-
-        $rowClass = $this->getRowClass();
-        if (!class_exists($rowClass)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($rowClass);
-        }
-        $row = new $rowClass($config);
-        $row->setFromArray($data);
-        return $row;
-    }
 
 }
 

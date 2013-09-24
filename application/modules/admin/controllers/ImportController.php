@@ -30,7 +30,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	 * 
 	 * @var Admin_Model_Programs
 	 */
-	private $programsModel;
+	private $broadcasts;
 	
 	/**
 	 * @see Zend_Controller_Action::init()
@@ -38,7 +38,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	public function init() {
 	   
 	    parent::init();
-	    $this->programsModel   = new Admin_Model_Programs();
+	    $this->broadcasts = new Admin_Model_Programs();
 	    $this->_xmlFolder = APPLICATION_PATH.'/../uploads/parse/';
 	    
 	}
@@ -260,7 +260,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		}
 		
 		$programs = $xml->getElementsByTagName('programme');
-		$programsModel = new Admin_Model_Programs();
+		$broadcasts = new Admin_Model_Programs();
 		$eventsModel = new Xmltv_Model_Event();
 		$i=0; //for debug
 		foreach ($programs as $node){
@@ -275,7 +275,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			}*/
 			
 			//Process program title and detect some properties
-			$parsed = $programsModel->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
+			$parsed = $broadcasts->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
 			
 			/*if (APPLICATION_ENV=='development'){
 				if ($node->getElementsByTagName('title')->item(0)->nodeValue=='Биатлон. Кубок мира. Трансляция из Ханты-Мансийска'){
@@ -286,15 +286,15 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			
 			$bc->title = $parsed['title'];
 			$bc->sub_title = $parsed['sub_title'];
-			//$prog->rating = isset($parsed['rating']) ? $parsed['rating']   : null ;
-			$evt->premiere = (isset($parsed['premiere']) || (bool)$parsed['premiere']!==false) ? 1 : 0 ;
-			$evt->live = (isset($parsed['live']) && (bool)$parsed['live']!==false) ? 1 : 0 ;
-			$bc->episode_num = isset($parsed['episode']) && $parsed['episode']!==null  ? (int)$parsed['episode'] : null;
+			$bc->age_rating = (@$parsed['rating']>0) ? $parsed['rating'] : 0 ;
+			$evt->premiere = (@$parsed['premiere']==1) ? '1' : null ;
+			$evt->live = (@$parsed['live']==1) ? '1' : null ;
+			$bc->episode_num = (@$parsed['episode']>0)  ? (int)$parsed['episode'] : null;
 			
 			// Detect category ID
-			$bc->category = (isset($parsed['category']) && (bool)$parsed['category']===true) ? $parsed['category'] : $node->getElementsByTagName('category')->item(0)->nodeValue ;
-			if (!is_int($bc->category)) {
-				$bc->category = $programsModel->catIdFromTitle( $bc->category );
+			$bc->category = (@$parsed['category']>0) ? $parsed['category'] : $node->getElementsByTagName('category')->item(0)->nodeValue ;
+			if (!is_numeric($bc->category)) {
+				$bc->category = $broadcasts->catIdFromTitle( $bc->category );
 			}
 			
 			/*if (APPLICATION_ENV=='development'){
@@ -306,7 +306,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			//Parse description
 			if (@$node->getElementsByTagName('desc')->item(0)){
 				
-			    $parseDesc = $programsModel->parseDescription( $node->getElementsByTagName('desc')->item(0)->nodeValue );
+			    $parseDesc = $broadcasts->parseDescription( $node->getElementsByTagName('desc')->item(0)->nodeValue );
 				
 			    $bc->title = isset($parseDesc['title']) && !empty($parseDesc['title']) ?  $bc->title.' '.$parseDesc['title'] : $bc->title;
 				$bc->desc  = isset($parseDesc['text']) ? $parseDesc['text'] : '' ;
@@ -355,7 +355,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
             
 			
 			// Alias
-			$bc->alias = $programsModel->makeAlias( $bc->title );
+			$bc->alias = $broadcasts->makeAlias( $bc->title );
 			
 			//Channel
 			$evt->channel = (int)$node->getAttribute('channel');
@@ -368,7 +368,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			    	300006=>'Религия',
 			    	300037=>'Музыка' );
 			    if (array_key_exists($evt->channel, $fixCats)){
-			    	$bc->category = $this->programsModel->getProgramCategory( $fixCats[$evt->channel]);
+			    	$bc->category = $this->broadcasts->getProgramCategory( $fixCats[$evt->channel]);
 			    }
 			}
 			
@@ -403,49 +403,48 @@ class Admin_ImportController extends Rtvg_Controller_Admin
             */
 			
 			// Start and end datetime
-			$start = $programsModel->startDateFromAttr( $node->getAttribute( 'start' ) );
-			$end   = $programsModel->endDateFromAttr( $node->getAttribute( 'stop' ) );
+			$start = $broadcasts->startDateFromAttr( $node->getAttribute( 'start' ) );
+			$end   = $broadcasts->endDateFromAttr( $node->getAttribute( 'stop' ) );
 			$evt->start = $start->toString( "yyyy-MM-dd HH:mm:ss" );
 			$evt->end   = $end->toString( "yyyy-MM-dd HH:mm:ss" );
 			
             // Calculate hash
-			$bc->hash = $this->programsModel->getBroadcastHash($bc);
-            
-            // Create records
-            $bc  = $programsModel->newBroadcast($bc);
+			$bc->hash  = $this->broadcasts->getBroadcastHash($bc);
             $evt->hash = $bc->hash;
-			
-			// debug breakpoint
+            
+            // Create broadcast row
+            $bc = $broadcasts->create($bc);
+            
+            // debug breakpoint
 			$debugAmt=10;
 			if ($i<$debugAmt){
 				if (APPLICATION_ENV=='development'){
 					//echo $i;
-					//var_dump($bc->toArray());
-					//var_dump($evt->toArray());
+					var_dump($bc->toArray());
+					var_dump($evt->toArray());
 				}
 			}
             
             // Save records
             try {
-                $bc->save();
-            } catch (Zend_Exception $e){
-                echo $e->getMessage().'<br />';
-                Zend_Debug::dump($bc->toArray());
-                die("Broadcast save failed!");
+                $broadcasts->create($bc->toArray());
+            } catch (Zend_Db_Table_Row_Exception $e){
+                throw new Zend_Exception("Cannot save Broadcast: ". print_r($bc->toArray(), true));
             }
 			
+            
             if (isset($evt->channel) && !empty($evt->channel)){
                 try {
                     $evt->save();
                 } catch (Zend_Exception $e){
-                    throw new Zend_Exception("Cannot save Event with channel ".$evt->channel);
+                    throw new Zend_Exception("Cannot save Event: ". print_r($evt->toArray(), true));
                 }
             }
             
 			// debug breakpoint
 			if ($i>=$debugAmt){
 				if (APPLICATION_ENV=='development'){
-					//die(__FILE__.': '.__LINE__);
+					die(__FILE__.': '.__LINE__);
 				}
 			}
 			

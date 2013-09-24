@@ -10,12 +10,12 @@
 class Admin_Model_Import
 {
 	
-	private $_programsTable; 
+	private $_broadcasts; 
 	private $_propsTable; 
 	private $_program_info; 
 
 	public function __construct(){
-		$this->_programsTable = new Admin_Model_DbTable_Programs();
+		$this->_broadcasts = new Admin_Model_DbTable_Programs();
     	$this->_propsTable    = new Admin_Model_DbTable_ProgramsProps();
 	}
 	
@@ -46,7 +46,7 @@ class Admin_Model_Import
 		$hash = md5((int)$xml->attributes()->channel.$start.$end);
 		
 		try {
-			if (!$data = $this->_programsTable->fetchRow("`hash`='$hash'")) {
+			if (!$data = $this->_broadcasts->fetchRow("`hash`='$hash'")) {
 				$programs = new Admin_Model_Programs();
 				$data = $programs->parseProgramXml($xml);
 			} else {
@@ -110,11 +110,11 @@ class Admin_Model_Import
 		//die(__FILE__.': '.__LINE__);
 		
 		try {
-			$this->_programsTable->insert($data);
+			$this->_broadcasts->insert($data);
 		} catch (Exception $e) {
 			if ($e->getCode()==1062){
 				try {
-					$this->_programsTable->update($data, "`hash`='$hash'");
+					$this->_broadcasts->update($data, "`hash`='$hash'");
 				} catch (Exception $e) {
 					echo __METHOD__.' Ошибка#'.$e->getCode().': '.$e->getMessage();
 					die(__FILE__.': '.__LINE__);

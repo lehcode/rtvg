@@ -232,8 +232,8 @@ class Xmltv_Parser_Programs_Premieres extends Xmltv_Parser_ProgramInfoParser
 	 */
 	private function _loadPrograms(Zend_Date $start, Zend_Date $end){
 		
-		$programsTable = new Admin_Model_DbTable_Programs();
-		$result = $programsTable->fetchPremieres($start, $end); // Fast search for premieres
+		$broadcasts = new Admin_Model_DbTable_Programs();
+		$result = $broadcasts->fetchPremieres($start, $end); // Fast search for premieres
 		//var_dump($result);
 		//die(__FILE__.': '.__LINE__);
 		$this->chunks = array_chunk($result, 500);

@@ -59,44 +59,27 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-			//->returnResponse( false )
+			->throwExceptions( false )
 		;
-		
-		if( APPLICATION_ENV == 'production' ) {
-			$fc->throwExceptions( false ); // disable ErrorController and logging
-			$fc->returnResponse( true );
-		} else {
-			$fc->throwExceptions( false ); // enable ErrorController and logging
-			//$fc->returnResponse (false);
-		}
 		
 		$router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
 		$log = $this->bootstrap()->getResource('Log');
 		
-		/*
-		 * http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
-		*/
-		
+        //
+		// http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
+        //
 		try {
 		    $response = $fc->dispatch();
-		} catch (Exception $e) {
-		    if( APPLICATION_ENV != 'production' ) {
-		    	echo $e->getMessage();
-		    	Zend_Debug::dump($e->getTrace());
-		    }
+		} catch (Zend_Exception $e) {
+            throw new Exception("Bootstrap Exception!", $e->getCode(), $e);
 		}
 		
 		if (isset($response)) {
 			if( $response->isException() ) {
 				$exception = $response->getException();
-				if( APPLICATION_ENV != 'production' ) {
-					print_r($response);
-					print_r($exception);
-					die();
-				}
-				//$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-				//$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
+				$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
+				$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
 			} else {
 				$response->sendHeaders();
 				$response->outputBody();
@@ -126,17 +109,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	protected function _initLog()
 	{
 		
-	    if (APPLICATION_ENV=='testing'){
-	        $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/testing.log' ));
-		} else {
-		    $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
-		}
+	    $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/exceptions.log' ));
 		return $log;
 		
 	}
     
     protected function _initFirebugLog(){
-        Zend_Registry::set('fireLog', new Zend_Log( new Zend_Log_Writer_Firebug() ));
+        $l = new Zend_Log( new Zend_Log_Writer_Firebug() );
+        Zend_Registry::set('fireLog', $l);
+        return $l;
     }
 	
 	/**

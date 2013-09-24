@@ -3,7 +3,7 @@
 class Xmltv_Model_DbTable_ProgramsCategories extends Xmltv_Db_Table_Abstract
 {
 
-    protected $_name = 'programs_categories';
+    protected $_name = 'bc_categories';
     protected $_primary = 'id';
 
     /**

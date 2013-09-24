@@ -256,8 +256,8 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 		else 
 		$this->_channels = array($site_config->channels->movies);
 		
-		$programsTable = new Admin_Model_DbTable_Programs();
-		$result = $programsTable->fetchMovies( $start, $end, $this->_classCategories, $this->_channels );
+		$broadcasts = new Admin_Model_DbTable_Programs();
+		$result = $broadcasts->fetchMovies( $start, $end, $this->_classCategories, $this->_channels );
 		
 		//var_dump(count($result));
 		//die(__FILE__.': '.__LINE__);
@@ -282,8 +282,8 @@ class Xmltv_Parser_Programs_Movies extends Xmltv_Parser_ProgramInfoParser
 		if (!$this->_cat_id)
 		throw new Exception( __METHOD__ . ': Отсутствует категория программы. ' . __LINE__, 500 );
 		
-		$programsTable = new Admin_Model_DbTable_Programs();
-		$programs = $programsTable->fetchProgramsForPeriod($start, $end, $this->_classCategories);
+		$broadcasts = new Admin_Model_DbTable_Programs();
+		$programs = $broadcasts->fetchProgramsForPeriod($start, $end, $this->_classCategories);
 		$this->chunks = array_chunk($programs, 500);
 		
 	}

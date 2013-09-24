@@ -13,8 +13,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
     protected $weekDays;
 	protected static $videoCache=false;
 	protected $programsCategoriesList;
-    protected $countriesList = array();
-	
+    protected $countriesList = array();	
 	
 	/**
 	 * Constructor
@@ -36,7 +35,10 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    $this->weekDays = isset($config['week_days']) ? $config['week_days'] : null ;
 	    $this->programsCategoriesList = $this->getCategoriesList();
         $refCountries = new Xmltv_Model_DbTable_RefCountries();
-        $this->countriesList = $refCountries->fetchAll()->toArray();
+        $cl = $refCountries->fetchAll()->toArray();
+        foreach ($cl as $i){
+            $this->countriesList[$i['name']] = $i['iso'];
+        }
 			
 	}
 	
@@ -113,7 +115,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    
 	    $d = new Zend_Date($date);
 	    
-	    $rows = $this->programsTable->fetchDayItems( $channel_id, $date, $count );
+	    $rows = $this->broadcasts->fetchDayItems( $channel_id, $date, $count );
 		if (!count($rows)) {
 			return false;
 		}
@@ -219,7 +221,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    
 	    $where = count($where) ? implode(' AND ', $where) : '' ;
 	    $select = $this->db->select()
-	    ->from(array('prog'=>$this->programsTable->getName()), array(
+	    ->from(array('prog'=>$this->broadcasts->getName()), array(
 	    		//'id',
 	    		'title',
 	    		'sub_title',
@@ -511,7 +513,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		 * @var Zend_Db_Select
 		 */
 		$select = $this->db->select()
-			->from(array( 'prog'=>'rtvg_programs'), array(
+			->from(array( 'bc'=>'rtvg_bc'), array(
 				'title',
 				'sub_title',
 				'alias',
@@ -646,7 +648,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	public function categoryWeek( $category_id=null, Zend_Date $start, Zend_Date $end){
 		
 	    $select = $this->db->select()
-		    ->from( array('prog'=>$this->programsTable->getName()), array(
+		    ->from( array('prog'=>$this->broadcasts->getName()), array(
 		    		//'id',
 		    		'title',
 		    		'sub_title',
@@ -918,7 +920,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	public function topPrograms($amt=25, Zend_Date $week_start, Zend_Date $week_end){
 		
 	    $select = $this->db->select()
-	    ->from(array('prog'=>$this->programsTable->getName()), array(
+	    ->from(array('prog'=>$this->broadcasts->getName()), array(
 	    		//'id',
 	    		'title',
 	    		'live',
@@ -971,7 +973,7 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	public function rssWeek(Zend_Date $week_start=null, Zend_Date $week_end=null){
 		 
 		$select = $this->db->select()
-		->from(array('prog'=>$this->programsTable->getName()), 'alias')
+		->from(array('prog'=>$this->broadcasts->getName()), 'alias')
 		->join(array('channel'=>$this->channelsTable->getName()), "`prog`.`channel`=`channel`.`id`", array(
 				'channel_alias'=>'LOWER(channel.alias)',
 		))
@@ -1011,8 +1013,11 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 * @return string
 	 */
 	protected function countryRuToIso($ru_title){
-        var_dump($this->countriesList);
-        die(__FILE__.': '.__LINE__);
+        foreach ($this->countriesList as $ru=>$iso){
+            if(Xmltv_String::strtolower($ru_title)==Xmltv_String::strtolower($ru)){
+                return $iso;
+            }
+        }
 	}
 	
 }

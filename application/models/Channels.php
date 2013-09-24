@@ -297,7 +297,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    $days = array();
 	    do{
 	    	$select = $this->db->select()
-	    	->from( array( 'prog'=>$this->programsTable->getName()), array(
+	    	->from( array( 'prog'=>$this->broadcasts->getName()), array(
 	    		'title',
 	    		'sub_title',
 	    		'alias',

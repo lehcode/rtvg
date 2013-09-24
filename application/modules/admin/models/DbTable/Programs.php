@@ -2,16 +2,8 @@
 
 class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 {
-	/**
-	 * 
-	 * Programs table
-	 * 
-	 * @var unknown_type
-	 */
-    protected $_name = 'programs';
-    
+	
     const FETCH_MODE = Zend_Db::FETCH_OBJ;
-    
     
     public function __construct($config=array()){
     	
@@ -266,6 +258,23 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
     	//die(__FILE__.': '.__LINE__);
 		return $result;
     	
+    }
+    
+    
+    public function insert(array $data)
+    {
+        /*$row = parent::createRow($data);
+        $keys = array();
+        $vals = array();
+        foreach ($data as $k=>$v) {
+            $keys[] = $this->_db->quoteIdentifier($k);
+            $vals[] = $this->_db->quote($v);
+        }
+        
+        $sql = "INSERT INTO `rtvg_bc` (".  implode(',', $keys).") VALUES (".  implode(',', $vals).")
+            ON DUPLICATE KEY UPDATE `hash` =VALUES(`hash`)";
+        $this->_db->insert('rtvg_bc_events', $data);
+        return true;*/
     }
 
 }

@@ -3,11 +3,11 @@
 class Xmltv_Model_DbTable_ProgramsRatings extends Xmltv_Db_Table_Abstract
 {
 
-    protected $_name = 'programs_ratings';
+    protected $_name = 'bc_ratings';
     protected $_primary = 'id';
 	protected $pfx='';
     const FETCH_MODE = Zend_Db::FETCH_OBJ;
-    private $_programsTable;
+    private $_broadcasts;
     private $_channelsTable;
 	
     /**
@@ -22,7 +22,7 @@ class Xmltv_Model_DbTable_ProgramsRatings extends Xmltv_Db_Table_Abstract
     		'primary'=>$this->_primary
     	));
     	
-    	$this->_programsTable = new Xmltv_Model_DbTable_Programs();
+    	$this->_broadcasts = new Xmltv_Model_DbTable_Programs();
     	$this->_channelsTable = new Xmltv_Model_DbTable_Channels();
     	
     }
