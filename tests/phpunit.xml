@@ -1,8 +1,9 @@
 <phpunit bootstrap="./bootstrap.php"
 	colors="true"
 	verbose="true"
-	convertErrorsToExceptions="true"
-	convertNoticesToExceptions="true"
+	convertErrorsToExceptions="false"
+	convertNoticesToExceptions="false"
+	convertWarningsToExceptions="true"
 	stopOnFailure="true"
 	syntaxCheck="true">
 	<testsuite name="Application Test Suite">

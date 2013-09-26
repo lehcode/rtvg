@@ -11,15 +11,19 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 			APPLICATION_ENV,
 			APPLICATION_PATH . '/configs/application.ini'
 		);
+        # Warning:
+        PHPUnit_Framework_Error_Warning::$enabled = TRUE;
+        # notice, strict:
+        PHPUnit_Framework_Error_Notice::$enabled = FALSE;
 		parent::setUp();
 	}
 
 	public function testListAction(){
 
-		$urlParams = $this->urlizeOptions( array(
-				'module'=>'default',
-				'controller'=>'channels',
-				'action'=>'list', ));
+        $urlParams = $this->urlizeOptions( array(
+            'module'=>'default',
+            'controller'=>'channels',
+            'action'=>'list', ));
 		$url = $this->url( $urlParams );
 		$this->dispatch($url);
 
@@ -27,35 +31,27 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		$this->assertModule( $urlParams['module'] );
 		$this->assertController( $urlParams['controller'] );
 		$this->assertAction( $urlParams['action'] );
-		$this->assertNotRedirect();
+		
+        $this->assertNotRedirect();
 		$this->assertQueryCountMin("div#col_l", 1 );
-		$this->assertQueryCountMin("div#col_r", 2 );
+		$this->assertQueryCountMin("div#col_r", 1 );
 		$this->assertQueryCountMin("div#channels h3.channeltitle", 1 );
 		
 		$controller = Zend_Controller_Front::getInstance();
 		
-		$channelsModel = new Xmltv_Model_Channels();
-		if($cat = $controller->getParam('category')){
-		    $catProps = $channelsModel->category( $cat )->toArray();
-		    $this->assertNotEmpty($catProps);
-		    $rows = $channelsModel->categoryChannels($catProps['alias']);
-		    $this->assertNotEmpty($rows);
-		}
+        $channelsModel = new Xmltv_Model_Channels();
 		
-		/*
-		 * Check top programs list
-		 */
-		$top = new Xmltv_Controller_Action_Helper_Top();
-		$topPrograms = $top->direct( 'TopPrograms', array( 
-			'amt'=>Zend_Registry::get('site_config')->topprograms->channellist->get('amount')));
-		$this->assertNotEmpty($topPrograms);
-		
-		/*
-		 * Check channels categories
-		*/
+        //Check channels categories
 		$cats = $channelsModel->channelsCategories();
 		$this->assertNotEmpty($cats);
-
+        
+        //Check top programs list
+        require_once(APPLICATION_PATH.'/controllers/helpers/Top.php');
+		$top = new Zend_Controller_Action_Helper_Top();
+		$topPrograms = $top->direct( 'TopPrograms', array( 
+			'amt'=>Zend_Registry::get('site_config')->top->channels->get('amount')));
+		$this->assertNotEmpty($topPrograms);
+        
 	}
 
 
