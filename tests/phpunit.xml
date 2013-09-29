@@ -25,5 +25,10 @@
 	<listeners>
 		<listener class="Lagged_Test_PHPUnit_ControllerTestCase_Listener" file="Lagged/Test/PHPUnit/ControllerTestCase/Listener.php" />
 	</listeners>
+    
+    <php>
+        <ini name="html_errors" value="Off" />
+        <ini name="xdebug.var_display_max_data" value="4096" />
+    </php>
 	
 </phpunit>

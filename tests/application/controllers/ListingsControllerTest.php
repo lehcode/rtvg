@@ -49,10 +49,11 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    $url = $this->url( $urlParams );
 	    $this->dispatch($url);
 	    
-	    /*
-	     * http://www.phpunit.de/manual/current/en/incomplete-and-skipped-tests.html
-	     */
-	    $this->markTestIncomplete( __FUNCTION__.self::MARK_INCOMPLETE );
+	    //http://www.phpunit.de/manual/current/en/incomplete-and-skipped-tests.html
+	    //$this->markTestIncomplete( __FUNCTION__.self::MARK_INCOMPLETE );
+        $this->assertModule( $urlParams['module'] );
+		$this->assertController( $urlParams['controller'] );
+		$this->assertAction( $urlParams['action'] );
 		
 	}
 	
@@ -104,17 +105,17 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    $urlParams  = $this->urlizeOptions( array(
 	    	'module'=>'default',
 	    	'controller'=>'listings',
-	    	'action'=>'program-week',
-	    	'channel'=>'discovery-science',
-	    	'alias'=>'техноигрушки',
+	    	'action'=>'program-week'
 	    ));
 	    $url = $this->url( $urlParams );
 	    $this->dispatch($url);
 	    
-	    /*
-	     * http://www.phpunit.de/manual/current/en/incomplete-and-skipped-tests.html
-	     */
-	    $this->markTestIncomplete( __FUNCTION__.self::MARK_INCOMPLETE );
+	    //http://www.phpunit.de/manual/current/en/incomplete-and-skipped-tests.html
+	    //$this->markTestIncomplete( __FUNCTION__.self::MARK_INCOMPLETE );
+        
+        $this->assertModule( $urlParams['module'] );
+        $this->assertController( $urlParams['controller'] );
+        $this->assertAction( $urlParams['action'] );
 		
 	}
 	

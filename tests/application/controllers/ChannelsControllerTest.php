@@ -2,7 +2,6 @@
 class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 {
 	/**
-	 * (non-PHPdoc)
 	 * @see Zend_Test_PHPUnit_ControllerTestCase::setUp()
 	 */
 	public function setUp()
@@ -40,17 +39,20 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		$controller = Zend_Controller_Front::getInstance();
 		
         $channelsModel = new Xmltv_Model_Channels();
+        $bcModel = new Xmltv_Model_Programs();
 		
         //Check channels categories
 		$cats = $channelsModel->channelsCategories();
 		$this->assertNotEmpty($cats);
         
         //Check top programs list
-        require_once(APPLICATION_PATH.'/controllers/helpers/Top.php');
-		$top = new Zend_Controller_Action_Helper_Top();
-		$topPrograms = $top->direct( 'TopPrograms', array( 
-			'amt'=>Zend_Registry::get('site_config')->top->channels->get('amount')));
-		$this->assertNotEmpty($topPrograms);
+        $amt = (int)Zend_Registry::get('site_config')->top->channels->get('amount');
+        $now = Zend_Date::now();
+        $weekDays = new Zend_Controller_Action_Helper_WeekDays();
+        $week_start = $weekDays->getStart($now);
+	    $week_end   = $weekDays->getEnd($now);
+        $topBc = $bcModel->topPrograms($amt, $week_start, $week_end);
+		$this->assertNotEmpty($topBc);
         
 	}
 

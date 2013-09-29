@@ -18,13 +18,13 @@ class IndexControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 			'controller'=>'index',
 			'action'=>'index',
 		));
-		$url = $this->url(array());
-		//$this->dispatch($url);
+        $url = $this->url( $urlParams );
+		$this->dispatch($url);
 		
 		// assertions
-		//$this->assertModule( $urlParams['module'] );
-		//$this->assertController( $urlParams['controller'] );
-		//$this->assertController( $urlParams['action'] );
+		$this->assertModule( $urlParams['module'] );
+		$this->assertController( $urlParams['controller'] );
+		$this->assertController( $urlParams['action'] );
 		//$this->assertRoute('default_frontpage_index');
 	
 	}
