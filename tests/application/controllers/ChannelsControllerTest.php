@@ -1,23 +1,48 @@
 <?php
+/**
+ * PHPUnit test controller
+ * @version $Id:$
+ */
 class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 {
+    public $bootstrap = array('App', 'bootstrap');
+    
 	/**
 	 * @see Zend_Test_PHPUnit_ControllerTestCase::setUp()
 	 */
 	public function setUp()
 	{
-		$this->bootstrap = new Zend_Application(
-			APPLICATION_ENV,
-			APPLICATION_PATH . '/configs/application.ini'
-		);
-        # Warning:
-        PHPUnit_Framework_Error_Warning::$enabled = TRUE;
-        # notice, strict:
-        PHPUnit_Framework_Error_Notice::$enabled = FALSE;
-		parent::setUp();
+        $this->bootstrap = array($this, 'appBootstrap');
+        parent::setUp();
 	}
+    
+    public function appBootstrap()
+    {
+        $this->_application = new Zend_Application(APPLICATION_ENV,
+              APPLICATION_PATH . '/configs/application.ini'
+        );
+        $this->_application->bootstrap();
 
-	public function testListAction(){
+        /**
+         * Fix for ZF-8193
+         * http://framework.zend.com/issues/browse/ZF-8193
+         * Zend_Controller_Action->getInvokeArg('bootstrap') doesn't work
+         * under the unit testing environment.
+         */
+        $front = Zend_Controller_Front::getInstance();
+        if($front->getParam('bootstrap') === null) {
+            $front->setParam('bootstrap', $this->_application->getBootstrap());
+        }
+        
+        $router = new Xmltv_Plugin_Router();
+        $router->setRouter($front->getRouter());
+		$front->setRouter($router->getRouter())
+            //->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
+        ;
+        
+    }
+    
+    public function testListAction(){
 
         $urlParams = $this->urlizeOptions( array(
             'module'=>'default',
@@ -25,18 +50,17 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             'action'=>'list', ));
 		$url = $this->url( $urlParams );
 		$this->dispatch($url);
-
+        
 		// assertions
 		$this->assertModule( $urlParams['module'] );
+        $this->assertNotRedirect();
 		$this->assertController( $urlParams['controller'] );
 		$this->assertAction( $urlParams['action'] );
 		
-        $this->assertNotRedirect();
+        
 		$this->assertQueryCountMin("div#col_l", 1 );
 		$this->assertQueryCountMin("div#col_r", 1 );
 		$this->assertQueryCountMin("div#channels h3.channeltitle", 1 );
-		
-		$controller = Zend_Controller_Front::getInstance();
 		
         $channelsModel = new Xmltv_Model_Channels();
         $bcModel = new Xmltv_Model_Programs();
@@ -53,6 +77,10 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    $week_end   = $weekDays->getEnd($now);
         $topBc = $bcModel->topPrograms($amt, $week_start, $week_end);
 		$this->assertNotEmpty($topBc);
+        
+        //Channels list assertion
+        $channels = $channelsModel->getPublished();
+        $this->assertNotEmpty($channels);
         
 	}
 
