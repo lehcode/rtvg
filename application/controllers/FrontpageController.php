@@ -48,35 +48,28 @@ class FrontpageController extends Rtvg_Controller_Action
 	 * Data for frontpage view
 	 */
 	public function indexAction () {
-		
-	    if ($this->cache->enabled){
-	        
-	        $this->cache->setLifetime(600);
-	        $f = '/Listings/Frontpage';
-	        
-	        $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
-		    if (($this->list = $this->cache->load( $hash, 'Core', $f))===false) {
-		        $this->list = $this->programsModel->frontpageListing( $this->_helper->top( 
-					'TopChannels', 
-					array( 'amt'=>self::TOP_CHANNELS_AMT )));
-		        $this->cache->save( $this->list, $hash, 'Core', $f);
-		    }
-	    } else {
-		    $this->list = $this->programsModel->frontpageListing( $this->_helper->top( 
-				'TopChannels', 
-				array( 'amt'=>self::TOP_CHANNELS_AMT )));
-	    }
+        
+        $amt = (int)Zend_Registry::get('site_config')->top->broadcasts->get('amount');
+        if($amt===0){
+            $list = array();
+        } else {
+            $top = $this->bcModel->topPrograms($amt);
+            if ($this->cache->enabled){
+                $this->cache->setLifetime(600);
+                $f = '/Listings/Frontpage';
+                $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
+                if (($list = $this->cache->load( $hash, 'Core', $f))===false) {
+                    $list = $this->bcModel->frontpageListing($top);
+                    $this->cache->save( $list, $hash, 'Core', $f);
+                }
+            } else {
+                $list = $this->bcModel->frontpageListing($top);
+            }
+        }
+	    $this->view->assign('list', $list);
 	    
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($this->list);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    $this->view->assign( 'list', $this->list );
-	    
-	    // Channels data for dropdown
+        // Channels data for dropdown
 		if ($this->cache->enabled){
-		    
 		    $this->cache->setLifetime(600);
 		    $this->cache->setLocation(ROOT_PATH.'/cache');
 		    $f = '/Channels';
@@ -90,20 +83,23 @@ class FrontpageController extends Rtvg_Controller_Action
 	    }
 	    $this->view->assign( 'channels', $channels );
 	    
-	    $articlesAmt = 4;
+        // Frontpage articles
+	    $articlesAmt = (int)Zend_Registry::get('site_config')->frontend->frontpage->get('articles');
 	    $this->view->assign( 'articles_amt', $articlesAmt);
-	    if ( $this->cache->enabled && APPLICATION_ENV=='production' ){
-	        $this->cache->setLifetime(600);
-	        $f = '/Content/Articles';
-	        $hash = md5( 'frontpage-articles' );
-	        if (($channels = $this->cache->load( $hash, 'Core', $f))===false ) {
-	        	$articles = $this->articlesModel->frontpageItems( $articlesAmt );
-	        	$this->cache->save( $channels, $hash, 'Core', $f);
-	        }
-	    } else {
-	        $articles = $this->articlesModel->frontpageItems( $articlesAmt );
-	    }
-	    $this->view->assign( 'articles', $articles );
+        if ($articlesAmt>0){
+            if ( $this->cache->enabled && APPLICATION_ENV=='production' ){
+                $this->cache->setLifetime(600);
+                $f = '/Content/Articles';
+                $hash = md5( 'frontpage-articles' );
+                if (($channels = $this->cache->load( $hash, 'Core', $f))===false ) {
+                    $articles = $this->articlesModel->frontpageItems( $articlesAmt );
+                    $this->cache->save( $channels, $hash, 'Core', $f);
+                }
+            } else {
+                $articles = $this->articlesModel->frontpageItems( $articlesAmt );
+            }
+            $this->view->assign( 'articles', $articles );
+        }
 	    
 	}
 	
@@ -146,11 +142,11 @@ class FrontpageController extends Rtvg_Controller_Action
 	            $f = '/Listings/Frontpage';
 	            $hash = md5('frontpage-channel-'.$channelId);
 	            if (($list = $this->cache->load( $hash, 'Core', $f))===false) {
-	            	$list = $this->programsModel->frontpageListing($ch);
+	            	$list = $this->bcModel->frontpageListing($ch);
 	            	$this->cache->save( $list, $hash, 'Core', $f);
 	            }
 	        } else {
-	            $list = $this->programsModel->frontpageListing($ch);
+	            $list = $this->bcModel->frontpageListing($ch);
 	        }
 	        
 	        if ($list){
