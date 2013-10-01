@@ -5,14 +5,14 @@
  * Frontpage menu
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
- * @version $Id: fp.xml,v 1.3 2013-04-03 18:18:05 developer Exp $
+ * @version $Id:$
  */
  -->
 <config>
 	<nav>
 		<home>
         	<label>Ruvtgid</label>
-            <route>default_frontpage_index</route>
+            <route>default</route>
         </home>
 		<channelList>
             <label>Все каналы</label>

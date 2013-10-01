@@ -50,6 +50,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:feed.index' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:feed.rss' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:listings.index' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-listing' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-date' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.program-week' ), $default );
@@ -112,6 +113,14 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:user' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.login' ), 'admin:user' );
 	    $this->add( new Zend_Acl_Resource( 'admin:user.profile' ), 'admin:user' );
+        //@TODO update later to only allow authorized access
+        if (APPLICATION_ENV=='development'){
+            $this->add( new Zend_Acl_Resource( 'default:tests.index' ), $default ); 
+        } else {
+            $this->add( new Zend_Acl_Resource( 'default:tests.index' ), 'admin:user' );
+        }
+	    
+        
 	    
 	    // Deny acces to denied (wrong) resources to all
 	    $this->deny( null, array(

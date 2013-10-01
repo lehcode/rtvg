@@ -38,7 +38,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	public function routeStartup (Zend_Controller_Request_Abstract $request) {
 
 		$this->_initConfig();
-		$this->_initActionHelpers();
+		//$this->_initActionHelpers();
 		$this->_initAutoloader();
 		//$this->_initUserAgent();
 		$this->_initNav();
@@ -46,18 +46,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		
 		
 		
-	}
-	
-
-	/**
-	 * Initialize controller helpers
-	 */
-	protected function _initActionHelpers () {
-		
-		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Xmltv_Controller_Action_Helper' );
-		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Rtvg_Controller_Action_Helper' );
-		
-	}
+    }
 
 	
 	/**

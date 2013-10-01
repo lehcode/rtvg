@@ -16,11 +16,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
 	function run() 
 	{
-		
-		if (APPLICATION_ENV=='testing') {
-			Zend_Session::$_unitTestEnabled = true;
-		}
-		
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
 		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
 		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "beta5.4" );
@@ -28,13 +23,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		date_default_timezone_set( Zend_Registry::get( 'site_config' )->site->get( 'timezone', 'Europe/Moscow' ) );
 		
 		Zend_Registry::set( 'db_local', $this->getResource('multidb')->getDefaultDb() );
-		Zend_Registry::set( 'db_archive', $this->getResource('multidb')->getDb('archive') );
+		//Zend_Registry::set( 'db_archive', $this->getResource('multidb')->getDb('archive') );
 		
 		Zend_Layout::startMvc();
 		
-		/*
-		 * Caching
-		 */
+		//Caching
 		$cacheConf = Zend_Registry::get('site_config')->cache->get('system');
 		$cache = Zend_Cache::factory( 'Core', 'File', array(  
 			'lifetime' => $cacheConf->get('lifetime', 43200),
@@ -42,50 +35,49 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		), array( 'cache_dir' => ROOT_PATH.$cacheConf->get('location')));
 		$e = (bool)Zend_Registry::get('site_config')->cache->system->get('enabled');
 		$cache->setOption( 'caching', $e );
-		Zend_Registry::set('cache', $cache);
+		Zend_Registry::set('cache', $cache);		
 		
-		// Place this in your bootstrap file before dispatching your front controller
-		$consoleWriter = new Zend_Log_Writer_Firebug();
-		Zend_Registry::set( 'console_log', new Zend_Log( $consoleWriter ) );
-		
-		/*
-		 * Front controller
-		 */
+		//Front controller
 		$router = new Xmltv_Plugin_Router( APPLICATION_ENV );
 		$fc = Zend_Controller_Front::getInstance()
-			->setParam( 'useDefaultControllerAlways', true )
+			->setParam( 'useDefaultControllerAlways', false )
 			->setParam( 'bootstrap', $this )
 			->registerPlugin( $router )
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
-			->registerPlugin( new Xmltv_Plugin_Stats( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-			->throwExceptions( false )
+            ->throwExceptions( false );
 		;
+        
+        if (APPLICATION_ENV!='development'){
+            $fc->returnResponse (true);
+        } elseif(APPLICATION_ENV=='testing'){
+            $fc->returnResponse (false);
+        }
 		
 		$router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
-		$log = $this->bootstrap()->getResource('Log');
-		
-        //
-		// http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework/
-        //
+        
+		// http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework
 		try {
 		    $response = $fc->dispatch();
-		} catch (Zend_Exception $e) {
-            throw new Exception("Bootstrap Exception!", $e->getCode(), $e);
+		} catch (Zend_Controller_Exception $e) {
+            if (APPLICATION_ENV!='development'){
+                die("Non-recoverable error.");
+            }
 		}
 		
-		if (isset($response)) {
-			if( $response->isException() ) {
-				$exception = $response->getException();
-				$log = new Zend_Log(  new Zend_Log_Writer_Stream( ROOT_PATH . '/log/exceptions.log' ) );
-				$log->debug(  $exception->getMessage() . PHP_EOL . $exception->getTraceAsString() );
-			} else {
-				$response->sendHeaders();
-				$response->outputBody();
-			}
+        if (isset($response) && !$response->isException()) {
+			$response->sendHeaders();
+			$response->outputBody();
 		}
-				
+        
+	}
+    
+    protected function _initActionHelpers () {
+		
+		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Xmltv_Controller_Action_Helper' );
+		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Rtvg_Controller_Action_Helper' );
+		
 	}
 	
 	
@@ -138,25 +130,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			);
 		}
 		return $moduleloader;
-	}
-
-
-	/**
-	 * Load jQuery libraries
-	 */
-	protected function _initJquery () 
-	{
-
-		$this->bootstrap( 'view' );
-		$view = $this->getResource( 'view' );
-		
-		$view->addHelperPath( "ZendX/JQuery/View/Helper", "ZendX_JQuery_View_Helper" );
-		
-		$viewRenderer = new Zend_Controller_Action_Helper_ViewRenderer();
-		$viewRenderer->setView($view);
-		Zend_Controller_Action_HelperBroker::addHelper($viewRenderer);
-		
-		
 	}
 	
 	/**
@@ -257,15 +230,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bs/base.min.js' ));
 	    }
 	    
-	    
-	    // Get browser
+        // Get browser
 	    $browser = $view->userAgent()->getUserAgent();
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($this->userAgent());
-	    	//die(__FILE__.': '.__LINE__);
-	    	 
-	    }
-	    // Check if browser is IE and add stylesheets
+        // Check if browser is IE and add stylesheets
 	    $browserMsie = false;
 	    if (strstr($browser, 'MSIE')) {
 	    	$browserMsie = true;
@@ -277,9 +244,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    $view->inlineScript()
 	    	->prependFile( $this->view->baseUrl('js/bs/alert.js') );
 	    
-	    
-	    //$view->addHelperPath( APPLICATION_PATH.'/../library/views/helpers/' );
 	    $view->addHelperPath( APPLICATION_PATH.'/views/helpers/', 'Rtvg_View_Helper');
+        $view->addHelperPath("ZendX/JQuery/View/Helper",'ZendX_JQuery_View_Helper');
+        
 	}
 	
 	

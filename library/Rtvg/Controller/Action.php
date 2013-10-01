@@ -73,7 +73,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * Channels model
 	 * @var Xmltv_Model_Programs
 	 */
-	protected $programsModel;
+	protected $bcModel;
 
 	/**
 	 * Videos model
@@ -144,7 +144,11 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      */
     protected $isAllowed;
     
-    
+    /**
+     *
+     * @var Zend_Log_Writer_Firebug
+     */
+    protected $fireLog;
 	
 	
     /**
@@ -205,7 +209,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 				
 		$this->weekDays = $this->_helper->getHelper('WeekDays');
 		$this->channelsModel = new Xmltv_Model_Channels();
-		$this->programsModel = new Xmltv_Model_Programs();
+		$this->bcModel = new Xmltv_Model_Programs();
 		$this->videosModel = new Xmltv_Model_Videos();
 		$this->commentsModel = new Xmltv_Model_Comments();
 		$this->usersModel = new Xmltv_Model_Users();
@@ -232,6 +236,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		    $this->view->assign( 'vk_group_init', true );
 		}
 		
+        $this->fireLog = new Zend_Log( new Zend_Log_Writer_Firebug() );
 		
 	}
 	
@@ -393,19 +398,13 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * @param  string $alias //channel alias
 	 * @return array
 	 */
-	protected function channelInfo($alias=null){
+	public function channelInfo($alias=null){
 		
 	    if (!$alias) {
 			$alias = $this->input->getEscaped('channel');
 	    }
 	    
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($this->input->getEscaped('channel'));
-	        //var_dump($alias);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-		$model = new Xmltv_Model_Channels();
+	    $model = new Xmltv_Model_Channels();
 		
 		if ($this->cache->enabled){
 		    
@@ -433,13 +432,17 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	/**
 	 * Current date from request variable
 	 */
-	protected function listingDate(){
+	public function listingDate(Zend_Filter_Input $validator){
+        
+        if (!$validator) {
+            throw new Zend_Controller_Action_Exception("Validator not passed", 500);
+        }
 		
 	    $now = Zend_Date::now();
-		if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $this->input->getEscaped('date'))) {
-			$d = new Zend_Date( new Zend_Date( $this->input->getEscaped('date'), 'dd-MM-YYYY' ), 'dd-MM-YYYY' );
-		} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $this->input->getEscaped('date'))) {
-			$d = new Zend_Date( new Zend_Date( $this->input->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
+		if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $validator->getEscaped('date'))) {
+			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'dd-MM-YYYY' ), 'dd-MM-YYYY' );
+		} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $validator->getEscaped('date'))) {
+			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
 			
 		}
 		
@@ -472,38 +475,35 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * @params Zend_Date $week_end
 	 * @return array
 	 */
-	protected function topPrograms($amt=20){
-		/*
-	    $now = Zend_Date::now();
-	    $topAmt = (int)Zend_Registry::get('site_config')->top->listings->get('amount');
-	    $week_start = $this->weekDays->getStart( $now);
-	    $week_end   = $this->weekDays->getEnd( $now);
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($week_start->toString('dd-MM-YYYY'));
-	    	//var_dump($week_end->toString('dd-MM-YYYY'));
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	    
-		$top   = $this->_helper->getHelper('Top');
+	protected function topPrograms(){
 		
-		if ($this->cache->enabled){
-		    
+	    $now = Zend_Date::now();
+	    $amt = (int)Zend_Registry::get('site_config')->top->broadcasts->get('amount');
+        
+        if ($amt===0){
+            return array();
+        }
+        
+        $week_start = $this->weekDays->getStart($now);
+	    $week_end   = $this->weekDays->getEnd($now);
+        $bcModel = new Xmltv_Model_Programs();
+		
+        if ($this->cache->enabled){
 		    $this->cache->setLifetime(43200);
 		    $this->cache->setLocation(ROOT_PATH.'/cache');
 			$f = '/Listings/Top';
-			
 			$hash = Rtvg_Cache::getHash('top'.$amt);
 			if (!$result = $this->cache->load($hash, 'Core', $f)) {
-				$result = $this->programsModel->topPrograms( $amt, $week_start, $week_end );
+				$result = $bcModel->topPrograms($amt, $week_start, $week_end);
 				$this->cache->save($result, $hash, 'Core', $f);
 			}
 			
 		} else {
-			$result = $this->programsModel->topPrograms( $amt, $week_start, $week_end );
+			$result = $bcModel->topPrograms($amt, $week_start, $week_end);
 		}
+        
 		return $result;
-		*/
+		
 	}
 	
 	/**

@@ -394,7 +394,7 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 			->limit($amt);
 		
 		if (APPLICATION_ENV=='development'){
-		    Zend_Registry::get('console_log')->log( $select->assemble(), Zend_Log::INFO );
+		    Zend_Registry::get('fireLog')->log( $select->assemble(), Zend_Log::INFO );
 		    //parent::debugSelect($select, __METHOD__);
 			//die(__FILE__.': '.__LINE__);
 		}

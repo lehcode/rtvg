@@ -39,64 +39,65 @@ class ChannelsController extends Rtvg_Controller_Action
 	
 
 	/**
-	 * Index page
-	 * Redirect to frontpage
+	 * Index page. Redirect to channels list
 	 */
 	public function indexAction () {
-		$this->_forward( 'frontpage', 'index' );
+		$this->redirect( $this->view->url(array(
+            'module'=>'default', 
+            'controller'=>'error',
+            'action'=>'error'
+        )));
 	}
 
 	/**
 	 * All channels list
 	 */
 	public function listAction () {
+        
+		parent::validateRequest();
 		
-		if (parent::validateRequest()) {
-			
-		    $this->view->headLink()
-		    	->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
-		    
-			$this->channelsModel = new Xmltv_Model_Channels();
-			$this->view->assign( 'hide_sidebar', false );
-			$this->view->assign( 'gcse', false );
-			
-			if ($this->cache->enabled){
-			    
-			    $this->cache->setLifetime(86400);
-			    $this->cache->setLocation(ROOT_PATH.'/cache');
-			    $f = '/Channels';
-				
-			    $hash = Rtvg_Cache::getHash('published_channels');
-				if (!$rows = $this->cache->load($hash, 'Core', $f)) {
-					$rows = $this->channelsModel->getPublished( $this->view );
-					$this->cache->save($rows, $hash, 'Core', $f);
-				}
-			} else {
-				$rows = $this->channelsModel->getPublished( $this->view );
-			}
-			
-			if (APPLICATION_ENV=='development'){
-			    //var_dump($rows);
-			    //die(__FILE__.': '.__LINE__);
-			}
-			
-			$this->view->assign('channels', $rows);
-			
-			/*
-			 * ######################################################
-			 * Channels categories
-			 * ######################################################
-			*/
-			$this->view->assign('channels_cats', $this->getChannelsCategories());
-			
-			/*
-			 * #####################################################################
-			 * Данные для модуля самых популярных программ
-			 * #####################################################################
-			 */
-			$top = $this->topPrograms();
-			$this->view->assign('top_programs', $top);
-		}
+        $this->view->headLink()
+            ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
+
+        $this->channelsModel = new Xmltv_Model_Channels();
+        $this->view->assign( 'hide_sidebar', false );
+        $this->view->assign( 'gcse', false );
+
+        if ($this->cache->enabled){
+
+            $this->cache->setLifetime(86400);
+            $this->cache->setLocation(ROOT_PATH.'/cache');
+            $f = '/Channels';
+
+            $hash = Rtvg_Cache::getHash('published_channels');
+            if (!$rows = $this->cache->load($hash, 'Core', $f)) {
+                $rows = $this->channelsModel->getPublished();
+                $this->cache->save($rows, $hash, 'Core', $f);
+            }
+        } else {
+            $rows = $this->channelsModel->getPublished();
+        }
+
+        (APPLICATION_ENV=='development') ? Zend_Registry::get('fireLog')->log($rows, Zend_Log::INFO) : null ;
+
+        $this->view->assign('channels', $rows);
+
+        /*
+         * ######################################################
+         * Channels categories
+         * ######################################################
+        */
+        $this->view->assign('channels_cats', $this->getChannelsCategories());
+
+        /*
+         * #####################################################################
+         * Данные для модуля самых популярных программ
+         * #####################################################################
+         */
+        $top = $this->topPrograms();
+        (APPLICATION_ENV=='development') ? Zend_Registry::get('fireLog')->log($top, Zend_Log::INFO) : null ;
+        $this->view->assign('top_programs', $top);
+		
 		
 	}
 	

@@ -65,7 +65,7 @@ class Xmltv_Model_DbTable_Articles extends Xmltv_Db_Table_Abstract
 	     
 	    if (APPLICATION_ENV=='development'){
 	        //var_dump($select->assemble());
-	    	Zend_Registry::get('console_log')->log( $select->assemble(), Zend_Log::INFO );
+	    	Zend_Registry::get('fireLog')->log( $select->assemble(), Zend_Log::INFO );
 	    	//die(__FILE__.': '.__LINE__);
 	    }
 	     
@@ -73,7 +73,7 @@ class Xmltv_Model_DbTable_Articles extends Xmltv_Db_Table_Abstract
 	     
 	    if (APPLICATION_ENV=='development'){
 	        //var_dump($result);
-	    	Zend_Registry::get('console_log')->log( $result, Zend_Log::INFO );
+	    	Zend_Registry::get('fireLog')->log( $result, Zend_Log::INFO );
 	    	//die(__FILE__.': '.__LINE__);
 	    }
 	     

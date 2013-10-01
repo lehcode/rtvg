@@ -43,7 +43,7 @@ class ListingsController extends Rtvg_Controller_Action
 	 */
 	public function indexAction ()
 	{
-		$this->_forward( 'day' );
+		$this->_forward( 'day-date' );
 	}
 
 	/**
@@ -53,12 +53,13 @@ class ListingsController extends Rtvg_Controller_Action
 		
 		parent::validateRequest();
 		
+        if (($date = $this->_getParam('date', null))===null){
+            $date = parent::listingDate();
+        }
 		return $this->_forward('day-listing', 'listings', 'default', array(
-			'date'=>$this->_getParam('date'),
-			'channel'=>$this->_getParam('channel'),
+			'date'=>$date,
+			'channel'=>$this->_getParam('channel')
 		));
-		
-		//die(__FILE__.': '.__LINE__);
 		
 	}
 	
@@ -77,21 +78,11 @@ class ListingsController extends Rtvg_Controller_Action
 		$this->view->headLink()
 			->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
 		
-		if (isset($_GET['RTVG_PROFILE'])){
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		$channel = parent::channelInfo();
-		if (!isset($channel['id']) || empty($channel['id'])){
-			$this->render('channel-not-found');
-			return true;
+        $channel = parent::channelInfo($this->_getParam('channel'));
+        if (!isset($channel['id']) || empty($channel['id'])){
+			throw new Zend_Exception("Channel not found.");
 		}
 		$this->view->assign('channel', $channel );
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($channel);
-			//die(__FILE__.': '.__LINE__);
-		}
 		
 		/*
 		 * #####################################################################
@@ -106,13 +97,8 @@ class ListingsController extends Rtvg_Controller_Action
 		 * Текущая дата
 		 * #####################################################################
 		 */
-		$listingDate = parent::listingDate();
+		$listingDate = parent::listingDate($this->input);
 		$this->view->assign('listing_date', $listingDate);
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($listingDate->toString());
-			//die(__FILE__.': '.__LINE__);
-		}
 		
 		//Assign today's date to view 
 		if ($listingDate->isToday()) {
@@ -130,15 +116,8 @@ class ListingsController extends Rtvg_Controller_Action
 		$timeShift = (int)$this->input->getEscaped( 'tz', 'msk' );
 		$listingDate = $timeShift!='msk' ? $listingDate->addHour( $timeShift ) : $listingDate ;
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($listingDate->toString());
-			//var_dump($timeShift);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		$this->view->assign('timeshift', $timeShift);
 		$this->view->assign('listing_date', $listingDate);
-		
 		
 		/*
 		 * #####################################################################
@@ -147,7 +126,6 @@ class ListingsController extends Rtvg_Controller_Action
 		 */
 		$top = $this->topPrograms();
 		$this->view->assign('top_programs', $top);
-		
 		
 		/*
 		 * #####################################################################
@@ -161,24 +139,19 @@ class ListingsController extends Rtvg_Controller_Action
 			$hash = Rtvg_Cache::getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
 			if (!$list = $this->cache->load( $hash, 'Core', $f)) {
 				if ($listingDate->isToday()){
-					$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'], $amt );
+					$list = $this->bcModel->getProgramsForDay( $listingDate, $channel['id'], $amt );
 				} else {
-					$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'] );
+					$list = $this->bcModel->getProgramsForDay( $listingDate, $channel['id'] );
 				}
 				$this->cache->save( $list, $hash, 'Core', $f);
 			}
 			
 		} else {
 		 	if ($listingDate->isToday()){
-				$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'], $amt );
+				$list = $this->bcModel->getProgramsForDay( $listingDate, $channel['id'], $amt );
 			} else {
-				$list = $this->programsModel->getProgramsForDay( $listingDate, $channel['id'] );
+				$list = $this->bcModel->getProgramsForDay( $listingDate, $channel['id'] );
 			}
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($list);
-			//die(__FILE__.': '.__LINE__);
 		}
 		
 		if ($list===false){
@@ -187,13 +160,10 @@ class ListingsController extends Rtvg_Controller_Action
 			return true;
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump(count($list));
-			//var_dump($list);
-			//var_dump($listingDate->toString());
-			//die(__FILE__.': '.__LINE__);
-		}
-		
+        if (empty($list)){
+            throw new Zend_Controller_Action_Exception("Listing is empty", 500);
+        }
+        
 		$list[0]['now_showing']=true;
 		$this->view->assign( 'programs', $list );
 		$currentProgram = $list[0];
@@ -216,11 +186,6 @@ class ListingsController extends Rtvg_Controller_Action
 			$articles = $this->articlesModel->dayListingArticles( $currentProgram, $channel, $amt );
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($articles);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		$this->view->assign( 'announces', $articles );
 		$this->view->assign( 'show_announces', true );
 		
@@ -238,7 +203,6 @@ class ListingsController extends Rtvg_Controller_Action
 				}
 			}
 		}
-		
 		
 		/*
 		 * #####################################################################
@@ -288,29 +252,14 @@ class ListingsController extends Rtvg_Controller_Action
 									
 								}
 							}
-							
 							// Сохранение в файловый кэш
 							$this->cache->save( $listingVideos, $hash, 'Core', $f);
-							
-						} 
-						
-						
-					}
-					
-					if (APPLICATION_ENV=='development'){
-						//var_dump($listingVideos);
-						//die(__FILE__.': '.__LINE__);
+						} 	
 					}
 					
 				} else {
 					
-				
-					if (isset($_GET['RTVG_PROFILE'])){
-						//var_dump($listingVideos=$this->cache->load( $hash, 'Core', $f));
-						//die(__FILE__.': '.__LINE__);
-					}
-				
-					if ((false === ($listingVideos=$this->cache->load( $hash, 'Core', $f)))){
+                    if ((false === ($listingVideos=$this->cache->load( $hash, 'Core', $f)))){
 						// Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
 						$listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
 						
@@ -327,21 +276,13 @@ class ListingsController extends Rtvg_Controller_Action
 									
 			} else {
 				
-				// Кэширование не используется 
+                // Кэширование не используется 
 				// запрос к Yoututbe
 				$listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
 				
 			}
-			
-		} 
-		$this->view->assign('listing_videos', $listingVideos);
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump(count($list));
-			//var_dump($listingVideos);
-			//var_dump($listingDate->toString());
-			//die(__FILE__.': '.__LINE__);
 		}
+        $this->view->assign('listing_videos', $listingVideos);
 		
 		/*
 		 * ######################################################
@@ -352,7 +293,6 @@ class ListingsController extends Rtvg_Controller_Action
 			$this->view->assign('comments', parent::yandexComments($channel) );
 		}
 		
-		
 		/* 
 		 * ######################################################
 		 * Данные для модуля видео в правой колонке
@@ -361,8 +301,6 @@ class ListingsController extends Rtvg_Controller_Action
 		if ($this->view->hide_sidebar!='right'){
 			$this->view->assign('sidebar_videos', parent::sidebarVideos($channel) );
 		}
-		
-		
 		
 		/*
 		 * ######################################################
@@ -527,11 +465,11 @@ class ListingsController extends Rtvg_Controller_Action
 			
 			$hash = $this->cache->getHash( 'program-day-single_'.$programAlias.'_'.$channel['id'] );
 			if (false === ($single = $this->cache->load( $hash, 'Core', $f ))) {
-				$single = $this->programsModel->getProgramForDay( $programAlias, $channel, $listingDate, 1 );
+				$single = $this->bcModel->getProgramForDay( $programAlias, $channel, $listingDate, 1 );
 				$this->cache->save( $single, $hash, 'Core', $f );
 			}
 		} else {
-			$single = $this->programsModel->getProgramForDay( $programAlias, $channel, $listingDate, 1 );
+			$single = $this->bcModel->getProgramForDay( $programAlias, $channel, $listingDate, 1 );
 		}
 		$this->view->assign('current_program', $single);
 		
@@ -554,11 +492,11 @@ class ListingsController extends Rtvg_Controller_Action
 				
 				$hash = $this->cache->getHash('program-day_'.$programAlias);
 				if (false === ($list = $this->cache->load( $hash, 'Core', $f ))) {
-					$list = $this->programsModel->getProgramForDay( $programAlias, $channel, $listingDate );
+					$list = $this->bcModel->getProgramForDay( $programAlias, $channel, $listingDate );
 					$this->cache->save( $list, $hash, 'Core', $f );
 				}
 			} else {
-				$list = $this->programsModel->getProgramForDay( $programAlias, $channel, $listingDate );
+				$list = $this->bcModel->getProgramForDay( $programAlias, $channel, $listingDate );
 			}
 			$this->view->assign( 'programs', $list );
 				
@@ -599,7 +537,7 @@ class ListingsController extends Rtvg_Controller_Action
 			 * Add hit for program
 			 * ######################################################
 			 */
-			$this->programsModel->addHit( $list[0] );
+			$this->bcModel->addHit( $list[0] );
 			
 			
 		} else {
@@ -612,17 +550,17 @@ class ListingsController extends Rtvg_Controller_Action
 			
 				$hash = $this->cache->getHash('similarPrograms_'.$programAlias);
 				if (($similarPrograms = $this->cache->load( $hash, 'Core', $f))===false) {
-					$similarPrograms = $this->programsModel->getSimilarProgramsForDay (
-							$this->input->getEscaped('alias'),
+					$similarPrograms = $this->bcModel->getSimilarProgramsForDay (
 							$listingDate,
+                            $this->input->getEscaped('alias'),
 							$single['channel_id']);
 					$this->cache->save($similarPrograms, $hash, 'Core', $f);
 				}
 				 
 			} else {
-				$similarPrograms = $this->programsModel->getSimilarProgramsForDay (
-						$single['alias'],
+				$similarPrograms = $this->bcModel->getSimilarProgramsForDay (
 						$listingDate,
+                        $single['alias'],
 						$single['channel_id']);
 			}
 			 
@@ -718,11 +656,11 @@ class ListingsController extends Rtvg_Controller_Action
 				$f = '/Listings/Program/Week';
 				$hash = md5('currentProgram_'.$programAlias.'_'.$channel['id']);
 				if (!$list = $this->cache->load( $hash, 'Core', $f )) {
-					$list = $this->programsModel->getProgramThisWeek( $programAlias, $channel['id'], $weekStart, $weekEnd );
+					$list = $this->bcModel->getProgramThisWeek( $programAlias, $channel['id'], $weekStart, $weekEnd );
 					$this->cache->save($list, $hash, 'Core', $f );
 				}
 			} else {
-				$list = $this->programsModel->getProgramThisWeek( $programAlias, $channel['id'], $weekStart, $weekEnd);
+				$list = $this->bcModel->getProgramThisWeek( $programAlias, $channel['id'], $weekStart, $weekEnd);
 			}
 			
 			if (APPLICATION_ENV=='development'){
@@ -738,11 +676,11 @@ class ListingsController extends Rtvg_Controller_Action
 				$f = '/Listings/Similar/Week';
 				$hash = $this->cache->getHash( $programAlias.'_'.$channel['id'] );
 				if (($similarPrograms = $this->cache->load( $hash, 'Core', $f))===false) {
-					$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek( $programAlias, $weekStart, $weekEnd, $channel['id'] );
+					$similarPrograms = $this->bcModel->getSimilarProgramsThisWeek( $programAlias, $weekStart, $weekEnd, $channel['id'] );
 					$this->cache->save($similarPrograms, $hash, 'Core', $f);
 				}
 			} else {
-				$similarPrograms = $this->programsModel->getSimilarProgramsThisWeek( $programAlias, $weekStart, $weekEnd, $channel['id'] );
+				$similarPrograms = $this->bcModel->getSimilarProgramsThisWeek( $programAlias, $weekStart, $weekEnd, $channel['id'] );
 			}
 			$this->view->assign( 'similar', $similarPrograms );
 			*/
@@ -753,7 +691,7 @@ class ListingsController extends Rtvg_Controller_Action
 			}
 			
 			if( $list[0] && !empty($list[0])){
-				$this->programsModel->addHit( $list[0] );
+				$this->bcModel->addHit( $list[0] );
 				return $this->render('program-week');
 			} elseif(empty($list[0]) && !empty($similarPrograms)){
 				return $this->render('similar-week');
@@ -819,11 +757,11 @@ class ListingsController extends Rtvg_Controller_Action
 						$this->cache->setLocation( ROOT_PATH.'/cache');
 						$f = "/Listings/Category/Week";
 						if (($list = $this->cache->load( $hash, 'Core', $f))===false){
-							$list = $this->programsModel->categoryWeek( $categoryId, $weekStart, $weekEnd);
+							$list = $this->bcModel->categoryWeek( $categoryId, $weekStart, $weekEnd);
 							$this->cache->save( $list, $hash, 'Core', $f);
 						}
 					} else {
-						$list = $this->programsModel->categoryWeek( $categoryId, $weekStart, $weekEnd);
+						$list = $this->bcModel->categoryWeek( $categoryId, $weekStart, $weekEnd);
 					}
 					
 					
@@ -843,11 +781,11 @@ class ListingsController extends Rtvg_Controller_Action
 						$this->cache->setLocation( ROOT_PATH.'/cache');
 						$f = "/Listings/Category/Day";
 						if (($list = $this->cache->load( $hash, 'Core', $f))===false){
-							$list = $this->programsModel->categoryDay( $categoryId, $now);
+							$list = $this->bcModel->categoryDay( $categoryId, $now);
 							$this->cache->save( $list, $hash, 'Core', $f);
 						}
 					} else {
-						$list = $this->programsModel->categoryDay( $categoryId, $now);
+						$list = $this->bcModel->categoryDay( $categoryId, $now);
 					}
 					
 					

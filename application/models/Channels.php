@@ -61,16 +61,19 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 *
 	 * Load all published channels
 	 */
-	public function getPublished( Zend_View &$view=null ){
+	public function getPublished(){
 		
-	    if (!$view){
-	        throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500 );
-	    }
+        try{
+            $rows = $this->channelsTable->fetchAll("`published`='1'", 'title ASC');
+        } catch (Exception $e){
+            var_dump(get_class($e));
+            die(__FILE__.': '.__LINE__);
+        }
 	    
-	    $rows = $this->channelsTable->fetchAll("`published`='1'", 'title ASC');
 		$rows = $rows->toArray();
+        $v = new Zend_View();
 		foreach ($rows as $k=>$row) {
-			$rows[$k]['icon'] = $view->baseUrl('images/channel_logo/'.$row['icon']);
+			$rows[$k]['icon'] = $v->baseUrl('images/channel_logo/'.$row['icon']);
 		}
 		return $rows;
 		
@@ -472,11 +475,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		    $result = $this->db->fetchAll( $select );
 		} catch (Zend_Db_Table_Exception $e) {
 		    throw new Zend_Exception($e->getMessage());
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
 		}
 		
 		return $result;

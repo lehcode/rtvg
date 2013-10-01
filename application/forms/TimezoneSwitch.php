@@ -53,6 +53,9 @@ class Xmltv_Form_TimezoneSwitch extends Zend_Form
 	    
 		$timezone = new Zend_Form_Element_Select( 'timezone' );
 		$timezone->addMultiOptions( $options );
+        if (!@$diff){
+            $diff=0;
+        }
 		$active = $diff==0 ? 'msk' : $diff ; 
 		$timezone->setValue( $active );
 		$labelText    = $diff==0 ? 'Время(MSK)' : 'Время(MSK '.$diff.')' ;

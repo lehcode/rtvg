@@ -68,52 +68,48 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
 	public function frontpageItems($amt=10){
 		
 	    $select = $this->db->select()
-	    	->from( array('a'=>$this->articlesTable->getName()), array( 
+	    	->from( array('A'=>$this->articlesTable->getName()), array( 
 	    		'id',
 	    		'title',
 	    		'alias',
 	    		'image',
 	    		'metadesc',
 	    	))
-	    	->joinLeft( array('cc'=>$this->contentCategoriesTable->getName()), "`a`.`content_cat`=`cc`.`id`", array(
+	    	->joinLeft( array('CC'=>$this->contentCategoriesTable->getName()), "`A`.`content_cat`=`CC`.`id`", array(
 	    		'content_cat_id'=>'id',
 	    		'content_cat_title'=>'title',
 	    		'content_cat_alias'=>'alias',
 	    	))
-	    	->joinLeft( array('chc'=>$this->channelsCategoriesTable->getName()), "`a`.`channel_cat`=`chc`.`id`", array(
+	    	->joinLeft( array('CHC'=>$this->channelsCategoriesTable->getName()), "`A`.`channel_cat`=`CHC`.`id`", array(
 	    		'channel_cat_id'=>'id',
 	    		'channel_cat_title'=>'title',
 	    		'channel_cat_alias'=>'alias',
 	    	))
-	    	->joinLeft( array('pc'=>$this->channelsCategoriesTable->getName()), "`a`.`prog_cat`=`pc`.`id`", array(
+	    	->joinLeft( array('PC'=>$this->channelsCategoriesTable->getName()), "`A`.`prog_cat`=`PC`.`id`", array(
 	    		'program_cat_id'=>'id',
 	    		'program_cat_title'=>'title',
 	    		'program_cat_alias'=>'alias',
 	    	))
-	    	->where( "`a`.`published`='1' AND `a`.`publish_down`<'".Zend_Date::now()->toString('YYYY-MM-dd')."'")
-	    	->order( "a.publish_up DESC" )
+	    	->where( "`A`.`active` = TRUE AND `A`.`publish_down`<'".Zend_Date::now()->toString('YYYY-MM-dd')."'")
+	    	->order( "A.publish_up DESC" )
 	    	->limit( $amt );
-	    
-	    if (APPLICATION_ENV=='development'){
-		    Zend_Registry::get('console_log')->log($select->assemble(), Zend_Log::INFO);
-		    //die(__FILE__.': '.__LINE__);
-	    }
 	    
 	    $result = $this->db->fetchAll($select);
 	    
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($result);
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    if (!count($result)){
-	        return false;
+        if (!count($result)){
+	        return array();
 	    }
 	    
 	    foreach ($result as $k=>$item){
-	        $result[$k]['date_added']   = new Zend_Date( $item['date_added'], 'YYYY-MM-dd' );
-	        $result[$k]['publish_up']   = new Zend_Date( $item['publish_up'], 'YYYY-MM-dd' );
-	        $result[$k]['publish_down'] = new Zend_Date( $item['publish_down'], 'YYYY-MM-dd' );
+            if (isset($item['date_added']) && !empty($item['date_added'])){
+                $result[$k]['date_added']   = new Zend_Date( $item['date_added'], 'YYYY-MM-dd' );
+            }
+            if (isset($item['publish_up']) && !empty($item['publish_up'])){
+                $result[$k]['publish_up']   = new Zend_Date( $item['publish_up'], 'YYYY-MM-dd' );
+            }
+            if (isset($item['publish_down']) && !empty($item['publish_down'])){
+                $result[$k]['publish_down'] = new Zend_Date( $item['publish_down'], 'YYYY-MM-dd' );
+            }
 	    }
 	    
 	    return $result;
@@ -162,7 +158,7 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
 	    	->limit( 1 );
 
 		if (APPLICATION_ENV=='development'){
-		    Zend_Registry::get('console_log')->log($select->assemble(), Zend_Log::INFO);
+		    Zend_Registry::get('fireLog')->log($select->assemble(), Zend_Log::INFO);
 		    //die(__FILE__.': '.__LINE__);
 	    }
 	    

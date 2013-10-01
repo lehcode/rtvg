@@ -66,11 +66,10 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
 		            	dataType: 'json',
 		            	success: function(r) {
 		            		$('._FlashDiv_wb_').remove();
-		            		<?php /* if(APPLICATION_ENV=='production') :?>
+		            		<?php if(APPLICATION_ENV=='production') :?>
 		            		_gaq.push( ['_trackPageview', url] );
-		            		<?php endif; */ ?>
-		            		
-		            		var url = '<?php echo $view->baseUrl('телепрограмма/'); ?>'+r.alias;
+		            		<?php endif; ?>
+		            		var url = '<?php echo $view->url(array('module'=>'default', 'controller'=>'channels', 'action'=>'list'), 'default_channels_list'); ?>'+r.alias;
 		            		var bgStyle = { 'visibility':'visible', 'position':'absolute', 'left':0, 'top':0, 'width':'100%', 'height':'100%', 'text-align':'center', 'z-index': 1000, 'background-color':'#000', 'opacity':0.5 };
 		            		var img = $('<img/>')
 		            			.attr({ 'src':'/images/icons/loading.gif', 'width':128, 'height': 128 })
@@ -119,7 +118,6 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
         
         $htmlTagClass = (isset($input['html_tag']) && !empty($input['html_tag'])) ? (string)$input['html_tag'] : null ;
         $search->setLabel( $input['label'] )
-        	->setAttrib( 'class', $input['class'] )
         	->setAttrib( 'title', $tipText )
         	->addFilter( 'StripTags' )
         	->addValidator( 'NotEmpty' )
@@ -129,16 +127,17 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
         		array( 'Errors' ),
         		array( 'Label', $htmlTag ),
         	));
+        (isset($input['class']) && !empty($input['class'])) ? $search->setAttrib( 'class', $input['class'] ) : null;
         
-        $htmlTag = (isset($tagProps) && !empty($tagProps)) ? $tagProps['tag'] : null ;
-        $htmlTagClass = (isset($tagProps) && !empty($tagProps)) ? $tagProps['class'] : null ;
+        $formHtmlTag = (isset($tagProps) && !empty($tagProps)) ? $tagProps['tag'] : null ;
+        $formHtmlTagClass = (isset($tagProps) && !empty($tagProps)) ? $tagProps['class'] : null ;
         $this->setDecorators(array(
         	'FormElements',
         	'Form', array(
         		array('data'=>'HtmlTag'),
         		array(
-        			'tag'   => $htmlTag,
-        			'class' => $htmlTagClass
+        			'tag'   => $formHtmlTag,
+        			'class' => $formHtmlTagClass
         	)),
         ));
         $this->addElement($search);

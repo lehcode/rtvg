@@ -213,7 +213,7 @@ class Admin_Model_Articles {
     	    $row = $this->contentTable->createRow($data);
     	    if (APPLICATION_ENV=='development'){
     	        //var_dump($row->toArray());
-    	    	//Zend_Registry::get('console_log')->log($sql, Zend_Log::INFO);
+    	    	//Zend_Registry::get('fireLog')->log($sql, Zend_Log::INFO);
     	    	//die(__FILE__.': '.__LINE__);
     	    }
     	    $this->contentTable->insert( $row->toArray(), 'id' );
@@ -238,7 +238,7 @@ class Admin_Model_Articles {
         $sql = "UPDATE `".$this->contentTable->getName()."` SET ".implode( ',', $update )." WHERE `id`=".$data['id'];
         
         if (APPLICATION_ENV=='development'){
-        	Zend_Registry::get('console_log')->log($sql, Zend_Log::INFO);
+        	Zend_Registry::get('fireLog')->log($sql, Zend_Log::INFO);
         	//die(__FILE__.': '.__LINE__);
         }
         

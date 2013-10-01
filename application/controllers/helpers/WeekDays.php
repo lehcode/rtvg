@@ -7,7 +7,7 @@
  * @version $Id: WeekDays.php,v 1.8 2013-03-03 23:34:13 developer Exp $
  *
  */
-class Xmltv_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {
+class Zend_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Helper_Abstract {
 	
 	/**
 	 * @var Zend_Loader_PluginLoader

@@ -58,12 +58,15 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 			)
 		);
 		
-		$profile = (bool)Zend_Registry::get('site_config')->site->get('profile');
+		//$profile = (bool)Zend_Registry::get('site_config')->site->get('profile');
 		if (isset($_GET['RTVG_PROFILE'])){
 			$validators['RTVG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
 		}
 		if (isset($_GET['XDEBUG_PROFILE'])){
 			$validators['XDEBUG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
+		}
+		if (isset($_GET['XDEBUG_SESSION_START'])){
+			$validators['XDEBUG_SESSION_START'] = array(new Zend_Validate_InArray( array('netbeans-xdebug')));
 		}
 		$module	 = $params['module'];
 		$controller = $params['controller'];

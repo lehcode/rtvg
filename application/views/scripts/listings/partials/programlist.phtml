@@ -10,7 +10,7 @@
 
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
-$channelCat   = $this->escape( $this->channel['cat_title'] );
+//$channelCat   = $this->escape( $this->channel['cat_title'] );
 
 
 //META title
@@ -55,7 +55,7 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 	foreach ($this->items as $k=>$prog) {
 		
 		if ($this->is_today){
-			$active = $prog['now_showing']===true ? ' active' : '' ;
+			$active = @$prog['now_showing']===true ? ' active' : '' ;
 		} else {
 			$active = $pc==0 ? ' active' : '' ;
 		}

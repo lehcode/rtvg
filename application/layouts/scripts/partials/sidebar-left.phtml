@@ -67,13 +67,7 @@ if (isset($this->top_programs) && !empty($this->top_programs)) {
 	<ul id="program-top">
 		<?php 
 		foreach ($this->top_programs as $prog){
-			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($prog);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
-			?>
+		?>
 		<li>
 			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$prog['channel_icon'] ) ?>" width="16" />
 			<a href="<?php echo $this->url( array('channel'=>$prog['channel_alias'], 'alias'=>$prog['alias']), 'default_listings_program-week'); ?>"
@@ -81,8 +75,7 @@ if (isset($this->top_programs) && !empty($this->top_programs)) {
 				target="_blank"><?php echo $this->truncateString( $prog['title'], 3, 'words') ?>
 			</a>
 		</li>
-			<?php 
-			
+		<?php 	
 		}
 		?>
 	</ul>

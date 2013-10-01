@@ -7,7 +7,7 @@
  */
 
 if (APPLICATION_ENV=='development'){
-	Zend_Registry::get('console_log')->log( $this->article, Zend_Log::INFO);
+	Zend_Registry::get('fireLog')->log( $this->article, Zend_Log::INFO);
 }
 ?>
 <div class="article" itemscope itemtype="http://schema.org/CreativeWork">

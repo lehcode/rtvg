@@ -1,4 +1,7 @@
 <?php
+/**
+ * @version $Id:$
+ */
 class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 {
     
@@ -38,7 +41,6 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		$front->setRouter($router->getRouter())
             ->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
             ->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-            ->registerPlugin( new Xmltv_Plugin_Router( APPLICATION_ENV ) )
         ;
     }
 	
@@ -49,13 +51,13 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 			'controller'=>'frontpage',
 			'action'=>'index', ));
 		try{
-            $url = $this->url( $urlParams );
+            $url = $this->url( $urlParams, 'default' );
         } catch (Zend_Controller_Router_Exception $e){
             $url = '/';
         }
         $this->dispatch( $url );
         
-        // Assertions
+        // Routing
 		$this->assertModule( $urlParams['module'] );
 		$this->assertController( $urlParams['controller'] );
 		$this->assertAction( $urlParams['action'] );

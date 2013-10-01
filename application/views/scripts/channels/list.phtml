@@ -99,13 +99,13 @@ echo new Xmltv_Form_TypeaheadForm( array(
 	
 	<div class="channeldesc">
 		<a class="label" 
-			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_listings_day-listing'); ?>" 
+			href="<?= $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_listings_day-listing"); ?>" 
 			title="<?php printf('Телепрограмма %s на сегодня', $title) ?>"
 			target="_blank">
 			<?php printf('«%s» сегодня', $channel['title']) ?>
 		</a>
 		<a class="label label-info" 
-			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_channels_channel-week'); ?>" 
+			href="<?= $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_channels_channel-week"); ?>" 
 			title="<?php printf('Телепрограмма %s на неделю', $channel['title']) ?>">
 			Программа на неделю
 		</a>

@@ -43,15 +43,15 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 
 		if(  !$this->_router )
 			throw new Exception( "Не загружен роутер", 500);
-			
-		$this->_router->addRoute( 'default_frontpage_index', 
-		new Zend_Controller_Router_Route( '/', 
+		
+        $this->_router->addRoute( 'default', 
+		new Zend_Controller_Router_Route( '', 
 		array(
 			'module'=>'default',
 			'controller'=>'frontpage',
 			'action'=>'index')));
-		
-		$this->_router->addRoute( 'default_channels_list', 
+        
+        $this->_router->addRoute( 'default_channels_list', 
 		new Zend_Controller_Router_Route( 'телепрограмма', 
 		array(
 			'module'=>'default',
@@ -459,7 +459,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			}
 			*/
 		}
-			
+		
+        /*
 		if (preg_match('/[^a-z0-9%-]+$/', $controllerName)){
 				
 			if ($controllerName=='%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE' ||
@@ -503,10 +504,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			}
 				
 		}
-		
+		*/
 	}
-	
-	
 	
 	/**
 	 * 
@@ -515,5 +514,10 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 	public function setRouter ($router) {
 		$this->_router = $router;
 	}
+    
+    public function dispatchLoopStartup(Zend_Controller_Request_Abstract $request)
+    {
+        return true;
+    }
 	
 }

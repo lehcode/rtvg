@@ -43,7 +43,7 @@ class IndexController extends Rtvg_Controller_Action
 	 */
 	public function indexAction () {
 	    
-		$this->_forward( 'index', 'front-page' );
+		$this->_forward( 'frontpage', 'index' );
 		
 	}
 	

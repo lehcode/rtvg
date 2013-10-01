@@ -178,7 +178,7 @@ $this->inlineScript()->appendScript( $js );
 		        		<?php echo $this->escape( $prog['category_single'] ) ?>
 		        	</a>
 		        	<br />
-		        	<?php if ((int)$prog['rating']>0 && $showRating===true): ?>
+		        	<?php if ((int)@$prog['rating']>0 && $showRating===true): ?>
 		        	<span class="rating">Возрастной рейтинг: <?php echo $this->escape( $prog['rating'] ).'+' ?></span>
 		        	<?php endif; ?>
 	        	</div>

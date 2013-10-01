@@ -21,7 +21,7 @@ abstract class Xmltv_Model_Abstract
      *
      * @var Xmltv_Model_DbTable_ProgramsCategories
      */
-    protected $categoriesTable;
+    protected $bcCategoriesTable;
     
     /**
      *
@@ -45,7 +45,7 @@ abstract class Xmltv_Model_Abstract
      * Broadcasts table
      * @var Xmltv_Model_DbTable_Programs
      */
-    protected $broadcasts;
+    protected $bcTable;
     
     /**
      * Video cache for sidebar
@@ -81,7 +81,13 @@ abstract class Xmltv_Model_Abstract
      * Video cache for videos related to listing
      * @var Xmltv_Model_DbTable_ProgramsRatings
      */
-    protected $programsRatingsTable;
+    protected $bcRatingsTable;
+    
+    /**
+     * Events
+     * @var Xmltv_Model_DbTable_Events
+     */
+    protected $eventsTable;
     
     
 	/**
@@ -164,21 +170,18 @@ abstract class Xmltv_Model_Abstract
 	
 	protected function initTables(){
 		
-	    $this->categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
+	    $this->bcCategoriesTable = $this->getBcCategoriesTable();
 	    $this->channelsTable = new Xmltv_Model_DbTable_Channels();
 	    $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
 	    $this->channelsRatingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
-	    $this->broadcasts  = new Xmltv_Model_DbTable_Programs();
+	    $this->bcTable  = new Xmltv_Model_DbTable_Programs();
 	    $this->vcacheListingsTable = new Xmltv_Model_DbTable_VcacheListings();
 	    $this->vcacheSidebarTable = new Xmltv_Model_DbTable_VcacheSidebar();
 	    $this->vcacheRelatedTable = new Xmltv_Model_DbTable_VcacheRelated();
 	    $this->vcacheMainTable = new Xmltv_Model_DbTable_VcacheMain();
-        $this->programsRatingsTable = new Xmltv_Model_DbTable_ProgramsRatings();
-	    /**
-		 * @TODO Add test for production system to load coments without errors
-		 */
+        $this->bcRatingsTable = new Xmltv_Model_DbTable_ProgramsRatings();
+        $this->eventsTable = new Xmltv_Model_DbTable_Events();
 	    $this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
-	    
 	    
 	}
 	
@@ -190,9 +193,7 @@ abstract class Xmltv_Model_Abstract
 	 */
 	protected static function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
 	    
-	    // Use this in your model, view and controller files
-	    //Zend_Registry::get('console_log')->log($select->assemble(), Zend_Log::INFO);
-		Zend_Debug::dump($select->assemble());
+	    Zend_Registry::get('fireLog')->log(__METHOD__.': '.$select->assemble(), Zend_Log::INFO);
         
 	}
 
@@ -207,6 +208,14 @@ abstract class Xmltv_Model_Abstract
 		}
 		return $this;
 	}
+    
+    /**
+     * 
+     * @return Xmltv_Model_DbTable_ProgramsCategories
+     */
+    protected function getBcCategoriesTable(){
+        return new Xmltv_Model_DbTable_ProgramsCategories();
+    }
     
 }
 ?>

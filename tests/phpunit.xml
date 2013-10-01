@@ -1,11 +1,12 @@
 <phpunit bootstrap="./bootstrap.php"
 	colors="true"
 	verbose="true"
-	convertErrorsToExceptions="false"
+	convertErrorsToExceptions="true"
 	convertNoticesToExceptions="false"
 	convertWarningsToExceptions="true"
+    backupGlobals="false"
 	stopOnFailure="true"
-	syntaxCheck="true">
+	syntaxCheck="false">
 	<testsuite name="Application Test Suite">
 		<directory>./application</directory>
 	</testsuite>
@@ -14,11 +15,9 @@
 	</testsuite>
 	
 	<filter>
-		<!-- If Zend Framework is inside your project's library, uncomment this filter -->
-		<!-- -->
-		<whitelist>
+		<!-- <whitelist>
 			<directory suffix=".php">../../library/Zend</directory>
-		</whitelist>
+		</whitelist> -->
 		
 	</filter>
 	
@@ -26,9 +25,26 @@
 		<listener class="Lagged_Test_PHPUnit_ControllerTestCase_Listener" file="Lagged/Test/PHPUnit/ControllerTestCase/Listener.php" />
 	</listeners>
     
+    <!-- <groups>
+        <include>
+            <group></group>
+        </include>
+        <exclude>
+            <group></group>
+        </exclude>
+    </groups> -->
+    
     <php>
         <ini name="html_errors" value="Off" />
+        <ini name="max_execution_time" value="90" />
+        <ini name="xdebug.default_enable" value="1" />
         <ini name="xdebug.var_display_max_data" value="4096" />
+        <ini name="xdebug.auto_trace" value="0" />
+        <ini name="xdebug.overload_var_dump" value="1" />
+        <ini name="xdebug.profiler_output_dir=" value="/home/takeshi/www/xdebug" />
+        <ini name="xdebug.xdebug.show_exception_trace" value="0" />
+        <ini name="xdebug.cli_color" value="1" />
+        <ini name="xdebug.show_exception_trace" value="0" />
     </php>
 	
 </phpunit>
