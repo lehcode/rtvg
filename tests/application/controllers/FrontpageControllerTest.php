@@ -36,11 +36,11 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             $front->setParam('bootstrap', $this->_application->getBootstrap());
         }
         
-        $router = new Xmltv_Plugin_Router();
+        $router = new Xmltv_Plugin_Router('testing');
         $router->setRouter($front->getRouter());
 		$front->setRouter($router->getRouter())
-            ->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
-            ->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
+            //->registerPlugin( new Xmltv_Plugin_Init( 'testing' ) )
+            ->registerPlugin( new Xmltv_Plugin_Auth( 'testing' ) )
         ;
     }
 	
