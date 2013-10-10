@@ -1,0 +1,4 @@
+/_SQL
+/docs/schema/*.backup
+*.backup
+/bin
