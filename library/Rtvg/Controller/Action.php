@@ -759,10 +759,15 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::__call()
 	 */
-	public function __call ($method, $arguments)
-	{
-		throw new Zend_Exception( $method." does not exist!", 404);
-	}
+	public function __call($method, $args)
+    {
+        if ('Action' == substr($method, -6)) {
+            $controller = $this->getRequest()->getControllerName();
+            $url = '/' . $controller . '/index';
+            return $this->_redirect($url);
+        }
+        throw new Exception('Invalid method');
+    }
 	
 	/**
 	 * Contruct pageclass name 

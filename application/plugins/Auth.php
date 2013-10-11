@@ -1,6 +1,7 @@
 <?php
 class Xmltv_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 {
+    protected $_env = 'production';
 	private $_identity;
 
 	/**

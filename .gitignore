@@ -2,3 +2,5 @@
 /docs/schema/*.backup
 *.backup
 /bin
+
+pinfo.php

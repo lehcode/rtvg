@@ -10,16 +10,12 @@
 class Xmltv_Form_Login extends Zend_Form
 {
 	
-	protected $submitText;
-	
 	/**
 	 * Base login form
 	 * 
 	 * @param array $options
 	 */
 	public function __construct(array $options=null){
-	    
-	    $this->submitText = isset($options['submit_text']) && !empty($options['submit_text']) ? $options['submit_text'] : 'Войти' ;
 	    
 	    $this->setAttrib('name', 'userlogin');
 	    $this->setAttrib('id', 'userlogin');
@@ -88,7 +84,7 @@ class Xmltv_Form_Login extends Zend_Form
 		$submit = new Zend_Form_Element_Submit('submit');
 		$submit->setAttrib( 'id', 'submitbutton' );
 		$submit->setAttrib( 'class', 'btn btn-primary btn-mini' );
-		$submit->setLabel( $this->submitText );
+		$submit->setLabel( "Войти" );
 		$submit->setDecorators(array(
 			'ViewHelper',
 			'Description',

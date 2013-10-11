@@ -34,8 +34,8 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	    $this->table    = new Xmltv_Model_DbTable_Programs();
 	    $this->weekDays = isset($config['week_days']) ? $config['week_days'] : null ;
 	    $this->programsCategoriesList = $this->getCategoriesList();
-        $refCountries = new Xmltv_Model_DbTable_RefCountries();
-        $cl = $refCountries->fetchAll()->toArray();
+        $countries = new Xmltv_Model_DbTable_Countries();
+        $cl = $countries->fetchAll()->toArray();
         foreach ($cl as $i){
             $this->countriesList[$i['name']] = $i['iso'];
         }

@@ -42,28 +42,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$fc = Zend_Controller_Front::getInstance()
 			->setParam( 'useDefaultControllerAlways', false )
 			->setParam( 'bootstrap', $this )
-			->registerPlugin( $router )
 			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-            ->throwExceptions( false );
+            ->registerPlugin( $router )
 		;
         
-        if (APPLICATION_ENV!='development'){
-            $fc->returnResponse (true);
-        } elseif(APPLICATION_ENV=='testing'){
-            $fc->returnResponse (false);
-        }
-		
-		$router->setRouter($fc->getRouter());
+        $router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
         
 		// http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework
 		try {
 		    $response = $fc->dispatch();
-		} catch (Zend_Controller_Exception $e) {
-            if (APPLICATION_ENV!='development'){
-                die("Non-recoverable error.");
-            }
+		} catch (Exception $e) {
+            throw new Exception($e->getMessage(), 500, $e);
 		}
 		
         if (isset($response) && !$response->isException()) {

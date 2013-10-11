@@ -36,7 +36,6 @@ class Xmltv_Form_Logout extends Zend_Form
     public function __construct(array $options=null) {
         
     	$this->setAttrib('id', 'logoutform');
-    	$this->submitLabel = isset($options['submit_text']) && !empty($options['submit_text']) ? $options['submit_text'] : 'Выйти' ;
         $this->formClass = isset($options['form_class']) && !empty($options['form_class']) ? $options['form_class'] : null ;
         $this->htmlTagClass = isset($options['html_tag_class']) && !empty($options['html_tag_class']) ? $options['html_tag_class'] : null ;
         parent::__construct($options);
@@ -54,7 +53,7 @@ class Xmltv_Form_Logout extends Zend_Form
         	->setAttrib( 'type', 'submit' )
         	->setDecorators( array(
         		array('ViewHelper') ))
-        	->setLabel( $this->submitLabel );
+        	->setLabel("Выйти");
         
         $this->addElement( $submit );
 	    

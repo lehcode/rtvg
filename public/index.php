@@ -12,8 +12,6 @@ defined('APPLICATION_ENV')
 // Ensure library/ is on include_path
 set_include_path(implode(PATH_SEPARATOR, array(
     realpath(APPLICATION_PATH . '/../library/'),
-    realpath('/web/Zend/ZendFramework-1.12.3/library/'),
-    realpath('/web/Zend/ZendFramework-1.12.3/extras/library/'),
     get_include_path(),
 )));
 
@@ -28,10 +26,7 @@ $application = new Zend_Application(
 
 if (APPLICATION_ENV=='production'){
     ini_set('error_reporting', -1);
-} 
-//else {
-//    ini_set('error_reporting', 30711);
-//}
+}
 
 $application->bootstrap()
             ->run();

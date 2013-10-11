@@ -7,13 +7,11 @@
 $wrapClass = 'span3';
 if (!isset($this->user) || $this->user->role == 'guest') {
     $form = new Xmltv_Form_Login( array( 
-    	'action'=>$this->baseUrl('admin/auth/login'),
-    	'submit_text'=>'Вход',
+    	'action'=>$this->baseUrl('admin/auth/login')
     ));
 } else {
     $form = new Xmltv_Form_Logout(array( 
-    	'action'=>$this->baseUrl('admin/auth/logout'),
-    	'submit_text'=>'Выход',
+    	'action'=>$this->baseUrl('admin/auth/logout')
     ));
 }
 
