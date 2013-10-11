@@ -448,7 +448,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 						switch ($action){
 							case 'login':
 								$validators['openid'] = array( new Zend_Validate_Regex( Rtvg_Regex::EMAIL_REGEX ));
-								$validators['pw'] = array( new Zend_Validate_Regex( Rtvg_Regex::PASSWORD_REGEX ));
+								$validators['passwd'] = array( new Zend_Validate_Regex( Rtvg_Regex::PASSWORD_REGEX ));
 								$validators['submit'] = array( new Zend_Validate_Regex( '/\p{Cyrillic}+/u' ));
 							break;
 							

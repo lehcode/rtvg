@@ -54,84 +54,46 @@ class Admin_AuthController extends Rtvg_Controller_Admin
         $formValidator = $this->_helper->getHelper('ValidateForm');
         $r = $this->getRequest();
         
-        if (APPLICATION_ENV=='development'){
-            //var_dump($r->isPost());
-            //var_dump($this->isAllowed);
-            //die(__FILE__.': '.__LINE__);
-        }
-        
         if ($r->isPost() && ($this->isAllowed === true)) {
             
             $postData = $r->getPost();
             
-            if (APPLICATION_ENV=='development'){
-            	//var_dump( $formValidator->direct( $form, $postData) );
-            	//var_dump( !($errors = $formValidator->direct( $form, $postData)) || !empty($errors) );
-            	//die(__FILE__.': '.__LINE__);
-            }
-            
             if(!($errors = $formValidator->direct( $form, $postData)) || (is_array($errors) && !empty($errors))) {  //i.e. no errors
                 
-                if (APPLICATION_ENV=='development'){
-                	//var_dump($errors);
-                	//die(__FILE__.': '.__LINE__);
-                }
-                
-                foreach ($errors as $e) {
-                	$this->_flashMessenger->addMessage($e);
-                }
-                
-                /* 
-                $c=0;
                 while (!empty($errors)) {
                     $e = $errors[$c];
                     unset($errors[$c]);
-                    throw new Zend_Controller_Dispatcher_Exception($errors[$c]);
-                    $c++;
+                    throw new Zend_Exception($e, 500);
                 }
-                 */
-                $this->_redirect( $this->view->baseUrl( 'admin/error/error' ), array('exit'=>true) );
                 
             } else {
 	            
                 parent::validateRequest();
                 
-                if ($this->input->getEscaped('openid')===null || $this->input->getEscaped('pw')===null) {
-	            	$this->render('wrong-credentials');
-	            	return;
+                if ((bool)$this->input->getEscaped('openid')===false || (bool)$this->input->getEscaped('passwd')===false) {
+	            	throw new Zend_Exception("Wrong credentials", 404);
 	            }
-	            $openId = $this->input->getEscaped('openid');
-	            
-	            $authAdapter = new Zend_Auth_Adapter_DbTable( Zend_Registry::get('db_local') );
+                
+                $login  = $this->input->getEscaped('openid');
+                $passwd = md5($this->input->getEscaped('passwd'));
+                
+                $authAdapter = new Zend_Auth_Adapter_DbTable();
 	            $usersTable  = new Xmltv_Model_DbTable_Users();
 	            $authAdapter->setTableName( $usersTable->getName() )
 	            	->setIdentityColumn( 'email')
-	            	->setIdentity( $this->input->getEscaped('openid'))
+	            	->setIdentity($login)
 	            	->setCredentialColumn( 'hash')
-	            	->setCredential( md5($this->input->getEscaped('pw')) );
+	            	->setCredential($passwd);
                 
                 // Perform the authentication query, saving the result
 	            $auth = Zend_Auth::getInstance();
 	            $result = $auth->authenticate($authAdapter);
 	            
-	            if (APPLICATION_ENV=='development'){
-	            	//var_dump($result);
-	            	//var_dump($result->isValid());
-	            	//die(__FILE__.': '.__LINE__);
-	            }
-	            
-	            if ($result->isValid()) {
+                if ($result->isValid()) {
 	            
 	            	$identity = $result->getIdentity();
 	            	$data = $authAdapter->getResultRowObject( null, 'hash' );
-	            
-	            	if (APPLICATION_ENV=='development'){
-	            		//var_dump($identity);
-	            		//var_dump($data);
-	            		//die(__FILE__.': '.__LINE__);
-	            	}
-	            
-	            	$auth->getStorage()->write( $data );
+                    $auth->getStorage()->write( $data );
 	            	$this->_redirect( $this->view->baseUrl('admin') );
 	            	 
 	            } else {
@@ -192,34 +154,6 @@ class Admin_AuthController extends Rtvg_Controller_Admin
         
         
     }
-    
-    /**
-     * Process error
-     */
-    /*
-    public function errorAction(){
-    	
-        $msg='';
-        //var_dump($this->_flashMessenger->getMessages());
-        //die();
-        foreach ($this->_flashMessenger->getMessages() as $m){
-			if (is_array($m)) {
-			    //var_dump($m);
-			    //die();
-				foreach ($m as $string) {
-					$msg.=$string;
-				}
-			} else {
-				$msg.=$m;
-			}
-        }
-        throw new Zend_Controller_Dispatcher_Exception($msg); 
-        
-        //$this->view->assign('messages', $this->_flashMessenger->getMessages());
-        
-    }
-    */
-
 
 }
 
