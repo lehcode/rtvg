@@ -41,7 +41,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 		//$this->_initActionHelpers();
 		$this->_initAutoloader();
 		//$this->_initUserAgent();
-		$this->_initNav();
+		//$this->_initNav();
 		$this->_initHttpClient();
 		
 		
@@ -75,16 +75,7 @@ class Xmltv_Plugin_Init extends Zend_Controller_Plugin_Abstract
 	 * Initialize navigation
 	 * @throws Zend_Exception
 	 */
-	protected function _initNav(){
-		
-		$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/fp.xml', 'nav' ) );
-		Zend_Registry::set('FpMenu', $menu);
-		
-		$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/admin/main.xml', 'nav' ) );
-		Zend_Registry::set('AdminMenu', $menu);
-		
-		
-	}
+	
 	
 	protected function _initHttpClient(){
 		

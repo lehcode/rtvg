@@ -12,7 +12,7 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         parent::setUp();
         $this->_bcModel = new Xmltv_Model_Programs();
         $this->_channelsModel = new Xmltv_Model_Channels();
-        //$this->setVerboseErrorHandler();
+        $this->setVerboseErrorHandler();
 	}
     
     public function appBootstrap()
@@ -22,12 +22,6 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         );
         $this->_application->bootstrap();
 
-        /**
-         * Fix for ZF-8193
-         * http://framework.zend.com/issues/browse/ZF-8193
-         * Zend_Controller_Action->getInvokeArg('bootstrap') doesn't work
-         * under the unit testing environment.
-         */
         $front = $this->getFrontController();
         if($front->getParam('bootstrap') === null) {
             $front->setParam('bootstrap', $this->_application->getBootstrap());
@@ -36,6 +30,24 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $router = new Xmltv_Plugin_Router();
         $router->setRouter($front->getRouter());
 		$front->setRouter($router->getRouter());
+        
+        Zend_Controller_Action_HelperBroker::addHelper(new Zend_Layout_Controller_Action_Helper_Layout);
+        
+    }
+    
+    
+    public function testIndexAction(){
+        $urlParams = $this->urlizeOptions( array(
+            'module'=>'default',
+            'controller'=>'channels',
+            'action'=>'index', ));
+        
+        $url = $this->url( $urlParams, 'default_channels_index' );
+		$this->dispatch($url);
+        $this->assertRedirect();
+        $this->assertModule( $urlParams['module'] );
+		$this->assertController( $urlParams['controller'] );
+		$this->assertAction( $urlParams['action'] );
     }
     
     public function testListAction(){
@@ -50,8 +62,9 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         
         // Routing
         $this->assertModule( $urlParams['module'] );
-		$this->assertController( $urlParams['controller'] );
-		$this->assertAction( $urlParams['action'] );
+		$this->assertController( 'channels' );
+        //$this->assertResponseCode(200);
+		$this->assertAction( 'list' );
 		/*
         // Channels categories
 		$cats = $this->_channelsModel->channelsCategories();

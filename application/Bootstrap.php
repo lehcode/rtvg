@@ -47,6 +47,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             ->registerPlugin( $router )
 		;
         
+        if (APPLICATION_ENV=='testing'){
+            $fc->setDefaultControllerName('frontpage');
+        }
+        
         $router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
         
@@ -238,6 +242,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    $view->addHelperPath( APPLICATION_PATH.'/views/helpers/', 'Rtvg_View_Helper');
         $view->addHelperPath("ZendX/JQuery/View/Helper",'ZendX_JQuery_View_Helper');
         
+	}
+    
+    protected function _initNav(){
+		
+		$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/fp.xml', 'nav' ) );
+		Zend_Registry::set('FpMenu', $menu);
+		
+		$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/admin/main.xml', 'nav' ) );
+		Zend_Registry::set('AdminMenu', $menu);
+		
+		
 	}
 	
 	

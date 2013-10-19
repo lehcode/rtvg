@@ -46,7 +46,6 @@ class ErrorController extends Zend_Controller_Action
 			->getResource('useragent');
 		
 		$msg = "Параметры запроса:\n";
-		$params = $errors->request->getParams();
 		$msg .= "\tIP: ".$_SERVER['REMOTE_ADDR']."\n".
 		"\tMethod: ".$_SERVER['REQUEST_METHOD']."\n".
 		"\tURI: ".urldecode( $_SERVER['REQUEST_URI'] )."\n".
@@ -171,13 +170,10 @@ class ErrorController extends Zend_Controller_Action
 				'password' => '3k2mzE9bE2iheEMi9RqcVu5t'
 			));
 		} else {
-			$t = new Zend_Mail_Transport_File(array(
-				'path'=>ROOT_PATH.'/log/mail'
-			));
+			$t = new Zend_Mail_Transport_File(array( 'path'=>APPLICATION_PATH.'/../mail' ));
 		}
 		
 		//Send
-		$sent = true;
 		try {
 			$mail->send($t);
 		} catch (Zend_Mail_Exception $e) {

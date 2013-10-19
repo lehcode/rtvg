@@ -58,6 +58,13 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			'module'=>'default',
 			'controller'=>'channels',
 			'action'=>'list')) );
+        
+        $this->_router->addRoute( 'default_channels_index', 
+		new Zend_Controller_Router_Route( 'каналы/', 
+		array(
+			'module'=>'default',
+			'controller'=>'channels',
+			'action'=>'index')) );
 			
 		$this->_router->addRoute( 'default_channels_channel-week', 
 		new Zend_Controller_Router_Route( 'телепрограмма/:channel/неделя',

@@ -36,6 +36,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:frontpage.index' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:frontpage.single-channel' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:channels.index' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels.alias' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels.category' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:channels.list' ), $default );

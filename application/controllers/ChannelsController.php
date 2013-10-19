@@ -42,10 +42,10 @@ class ChannelsController extends Rtvg_Controller_Action
 	 * Index page. Redirect to channels list
 	 */
 	public function indexAction () {
-		$this->redirect( $this->view->url(array(
+        $this->redirect( $this->view->url(array(
             'module'=>'default', 
-            'controller'=>'error',
-            'action'=>'error'
+            'controller'=>'channels',
+            'action'=>'list'
         )));
 	}
 
