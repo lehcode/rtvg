@@ -37,7 +37,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 			->setParam( 'useDefaultControllerAlways', false )
 			->setParam( 'bootstrap', $this )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
-			->registerPlugin( new Xmltv_Plugin_UpdateChannels( APPLICATION_ENV ) )
             ->registerPlugin( $router )
 		;
         
@@ -84,6 +83,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		Zend_Registry::set('app_config', $appConfig);
 		$siteConfig = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', APPLICATION_ENV );
 		Zend_Registry::set('site_config', $siteConfig);
+        
+        Zend_Registry::set( 'adult', (bool)$siteConfig->get('frontend')->adult );
 		
 	}
 	
