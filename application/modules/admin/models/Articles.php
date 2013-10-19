@@ -17,7 +17,7 @@ class Admin_Model_Articles {
 	
 	/**
 	 * Database adapter
-	 * @var Zend_Db_Adapter_Mysqli
+	 * @var Zend_Db_Adapter_Pdo_Mysql
 	 */
 	protected $db;
 	
@@ -52,23 +52,12 @@ class Admin_Model_Articles {
 	 */
 	public function __construct(array $config=null){
 		
-		if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config')) {
-	        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
-	    }
-	    
-	    if (is_array($config)) {
+		if (is_array($config)) {
 	    	$this->setOptions($config);
 	    }
 	    
 		// Init database
-		$this->dbConf = $config['db'];
-		$this->db = new Zend_Db_Adapter_Mysqli( $this->dbConf);
-		
-		// Set table prefix
-		$pfx = $this->dbConf->get('tbl_prefix');
-		if(false !== (bool)$pfx) {
-		    self::$tblPfx = $pfx; 
-		}
+		$this->db = Zend_Registry::get('db_local');
 		
 		$this->contentTable            = new Admin_Model_DbTable_Articles();
 		$this->contentCategoriesTable  = new Xmltv_Model_DbTable_ContentCategories();
