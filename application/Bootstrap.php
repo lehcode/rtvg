@@ -11,13 +11,10 @@ mb_internal_encoding('UTF-8');
 
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
-
-	public $debug = false;
-
 	function run() 
 	{
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
-		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "beta5.4" );
+		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "stable" );
 		
 		date_default_timezone_set( Zend_Registry::get( 'site_config' )->site->get( 'timezone', 'Europe/Moscow' ) );
 		
