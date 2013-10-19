@@ -53,7 +53,7 @@ class Admin_Model_Grab
 		$t = isset($config['cache_lifetime']) && !empty($config['cache_lifetime']) ? (int)$config['cache_lifetime'] : Xmltv_Config::getCacheLifetime();
 		$this->_cache  = Zend_Cache::factory('Output', 'File', 
 		array(  'lifetime' => $t, 'automatic_serialization' => true), 
-		array( 'cache_dir' => ROOT_PATH . Xmltv_Config::getCacheLocation() ));
+		array( 'cache_dir' => realpath(APPLICATION_PATH .'/..'. Xmltv_Config::getCacheLocation() )));
 		
 		$this->parser = Xmltv_Parser_StringParser::getInstance();
 	}

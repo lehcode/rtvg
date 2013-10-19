@@ -97,24 +97,11 @@ abstract class Xmltv_Model_Abstract
      */
 	public function __construct($config=array()){
 
-	    if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config')) {
-	        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
-	    }
-	    
 	    if (is_array($config)) {
 	    	$this->setOptions($config);
 	    }
 	    
-		// Init database
-		$this->dbConf = $config['db'];
-		$this->db = new Zend_Db_Adapter_Mysqli( $this->dbConf);
-		
-		// Set table prefix
-		$pfx = $this->dbConf->get('tbl_prefix');
-		if(false !== (bool)$pfx) {
-		    self::$tblPfx = $pfx;
-		}
-		
+		$this->db = Zend_Registry::get('db_local');
 		$this->initTables();
 		
 	}

@@ -46,7 +46,7 @@ class Xmltv_Config
 		return (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled', false);
 	}
 	public static function getCacheLocation() {
-		return (string)Zend_Registry::get('site_config')->cache->system->get('location', ROOT_PATH."/cache");
+		return (string)Zend_Registry::get('site_config')->cache->system->get('location', APPLICATION_PATH."/cache");
 	}
 	*/
 	/*

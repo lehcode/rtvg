@@ -5,7 +5,7 @@ class Xmltv_Filesystem_Path {
 	{
 		$path = trim($path);
 		if (empty($path)) {
-			$path = ROOT_PATH.'/public';
+			$path = APPLICATION_PATH.'/../public';
 		} else {
 			// Remove double slashes and backslahses and convert all slashes and backslashes to DS
 			$path = preg_replace('#[/\\\\]+#', '/', $path);

@@ -92,15 +92,9 @@ class Rtvg_Controller_Admin extends Zend_Controller_Action
         $e = ((bool)Zend_Registry::get( 'site_config' )->cache->admin->get( 'enabled' ));
         $this->cache->enabled = ($e===true) ? true : false;
         $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->admin->get( 'lifetime' ) );
-        $this->cache->setLocation( ROOT_PATH.'/cache' );
+        $this->cache->setLocation( APPLICATION_PATH.'/../cache' );
         
-		if (APPLICATION_ENV=='development'){
-			//var_dump($this->user);
-			//var_dump($this->_getAllParams());
-			//die(__FILE__.': '.__LINE__);
-		}
-        
-        if ( $this->isAllowed !== true) {
+		if ( $this->isAllowed !== true) {
         	return false;
         }
         

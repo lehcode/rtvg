@@ -88,7 +88,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$path	  = Xmltv_Filesystem_File::getPath($this->_getParam('xml_file'));
 		} else {
 			$xml_file = Xmltv_Filesystem_File::getName($xml_file);
-			$path	 = ROOT_PATH.$this->_parseFolder;
+			$path	 = APPLICATION_PATH.'/..'.$this->_parseFolder;
 		}
 					
 		if (!is_file($xml_file = $path.$xml_file)){
@@ -185,13 +185,13 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				
 			} else {
 				
-				$pngFile	= ROOT_PATH.'/public/images/channel_logo/'.$info['icon'];
-				$bigPngFile = ROOT_PATH.'/public/images/channel_logo/100/'.$info['icon'];
+				$pngFile	= APPLICATION_PATH.'/../public/images/channel_logo/'.$info['icon'];
+				$bigPngFile = APPLICATION_PATH.'/../public/images/channel_logo/100/'.$info['icon'];
 				
 				if ( !file_exists($pngFile) || !file_exists($bigPngFile)){
 					
 					$gifIcon = Xmltv_String::substr_replace($iconOriginal, '', 0, Xmltv_String::strrpos($iconOriginal, '/')+1);
-					$gifFile = ROOT_PATH.'/tmp/'.$gifIcon;
+					$gifFile = APPLICATION_PATH.'/../tmp/'.$gifIcon;
 					$curl	= new Zend_Http_Client_Adapter_Curl();
 					$curl->setCurlOption( CURLOPT_HEADER, false);
 					$curl->setCurlOption( CURLOPT_RETURNTRANSFER, 1);
@@ -203,14 +203,14 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 					if (!file_exists($bigPngFile)){
 						file_put_contents( $gifFile, $client->request("GET")->getBody());
 						file_put_contents( $bigPngFile, $this->_helper->getHelper('imageToPng')->imageToPng( $gifFile, array(
-							'tmp_folder'=>ROOT_PATH.'/tmp',
+							'tmp_folder'=>APPLICATION_PATH.'/../tmp',
 							'max_size'=>100)));
 					}
 			
 					if (!file_exists($pngFile)){
 						file_put_contents( $gifFile, $client->request("GET")->getBody());
 						file_put_contents( $pngFile, $this->_helper->getHelper('imageToPng')->imageToPng( $gifFile, array(
-							'tmp_folder'=>ROOT_PATH.'/tmp',
+							'tmp_folder'=>APPLICATION_PATH.'/../tmp',
 							'max_size'=>45)));
 					}
 					
@@ -245,7 +245,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$path = Xmltv_Filesystem_File::getPath($this->_request->get('xml_file'));
 		} else {
 			$file = Xmltv_Filesystem_File::getName($xml_file);
-			$path = ROOT_PATH.$this->_parseFolder;			
+			$path = APPLICATION_PATH.'/..'.$this->_parseFolder;			
 		}
 		if (!is_file($file = $path.$file)){
 			throw new Zend_Exception("XML file not found!");
@@ -460,7 +460,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		$response['success'] = true;
 		$this->view->assign( 'response', $response );
 		
-		$last_file = ROOT_PATH.'/uploads/parse/listings.xml.last';
+		$last_file = APPLICATION_PATH.'/../uploads/parse/listings.xml.last';
 		system( 'mv '.$last_file.' '.$xml_file.'.old' );
 		system( 'mv '.$xml_file.' '.$xml_file.'.last' );
 			
@@ -474,10 +474,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		/* Uploading Document File on Server */
 		$upload = new Zend_File_Transfer_Adapter_Http();
 		
-		//var_dump(ROOT_PATH);
-		//die(__FILE__.': '.__LINE__);
-		
-		$path = ROOT_PATH."/uploads/xmltv/";
+		$path = APPLICATION_PATH."/../uploads/xmltv/";
 		$upload->setDestination($path);
 		try {
 			$upload->receive();
@@ -508,7 +505,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			if (copy($name, "$uploads/$nn")===false)
 			throw new Exception("Cannot copy file");
 			
-			$path = ROOT_PATH."/uploads/parse/";
+			$path = APPLICATION_PATH."/../uploads/parse/";
 			$xml_dir = $path.$fn;
 			if (!is_dir($xml_dir)) {
 				if (!mkdir($xml_dir))
@@ -568,7 +565,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		//var_dump($xml_file);
 		//$total_count=0;
 		//$cache = new Xmltv_Cache(array('cache_lifetime'=>7200));
-		$this->_lockFile = ROOT_PATH.'/cache/'.$cache->getHash($xml_file).'.lock';
+		$this->_lockFile = APPLICATION_PATH.'/../cache/'.$cache->getHash($xml_file).'.lock';
 		//var_dump($this->_lockFile);
 		$hash = $cache->getHash(__METHOD__.$xml_file);
 		if (!($locked = @fopen($this->_lockFile, 'r'))){

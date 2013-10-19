@@ -1,7 +1,4 @@
 <?php
-
-defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
-
 /**
  * Cache
  * 
@@ -27,7 +24,7 @@ class Rtvg_Cache {
 	 * Sub-folder for data, relative to /cache
 	 * @var string
 	 */
-	private $_location='cache';
+	private $_location;
 	
 	/**
 	 * Cache lifetime
@@ -45,7 +42,12 @@ class Rtvg_Cache {
 			(int)$config['lifetime'] : 86400;
 	    
 	    $this->_location = isset($config['location']) && !empty($config['location']) ? 
-			ROOT_PATH.'/'.$this->_location.(string)$config['location'] : ROOT_PATH.'/'.$this->_location ;
+            realpath( APPLICATION_PATH.'/..'.$this->_location.(string)$config['location']) : 
+            realpath( APPLICATION_PATH.'/..'.$this->_location ) ;
+        
+        if (!$this->_location){
+            throw new Zend_Exception("Cache path not defined", 500);
+        }
 		
 	    $frontendOptions = array(  
 			'lifetime' => $this->_lifetime,
@@ -87,28 +89,17 @@ class Rtvg_Cache {
 		if (!$hash)
 			throw new Zend_Cache_Exception("Не указан кэш-идентификатор");
 		
-		if (APPLICATION_ENV=='development'){
-		    //var_dump(func_get_args());
-			//var_dump($this->_location);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		if ($sub_folder) {
-			$this->setLocation( ROOT_PATH.'/cache'.$sub_folder );
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($frontend);
-			//die(__FILE__.': '.__LINE__);
+			$this->setLocation( realpath(APPLICATION_PATH.'/..'.$this->_location.'/'.$sub_folder) );
 		}
 		
 		if ($frontend!='Core') {
-		    $dir = ROOT_PATH . '/cache/' . ucfirst( strtolower( $frontend ));
+		    $dir = APPLICATION_PATH . '/../cache/' . ucfirst( strtolower( $frontend ));
 		    $perm = APPLICATION_ENV=='development' ? 0777 : 0555 ;
 			if ( !is_dir($dir) && !mkdir( $dir, $perm, true )){
 				throw new Zend_Exception( Rtvg_Message::ERR_CANNOT_CREATE_DIR, 500 );
 			}
-			$this->setLocation( ROOT_PATH . '/cache/' . $frontend );
+			$this->setLocation( APPLICATION_PATH . '/../cache/' . $frontend );
 		}
 		
 		if (!is_dir($this->_location)) {
@@ -125,19 +116,9 @@ class Rtvg_Cache {
 			array( 'cache_dir' => $this->_location ) 
 		);
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($this->_cache);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		$load = $this->_cache->load($hash);
-		
-		if (APPLICATION_ENV=='development'){
-		    //var_dump($load);
-		    //die(__FILE__.': '.__LINE__);
-		}
-		
 		return $load;
+        
 	}
 	
 	/**
@@ -151,12 +132,11 @@ class Rtvg_Cache {
 	 */
 	public function save($contents=null, $hash=null, $frontend='Core', $sub_folder=null){
 		
-		if (!$hash)
+		if (!$hash){
 			throw new Zend_Cache_Exception("Не указан кэш-идентификатор", 500);
+        }
 		
-		
-		
-		if ($frontend!='Core') {
+        if ($frontend!='Core') {
 			
 		    try {
 				$this->_cache = Zend_Cache::factory( $frontend, 'File',  array( 

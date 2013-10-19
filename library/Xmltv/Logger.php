@@ -9,7 +9,7 @@ class Xmltv_Logger
 		$logger = new Zend_Log();
 		$logger->registerErrorHandler();
 		$filename = !empty($filename) ? $filename : 'rtvg.log' ;
-    	$writer = new Zend_Log_Writer_Stream(ROOT_PATH.'/log/'.$filename, 'a');
+    	$writer = new Zend_Log_Writer_Stream(APPLICATION_PATH.'/../log/'.$filename, 'a');
      	$logger->addWriter($writer);
      	$logger->log($message, $priority);
      	

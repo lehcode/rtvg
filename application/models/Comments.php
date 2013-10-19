@@ -28,8 +28,8 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, true);
-		curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."/vk.txt");
-		curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."/vk.txt");
+		curl_setopt($ch, CURLOPT_COOKIEFILE, APPLICATION_PATH."/../vk.txt");
+		curl_setopt($ch, CURLOPT_COOKIEJAR, APPLICATION_PATH."/../vk.txt");
 		$body = curl_exec($ch);
 		curl_close($ch);
 		//decode and return the response
@@ -54,7 +54,7 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		
 		$frontendOptions = array('lifetime'=>(86400*7), 'automatic_serialization'=>true );
 		$backendOptions  = array(
-			'cache_dir'=>ROOT_PATH.'/cache/Feeds/Yandex',
+			'cache_dir'=>APPLICATION_PATH.'/../cache/Feeds/Yandex',
 			'file_name_prefix'=>__CLASS__, 
 		);
 		$feedCache = Zend_Cache::factory( 'Core', 'File', $frontendOptions, $backendOptions );
@@ -362,9 +362,9 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	
 	private function _genUsername(){
 	    
-	    $d = Xmltv_Filesystem_Folder::files(ROOT_PATH.'/dicts');
-	    $w1 = explode("\n", Xmltv_Filesystem_File::read(ROOT_PATH.'/dicts/'.$d[array_rand( $d )]));
-	    $w2 = explode("\n", Xmltv_Filesystem_File::read(ROOT_PATH.'/dicts/'.$d[array_rand( $d )]));
+	    $d = Xmltv_Filesystem_Folder::files(APPLICATION_PATH.'/../dicts');
+	    $w1 = explode("\n", Xmltv_Filesystem_File::read(APPLICATION_PATH.'/../dicts/'.$d[array_rand( $d )]));
+	    $w2 = explode("\n", Xmltv_Filesystem_File::read(APPLICATION_PATH.'/../dicts/'.$d[array_rand( $d )]));
 	    $a = $w1[mt_rand(0, count($w1)-1)].$w2[mt_rand(0, count($w2)-1)];
 	    $a = preg_replace('/\s/', '', $a );
 	    $a = preg_replace('/[\d]+/', '', $a );

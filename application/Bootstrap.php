@@ -17,14 +17,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	function run() 
 	{
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
-		defined( 'ROOT_PATH' ) || define( 'ROOT_PATH', str_replace( '/application', '', APPLICATION_PATH ) );
 		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "beta5.4" );
 		
 		date_default_timezone_set( Zend_Registry::get( 'site_config' )->site->get( 'timezone', 'Europe/Moscow' ) );
 		
-		Zend_Registry::set( 'db_local', $this->getResource('multidb')->getDefaultDb() );
-		//Zend_Registry::set( 'db_archive', $this->getResource('multidb')->getDb('archive') );
-		
+		Zend_Registry::set( 'db_local', $this->getResource('multidb')->getDefaultDb() );		
 		Zend_Layout::startMvc();
 		
 		//Caching
@@ -32,7 +29,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$cache = Zend_Cache::factory( 'Core', 'File', array(  
 			'lifetime' => $cacheConf->get('lifetime', 43200),
 			'automatic_serialization' => true
-		), array( 'cache_dir' => ROOT_PATH.$cacheConf->get('location')));
+		), array( 'cache_dir' => realpath( APPLICATION_PATH.'/..'.$cacheConf->get('location'))) );
 		$e = (bool)Zend_Registry::get('site_config')->cache->system->get('enabled');
 		$cache->setOption( 'caching', $e );
 		Zend_Registry::set('cache', $cache);		
@@ -42,8 +39,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$fc = Zend_Controller_Front::getInstance()
 			->setParam( 'useDefaultControllerAlways', false )
 			->setParam( 'bootstrap', $this )
-			->registerPlugin( new Xmltv_Plugin_Init( APPLICATION_ENV ) )
 			->registerPlugin( new Xmltv_Plugin_Auth( APPLICATION_ENV ) )
+			->registerPlugin( new Xmltv_Plugin_UpdateChannels( APPLICATION_ENV ) )
             ->registerPlugin( $router )
 		;
         
@@ -74,6 +71,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		Zend_Controller_Action_HelperBroker::addPath( APPLICATION_PATH.'/controllers/helpers', 'Rtvg_Controller_Action_Helper' );
 		
 	}
+    
+    protected function _initDb(){
+            return $this->bootstrap('multidb')->getResource('multidb')->getDefaultDb();
+    }
 	
 	
 	/**
@@ -113,8 +114,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	 */
 	protected function _initAutoloader () 
 	{
-
-		$front = $this->bootstrap( "frontController" )->frontController;
+        
+        
+        $autoloader = Zend_Loader_Autoloader::getInstance();
+		$autoloader->pushAutoloader( array('ezcBase', 'autoload'), 'ezc' );
+        
+        $front = $this->bootstrap( "frontController" )->frontController;
 		$modules = $front->getControllerDirectory();
 		$default = $front->getDefaultModule();
 		foreach (array_keys( $modules ) as $module) {
@@ -124,7 +129,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 				'basePath'=>$front->getModuleDirectory( $module )) 
 			);
 		}
-		return $moduleloader;
+        return $moduleloader;
 	}
 	
 	/**
@@ -254,8 +259,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		
 		
 	}
-	
-	
+    
+    protected function _initHttpClient(){
+		
+		$client = new Zend_Http_Client_Adapter_Curl();
+		Zend_Registry::set('http_client', $client);
+		
+	}
+    
 }
 
 

@@ -377,7 +377,8 @@ class Admin_GrabController extends Rtvg_Controller_Admin
     	if (Xmltv_Config::getProxyEnabled()===true) {
     		$model->enableProxy(array('host'=>Xmltv_Config::getProxyHost(), 'port'=>Xmltv_Config::getProxyPort()));
     	}
-    	$model->enableCookies(ROOT_PATH.'/cookies/'.$request['target'].'.txt', ROOT_PATH.'/cookies/'.$request['target'].'-jar.txt');
+    	$model->enableCookies(APPLICATION_PATH.'/../cookies/'.$request['target'].'.txt', 
+            APPLICATION_PATH.'/../cookies/'.$request['target'].'-jar.txt');
     	
     	if ($request['target']=='vsetvcom')
     	$model->setEncoding('windows-1251');

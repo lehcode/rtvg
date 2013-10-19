@@ -360,15 +360,11 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 					if ($e===true) {
 						$t = (int)Zend_Registry::get('site_config')->cache->youtube->get('lifetime');
 						$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
-						// Setup and create folder if needed
+						
+                        // Setup and create folder if needed
 						$f = '/Youtube/Related/'.$li['id'];
-						$this->cache->setLocation(ROOT_PATH.'/cache');
-						if (APPLICATION_ENV=='development'){
-							//Zend_Debug::dump($this->cache);
-							//die(__FILE__.': '.__LINE__);
-						}
-						if (!is_dir(ROOT_PATH.'/cache'.$f)){
-							mkdir(ROOT_PATH.'/cache'.$f, 0777, true);
+						if (!is_dir(APPLICATION_PATH.'/../cache'.$f)){
+							mkdir(APPLICATION_PATH.'/../cache'.$f, 0777, true);
 						}
 						
 						$hash = Rtvg_Cache::getHash('related_'.$li['hash']);
@@ -653,7 +649,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$result = array();
 		$yt = new Xmltv_Youtube($config);
 		//$yt->setUserAgent( Zend_Registry::get('user_agent') );
-		$yt->setAdapter( Zend_Registry::get('http_client') );
+		//$yt->setAdapter( Zend_Registry::get('http_client') );
 		
 		/*
 		if ( (bool)Zend_Registry::get('site_config')->videos->listing->proxy->get('active')) {

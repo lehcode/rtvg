@@ -66,7 +66,6 @@ class ChannelsController extends Rtvg_Controller_Action
         if ($this->cache->enabled){
 
             $this->cache->setLifetime(86400);
-            $this->cache->setLocation(ROOT_PATH.'/cache');
             $f = '/Channels';
 
             $hash = Rtvg_Cache::getHash('published_channels');
@@ -114,7 +113,6 @@ class ChannelsController extends Rtvg_Controller_Action
 
 	    $hash = Rtvg_Cache::getHash( 'typeahead_all' );
 		if ($this->cache->enabled) {
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
 		    $this->cache->setLifetime(86400*7);
 		    $f = "/Channels";
 			if (($items = $this->cache->load( $hash, 'Core', $f))===false){
@@ -163,7 +161,6 @@ class ChannelsController extends Rtvg_Controller_Action
 			if ($this->cache->enabled){
 			    
 			    $this->cache->setLifetime(86400);
-			    $this->cache->setLocation(ROOT_PATH.'/cache');
 			    $f = "/Channels/Category";
 			    
 				$hash = md5('category_'.$catProps['alias']);
@@ -204,7 +201,6 @@ class ChannelsController extends Rtvg_Controller_Action
 			*/
 			if ($this->cache->enabled){
 			    
-				$this->cache->setLocation(ROOT_PATH.'/cache');
 				$this->cache->setLifetime(86400);
 				$f = "/Channels";
 				
@@ -293,7 +289,6 @@ class ChannelsController extends Rtvg_Controller_Action
 		
 		if ($this->cache->enabled){
 		    
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
 		    $this->cache->setLifetime(86400*7);
 			$f  = '/Channels';
 			
@@ -310,8 +305,6 @@ class ChannelsController extends Rtvg_Controller_Action
 		//Attach comments model
 		$commentsModel = new Xmltv_Model_Comments();
 		if ($this->cache->enabled){
-		    
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
 		    $this->cache->setLifetime(86400);
 		    $f  = '/Feeds/Yandex';
 		    

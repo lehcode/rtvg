@@ -66,12 +66,11 @@ class FrontpageController extends Rtvg_Controller_Action
                 $list = $this->bcModel->frontpageListing($top);
             }
         }
-	    $this->view->assign('list', $list);
+        $this->view->assign('list', $list);
 	    
         // Channels data for dropdown
 		if ($this->cache->enabled){
 		    $this->cache->setLifetime(600);
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
 		    $f = '/Channels';
 			$hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
 	        if (($channels = $this->cache->load( $hash, 'Core', $f))===false) {

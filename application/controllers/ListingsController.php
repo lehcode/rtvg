@@ -246,7 +246,7 @@ class ListingsController extends Rtvg_Controller_Action
 									try {
 										$listingVideos[$k]['hash'] = $k;
 										$this->vCacheModel->saveListingVideo( $listingVideos[$k] );
-									} catch (Zend_Db_Adapter_Mysqli_Exception $e) {
+									} catch (Exception $e) {
 										throw new Zend_Exception( $e->getMessage(), $e->getCode() );
 									}
 									
@@ -319,7 +319,6 @@ class ListingsController extends Rtvg_Controller_Action
 			$hash = Rtvg_Cache::getHash( $url );
 			
 			if ($this->cache->enabled){
-				$this->cache->setLocation(ROOT_PATH.'/cache');
 				if (($html = $this->cache->load($hash, 'Core', $f))===false) {
 					$html = $curl->fetch( Xmltv_Parser_Curl::PAGE_HTML );
 					$this->cache->save($html, $hash, 'Core', $f);
@@ -341,7 +340,6 @@ class ListingsController extends Rtvg_Controller_Action
 				$torrentLinks = array();
 				$this->cache->enabled = (bool)Zend_Registry::get('site_config')->cache->torrents->get('enabled');
 				if ($this->cache->enabled){
-					$this->cache->setLocation(ROOT_PATH.'/cache');
 					$hash = Rtvg_Cache::getHash('tinyurl_'.$url);
 					$f	= '/Tinyurl/Torrents';
 					if (($torrentLinks = $this->cache->load($hash, 'Core', $f))===false) {
@@ -460,7 +458,6 @@ class ListingsController extends Rtvg_Controller_Action
 		if ($this->cache->enabled){
 			
 			$this->cache->setLifetime( 86400 );
-			$this->cache->setLocation( ROOT_PATH.'/cache' );
 			$f = '/Listings/Program/Day';
 			
 			$hash = $this->cache->getHash( 'program-day-single_'.$programAlias.'_'.$channel['id'] );
@@ -545,7 +542,6 @@ class ListingsController extends Rtvg_Controller_Action
 			if ($this->cache->enabled){
 				 
 				$this->cache->setLifetime(3600*6);
-				$this->cache->setLocation(ROOT_PATH.'/cache');
 				$f = '/Listings/Similar/Day';
 			
 				$hash = $this->cache->getHash('similarPrograms_'.$programAlias);
@@ -651,7 +647,6 @@ class ListingsController extends Rtvg_Controller_Action
 			 * #####################################################################
 			 */
 			if ($this->cache->enabled){
-				$this->cache->setLocation(ROOT_PATH.'/cache');
 				$this->cache->setLifetime(21600);
 				$f = '/Listings/Program/Week';
 				$hash = md5('currentProgram_'.$programAlias.'_'.$channel['id']);
@@ -754,7 +749,6 @@ class ListingsController extends Rtvg_Controller_Action
 					if ($this->cache->enabled){
 						$hash = "categoryWeek_$categoryId";
 						$this->cache->setLifetime( 86400);
-						$this->cache->setLocation( ROOT_PATH.'/cache');
 						$f = "/Listings/Category/Week";
 						if (($list = $this->cache->load( $hash, 'Core', $f))===false){
 							$list = $this->bcModel->categoryWeek( $categoryId, $weekStart, $weekEnd);
@@ -778,7 +772,6 @@ class ListingsController extends Rtvg_Controller_Action
 					if ($this->cache->enabled){
 						$hash = "categoryDay_".$categoryId."_".$now->toString("ddd");
 						$this->cache->setLifetime( 7200);
-						$this->cache->setLocation( ROOT_PATH.'/cache');
 						$f = "/Listings/Category/Day";
 						if (($list = $this->cache->load( $hash, 'Core', $f))===false){
 							$list = $this->bcModel->categoryDay( $categoryId, $now);

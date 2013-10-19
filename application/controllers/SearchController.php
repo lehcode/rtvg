@@ -61,7 +61,6 @@ class SearchController extends Rtvg_Controller_Action
                 $hash = Rtvg_Cache::getHash( $this->input->getEscaped('searchinput') );
                 
                 if ($this->cache->enabled){
-                	$this->cache->setLocation( ROOT_PATH.'/cache' );
                 	if (($html = $this->cache->load($hash, 'Core', $f))===false) {
                 		
                 		$this->cache->save($html, $hash, 'Core', $f);

@@ -178,7 +178,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		$e = ((bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' ));
         $this->cache->enabled = ($e===true) ? true : false;
         $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
-        $this->cache->setLocation( ROOT_PATH.'/cache' );
         
         //var_dump($this->cache->enabled);
         //die();
@@ -359,7 +358,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		    
 			$t = (int)Zend_Registry::get('site_config')->cache->tinyurl->get('lifetime');
 			$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
-			$this->cache->setLocation(ROOT_PATH.'/cache');
 			$f = '/Tinyurl/Pages';
 			
 			$hash = Rtvg_Cache::getHash('tinyurl_'.implode(';', $parts).implode(';', $uniq));
@@ -490,7 +488,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		
         if ($this->cache->enabled){
 		    $this->cache->setLifetime(43200);
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
 			$f = '/Listings/Top';
 			$hash = Rtvg_Cache::getHash('top'.$amt);
 			if (!$result = $this->cache->load($hash, 'Core', $f)) {
@@ -516,7 +513,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			
 		    $f = "/Listings/Category";
 		    $this->cache->setLifetime(86400*30);
-			$this->cache->setLocation(ROOT_PATH.'/cache');
 			$hash  = Rtvg_Cache::getHash("ProgramsCategories");
 			
 			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
@@ -540,7 +536,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		if ($this->cache->enabled){
 		    
 			$f = "/Channels";
-			$this->cache->setLocation(ROOT_PATH.'/cache');
 			$this->cache->setLifetime(86400*30);
 			
 			$hash  = Rtvg_Cache::getHash("channels-categories");
@@ -570,7 +565,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
 		
 		if ($this->cache->enabled){
-		    $this->cache->setLocation(ROOT_PATH.'/cache');
 			$hash = Rtvg_Cache::getHash('featuredchannels');
 			$f = '/Channels/Top';
 			if (($result = $this->cache->load($hash, 'Core', $f))===false) {
@@ -599,9 +593,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
 		
 		if ($this->cache->enabled){
-		    
-		    $this->cache->setLocation( ROOT_PATH.'/cache' );
-			$hash = Rtvg_Cache::getHash( 'featuredchannels_'.(string)$amt );
+		    $hash = Rtvg_Cache::getHash( 'featuredchannels_'.(string)$amt );
 			$f = '/Channels/Featured';
 			if (($result = $this->cache->load($hash, 'Core', $f))===false) {
 				$result = $this->channelsModel->featuredChannels($amt);
@@ -675,7 +667,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
 			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
 			$f = '/Youtube/SidebarRight';
-			$this->cache->setLocation( ROOT_PATH.'/cache' );
 			$hash = Rtvg_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
 			/*  
 			if (self::$videoCache && $this->isAllowed){

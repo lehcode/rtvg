@@ -86,7 +86,6 @@ class VideosController extends Rtvg_Controller_Action
 			
 			    $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->main->get( 'lifetime' );
 			    $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
-				$this->cache->setLocation(ROOT_PATH.'/cache');
 				$f = '/Youtube/ShowVideo/Main';
 				$hash = Rtvg_Cache::getHash( $ytId );
 				

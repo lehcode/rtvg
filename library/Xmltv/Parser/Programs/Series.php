@@ -14,7 +14,7 @@ class Xmltv_Parser_Programs_Series extends Xmltv_Parser_ProgramInfoParser
 		
 		$this->_loadPrograms( $start, $end );
 		
-		$logfile = ROOT_PATH.'/log/'.__CLASS__.'.log';
+		$logfile = APPLICATION_PATH.'/../log/'.__CLASS__.'.log';
 		if (is_file($logfile))
 		unlink($logfile);
 		

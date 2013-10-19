@@ -15,7 +15,7 @@ class Rtvg_Counters {
      */
     public function __construct($folder=null){
     	
-        $f = ROOT_PATH.'/public/js/ss/counters';
+        $f = APPLICATION_PATH.'/../public/js/ss/counters';
         if (false !== ($h = opendir($f))) {
         	while (false !== ($e = readdir($h))) {
         		if ($e != "." && $e != "..") {

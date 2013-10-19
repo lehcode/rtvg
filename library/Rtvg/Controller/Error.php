@@ -103,12 +103,11 @@ class Rtvg_Controller_Error extends Zend_Controller_Action
     		));
     	} else {
     		$t = new Zend_Mail_Transport_File(array(
-    				'path'=>ROOT_PATH.'/log/mail'
+    				'path'=>APPLICATION_PATH.'/log/mail'
     		));
     	}
     
     	//Send
-    	$sent = true;
     	try {
     		$mail->send($t);
     	} catch (Zend_Mail_Exception $e) {
