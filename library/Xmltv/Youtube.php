@@ -184,7 +184,7 @@ class Xmltv_Youtube {
 		/*
 		 * Zend_Gdata_YouTube_VideoQuery
 		 */
-		$query = $this->client->newVideoQuery();
+		$query = new Zend_Gdata_YouTube_VideoQuery();
 		$query->setMaxResults($this->maxResults);
 		$query->orderBy = $this->_order;
 		$query->setSafeSearch($this->_safeSearch);
@@ -336,7 +336,7 @@ class Xmltv_Youtube {
 		}
 	
 		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
-		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)#&]+/ui', 'replace'=>' '));
+		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)#&№]+/ui', 'replace'=>' '));
 		$tolower	= new Zend_Filter_StringToLower();
 		$whitespace = new Zend_Filter_PregReplace( array("match"=>'/[\s+|-]+/', 'replace'=>'-'));
 		
