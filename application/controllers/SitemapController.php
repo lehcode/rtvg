@@ -28,15 +28,17 @@ class SitemapController extends Rtvg_Controller_Action
         
         parent::init();
         $this->_request->setParam('format', 'xml');
-		$ajaxContext = $this->_helper->getHelper('contextSwitch');
-        $ajaxContext->addActionContext('sitemap', 'xml')->initContext();
-        $this->getResponse()->setHeader('Content-type', 'text/xml');
+		$this->_helper->getHelper('contextSwitch')
+            ->addActionContext('sitemap', 'xml')
+            ->initContext();
+        $this->getResponse()
+            ->setHeader('Content-type', 'text/xml');
         $this->_helper->layout->disableLayout();
         $this->programsModel = new Xmltv_Model_Programs();
         $this->channelsModel  = new Xmltv_Model_Channels();
 	}
-	
-	/**
+    
+    /**
 	 * Generate sitemap
 	 */
 	public function sitemapAction(){
@@ -64,9 +66,10 @@ class SitemapController extends Rtvg_Controller_Action
 		/**
 		 * Detect start of a week
 		 */
-		$weekStart = $this->_helper->getHelper( 'weekDays' )->getStart( Zend_Date::now());
-		$this->view->assign( 'week_start', $weekStart );
-		$weekEnd = $this->_helper->getHelper( 'weekDays' )->getEnd( Zend_Date::now());
+		$ws = $this->_helper->getHelper( 'weekDays' )->getStart( Zend_Date::now());
+		$this->view->assign( 'week_start', $ws );
+		$we = $this->_helper->getHelper( 'weekDays' )->getEnd( Zend_Date::now());
+        $this->view->assign( 'week_end', $we );
 		
 		/*
 		 * Выбор программ, которые выходят в эфир на этой неделе
@@ -80,7 +83,7 @@ class SitemapController extends Rtvg_Controller_Action
 		    	$this->cache->save( $list, $hash, 'Core', $f );
 		    }
 		} else {
-		    $list = $this->programsModel->rssWeek( $weekStart, $weekEnd );
+		    $list = $this->programsModel->rssWeek( $ws, $we );
 		}
 		$this->view->assign('week_items', $list);
 		
