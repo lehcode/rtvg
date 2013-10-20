@@ -177,8 +177,9 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		$this->cache = new Rtvg_Cache();
 		$e = ((bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' ));
         $this->cache->enabled = ($e===true) ? true : false;
-        $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
-        
+        if ($this->cache->enabled){
+            $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
+        }
         //var_dump($this->cache->enabled);
         //die();
 		
