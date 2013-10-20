@@ -4,10 +4,9 @@ class Xmltv_Model_DbTable_ProgramsRatings extends Xmltv_Db_Table_Abstract
 {
 
     protected $_name = 'bc_ratings';
-    protected $_primary = 'id';
+    protected $_primary = 'hash';
 	protected $pfx='';
-    const FETCH_MODE = Zend_Db::FETCH_OBJ;
-    private $_broadcasts;
+    private $_bcs;
     private $_channelsTable;
 	
     /**
@@ -22,7 +21,7 @@ class Xmltv_Model_DbTable_ProgramsRatings extends Xmltv_Db_Table_Abstract
     		'primary'=>$this->_primary
     	));
     	
-    	$this->_broadcasts = new Xmltv_Model_DbTable_Programs();
+    	$this->_bcs = new Xmltv_Model_DbTable_Programs();
     	$this->_channelsTable = new Xmltv_Model_DbTable_Channels();
     	
     }
@@ -32,15 +31,11 @@ class Xmltv_Model_DbTable_ProgramsRatings extends Xmltv_Db_Table_Abstract
      * @see Zend_Db_Table_Abstract::_setup()
      */
     protected function _setup(){
-    
     	parent::_setup();
-    	$now = Zend_Date::now();
     	$this->_defaultValues = array(
-    			'id'=>0,
-    			'alias'=>'',
-    			'channel'=>null,
-    			'hits'=>0,
-    			'star_rating'=>null,
+            'hash'=>0,
+            'hits'=>0,
+            'star_rating'=>0,
     	);
     		
     }
@@ -51,27 +46,23 @@ class Xmltv_Model_DbTable_ProgramsRatings extends Xmltv_Db_Table_Abstract
      * @param string $alias
      * @param int $channel_id
      */
-	public function addHit($alias=null, $channel_id=null){
+	public function addHit($hash=null){
     			
-		if (!$alias || !$channel_id)
+		if (!$hash || strlen($hash)!=32){
 			throw new Exception("Не указан один или более параметров для ".__METHOD__, 500);
-    			
+        }
 		
-		try {
-			if (!$row = $this->find($alias)->current()) {
-				$row = $this->createRow( array('alias'=>$alias, 'channel'=>$channel_id), true);
-			}
-			
-			$row->channel = $channel_id;		
-			$row->hits+=1;
-			$row->save();
-			
-		} catch (Exception $e) {
-			if ($e->getCode()!=1062){
-				throw new Zend_Exception($e->getMessage(), $e->getCode());
-			}
-		}
+        $alnum = new Zend_Filter_Alnum();
+        $hash = $alnum->filter($hash);
 		
+        if (!$row = $this->find($hash)->current()) {
+            $vals = $this->_defaultValues;
+            $vals['hash'] = $hash;
+            $row = $this->createRow($vals);
+        }
+
+        $row->hits+=1;
+        $row->save();
 		
     }
     
