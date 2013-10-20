@@ -33,30 +33,25 @@ class SitemapControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         if($front->getParam('bootstrap') === null) {
             $front->setParam('bootstrap', $this->_application->getBootstrap());
         }
-    }
-    
-    public function testIndexAction(){
-        $urlParams = $this->urlizeOptions( array(
-            'module'=>'default',
-            'controller'=>'sitemap',
-            'action'=>'index', ));
-		$url = $this->url( $urlParams );
-		$this->dispatch($url);
         
-        $this->assertModule( $urlParams['module'] );
-		$this->assertController( $urlParams['controller'] );
-		$this->assertAction( $urlParams['action'] );
+        $router = new Xmltv_Plugin_Router();
+        $router->setRouter($front->getRouter());
+		$front->setRouter($router->getRouter());
     }
     
+    /**
+     * @group sitemap
+     */
     public function testSitemapAction(){
     	
         $urlParams = $this->urlizeOptions( array(
             'module'=>'default',
             'controller'=>'sitemap',
             'action'=>'sitemap', ));
-		$url = $this->url( $urlParams );
+		$url = $this->url( $urlParams, 'default_sitemap_sitemap' );
 		$this->dispatch($url);
         
+        $this->assertNotRedirect();
         $this->assertModule( $urlParams['module'] );
 		$this->assertController( $urlParams['controller'] );
 		$this->assertAction( $urlParams['action'] );

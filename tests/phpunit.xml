@@ -43,7 +43,7 @@
         <ini name="xdebug.auto_trace" value="0" />
         <ini name="xdebug.overload_var_dump" value="1" />
         <ini name="xdebug.profiler_output_dir=" value="/home/takeshi/www/xdebug" />
-        <ini name="xdebug.show_exception_trace" value="1" />
+        <ini name="xdebug.show_exception_trace" value="0" />
         <ini name="xdebug.cli_color" value="1" />
     </php>
 	

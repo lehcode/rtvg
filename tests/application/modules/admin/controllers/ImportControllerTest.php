@@ -38,7 +38,9 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         
     }
     
-    
+    /**
+     * @group import
+     */
     public function testRemoteAction(){
         
         $urlParams = $this->urlizeOptions( array(
@@ -50,13 +52,16 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->dispatch($url);
         
         // assertions
-        $this->assertModule( "admin" );
-        $this->assertController( $urlParams['controller'] );
-        $this->assertAction( $urlParams['action'] );
+        $this->assertModule( $urlParams['module'] );
+        $this->assertController( 'import' );
+        $this->assertAction( 'remote' );
         
         
     }
     
+    /**
+     * @group import
+     */
     public function testXmlParseChannelsAction($xml_file=null){
         
         $urlParams = $this->urlizeOptions( array(
@@ -68,9 +73,9 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->dispatch($url);
         
         // assertions
-        $this->assertModule( "default" );
-        $this->assertController( $urlParams['controller'] );
-        $this->assertAction( $urlParams['action'] );
+        $this->assertModule( $urlParams['module'] );
+        $this->assertController( 'import' );
+        $this->assertAction( 'xml-parse-channels' );
         
     }
     

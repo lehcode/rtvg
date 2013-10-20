@@ -25,23 +25,14 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         );
         $this->_application->bootstrap();
 
-        /**
-         * Fix for ZF-8193
-         * http://framework.zend.com/issues/browse/ZF-8193
-         * Zend_Controller_Action->getInvokeArg('bootstrap') doesn't work
-         * under the unit testing environment.
-         */
         $front = $this->getFrontController();
         if($front->getParam('bootstrap') === null) {
             $front->setParam('bootstrap', $this->_application->getBootstrap());
         }
-        
-        $router = new Xmltv_Plugin_Router('testing');
+
+        $router = new Xmltv_Plugin_Router();
         $router->setRouter($front->getRouter());
-		$front->setRouter($router->getRouter())
-            //->registerPlugin( new Xmltv_Plugin_Init( 'testing' ) )
-            ->registerPlugin( new Xmltv_Plugin_Auth( 'testing' ) )
-        ;
+		$front->setRouter($router->getRouter());
     }
 	
 	public function testIndexAction(){
@@ -53,14 +44,14 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		try{
             $url = $this->url( $urlParams, 'default' );
         } catch (Zend_Controller_Router_Exception $e){
-            $url = '/';
+            $url = '';
         }
         $this->dispatch( $url );
         
         // Routing
 		$this->assertModule( $urlParams['module'] );
-		$this->assertController( $urlParams['controller'] );
-		$this->assertAction( $urlParams['action'] );
+		$this->assertController( 'frontpage' );
+		$this->assertAction( 'index' );
         $this->assertNotRedirect();
         
         // Frontpage listing
@@ -70,6 +61,7 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertNotEmpty($top);
         $list = $this->_bcModel->frontpageListing($top);
         $this->assertNotEmpty($list);
+        
         
         // Channels data for dropdown
         $channels = $this->_channelsModel->allChannels("title ASC");

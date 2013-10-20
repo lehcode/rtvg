@@ -12,7 +12,6 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         parent::setUp();
         $this->_bcModel = new Xmltv_Model_Programs();
         $this->_channelsModel = new Xmltv_Model_Channels();
-        $this->setVerboseErrorHandler();
 	}
     
     public function appBootstrap()
@@ -30,8 +29,6 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $router = new Xmltv_Plugin_Router();
         $router->setRouter($front->getRouter());
 		$front->setRouter($router->getRouter());
-        
-        Zend_Controller_Action_HelperBroker::addHelper(new Zend_Layout_Controller_Action_Helper_Layout);
         
     }
     
@@ -65,7 +62,7 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		$this->assertController( 'channels' );
         //$this->assertResponseCode(200);
 		$this->assertAction( 'list' );
-		/*
+		
         // Channels categories
 		$cats = $this->_channelsModel->channelsCategories();
 		$this->assertNotEmpty($cats);
@@ -88,17 +85,8 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertQueryCountMin("div#col_l", 1 );
 		$this->assertQueryCountMin("div#col_r", 1 );
 		$this->assertQueryCountMin("div#channels h3.channeltitle", 1 );
-         * */
          
 	}
-    
-    protected function setVerboseErrorHandler() 
-    {
-        $handler = function($errorNumber, $errorString, $errorFile, $errorLine) {
-            echo "ERROR INFO\nMessage: $errorString\nFile: $errorFile\nLine: $errorLine\n";
-        };
-        set_error_handler($handler);        
-    }
 
 
 }
