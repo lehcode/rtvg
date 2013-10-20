@@ -60,22 +60,67 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	/**
 	 *
 	 * Load all published channels
+     * @param bool $not_empty //Fetch only channels which have events on this week
 	 */
-	public function getPublished(){
+	public function getPublished($not_empty=false){
 		
-        try{
-            $rows = $this->channelsTable->fetchAll("`published`='1'", 'title ASC');
-        } catch (Exception $e){
-            var_dump(get_class($e));
-            die(__FILE__.': '.__LINE__);
+        $select = $this->db->select()
+            ->from(array('CH'=>$this->channelsTable->getName()), array(
+                'id',
+                'title',
+                'alias',
+                'icon'
+            ))
+            ->where('`CH`.`published` = 1')
+        ;
+        
+        if (Zend_Registry::get('adult')!==true){
+            $select->where("`CH`.`adult` = '0'");
         }
-	    
-		$rows = $rows->toArray();
-        $v = new Zend_View();
-		foreach ($rows as $k=>$row) {
-			$rows[$k]['icon'] = $v->baseUrl('images/channel_logo/'.$row['icon']);
-		}
-		return $rows;
+        
+        $channels = $this->db->fetchAll($select->assemble());
+        
+        if (APPLICATION_ENV=='testing' || $not_empty===true){
+        
+            $ws = new Zend_Date();
+            if ($ws->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
+                while ($ws->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
+                    $ws->subDay(1);		
+                };
+            }
+
+            $we = new Zend_Date();
+            if ($we->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+                while ($we->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+                    $we->addDay(1);
+                }
+            }
+            
+            foreach ($channels as $k=>$ch){
+                $sql = "SELECT COUNT(*) FROM ". $this->eventsTable->getName() ." 
+                WHERE `start` >= '".$ws->toString("YYYY-MM-dd 00:00:00")."' 
+                    AND `start` < '".$we->toString("YYYY-MM-dd 23:59:59")."'
+                    AND `channel` = ".(int)$ch['id'];
+                
+                try {
+                    if((int)$this->db->fetchOne($sql)<1){
+                        unset($channels[$k]);
+                    }
+                } catch (Exception $e) {
+                    throw new Zend_Exception($e);
+                }
+
+                
+            }
+            
+        }
+        
+        $view = new Zend_View();
+        foreach ($channels as $k=>$ch){
+            $channels[$k]['icon'] = $view->baseUrl('images/channel_logo/'.$ch['icon']);
+        }
+        
+        return $channels;
 		
 	}
 	
