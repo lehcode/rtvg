@@ -502,56 +502,49 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 		 * @var Zend_Db_Select
 		 */
 		$select = $this->db->select()
-			->from(array( 'bc'=>'rtvg_bc'), array(
+			->from(array( 'BC'=>'rtvg_bc'), array(
 				'title',
 				'sub_title',
 				'alias',
-				'channel',
-				'start',
-				'end',
 				'episode_num',
 				'hash'
 			))
-			->joinLeft( array('channel'=>$this->channelsTable->getName() ), "`prog`.`channel`=`channel`.`id`", array(
+            ->joinLeft(array("EVT"=>$this->eventsTable->getName()), "BC.hash=EVT.hash", array(
+                'channel',
+				'start',
+				'end',
+                'premiere',
+                'live',
+                'new'
+            ))
+			->joinLeft( array('CH'=>$this->channelsTable->getName() ), "`EVT`.`channel`=`CH`.`id`", array(
 				'channel_title'=>'title',
-				'channel_alias'=>'LOWER(`channel`.`alias`)'))
-			->joinLeft( array('cat'=>$this->bcCategoriesTable->getName() ), "`prog`.`category`=`cat`.`id`", array(
+				'channel_alias'=>'LOWER(`CH`.`alias`)'))
+			->joinLeft( array('BCCAT'=>$this->bcCategoriesTable->getName() ), "`BC`.`category`=`BCCAT`.`id`", array(
 				'category_title'=>'title',
 				'category_title_single'=>'title_single',
-				'category_alias'=>'LOWER(`cat`.`alias`)'))
-			->where( "`prog`.`alias` LIKE '$prog_alias'")
-			->where( "`prog`.`start` >= '".$start->toString('YYYY-MM-dd')." 00:00'")
-			->where( "`prog`.`start` < '".$end->toString('YYYY-MM-dd')." 23:59'")
-			->where( "`prog`.`channel` = '$channel_id'")
-			->order( "prog.start DESC" );
+				'category_alias'=>'LOWER(`BCCAT`.`alias`)'))
+			->where( "`BC`.`alias` LIKE '$prog_alias'")
+			->where( "`EVT`.`start` >= '".$start->toString('YYYY-MM-dd')." 00:00'")
+			->where( "`EVT`.`start` < '".$end->toString('YYYY-MM-dd')." 23:59'")
+			->where( "`EVT`.`channel` = '$channel_id'")
+			->order( "EVT.start DESC" );
 		
-		if (APPLICATION_ENV=='development'){
-			parent::debugSelect($select, __METHOD__);
-			//die(__FILE__.': '.__LINE__);	
-		}
-
+		parent::debugSelect($select, __METHOD__);
+		
 		$result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
 		
-		if (!count($result)){
+        if (!count($result)){
 		    return false;
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
 		}
 		
 		foreach ($result as $k=>$item){
 			$result[$k]['start'] = isset($item['start']) && $item['start']!==null ? new Zend_Date( $item['start'], 'yyyy-MM-dd HH:mm:ss') : null ;
 			$result[$k]['end']   = isset($item['end']) && $item['end']!==null ? new Zend_Date( $item['end'], 'yyyy-MM-dd HH:mm:ss') : null ;
+			$result[$k]['episode_num'] = isset($item['episode_num']) ? (int)$item['episode_num'] : 0 ;
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		return $result;
+        return $result;
 		
 	}
 
@@ -569,24 +562,10 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 * @param  array|object $program
 	 * @throws Zend_Exception
 	 */
-	public function addHit($program=null){
+	public function addHit($hash=null){
 		
 	    $table = new Xmltv_Model_DbTable_ProgramsRatings();
-		if (is_array($program)) {
-		    
-		    // Both ['channel_id'] and ['channel'] can be used here
-		    $channel = isset($program['channel_id']) ? (int)$program['channel_id'] : (int)$program['channel'] ;
-			$table->addHit($program['alias'], $channel);
-			return true;
-			
-		} elseif (is_object($program)){
-		    
-		    $table->addHit($program->alias, $program->channel);
-		    return true;
-		    
-		}
-		
-		return false;
+		$table->addHit($hash);
 		
 	}
 	
@@ -951,23 +930,29 @@ class Xmltv_Model_Programs extends Xmltv_Model_Abstract
 	 * @param Zend_Date $week_end
 	 */
 	public function rssWeek(Zend_Date $week_start=null, Zend_Date $week_end=null){
-		 
-		$select = $this->db->select()
-		->from(array('prog'=>$this->bcTable->getName()), 'alias')
-		->join(array('channel'=>$this->channelsTable->getName()), "`prog`.`channel`=`channel`.`id`", array(
-				'channel_alias'=>'LOWER(channel.alias)',
-		))
-		->join(array('rating'=>$this->channelsRatingsTable->getName()), "`prog`.`channel`=`rating`.`id`", null)
-		->where("`prog`.`start` >= '".$week_start->toString("YYYY-MM-dd")." 00:00'")
-		->where("`prog`.`start` < '".$week_end->toString("YYYY-MM-dd")." 23:59'")
-		->where("`channel`.`adult` = FALSE")
-		->group("prog.alias")
-		->order("prog.start ASC");
+		
+        $select = $this->db->select()
+            ->from(array('BC'=>$this->bcTable->getName()), array(
+                'alias'
+            ))
+            ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", null)
+            ->joinLeft(array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
+                    'channel_alias'=>'alias',
+            ))
+            ->joinLeft(array('RT'=>$this->channelsRatingsTable->getName()), "`EVT`.`channel`=`RT`.`id`", null)
+            ->where("`EVT`.`start` >= '".$week_start->toString("YYYY-MM-dd 00:00:00")."'")
+            ->where("`EVT`.`start` < '".$week_end->toString("YYYY-MM-dd 23:59:59")."'")
+            ->order("EVT.start ASC")
+        ;
+        
+        if (Zend_Registry::get('adult')!==true){
+            $select->where("`CH`.`adult` = FALSE");
+        }
 	
-		$result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
-	
+        $result = $this->db->fetchAll($select);
+        
 		if (!count($result)){
-			return false;
+			return array();
 		}
 		
 		foreach ($result as $k=>$row){
