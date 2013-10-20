@@ -6,6 +6,10 @@ abstract class Xmltv_Model_Abstract
      * @var Xmltv_Model_DbTable
      */
     protected $table;
+    /**
+     *
+     * @var Zend_Db_Adapter_Pdo_Mysql
+     */
     protected $db;
     protected $dbConf;
     protected static $tblPfx='';
@@ -97,11 +101,24 @@ abstract class Xmltv_Model_Abstract
      */
 	public function __construct($config=array()){
 
+	    if (!isset($config['db']) || empty($config['db']) || !is_a($config['db'], 'Zend_Config')) {
+	        $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
+	    }
+	    
 	    if (is_array($config)) {
 	    	$this->setOptions($config);
 	    }
 	    
-		$this->db = Zend_Registry::get('db_local');
+		// Init database
+		$this->dbConf = $config['db'];
+		$this->db = new Zend_Db_Adapter_Pdo_Mysql( $this->dbConf);
+		
+		// Set table prefix
+		$pfx = $this->dbConf->get('tbl_prefix');
+		if(false !== (bool)$pfx) {
+		    self::$tblPfx = $pfx;
+		}
+		
 		$this->initTables();
 		
 	}
@@ -180,7 +197,9 @@ abstract class Xmltv_Model_Abstract
 	 */
 	protected static function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
 	    
-	    Zend_Registry::get('fireLog')->log(__METHOD__.': '.$select->assemble(), Zend_Log::INFO);
+	    if (APPLICATION_ENV=='development'){
+            Zend_Registry::get('fireLog')->log(__METHOD__.': '.$select->assemble(), Zend_Log::INFO);
+        }
         
 	}
 
