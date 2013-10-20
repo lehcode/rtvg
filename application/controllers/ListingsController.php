@@ -154,17 +154,13 @@ class ListingsController extends Rtvg_Controller_Action
 			}
 		}
 		
-		if ($list===false){
+		if ($list===false || empty($list)){
 			$this->view->assign('hide_sidebar', 'right');
 			$this->render('no-listings');
 			return true;
 		}
 		
-        if (empty($list)){
-            throw new Zend_Controller_Action_Exception("Listing is empty", 500);
-        }
-        
-		$list[0]['now_showing']=true;
+        $list[0]['now_showing']=true;
 		$this->view->assign( 'programs', $list );
 		$currentProgram = $list[0];
 		
@@ -595,22 +591,12 @@ class ListingsController extends Rtvg_Controller_Action
 			}
 			$this->view->assign( 'channel', $channel );
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($channel);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
 			$dg = $this->input->getEscaped('date');
+            $listingDate = Zend_Date::now();
 			if ($dg!='сегодня' && $dg!='неделя') {
 				if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $dg)) {
 					$listingDate = new Zend_Date($this->input->getEscaped('date'), 'dd-MM-yyyy');
-				} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $dg)) {
-					$listingDate = new Zend_Date($this->input->getEscaped('date'), 'yyyy-MM-dd');
-				} elseif (!$this->input->getEscaped('date')) {
-					$listingDate = Zend_Date::now();
 				}
-			} else {
-				$listingDate = Zend_Date::now();
 			}
 			
 			if (!$this->checkDate($listingDate)){
@@ -686,7 +672,7 @@ class ListingsController extends Rtvg_Controller_Action
 			}
 			
 			if( $list[0] && !empty($list[0])){
-				$this->bcModel->addHit( $list[0] );
+				$this->bcModel->addHit( $list[0]['hash'] );
 				return $this->render('program-week');
 			} elseif(empty($list[0]) && !empty($similarPrograms)){
 				return $this->render('similar-week');
