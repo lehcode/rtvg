@@ -494,7 +494,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @param  Zend_Date $date
 	 * @return array|boolean
 	 */
-	public function ytListingRelatedVideos( $list=array(), $channel_title, Zend_Date $date ){
+	public function ytListingRelatedVideos( $list=array(), $channel_title=null, Zend_Date $date ){
 		
 		$conf = Zend_Registry::get('site_config')->videos->get('listing');
 		$ytConfig['max_results'] = 1;
