@@ -336,7 +336,7 @@ class Xmltv_Youtube {
 		}
 	
 		$separator  = new Zend_Filter_Word_SeparatorToDash(' ');
-		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[«»"\'.,:;-\?\{\}\[\]\!`\/\(\)#&№]+/ui', 'replace'=>' '));
+		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[^\p{Latin}\p{Cyrillic}\d\s]+/ui', 'replace'=>' '));
 		$tolower	= new Zend_Filter_StringToLower();
 		$whitespace = new Zend_Filter_PregReplace( array("match"=>'/[\s+|-]+/', 'replace'=>'-'));
 		
