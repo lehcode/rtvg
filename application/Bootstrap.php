@@ -196,7 +196,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	 * Setup core HTML view configuration
 	 * @param array $config
 	 */
-	protected function _initViewsettings()
+	protected function _initViewSettings()
 	{	
 	    $this->bootstrap('view');
 	    $view = $this->getResource('view');
@@ -211,12 +211,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    	->prepend( "rutvgid.ru" );
 	    
 	    $baseCss = (APPLICATION_ENV=='production') ? $view->baseUrl('css/base.min.less') : $view->baseUrl('css/base.less') ;
-	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$baseCss), 'APPEND');
-	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND');
-	    $view->headLink()
-	    	//->prependStylesheet( $view->baseUrl('css/base.css'))
-	    	->appendStylesheet($view->baseUrl('css/fonts.css'));
-	    	//->appendStylesheet( $view->baseUrl('js/tip/jquery.tooltip.css'));
+	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$baseCss), 'APPEND')
+            //->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
+            ->appendStylesheet($view->baseUrl('css/fonts.css'));
 
 	    $view->headScript()
 	    	->setAllowArbitraryAttributes(true)
@@ -238,9 +235,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    		->appendStylesheet( $view->baseUrl( 'css/ie.css' ))
 	    		->appendStylesheet( $view->baseUrl( 'css/fonts-ie.css' ));
 	    }
-	    
-	    $view->inlineScript()
-	    	->prependFile( $this->view->baseUrl('js/bs/alert.js') );
 	    
 	    $view->addHelperPath( APPLICATION_PATH.'/views/helpers/', 'Rtvg_View_Helper');
         $view->addHelperPath("ZendX/JQuery/View/Helper",'ZendX_JQuery_View_Helper');
