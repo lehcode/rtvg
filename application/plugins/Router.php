@@ -175,21 +175,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 				'action'=>'show-video',
 				'alias'=>self::VIDEO_ALIAS_REGEX,
 				'id'=>'[\w\d]{12}')));
-		/* 	
-		$this->_router->addRoute( 'default_error_error', 
-			new Zend_Controller_Router_Route( 'ошибка', array(
-				'module'=>'default',
-				'controller'=>'error',
-				'action'=>'error')));
-		 */	
-		/* 
-		$this->_router->addRoute( 'default_error_index', 
-			new Zend_Controller_Router_Route( 'ошибка', array(
-				'module'=>'default',
-				'controller'=>'error',
-				'action'=>'error')));
-		 */	
-		$this->_router->addRoute( 'sitemap', 
+		
+		$this->_router->addRoute( 'default_sitemap_sitemap', 
 			new Zend_Controller_Router_Route( 'sitemap.xml', array(
 				'module'=>'default',
 				'controller'=>'sitemap',
@@ -402,7 +389,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'controller'=>'auth',
                 'action'=>'login',
             ));
-		
+        
 		return $this->_router;
 	
 	}
