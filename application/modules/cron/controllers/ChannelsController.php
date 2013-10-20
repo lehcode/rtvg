@@ -1,18 +1,28 @@
 <?php
-
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Channels CRON tasks class
  */
 
 /**
- * Description of ChannelsControler
+ * Channels CRON actions
  *
  * @author Hiragana
  */
-class ChannelsControler
+class Xmltv_Cron_ChannelsControler extends Zend_Controller_Action
 {
-    //put your code here
+    
+    protected $channelsModel;
+    
+    public function init(){
+        $this->channelsModel = new Xmltv_Model_DbTable_Channels();
+    }
+    
+    public function cleanEmptyChannelsAction(){
+        
+        die(__FILE__.': '.__LINE__);
+        
+    }
+    
 }
 
 ?>
