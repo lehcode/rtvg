@@ -65,11 +65,8 @@ class Zend_Controller_Action_Helper_WeekDays extends Zend_Controller_Action_Help
 		        $result->addDay(1);
 		    }
    		}
-   		//$result->addDay(1);
-   		//$result->subMinute(1);
    		
-		
-		return $result;
+        return $result;
 		
 	}
 	
