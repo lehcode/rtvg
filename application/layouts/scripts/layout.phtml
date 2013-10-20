@@ -238,9 +238,6 @@ $(document).ready(function(){
 $js = (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
 $this->inlineScript()->appendScript( $js );?>
 
-<?php $js = file_get_contents(APPLICATION_PATH.'/../public/js/ss/mu/code.js'); ?>
-<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( $js ) : $js; ?></script>
 
-<?php echo $this->inlineScript(); ?>
 </body>
 </html>
