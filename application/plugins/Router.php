@@ -302,26 +302,26 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 			)));
 		
 		$this->_router->addRoute( 'default_feed_atom',
-		new Zend_Controller_Router_Route( 'feed/atom/:channel/:timespan',
+		new Zend_Controller_Router_Route( 'feed/atom/:channel',
 			array(
 				'module'=>'default',
 				'controller'=>'feed',
 				'action'=>'atom',
-				'channel'=>null,
-				//'timespan'=>null,
-			),array(
-				'channel'=>'\d+',
-			)));
+				'channel'=>null),
+            array('channel'=>'\d+')
+            )
+        );
 		
 		$this->_router->addRoute( 'default_feed_rss',
-		new Zend_Controller_Router_Route( 'feed/rss/:channel/:timespan',
+            new Zend_Controller_Router_Route( 'feed/rss/:channel',
 			array(
 				'module'=>'default',
 				'controller'=>'feed',
 				'action'=>'rss',
-				'channel'=>null,
-				//'timespan'=>null,
-			)));
+				'channel'=>null),
+            array('channel'=>'\d+')
+            )
+        );
 		
 		// @todo 
 		// Полный список программ в определенный день
@@ -338,36 +338,79 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
 		
 		//admin routes
         $this->_router->addRoute( 'admin_index_index', 
-		new Zend_Controller_Router_Route( 'admin',
-		array(
-			'module'=>'admin',
-			'controller'=>'index',
-			'action'=>'index')));
+            new Zend_Controller_Router_Route( 'admin',
+            array(
+                'module'=>'admin',
+                'controller'=>'index',
+                'action'=>'index'
+            ))
+        );
+        
+        $this->_router->addRoute('admin_auth_index',
+            new Zend_Controller_Router_Route('admin/auth',
+            array(
+                'module'=>'admin',
+                'controller'=>'auth',
+                'action'=>'index',
+            ))
+        );
+        
+        $this->_router->addRoute('admin_auth_login',
+            new Zend_Controller_Router_Route('admin/auth/login',
+            array(
+                'module'=>'admin',
+                'controller'=>'auth',
+                'action'=>'login',
+            ))
+        );
+        
+        $this->_router->addRoute('admin_auth_logout',
+            new Zend_Controller_Router_Route('admin/auth/logout',
+            array(
+                'module'=>'admin',
+                'controller'=>'auth',
+                'action'=>'logout',
+            ))
+        );
 		
-		$this->_router->addRoute( 'admin_import_remote', 
+		$this->_router->addRoute( 'admin_import_index', 
+		new Zend_Controller_Router_Route( 'admin/import',
+            array(
+                'module'=>'admin',
+                'controller'=>'import',
+                'action'=>'index'
+            ))
+        );
+        
+        $this->_router->addRoute( 'admin_import_remote', 
 		new Zend_Controller_Router_Route( 'admin/import/listings/:site',
-		array(
-			'module'=>'admin',
-			'controller'=>'import',
-			'action'=>'remote'),
-		array('site'=>'teleguide')));
-
+            array(
+                'module'=>'admin',
+                'controller'=>'import',
+                'action'=>'remote'),
+            array('site'=>'teleguide')
+            )
+        );
+        
 		$this->_router->addRoute( 'admin_import_parse-programs',
-		new Zend_Controller_Router_Route_Static( 'admin/import/xml-parse-programs',
-		array(
-			'module'=>'admin',
-			'controller'=>'import',
-			'action'=>'xml-parse-programs')));
-		
+            new Zend_Controller_Router_Route_Static( 'admin/import/xml-parse-programs',
+            array(
+                'module'=>'admin',
+                'controller'=>'import',
+                'action'=>'xml-parse-programs'
+            ))
+        );
+        
 		$this->_router->addRoute( 'admin_programs_delete-programs',
 		new Zend_Controller_Router_Route( 'admin/programs/delete-programs/format/html',
-		array(
-			'module'=>'admin',
-			'controller'=>'programs',
-			'action'=>'delete-programs'),
-		array(
-			'delete_start'=>'/\d{2}-\d{2}-\d{4}/',
-		)));
+            array(
+                'module'=>'admin',
+                'controller'=>'programs',
+                'action'=>'delete-programs'),
+            array(
+                'delete_start'=>'/\d{2}-\d{2}-\d{4}/',
+            ))
+        );
 		
 		
 		$this->_router->addRoute( 'admin_grab_do',
@@ -380,15 +423,9 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'site'=>'/\p{Ll}\d{1,16}/u',
                 'weekstart'=>'/\d{2}\.\d{2}\.\d{2}/',
             ))
-            );
+        );
         
-        $this->_router->addRoute('admin_auth_login',
-            new Zend_Controller_Router_Route('admin/auth/login'),
-            array(
-                'module'=>'admin',
-                'controller'=>'auth',
-                'action'=>'login',
-            ));
+        
         
 		return $this->_router;
 	

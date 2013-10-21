@@ -53,14 +53,13 @@ class Xmltv_Form_Login extends Zend_Form
 		->setLabel('E-mail')
 		->setDecorators(array(
 			'ViewHelper',
-			//'Description',
 			'Errors',
 			array( 'Label', array( 'class'=>'pull-left' ) ),
 			array( 'HtmlTag', array( 'tag'=>'div', 'class'=>'pull-left' ) ),
 		))
 		->setValidators( array( new Zend_Validate_Regex( Rtvg_Regex::EMAIL_REGEX )) );
 		
-		$password = new Zend_Form_Element_Password('pw');
+		$password = new Zend_Form_Element_Password('passwd');
 		$password->setAttribs(array( 
 			'name'=>'passwd',
 			'size'=>12,

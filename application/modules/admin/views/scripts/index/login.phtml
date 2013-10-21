@@ -3,8 +3,6 @@
  * Admin login screen view script
  */
 
-// Login form
-$wrapClass = 'span3';
 if (!isset($this->user) || $this->user->role == 'guest') {
     $form = new Xmltv_Form_Login( array( 
     	'action'=>$this->baseUrl('admin/auth/login')
