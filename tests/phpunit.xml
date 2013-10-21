@@ -4,7 +4,8 @@
 	convertErrorsToExceptions="true"
 	convertNoticesToExceptions="false"
 	convertWarningsToExceptions="true"
-    backupGlobals="false"
+    backupGlobals="true"
+    backupStaticAttributes="false"
 	stopOnFailure="true"
 	syntaxCheck="false">
 	<testsuite name="Application Test Suite">
@@ -43,7 +44,6 @@
         <ini name="xdebug.auto_trace" value="0" />
         <ini name="xdebug.overload_var_dump" value="1" />
         <ini name="xdebug.profiler_output_dir=" value="/home/takeshi/www/xdebug" />
-        <ini name="xdebug.show_exception_trace" value="0" />
         <ini name="xdebug.cli_color" value="1" />
     </php>
 	
