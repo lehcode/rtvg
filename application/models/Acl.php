@@ -54,16 +54,14 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:listings.index' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-listing' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-date' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:listings.outdated' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.program-week' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.program-day' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.channel-week' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.category' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.premieres-week' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:sitemap.sitemap' ), $default );
-	    //$this->add( new Zend_Acl_Resource( 'default:smth.pu' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:smth.rich' ), $default );
-	    $this->add( new Zend_Acl_Resource( 'default:smth.rollin' ), $default );
-	    $this->add( new Zend_Acl_Resource( 'default:smth.vk-message' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:videos.show-video' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:user' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:user.login' ), 'default:user' );
