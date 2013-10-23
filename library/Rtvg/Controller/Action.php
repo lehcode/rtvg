@@ -474,7 +474,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * @params Zend_Date $week_end
 	 * @return array
 	 */
-	protected function topPrograms(){
+	protected function topBroadcasts(){
 		
 	    $now = Zend_Date::now();
 	    $amt = (int)Zend_Registry::get('site_config')->top->broadcasts->get('amount');
@@ -492,12 +492,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			$f = '/Listings/Top';
 			$hash = Rtvg_Cache::getHash('top'.$amt);
 			if (!$result = $this->cache->load($hash, 'Core', $f)) {
-				$result = $bcModel->topPrograms($amt, $week_start, $week_end);
+				$result = $bcModel->topBroadcasts($amt, $week_start, $week_end);
 				$this->cache->save($result, $hash, 'Core', $f);
 			}
 			
 		} else {
-			$result = $bcModel->topPrograms($amt, $week_start, $week_end);
+			$result = $bcModel->topBroadcasts($amt, $week_start, $week_end);
 		}
         
 		return $result;
