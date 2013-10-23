@@ -35,7 +35,13 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
         $this->_channelsTable = new Xmltv_Model_DbTable_Channels();
         $this->_eventsTable = new Xmltv_Model_DbTable_Events();
     }
-
+    
+    /**
+     * Required because parent class is abstract
+     */
+    public function getBroadcasts($channel_id=null, $date=null, $count=null){
+        return $this->fetchDayItems($channel_id, $date, $count);
+    }
 
     /**
 	 * 
