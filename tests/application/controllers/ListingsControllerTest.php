@@ -24,6 +24,15 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
      * @var type 
      */
     private $_videosModel;
+    
+    /**
+     * @var Zend_Date
+     */
+    private $weekStart;
+    /**
+     * @var Zend_Date
+     */
+    private $weekEnd;
 	
     public function setUp()
 	{
@@ -32,6 +41,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->_bcModel = new Xmltv_Model_Programs();
         $this->_channelsModel = new Xmltv_Model_Channels();
         $this->_videosModel = new Xmltv_Model_Videos();
+        $this->weekStart = $this->getWeekStart();
+        $this->weekEnd = $this->getWeekEnd();
+        
 	}
     
     public function appBootstrap()
@@ -49,6 +61,84 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $router = new Xmltv_Plugin_Router();
         $router->setRouter($front->getRouter());
 		$front->setRouter($router->getRouter());
+    }
+    
+    /**
+     * @group listings
+     */
+	public function testProgramWeekAction(){
+		
+        $channels = $this->_channelsModel->getPublished();
+        $this->assertNotEmpty($channels);
+        $channel = $channels[array_rand($channels, 1)];
+        
+        $bcs = new Xmltv_Model_ProgramsTest();
+        $weekBcs = $bcs->thisWeekBroadcasts($channel['id'], $this->weekStart, $this->weekEnd);
+        $bc = $weekBcs[array_rand($weekBcs, 1)];
+        
+        $urlParams  = $this->urlizeOptions( array(
+	    	'module'=>'default',
+	    	'controller'=>'listings',
+	    	'action'=>'program-week',
+            'channel'=>$channel['alias'],
+            'alias'=>$bc['alias'],
+            'date'=>'неделя',
+	    ));
+	    $url = $this->url( $urlParams, 'default_listings_program-week' );
+	    $this->dispatch($url);
+        
+        $this->assertModule( $urlParams['module'] );
+        $this->assertController( $urlParams['controller'] );
+        $this->assertAction( $urlParams['action'] );
+        $bcTop = $this->_bcModel->topBroadcasts();
+        $this->assertNotEmpty($bcTop);
+        $chCats = $this->_channelsModel->channelsCategories();
+        $this->assertNotEmpty($chCats);
+        $list = $this->_bcModel->broadcastThisWeek( $bc['alias'], $channel['id'], $this->weekStart, $this->weekEnd);
+        $this->assertNotEmpty($list);
+        $this->_bcModel->similarBroadcastsThisWeek( $bc['alias'], $this->weekStart, $this->weekEnd, $channel['id'] );
+        
+        $this->markTestIncomplete();
+		
+	}
+    
+    /**
+     * @group listings
+     */
+    public function testCategoryAction(){
+        
+        $cats = $this->_bcModel->getCategoriesList();
+        $cat = $cats[array_rand($cats, 1)];
+        
+        $urlParams = $this->urlizeOptions( array(
+	    	'module'=>'default',
+	    	'controller'=>'listings',
+	    	'action'=>'category',
+	    	'category'=>$cat['alias'],
+	    	'timespan'=>'неделя',
+	    ));
+        $url = $this->url( $urlParams, 'default_listings_category' );
+	    $this->dispatch($url);
+        
+        $this->assertModule( $urlParams['module'] );
+	    $this->assertController( $urlParams['controller'] );
+	    $this->assertAction( $urlParams['action'] );
+        
+        $this->_bcModel->categoryWeek( $cat['id'], $this->weekStart, $this->weekEnd);
+        $this->_bcModel->categoryDay( $cat['id'] );
+        
+        $urlParams = $this->urlizeOptions( array(
+	    	'module'=>'default',
+	    	'controller'=>'listings',
+	    	'action'=>'category',
+	    	'category'=>$cat['alias'],
+	    	'timespan'=>'сегодня',
+	    ));
+        $url = $this->url( $urlParams, 'default_listings_category' );
+	    $this->dispatch($url);
+        
+        $this->_bcModel->categoryDay( $cat['id']);
+        
     }
     
     /**
@@ -83,7 +173,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertQueryCount("#maincontent h1", 1 );
         
         $date = Zend_Date::now();
-        if ((bool)($list = $this->_bcModel->getProgramsForDay( $date, $channel['id'], 4 ))!==false){
+        if ((bool)($list = $this->_bcModel->getBroadcastsForDay( $date, $channel['id'], 4 ))!==false){
             $this->assertNotEmpty($list);
             $list = array_slice($list, 0, 3);
             $listingVideos = $this->_videosModel->ytListingRelatedVideos( $list, $channel['title'], $date );
@@ -104,6 +194,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 
         // Assertions
         $this->assertNotRedirect();
+        $this->assertResponseCode(200);
         $this->assertModule( $urlParams['module'] );
         $this->assertController( $urlParams['controller'] );
         $this->assertAction( $urlParams['action'] );
@@ -142,63 +233,25 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
     /**
      * @group listings
      */
-	public function testProgramWeekAction(){
+	public function testProgramDayAction(){
 		
         $channels = $this->_channelsModel->getPublished();
         $this->assertNotEmpty($channels);
         $channel = $channels[array_rand($channels, 1)];
+        $this->assertNotEmpty($channel);
         
         $bcs = new Xmltv_Model_ProgramsTest();
+        $todayBcs = $bcs->getTodayBroadcasts($channel['id']);
+        $this->assertNotEmpty($todayBcs);
         
-        $ws = new Zend_Date();
-		if ($ws->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
-			while ($ws->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
-				$ws->subDay(1);		
-			};
-		}
-        
-        $we = new Zend_Date();
-        if ($we->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
-		    while ($we->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
-		        $we->addDay(1);
-		    }
-   		}
-        
-        var_dump(count($bcs->thisWeekBroadcasts($channel['id'], $ws, $we)));
-        
-        die(__FILE__ . ': ' . __LINE__);
-        
-        $urlParams  = $this->urlizeOptions( array(
-	    	'module'=>'default',
-	    	'controller'=>'listings',
-	    	'action'=>'program-week',
-            'channel'=>$channel['alias'],
-            'alias'=>$bc['alias'],
-	    ));
-	    $url = $this->url( $urlParams, 'default_listings_program-week', null, true );
-	    $this->dispatch($url);
-        
-        $this->markTestIncomplete();
-        
-	    /*
-	    $this->assertModule( $urlParams['module'] );
-        $this->assertController( $urlParams['controller'] );
-        $this->assertAction( $urlParams['action'] );
-		*/
-	}
-	
-
-    /**
-     * @group listings
-     */
-	public function testProgramDayAction(){
-		
         $urlParams = $this->urlizeOptions( array(
 	    	'module'=>'default',
 	    	'controller'=>'listings',
 	    	'action'=>'program-day',
+            'channel'=>$channel['alias'],
+            'alias'=>$todayBcs[array_rand($todayBcs, 1)]['alias'],
 	    ));
-        $url = $this->url( $urlParams );
+        $url = $this->url( $urlParams, 'default_listings_program-day' );
 	    $this->dispatch($url);
         
         $this->assertModule( $urlParams['module'] );
@@ -206,19 +259,6 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    $this->assertAction( $urlParams['action'] );
         
         $this->markTestIncomplete();
-	    
-        /*
-	    $maxChannels=3;
-	    $maxPrograms=5;
-	    $channelsModel = new Xmltv_Model_Channels();
-	    $channels = $channelsModel->allChannels();
-	    $this->request->setQuery(array(
-	    		'channel' => 'discovery-science',
-	    		'date' => 'техноигрушки',
-	    ));
-	    $url = $this->url( $urlParams );
-	    $this->dispatch($url);
-	    */
 	    
 	}
     
@@ -232,7 +272,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    	'controller'=>'listings',
 	    	'action'=>'outdated',
 	    ));
-        $url = $this->url( $urlParams );
+        $url = $this->url( $urlParams, 'default_listings_outdated' );
 	    $this->dispatch($url);
         
         $this->assertModule( $urlParams['module'] );
@@ -240,6 +280,26 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    $this->assertAction( $urlParams['action'] );
         
         $this->markTestIncomplete();
+    }
+    
+    private function getWeekStart(){
+        $ws = new Zend_Date();
+		if ($ws->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
+			while ($ws->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
+				$ws->subDay(1);		
+			};
+		}
+        return $ws;
+    }
+    
+    private function getWeekEnd(){
+        $we = new Zend_Date();
+        if ($we->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+		    while ($we->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=0) {
+		        $we->addDay(1);
+		    }
+   		}
+        return $we;
     }
 	
 }
