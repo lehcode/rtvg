@@ -37,7 +37,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
      * @var Xmltv_Model_DbTable_ProgramsCategories
      */
     protected $programsCategoriesTable;
-
+    
     
     public function __construct($config=array()){
         
@@ -56,6 +56,12 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         //$this->commentsTable = new Xmltv_Model_DbTable_ChannelsComments();
         
     }
+    
+    /**
+     * Required. 
+     * !!! ATTENTION !!! Beaks dependencies if deleted
+     */
+    public function getBroadcasts(){}
     
 	/**
 	 *
@@ -337,72 +343,59 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	
 	public function getWeekSchedule($channel=null, Zend_Date $start, Zend_Date $end){
 	
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump(func_get_args());
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    $days = array();
+        $days = array();
 	    do{
 	    	$select = $this->db->select()
-	    	->from( array( 'prog'=>$this->broadcasts->getName()), array(
-	    		'title',
-	    		'sub_title',
-	    		'alias',
-	    		'start',
-	    		'end',
-	    		'episode_num',
-	    		'hash'
-	    	))
-	    	->joinLeft( array( 'ch'=>$this->channelsTable->getName()), "`prog`.`channel`=`ch`.`id`", array(
-	    		'channel_id'=>'id',
-	    		'channel_title'=>'title',
-	    		'channel_alias'=>'alias'))
-	    	->joinLeft( array( 'pc'=>$this->programsCategoriesTable->getName()), "`prog`.`category`=`pc`.`id`", array(
-	    		'category_id'=>'id',
-	    		'category_title'=>'title',
-	    		'category_title_single'=>'title_single',
-	    		'category_alias'=>'alias'))
-    		->where("`prog`.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00'")
-    		->where("`prog`.`start` < '".$start->toString('yyyy-MM-dd')." 23:59'")
-    		->where("`prog`.`channel` = '".$channel['id']."'")
-    		->where("`ch`.`published` = '1'")
-    		->order("prog.start", "ASC");
-	    		
-	    	if (APPLICATION_ENV=='development'){
-	    		parent::debugSelect($select, __METHOD__);
-	    		//die(__FILE__.': '.__LINE__);
-	    	}
-	    		
-	    	$days[$start->toString('U')] = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
+                ->from( array( 'BC'=>$this->bcTable->getName()), array(
+                    'title',
+                    'sub_title',
+                    'alias',
+                    'episode_num',
+                    'hash'
+                ))
+                ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "BC.hash = EVT.hash", array(
+                    'start',
+                    'end',
+                    'premiere',
+                    'new',
+                    'live',
+                ))
+                ->joinLeft( array( 'CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
+                    'channel_id'=>'id',
+                    'channel_title'=>'title',
+                    'channel_alias'=>'alias'))
+                ->joinLeft( array( 'BCCAT'=>$this->programsCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array(
+                    'category_id'=>'id',
+                    'category_title'=>'title',
+                    'category_title_single'=>'title_single',
+                    'category_alias'=>'alias'))
+                ->where("`EVT`.`start` >= '".$start->toString('YYYY-MM-dd')." 00:00'")
+                ->where("`EVT`.`start` < '".$start->toString('YYYY-MM-dd')." 23:59'")
+                ->where("`EVT`.`channel` = '".$channel['id']."'")
+                ->where("`CH`.`published` = '1'")
+                ->group("EVT.start")
+                ->order("EVT.start", "ASC")
+            ;
+            
+            var_dump($select->assemble());
+            
+            $days[$start->toString('U')] = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
 	    	$start->addDay(1);
 	    		
 	    } while ( $start->toString('DD')<=$end->toString('DD') );
 	    
-	    if (APPLICATION_ENV=='development'){
-	    	//Zend_Debug::dump($days);
-	    	//die(__FILE__.': '.__LINE__);
+        foreach ($days as $timestamp=>$day) {
+	    	foreach ($day as $k=>$bc) {
+                $days[$timestamp][$k]['start'] = new Zend_Date( $bc['start'], 'YYYY-MM-dd HH:mm:ss');  
+                $days[$timestamp][$k]['end'] = new Zend_Date( $bc['end'], 'YYYY-MM-dd HH:mm:ss');
+                $days[$timestamp][$k]['channel_id'] = (int)$bc['channel_id'];
+                $days[$timestamp][$k]['category_id'] = (int)$bc['category_id'];
+                $days[$timestamp][$k]['episode_num'] = (!empty($bc['episode_num'])) ? (int)$bc['episode_num'] : null ;
+            }
+	    	
 	    }
-	    
-	    foreach ($days as $timestamp=>$day) {
-	    	if (!empty($day)){
-	    		//Zend_Debug::dump($day);
-	    		//die(__FILE__.': '.__LINE__);
-	    		foreach ($day as $k=>$program) {
-	    			$days[$timestamp][$k]['start'] = new Zend_Date( $program['start'], 'yyyy-MM-dd HH:mm:ss');
-	    			$days[$timestamp][$k]['end']   = new Zend_Date( $program['end'], 'yyyy-MM-dd HH:mm:ss');
-	    			//Zend_Debug::dump($days[$timestamp][$k]);
-	    			//die(__FILE__.': '.__LINE__);
-	    		}
-	    	}
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	//Zend_Debug::dump($days);
-	    	//die(__FILE__.': '.__LINE__);
-	    };
-	    
-	    return $days;
+        
+        return $days;
 		
 	}
 	
