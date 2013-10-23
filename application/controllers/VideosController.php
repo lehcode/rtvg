@@ -261,7 +261,7 @@ class VideosController extends Rtvg_Controller_Action
 		 * Данные для модуля самых популярных программ
 		 * #####################################################################
 		 */
-		$top = $this->topPrograms();
+		$top = $this->bcModel->topBroadcasts();
 		$this->view->assign('top_programs', $top);
 		
 		/*

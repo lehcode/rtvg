@@ -53,7 +53,7 @@ class FrontpageController extends Rtvg_Controller_Action
         if($amt===0){
             $list = array();
         } else {
-            $top = $this->bcModel->topPrograms($amt);
+            $top = $this->bcModel->topBroadcasts($amt);
             if ($this->cache->enabled){
                 $this->cache->setLifetime(600);
                 $f = '/Listings/Frontpage';
