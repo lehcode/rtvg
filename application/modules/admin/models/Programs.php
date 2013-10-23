@@ -1581,14 +1581,8 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	 */
 	protected function parseSportsTitle($input){
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump(func_get_args());
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		$result = $input;
-	    
-		$sports = array(
+	    $sports = array(
 	    		'Street Workout',
 	    		'Автоспорт',
 	    		'Альпинизм',
@@ -1645,11 +1639,13 @@ class Admin_Model_Programs extends Xmltv_Model_Programs
 	    		'Чемпионат Испании',
 	    		'Чемпионат Германии',
 	    		'Кубок',
+	    		'Единая лига ВТБ',
 	    );
 	    
 		$regex= array(
 	    		'/^('.implode('|', $sports).')\.\s+([\p{Common}\p{Cyrillic}\p{Latin}]+)\.\s*([\p{Common}\p{Cyrillic}\p{Latin}]*)$/ui',
 	    		'/^('.implode('|', $champs).').*\.?(\s*)([\p{Common}\p{Cyrillic}\p{Latin}]+)$/ui',
+	    		'/^('.implode('|', $champs).').*\.(\s*)([\p{Common}\p{Cyrillic}\p{Latin}]+)$/ui',
 	    );
 	    foreach ($regex as $r){
 	    	if (preg_match($r, $input['title'], $m)){
