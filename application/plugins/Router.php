@@ -105,23 +105,23 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             'action'=>'category')));
             
             
-        $this->_router->addRoute( 'default_listings_program-week', 
+        $this->_router->addRoute( 'default_listings_broadcast-week', 
         new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/неделя',
         array(
                 'module'=>'default',
                 'controller'=>'listings',
-                'action'=>'program-week'), array(
+                'action'=>'broadcast-week'), array(
                         'channel'=>self::CHANNEL_ALIAS_REGEX,
                         'alias'=>self::ALIAS_REGEX,
                 )) );
         
         
-        $this->_router->addRoute( 'default_listings_program-day',
+        $this->_router->addRoute( 'default_listings_broadcast-day',
             new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/сегодня',
             array(
                 'module'=>'default',
                 'controller'=>'listings',
-                'action'=>'program-day',
+                'action'=>'broadcast-day',
             ), array(
                 'channel'=>self::CHANNEL_ALIAS_REGEX,
                 'alias'=>self::ALIAS_REGEX
@@ -129,12 +129,12 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
         );
         
         
-        $this->_router->addRoute( 'default_listings_program-date',
+        $this->_router->addRoute( 'default_listings_broadcast-date',
         new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/:date',
             array(
                 'module'=>'default',
                 'controller'=>'listings',
-                'action'=>'program-day',
+                'action'=>'broadcast-day',
                 'channel'=>self::CHANNEL_ALIAS_REGEX,
             ), array(
                 'alias'=>self::ALIAS_REGEX,
@@ -176,6 +176,18 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'controller'=>'listings',
                 'action'=>'outdated',
                 'timespan'=>'сегодня|неделя|'.self::ISO_DATE_REGEX))
+        );
+        
+        $this->_router->addRoute( 'default_videos_index',
+            new Zend_Controller_Router_Route( 'видео', array(
+                'module'=>'default',
+                'controller'=>'videos',
+                'action'=>'show-video', 
+                array (
+                    'alias'=>self::VIDEO_ALIAS_REGEX,
+                    'id'=>'[\w\d]{12}'
+                ))
+            )
         );
         
         $this->_router->addRoute( 'default_videos_show-video',
@@ -225,6 +237,14 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'category'=>self::ALIAS_REGEX,
                 'timespan'=>'(сегодня|неделя)'
             )));
+        
+        $this->_router->addRoute( 'default_user_index', 
+            new Zend_Controller_Router_Route( 'user', array(
+                'module'=>'default',
+                'controller'=>'user',
+                'action'=>'index',
+            ))
+        );
         
         $this->_router->addRoute( 'default_user_login', 
             new Zend_Controller_Router_Route( 'login', array(

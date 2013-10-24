@@ -18,16 +18,14 @@ class VideosControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         );
         $this->_application->bootstrap();
 
-        /**
-         * Fix for ZF-8193
-         * http://framework.zend.com/issues/browse/ZF-8193
-         * Zend_Controller_Action->getInvokeArg('bootstrap') doesn't work
-         * under the unit testing environment.
-         */
-        $front = Zend_Controller_Front::getInstance();
+        $front = $this->getFrontController();
         if($front->getParam('bootstrap') === null) {
             $front->setParam('bootstrap', $this->_application->getBootstrap());
         }
+        
+        $router = new Xmltv_Plugin_Router();
+        $router->setRouter($front->getRouter());
+		$front->setRouter($router->getRouter());
     }
     
     /**
@@ -39,7 +37,7 @@ class VideosControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         	'module'=>'default',
         	'controller'=>'videos',
         	'action'=>'index', ));
-        $url = $this->url( $urlParams );
+        $url = $this->url( $urlParams, 'default_videos_index' );
         $this->dispatch($url);
         
         // assertions
@@ -55,7 +53,7 @@ class VideosControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         		'module'=>'default',
         		'controller'=>'videos',
         		'action'=>'show-video', ));
-        $url = $this->url( $urlParams );
+        $url = $this->url( $urlParams, 'default_videos_show-video' );
         $this->dispatch($url);
         
         // assertions
@@ -63,8 +61,7 @@ class VideosControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertController( $urlParams['controller'] );
         $this->assertAction( $urlParams['action'] );
         
-        $videoDesc = 'Testing Description for PHPUnit';
-        $vidId = 'biFodVJiqpU';
+        $this->markTestIncomplete();
         
         
     }

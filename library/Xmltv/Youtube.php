@@ -71,22 +71,23 @@ class Xmltv_Youtube {
 		if (isset($config['language']) && !empty($config['language']))
 			$this->_language = (string)$config['language'];	
 		
-		
-	    
-		
 		if ($this->adapter===null){
 		    $this->setAdapter( new Zend_Http_Client_Adapter_Curl() );
 		}
 		
+        $clientConf = array('adapter'=>$this->adapter);
+        
 		$t = (int)Zend_Registry::get('site_config')->curl->get('timeout');
 		if ($t>0){
 		    if (is_a($this->adapter, 'Zend_Http_Client_Adapter_Curl')){
 				$this->adapter->setCurlOption(CURLOPT_TIMEOUT, $t);
-		    }
+		    } else {
+                $clientConf['timeout'] = $t;
+            }
 		}
 		
 		$httpClient = new Zend_Http_Client();
-		$httpClient->setConfig( array('adapter'=>$this->adapter));
+		$httpClient->setConfig( $clientConf );
 		$this->client  =@ new Zend_Gdata_YouTube( $httpClient );
 		$this->client->setGzipEnabled(true);
 		$this->client->setMajorProtocolVersion(2);
