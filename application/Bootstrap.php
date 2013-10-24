@@ -212,7 +212,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    
 	    $baseCss = (APPLICATION_ENV=='production') ? $view->baseUrl('css/base.min.less') : $view->baseUrl('css/base.less') ;
 	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$baseCss), 'APPEND')
-            //->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
+            ->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
             ->appendStylesheet($view->baseUrl('css/fonts.css'));
 
 	    $view->headScript()
