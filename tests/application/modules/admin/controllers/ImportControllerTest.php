@@ -8,10 +8,6 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
     
     public $bootstrap = array('App', 'bootstrap');
     
-    /**
-     * (non-PHPdoc)
-     * @see Zend_Test_PHPUnit_ControllerTestCase::setUp()
-     */
     public function setUp()
 	{
         $this->bootstrap = array($this, 'appBootstrap');
@@ -25,21 +21,19 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         );
         $this->_application->bootstrap();
 
-        /**
-         * Fix for ZF-8193
-         * http://framework.zend.com/issues/browse/ZF-8193
-         * Zend_Controller_Action->getInvokeArg('bootstrap') doesn't work
-         * under the unit testing environment.
-         */
-        $front = Zend_Controller_Front::getInstance();
+        $front = $this->getFrontController();
         if($front->getParam('bootstrap') === null) {
             $front->setParam('bootstrap', $this->_application->getBootstrap());
         }
         
+        $router = new Xmltv_Plugin_Router();
+        $router->setRouter($front->getRouter());
+		$front->setRouter($router->getRouter());
+        
     }
     
     /**
-     * @group import
+     * @group admin
      */
     public function testRemoteAction(){
         
@@ -47,35 +41,37 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             'module'=>'admin',
             'controller'=>'import',
             'action'=>'remote', ));
-        $url = $this->url( $urlParams );
-        
-        $this->dispatch($url);
+        $url = $this->url( $urlParams, 'admin_import_remote' );
+        //$this->dispatch($url);
         
         // assertions
         $this->assertModule( $urlParams['module'] );
-        $this->assertController( 'import' );
-        $this->assertAction( 'remote' );
+        $this->assertController( $urlParams['controller'] );
+        $this->assertAction( $urlParams['action'] );
+        
+        $this->marTestIncomplete();
         
         
     }
     
     /**
-     * @group import
+     * @group admin
      */
-    public function testXmlParseChannelsAction($xml_file=null){
+    public function testXmlParseChannelsAction(){
         
         $urlParams = $this->urlizeOptions( array(
             'module'=>'admin',
             'controller'=>'import',
             'action'=>'xml-parse-channels', ));
-        $url = $this->url( $urlParams );
-        
-        $this->dispatch($url);
+        $url = $this->url( $urlParams, 'admin_import_xml-parse-channels' );
+        //$this->dispatch($url);
         
         // assertions
-        $this->assertModule( $urlParams['module'] );
-        $this->assertController( 'import' );
-        $this->assertAction( 'xml-parse-channels' );
+        //$this->assertModule( $urlParams['module'] );
+        //$this->assertController( $urlParams['controller'] );
+        //$this->assertAction( $urlParams['action'] );
+        
+        $this->marTestIncomplete();
         
     }
     
