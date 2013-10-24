@@ -70,7 +70,7 @@ if (isset($this->top_programs) && !empty($this->top_programs)) {
 		?>
 		<li>
 			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$prog['channel_icon'] ) ?>" width="16" />
-			<a href="<?php echo $this->url( array('channel'=>$prog['channel_alias'], 'alias'=>$prog['alias']), 'default_listings_program-week'); ?>"
+			<a href="<?php echo $this->url( array('channel'=>$prog['channel_alias'], 'alias'=>$prog['alias']), 'default_listings_broadcast-week'); ?>"
 				title="<?php echo $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $prog['title'], $prog['channel_title'])) ?>"
 				target="_blank"><?php echo $this->truncateString( $prog['title'], 3, 'words') ?>
 			</a>

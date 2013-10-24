@@ -28,7 +28,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	
 	/**
 	 * 
-	 * @var Admin_Model_Programs
+	 * @var Admin_Model_Broadcasts
 	 */
 	private $broadcasts;
 	
@@ -38,7 +38,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	public function init() {
 	   
 	    parent::init();
-	    $this->broadcasts = new Admin_Model_Programs();
+	    $this->broadcasts = new Admin_Model_Broadcasts();
 	    $this->_xmlFolder = APPLICATION_PATH.'/../uploads/parse/';
 	    
 	}
@@ -260,7 +260,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		}
 		
 		$programs = $xml->getElementsByTagName('programme');
-		$broadcasts = new Admin_Model_Programs();
+		$broadcasts = new Admin_Model_Broadcasts();
 		$eventsModel = new Xmltv_Model_Event();
 		$i=0; //for debug
 		foreach ($programs as $node){
@@ -614,7 +614,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		/*
 		 * Get programs count
 		 */
-		$programs = new Admin_Model_Programs();
+		$programs = new Admin_Model_Broadcasts();
 		$current = $programs->getProgramsCountForWeek($weekStart, $weekEnd);
 		
 		$adapter = new Zend_ProgressBar_Adapter_JsPull();

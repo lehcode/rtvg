@@ -41,7 +41,7 @@ foreach ($this->channel_aliases as $a) {
 foreach ($this->week_items as $i){
 	$url = $this->url( array(
     	'channel'=>$i['channel_alias'],
-    	'alias'=>$i['alias'] ), 'default_listings_program-week');
+    	'alias'=>$i['alias'] ), 'default_listings_broadcast-week');
 	if ( strlen($url)<=254 ) {
     ?>
     <url>

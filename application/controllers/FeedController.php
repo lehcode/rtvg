@@ -9,11 +9,6 @@
 class FeedController extends Rtvg_Controller_Action
 {
     /**
-     * @var Xmltv_Model_Programs
-     */
-    protected $programsModel;
-    
-    /**
      * @var Xmltv_Model_Channels
      */
     protected $channelsModel;

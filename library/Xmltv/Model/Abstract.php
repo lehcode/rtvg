@@ -1,5 +1,5 @@
 <?php
-abstract class Xmltv_Model_Abstract
+class Xmltv_Model_Abstract
 {
     /**
      * Main model for table

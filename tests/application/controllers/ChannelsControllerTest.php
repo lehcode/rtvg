@@ -10,7 +10,7 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	{
         $this->bootstrap = array($this, 'appBootstrap');
         parent::setUp();
-        $this->_bcModel = new Xmltv_Model_Programs();
+        $this->_bcModel = new Xmltv_Model_BroadcastsTest();
         $this->_channelsModel = new Xmltv_Model_Channels();
 	}
     
@@ -73,7 +73,7 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $weekDays = new Zend_Controller_Action_Helper_WeekDays();
         $week_start = $weekDays->getStart($now);
 	    $week_end   = $weekDays->getEnd($now);
-        $topBc = $this->_bcModel->topPrograms($amt, $week_start, $week_end);
+        $topBc = $this->_bcModel->topBroadcasts($amt, $week_start, $week_end);
 		$this->assertNotEmpty($topBc);
         
         // Channels list

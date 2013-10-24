@@ -13,7 +13,7 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	{
         $this->bootstrap = array($this, 'appBootstrap');
         parent::setUp();
-        $this->_bcModel = new Xmltv_Model_Programs();
+        $this->_bcModel = new Xmltv_Model_BroadcastsTest();
         $this->_channelsModel = new Xmltv_Model_Channels();
         $this->_articlesModel = new Xmltv_Model_Articles();
 	}
@@ -57,7 +57,7 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         // Frontpage listing
         $channelsAmt = (int)Zend_Registry::get('site_config')->top->broadcasts->get('amount');
         $this->assertNotEmpty($channelsAmt);
-        $top = $this->_bcModel->topPrograms($channelsAmt);
+        $top = $this->_bcModel->topBroadcasts($channelsAmt);
         $this->assertNotEmpty($top);
         $list = $this->_bcModel->frontpageListing($top);
         $this->assertNotEmpty($list);

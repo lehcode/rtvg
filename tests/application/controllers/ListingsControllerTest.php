@@ -9,7 +9,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    
     /**
      *
-     * @var Xmltv_Model_Programs
+     * @var Xmltv_Model_BroadcastsTest
      */
     private $_bcModel;
     
@@ -34,18 +34,26 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
      */
     private $weekEnd;
 	
+    /**
+     * 
+     */
     public function setUp()
 	{
         $this->bootstrap = array($this, 'appBootstrap');
         parent::setUp();
-        $this->_bcModel = new Xmltv_Model_Programs();
+        
+        $this->_bcModel = new Xmltv_Model_BroadcastsTest();
         $this->_channelsModel = new Xmltv_Model_Channels();
         $this->_videosModel = new Xmltv_Model_Videos();
+        
         $this->weekStart = $this->getWeekStart();
         $this->weekEnd = $this->getWeekEnd();
         
 	}
     
+    /**
+     * @codeCoverageIgnore
+     */
     public function appBootstrap()
     {
         $this->_application = new Zend_Application(APPLICATION_ENV,
@@ -66,25 +74,25 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
     /**
      * @group listings
      */
-	public function testProgramWeekAction(){
+	public function testBroadcastWeekAction(){
 		
         $channels = $this->_channelsModel->getPublished();
         $this->assertNotEmpty($channels);
         $channel = $channels[array_rand($channels, 1)];
         
-        $bcs = new Xmltv_Model_ProgramsTest();
+        $bcs = new Xmltv_Model_BroadcastsTest();
         $weekBcs = $bcs->thisWeekBroadcasts($channel['id'], $this->weekStart, $this->weekEnd);
         $bc = $weekBcs[array_rand($weekBcs, 1)];
         
         $urlParams  = $this->urlizeOptions( array(
 	    	'module'=>'default',
 	    	'controller'=>'listings',
-	    	'action'=>'program-week',
+	    	'action'=>'broadcast-week',
             'channel'=>$channel['alias'],
             'alias'=>$bc['alias'],
             'date'=>'неделя',
 	    ));
-	    $url = $this->url( $urlParams, 'default_listings_program-week' );
+	    $url = $this->url( $urlParams, 'default_listings_broadcast-week' );
 	    $this->dispatch($url);
         
         $this->assertModule( $urlParams['module'] );
@@ -97,6 +105,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $list = $this->_bcModel->broadcastThisWeek( $bc['alias'], $channel['id'], $this->weekStart, $this->weekEnd);
         $this->assertNotEmpty($list);
         $this->_bcModel->similarBroadcastsThisWeek( $bc['alias'], $this->weekStart, $this->weekEnd, $channel['id'] );
+        $this->assertResponseCode(200);
         
         $this->markTestIncomplete();
 		
@@ -138,6 +147,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    $this->dispatch($url);
         
         $this->_bcModel->categoryDay( $cat['id']);
+        $this->assertResponseCode(200);
         
     }
     
@@ -193,11 +203,11 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->dispatch($url);
 
         // Assertions
-        $this->assertNotRedirect();
         $this->assertResponseCode(200);
         $this->assertModule( $urlParams['module'] );
         $this->assertController( $urlParams['controller'] );
         $this->assertAction( $urlParams['action'] );
+        
         
         //$this->assertQueryCount("#maincontent h1", 1 );
         
@@ -233,25 +243,25 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
     /**
      * @group listings
      */
-	public function testProgramDayAction(){
+	public function testBroadcastDayAction(){
 		
         $channels = $this->_channelsModel->getPublished();
         $this->assertNotEmpty($channels);
         $channel = $channels[array_rand($channels, 1)];
         $this->assertNotEmpty($channel);
         
-        $bcs = new Xmltv_Model_ProgramsTest();
+        $bcs = new Xmltv_Model_BroadcastsTest();
         $todayBcs = $bcs->getTodayBroadcasts($channel['id']);
         $this->assertNotEmpty($todayBcs);
         
         $urlParams = $this->urlizeOptions( array(
 	    	'module'=>'default',
 	    	'controller'=>'listings',
-	    	'action'=>'program-day',
+	    	'action'=>'broadcast-day',
             'channel'=>$channel['alias'],
             'alias'=>$todayBcs[array_rand($todayBcs, 1)]['alias'],
 	    ));
-        $url = $this->url( $urlParams, 'default_listings_program-day' );
+        $url = $this->url( $urlParams, 'default_listings_broadcast-day' );
 	    $this->dispatch($url);
         
         $this->assertModule( $urlParams['module'] );

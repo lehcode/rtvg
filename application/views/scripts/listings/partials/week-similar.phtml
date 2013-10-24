@@ -20,11 +20,11 @@ foreach ($this->items as $single){
 	}
 
 	$channelIcon = $this->baseUrl('images/channel_logo/'.$single['channel_icon']);
-	$date = $single['start']->toString("dd-MM-yyyy");
+	$date = $single['start']->toString("dd-MM-YYYY");
 	$linkAttrHref = $this->url( array(
 		'channel'=>$this->escape( $single['channel_alias']),
 		'alias'=>$this->escape( $single['alias']),
-		'date'=>$date), 'default_listings_program-date');
+		'date'=>$date), 'default_listings_broadcast-date');
 	
 	$day = Xmltv_String::ucfirst( $single['start']->toString( 'EEEE'));
 	$startDate = Xmltv_String::ucfirst( $single['start']->toString( 'd MMMM'));

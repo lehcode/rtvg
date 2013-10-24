@@ -4,7 +4,7 @@
  *
  * @author Hiragana
  */
-class Xmltv_Model_ProgramsTest extends Xmltv_Model_Programs 
+class Xmltv_Model_BroadcastsTest extends Xmltv_Model_Broadcasts 
 {
     
     public function thisWeekBroadcasts($channel_id=null, Zend_Date $week_start, Zend_Date $week_end){

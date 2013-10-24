@@ -15,9 +15,9 @@ class Admin_GrabController extends Rtvg_Controller_Admin
     private $channelsModel;
 
     /**
-	 * @var Admin_Model_Programs
+	 * @var Admin_Model_Broadcasts
 	 */
-    private $programsModel;
+    private $bcModel;
     
     /**
      * (non-PHPdoc)
@@ -32,7 +32,7 @@ class Admin_GrabController extends Rtvg_Controller_Admin
         	->initContext();
         
         $this->channelsModel = new Admin_Model_Channels();
-        $this->programsModel = new Admin_Model_Programs();
+        $this->bcModel = new Admin_Model_Broadcasts();
         
         
     }
@@ -215,7 +215,7 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		            break;
 			    		        }
 			    		        
-			    		        $titles = $this->programsModel->parseTitle( $data['title'] );
+			    		        $titles = $this->bcModel->parseTitle( $data['title'] );
 			    		        $data = array_merge($titles, $data);
 			    		        $titles = $parser->fixTitles( $data );
 			    		        $data = array_merge($titles, $data);
@@ -225,19 +225,19 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        
 			    		        $data['start']   = $data['start']->toString("YYYY-MM-dd HH:mm").':00';
         		        		$data['end']     = $data['end']->toString("YYYY-MM-dd HH:mm").':00';
-			    		        $data['alias']   = $this->programsModel->makeAlias( $data['title'] );
+			    		        $data['alias']   = $this->bcModel->makeAlias( $data['title'] );
 			    		        $data['channel'] = $channel['id'];
 			    		        
 			    		        //Zend_Debug::dump( $data );
 			    		        //die(__FILE__.': '.__LINE__);
 			    		        
 			    		        // Create broadcast object
-			    		        $newBc  = $this->programsModel->newBroadcast( $data );
-			    		        $search = $this->programsModel->getProgramHash( $newBc );
+			    		        $newBc  = $this->bcModel->newBroadcast( $data );
+			    		        $search = $this->bcModel->getProgramHash( $newBc );
 			    		        
 			    		        // Check if object already in DB and
 			    		        // skip to next broadcast if it is
-			    		        if (false !== (bool)$this->programsModel->search( 'hash', $search )) {
+			    		        if (false !== (bool)$this->bcModel->search( 'hash', $search )) {
 			    		        	break;
 			    		        }
 			    		        $newBc->hash = $search;
@@ -249,7 +249,7 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        			300006=>'Религия',
 			    		        			300037=>'Музыка' );
 			    		        	if (array_key_exists($newBc->channel, $fixCats)){
-			    		        		$newBc->category = $this->programsModel->getProgramCategory( $fixCats[$newBc->channel]);
+			    		        		$newBc->category = $this->bcModel->getProgramCategory( $fixCats[$newBc->channel]);
 			    		        	} else {
 			    		        		$newBc->category = null;
 			    		        	}
@@ -258,7 +258,7 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        if (is_array($newBc->directors) && count($newBc->directors)) {
 			    		            $persons = array();
 			    		        	foreach ($newBc->directors as $p){
-			    		        		if(!$id = $this->programsModel->personId($p, 'director')){
+			    		        		if(!$id = $this->bcModel->personId($p, 'director')){
 			    		        			$persons[]=(int)$id;
 			    		        		}
 			    		        	}
@@ -271,7 +271,7 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        if (is_array($newBc->actors) && count($newBc->actors)) {
 			    		            $persons = array();
 			    		        	foreach ($newBc->actors as $p){
-			    		        		if(!$id = $this->programsModel->personId($p, 'actor')){
+			    		        		if(!$id = $this->bcModel->personId($p, 'actor')){
 			    		        			$persons[]=(int)$id;
 			    		        		}
 			    		        	}

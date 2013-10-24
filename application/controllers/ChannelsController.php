@@ -3,7 +3,6 @@
  * Frontend Channels controller
  * 
  * @author  Antony Repin
- * @version $Id: ChannelsController.php,v 1.31 2013-04-06 22:35:03 developer Exp $
  *
  */
 class ChannelsController extends Rtvg_Controller_Action
@@ -93,7 +92,7 @@ class ChannelsController extends Rtvg_Controller_Action
          * Данные для модуля самых популярных программ
          * #####################################################################
          */
-        $top = $this->channelsModel->topBroadcasts();
+        $top = $this->bcModel->topBroadcasts();
         (APPLICATION_ENV=='development') ? Zend_Registry::get('fireLog')->log($top, Zend_Log::INFO) : null ;
         $this->view->assign('top_programs', $top);
         

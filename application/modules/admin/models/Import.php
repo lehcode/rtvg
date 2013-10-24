@@ -41,13 +41,13 @@ class Admin_Model_Import
 		$dates['start'] = new Zend_Date($date_str, $f, 'ru');
 		$date_str = $this->_getDateString((string)$xml->attributes()->stop);
 		$dates['end'] = new Zend_Date($date_str, $f, 'ru');
-		$start = $dates['start']->toString("yyyy-MM-dd HH:mm:ss");
-		$end   = $dates['end']->toString("yyyy-MM-dd HH:mm:ss");
+		$start = $dates['start']->toString("YYYY-MM-dd HH:mm:ss");
+		$end   = $dates['end']->toString("YYYY-MM-dd HH:mm:ss");
 		$hash = md5((int)$xml->attributes()->channel.$start.$end);
 		
 		try {
 			if (!$data = $this->_broadcasts->fetchRow("`hash`='$hash'")) {
-				$programs = new Admin_Model_Programs();
+				$programs = new Admin_Model_Broadcasts();
 				$data = $programs->parseProgramXml($xml);
 			} else {
 				$data = $data->toArray();

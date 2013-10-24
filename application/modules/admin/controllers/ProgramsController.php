@@ -50,11 +50,11 @@ class Admin_ProgramsController extends Rtvg_Controller_Admin
             
             ini_set('max_execution_time', 0);
             	
-            $start = new Zend_Date($this->_getParam('delete_start'), 'dd.MM.yyyy'); 
-            $start = $start->toString('yyyy-MM-dd 00:00:00');
-            $end   = new Zend_Date($this->_getParam('delete_end'), 'dd.MM.yyyy'); 
-            $end   = $end->toString('yyyy-MM-dd 00:00:00');
-            $programs = new Admin_Model_Programs();
+            $start = new Zend_Date($this->_getParam('delete_start'), 'dd.MM.YYYY'); 
+            $start = $start->toString('YYYY-MM-dd 00:00:00');
+            $end   = new Zend_Date($this->_getParam('delete_end'), 'dd.MM.YYYY'); 
+            $end   = $end->toString('YYYY-MM-dd 00:00:00');
+            $programs = new Admin_Model_Broadcasts();
 
             if ( (bool)$this->input->getEscaped('deleteinfo')===true) {
             	$programs->deletePrograms($start, $end, true);
@@ -104,7 +104,7 @@ class Admin_ProgramsController extends Rtvg_Controller_Admin
 
  	public function programsDeleteProgressAction(){
  		
- 		$model = new Admin_Model_Programs();
+ 		$model = new Admin_Model_Broadcasts();
  		var_dump($this->_getAllParams());
  		//echo "Completed";
     	exit();

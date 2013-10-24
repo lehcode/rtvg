@@ -2,8 +2,8 @@
 	colors="true"
 	verbose="true"
 	convertErrorsToExceptions="true"
-	convertNoticesToExceptions="false"
 	convertWarningsToExceptions="true"
+    convertNoticesToExceptions="true"
     backupGlobals="true"
     backupStaticAttributes="false"
 	stopOnFailure="true"
@@ -27,6 +27,15 @@
 		<listener class="Lagged_Test_PHPUnit_ControllerTestCase_Listener" file="Lagged/Test/PHPUnit/ControllerTestCase/Listener.php" />
 	</listeners>
     
+    <logging>
+        <log type="coverage-html" 
+            target="./log/coverage" 
+            charset="UTF-8"
+            yui="true" highlight="true"
+            lowUpperBound="50" 
+            highLowerBound="80"/>
+    </logging>
+    
     <!-- <groups>
         <include>
             <group></group>
@@ -38,7 +47,8 @@
     
     <php>
         <ini name="html_errors" value="Off" />
-        <ini name="max_execution_time" value="90" />
+        <ini name="max_execution_time" value="0" />
+        <ini name="memory_limit" value="512M" />
         <ini name="xdebug.default_enable" value="1" />
         <ini name="xdebug.var_display_max_data" value="4096" />
         <ini name="xdebug.auto_trace" value="0" />

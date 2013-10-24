@@ -377,15 +377,15 @@ class ListingsController extends Rtvg_Controller_Action
      * 
      * @throws Zend_Exception
      */
-    public function programDayAction () {
+    public function broadcastDayAction () {
         
         parent::validateRequest();
             
-        $this->view->assign( 'pageclass', 'program-day' );
+        $this->view->assign( 'pageclass', 'broadcast-day' );
         $bcAlias = $this->input->getEscaped('alias');
         
         if ( $this->input->getEscaped( 'date' )=='неделя' ) {
-            return $this->_forward( 'program-week', 'listings', 'default', array( 
+            return $this->_forward( 'broadcast-week', 'listings', 'default', array( 
                 'date'=>Zend_Date::now()->toString('dd-MM-yyyy')));
         }
         
@@ -441,7 +441,7 @@ class ListingsController extends Rtvg_Controller_Action
             $this->cache->setLifetime( 86400 );
             $f = '/Listings/Program/Day';
             
-            $hash = $this->cache->getHash( 'program-day-single_'.$bcAlias.'_'.$channel['id'] );
+            $hash = $this->cache->getHash( 'broadcast-day-single_'.$bcAlias.'_'.$channel['id'] );
             if (false === ($broadcasts = $this->cache->load( $hash, 'Core', $f ))) {
                 $broadcasts = $this->bcModel->getBroadcastThisDay( $bcAlias, $channel['id'], $listingDate, 1 );
                 $this->cache->save( $broadcasts, $hash, 'Core', $f );
@@ -470,7 +470,7 @@ class ListingsController extends Rtvg_Controller_Action
                 $this->cache->setLifetime(86400);
                 $f = '/Listings/Program/Day';
                 
-                $hash = $this->cache->getHash('program-day_'.$bcAlias);
+                $hash = $this->cache->getHash('broadcast-day_'.$bcAlias);
                 if (false === ($list = $this->cache->load( $hash, 'Core', $f ))) {
                     $list = $this->bcModel->getBroadcastForDay( $bcAlias, $channel['id'], $listingDate );
                     $this->cache->save( $list, $hash, 'Core', $f );
@@ -562,11 +562,11 @@ class ListingsController extends Rtvg_Controller_Action
      * 
      * @throws Zend_Exception
      */
-    public function programWeekAction(){
+    public function broadcastWeekAction(){
         
         if (parent::validateRequest()) {
             
-            $this->view->assign( 'pageclass', 'program-week' );
+            $this->view->assign( 'pageclass', 'broadcast-week' );
             $bcAlias = $this->input->getEscaped('alias');
             
             $channel = parent::channelInfo( $this->input->getEscaped('channel') );
@@ -615,9 +615,6 @@ class ListingsController extends Rtvg_Controller_Action
                 $list = $this->bcModel->broadcastThisWeek( $bcAlias, $channel['id'], $weekStart, $weekEnd);
             }
             
-            //var_dump($list);
-            //die(__FILE__.': '.__LINE__);
-            
             $this->view->assign( 'list', $list );
             
             if ($this->cache->enabled){
@@ -643,7 +640,7 @@ class ListingsController extends Rtvg_Controller_Action
             }
             
             $this->bcModel->addHit( $list[0]['hash'] );
-            return $this->render('program-week');
+            return $this->render('broadcast-week');
             
         }
         
@@ -783,12 +780,11 @@ class ListingsController extends Rtvg_Controller_Action
      */
     public function seriesWeekAction(){
     
-        $model = new Xmltv_Model_Programs();
         $data['date'] = new Zend_Date(null, null, 'ru');
         $weekStart = $this->_helper->WeekDays( array( 'method'=>'getStart', 'data'=>$data));
         $data['date'] = new Zend_Date(null, null, 'ru');
         $weekEnd = $this->_helper->WeekDays( array( 'method'=>'getEnd', 'data'=>$data));
-        $seriesList = $model->getCategoryForPeriod( $weekStart, $weekEnd, $this->categoriesMap['series'] );
+        $seriesList = $this->bcModel->getCategoryForPeriod( $weekStart, $weekEnd, $this->categoriesMap['series'] );
         //var_dump($weekStart->toString('YYYY-MM-dd'));
         //var_dump($weekEnd->toString('YYYY-MM-dd'));
     

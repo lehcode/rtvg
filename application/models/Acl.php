@@ -55,8 +55,8 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-listing' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.day-date' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.outdated' ), $default );
-	    $this->add( new Zend_Acl_Resource( 'default:listings.program-week' ), $default );
-	    $this->add( new Zend_Acl_Resource( 'default:listings.program-day' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:listings.broadcast-week' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:listings.broadcast-day' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.channel-week' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.category' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.premieres-week' ), $default );
@@ -64,6 +64,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:smth.rich' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:videos.show-video' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:user' ), 'default:');
+	    $this->add( new Zend_Acl_Resource( 'default:user.index' ), 'default:');
 	    $this->add( new Zend_Acl_Resource( 'default:user.login' ), 'default:user' );
 	    $this->add( new Zend_Acl_Resource( 'default:user.logout' ), 'default:user' );
 	    $this->add( new Zend_Acl_Resource( 'default:user.profile' ), 'default:user' );	    
@@ -79,6 +80,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:fonts.index' ), $default);
 	    $this->add( new Zend_Acl_Resource( 'default:css' ), $default);
 	    $this->add( new Zend_Acl_Resource( 'default:css.index' ), $default);
+	    $this->add( new Zend_Acl_Resource( 'default:videos.index' ), $default);
 	    
 	    // Deny errors for everyone
 	    $denied1 = new Zend_Acl_Resource( 'default:%25D0%25B2%25D0%25B8%25D0%25B4%25D0%25B5%25D0%25BE.%25D0%25BE%25D0%25BD%25D0%25BB%25D0%25B0%25D0%25B9%25D0%25BD' );	    

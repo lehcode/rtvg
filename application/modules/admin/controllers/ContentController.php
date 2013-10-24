@@ -208,7 +208,7 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 				    }
 				}
 				
-				$article['alias']  = Admin_Model_Programs::makeAlias( $article['title'] );
+				$article['alias']  = Admin_Model_Broadcasts::makeAlias( $article['title'] );
 				foreach ($incomeTypes as $type){
 					$article[$type]=0;
 					if ($type==$this->input->getEscaped('income')){

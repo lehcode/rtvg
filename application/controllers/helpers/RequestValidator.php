@@ -187,12 +187,12 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 								
 							break;
 							
-							case 'program-day':
+							case 'broadcast-day':
 								$validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
 								$validators['date']  = array( new Zend_Validate_InArray( array('сегодня','неделя' ) ));
 							break;
 								
-							case 'program-week':
+							case 'broadcast-week':
 								$validators['alias'] = array( new Zend_Validate_Regex( self::VIDEO_ALIAS_REGEX ));
 								$validators['date'] = array( new Zend_Validate_Alpha(false) );
 							break;

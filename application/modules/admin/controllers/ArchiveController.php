@@ -68,7 +68,7 @@ class Admin_ArchiveController extends Rtvg_Controller_Admin
 			/*
 			 * Process
 			 */
-			$model = new Admin_Model_Programs();
+			$model = new Admin_Model_Broadcasts();
 			try {
 				$model->archivePrograms($start, $end);
 			} catch (Exception $e) {

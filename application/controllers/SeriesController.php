@@ -27,12 +27,11 @@ class SeriesController extends Rtvg_Controller_Action
 	
 	public function seriesWeekAction(){
 		
-		$model = new Xmltv_Model_Programs();
 		$data['date'] = new Zend_Date(null, null, 'ru');
 		$weekStart = $this->_helper->WeekDays( array( 'method'=>'getStart', 'data'=>$data));
 		$data['date'] = new Zend_Date(null, null, 'ru');
 		$weekEnd = $this->_helper->WeekDays( array( 'method'=>'getEnd', 'data'=>$data));
-		$seriesList = $model->getCategoryForPeriod( $weekStart, $weekEnd, $this->categoriesMap['series'] );
+		$seriesList = $this->bcModel->getCategoryForPeriod( $weekStart, $weekEnd, $this->categoriesMap['series'] );
 		//var_dump($weekStart->toString('YYYY-MM-dd'));
 		//var_dump($weekEnd->toString('YYYY-MM-dd'));
 		

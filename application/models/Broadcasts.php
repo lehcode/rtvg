@@ -7,7 +7,7 @@
  * @version $Id: Programs.php,v 1.31 2013-04-11 05:19:30 developer Exp $
  *
  */
-class Xmltv_Model_Programs extends Xmltv_Model_Abstract
+class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
 {
 
     protected $weekDays;

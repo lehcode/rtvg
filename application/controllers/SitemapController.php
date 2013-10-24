@@ -11,22 +11,13 @@ class SitemapController extends Rtvg_Controller_Action
 {
     
     /**
-     * @var Xmltv_Model_Programs
-     */
-    protected $programsModel;
-    
-    /**
-     * @var Xmltv_Model_Channels
-     */
-    protected $channelsModel;
-    
-	/**
 	 * (non-PHPdoc)
 	 * @see Xmltv_Controller_Action::init()
 	 */
     public function init () {
         
         parent::init();
+        
         $this->_request->setParam('format', 'xml');
 		$this->_helper->getHelper('contextSwitch')
             ->addActionContext('sitemap', 'xml')
@@ -34,8 +25,6 @@ class SitemapController extends Rtvg_Controller_Action
         $this->getResponse()
             ->setHeader('Content-type', 'text/xml');
         $this->_helper->layout->disableLayout();
-        $this->programsModel = new Xmltv_Model_Programs();
-        $this->channelsModel  = new Xmltv_Model_Channels();
 	}
     
     /**
@@ -79,11 +68,11 @@ class SitemapController extends Rtvg_Controller_Action
 		    $f = "/Listings";
 		    $hash = 'sitemap_e1';
 		    if (($list = $this->cache->load($hash, 'Core', $f))===false) {
-		    	$list = $this->programsModel->rssWeek( $weekStart, $weekEnd );
+		    	$list = $this->bcModel->rssWeek( $ws, $we );
 		    	$this->cache->save( $list, $hash, 'Core', $f );
 		    }
 		} else {
-		    $list = $this->programsModel->rssWeek( $ws, $we );
+		    $list = $this->bcModel->rssWeek( $ws, $we );
 		}
 		$this->view->assign('week_items', $list);
 		

@@ -71,7 +71,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	
 	/**
 	 * Channels model
-	 * @var Xmltv_Model_Programs
+	 * @var Xmltv_Model_Broadcasts
 	 */
 	protected $bcModel;
 
@@ -209,7 +209,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 				
 		$this->weekDays = $this->_helper->getHelper('WeekDays');
 		$this->channelsModel = new Xmltv_Model_Channels();
-		$this->bcModel = new Xmltv_Model_Programs();
+		$this->bcModel = new Xmltv_Model_Broadcasts();
 		$this->videosModel = new Xmltv_Model_Videos();
 		$this->commentsModel = new Xmltv_Model_Comments();
 		$this->usersModel = new Xmltv_Model_Users();
@@ -485,7 +485,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         
         $week_start = $this->weekDays->getStart($now);
 	    $week_end   = $this->weekDays->getEnd($now);
-        $bcModel = new Xmltv_Model_Programs();
+        $bcModel = new Xmltv_Model_Broadcasts();
 		
         if ($this->cache->enabled){
 		    $this->cache->setLifetime(43200);

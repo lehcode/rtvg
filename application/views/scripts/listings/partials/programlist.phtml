@@ -107,7 +107,7 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 		<h3>
 			<a href="<?php echo $this->url( array(
 				'channel'=>$channelAlias,
-				'alias'=>$prog['alias']), 'default_listings_program-week' ); ?>"
+				'alias'=>$prog['alias']), 'default_listings_broadcast-week' ); ?>"
 				title="Расписание <?php echo $prog['title'] ?> на неделю"
 				target="_self">
 				<?php echo $prog['title']; ?>
@@ -131,7 +131,7 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 			<li><a href="<?php echo $this->url( array(
 				'alias'=>$prog['alias'],
 				'channel'=>$channelAlias,
-				'timespan'=>'сегодня'), 'default_listings_program-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
+				'timespan'=>'сегодня'), 'default_listings_broadcast-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
 				<?php printf('%s, <strong>%s</strong> сегодня', $channelTitle, $prog['title']) ; ?>
 			</a></li>
 			<?php if (isset($prog['category_title']) && !empty($prog['category_title'])) {
