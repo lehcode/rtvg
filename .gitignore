@@ -10,3 +10,5 @@ pinfo.php
 /uploads/parse/current.xml.old
 /uploads/parse
 *.tmp
+Xmltv_Model_Comments--*
+zend_cache--*
