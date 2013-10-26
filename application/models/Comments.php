@@ -21,21 +21,6 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		
 	}
 	
-	private function _curl($url) {
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_HEADER, false);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, true);
-		curl_setopt($ch, CURLOPT_COOKIEFILE, APPLICATION_PATH."/../vk.txt");
-		curl_setopt($ch, CURLOPT_COOKIEJAR, APPLICATION_PATH."/../vk.txt");
-		$body = curl_exec($ch);
-		curl_close($ch);
-		//decode and return the response
-		return $body;
-	}
-	
 	/**
 	 * Get RSS search results for particular query
 	 * 
@@ -61,38 +46,14 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		
 		$query = preg_replace('/[^\p{Common}\p{Cyrillic}\p{Latin}\s\d]/ui', '', $query);
 		
-		if (APPLICATION_ENV=='development'){
-			echo "<b>".__METHOD__."</b><br />";
-			Zend_Debug::dump($query);
-			//var_dump($feedCache);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		Zend_Feed_Reader::setCache( $feedCache );
+        Zend_Feed_Reader::setCache( $feedCache );
 		Zend_Feed_Reader::useHttpConditionalGet();
 		
 		$q = urlencode($query);
 		$url = "http://blogs.yandex.ru/search.rss?text=$q&ft=all";
-		
-		if (APPLICATION_ENV=='development'){
-			//Zend_Debug::dump($url);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		try {
-			$result = Zend_Feed_Reader::import($url);
-		} catch (Zend_Feed_Exception $e) {
-			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//Zend_Debug::dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		$this->_feed = $result;
-		
-		return $result;
+		$this->_feed = Zend_Feed_Reader::import($url);
+        
+        return $this->_feed;
 		
 	}
 	
@@ -104,129 +65,108 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	 */
 	public function parseYandexFeed($feed_data=null, $min_length=196){
 		
-		if (APPLICATION_ENV=='development'){
-			//Zend_Debug::dump($min_length);
-			//Zend_Debug::dump($this->_feed);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		if (null !== $this->_feed){
 		    $feed_data = $this->_feed;
 		}
 		
 		$result = array();
 		$c=0;
-		foreach ($feed_data as $item) {
+        if (count($feed_data)){
+            foreach ($feed_data as $item) {
 			
-		    $content = $feed_data->current()->getContent();
-		    
-		    // Check if content is not empty
-		    if (!empty($content)) {
-		        
-		        $feedItem = $feed_data->current();
-		        
-		        $content = strip_tags( $feedItem->getContent() );
-		        $content = trim(strip_tags($content, 'em,b,u,strong'));
+                $content = $feed_data->current()->getContent();
 
-		        // Проверка на русский язык
-		        if (preg_match('/[\p{Cyrillic}]+/ui', $content)){
-		        
-		        	if (APPLICATION_ENV=='development'){
-		        		//Zend_Debug::dump(Xmltv_String::strlen($content));
-		        		//die(__FILE__.': '.__LINE__);
-		        	}
-		        	 
-		        	// Проверка на длину описания
-		        	if ( Xmltv_String::strlen($content) >= $min_length ) {
-		        
-		        		if (APPLICATION_ENV=='development'){
-		        			//var_dump($content);
-		        			//die(__FILE__.': '.__LINE__);
-		        		}
-		        		
-		        		/*
-		        		 * Replace trash
-		        		 */
-		        		$search = array(
-		        			'source_title',
-		        			'source_desc',
-		        			'attach1_title',
-		        			'attach1_desc',
-		        			'attach1_text',
-		        		);
-		        		foreach ($search as $string){
-		        		    if (Xmltv_String::stristr($content, $string)){
-		        		    	$content = Xmltv_String::str_ireplace($string, '', $content);
-		        		    }
-		        		}
-		        		
-		        		$regex = array(
-		        			'/#[\d\w]+/ui'
-		        		);
-		        		foreach ($regex as $expr){
-		        			if (preg_match($expr, $content)){
-		        				$content = preg_replace($expr, '', $content);
-		        			}
-		        		}
-		        		
-		        		if (strstr($content, '. ')) {
-		        			$ca = explode('.', $content);
-		        			foreach ($ca as $k=>$a) {
-		        				$ca[$k] = trim( $a );
-		        			}
-		        			$content = implode('. ', $ca);
-		        		} else {
-		        			$content = trim( $content );
-		        		}
-		        		
-		        		$content = preg_replace('/\s+/', ' ', $content);
-		        		
-		        		// Проверка совпадения текста заголовка и сообщения	
-		        		$t = trim( preg_replace('/\s+/mui', ' ', strip_tags( $feedItem->getTitle() )));
-		        		$expl   = explode(' ', $t);
-		        		$chunks = array_chunk($expl, 3);
-		        		
-		        		foreach ($chunks as $p) {
-		        			$impl = implode(' ', $p);
-		        			if (Xmltv_String::stristr($content, $impl ));
-		        			$match = true;
-		        		}
-		        		
-		        		if ($match===true) {
-		        			$intro = $content;
-		        		} else {
-		        			$intro = ( $t.' '.$content );
-		        		}
-		        		
-		        		$result[$c]['intro'] = strip_tags( html_entity_decode( $intro ));
-		        		$result[$c]['src_url']  = $feedItem->getLink();
-		        		
-		        		try {
-		        			$result[$c]['author'] = $this->_extractBlogAuthor( $feedItem->getLink() );
-		        		} catch (Zend_Feed_Exception $e) {
-		        			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-		        		}
+                // Check if content is not empty
+                if (!empty($content)) {
 
-		        		if ($feedItem->getDateModified()) {
-		        			$result[$c]['created'] = new Zend_Date( $feedItem->getDateCreated());
-		        		}
-		        		
-		        		$c++;
-		        	}
-		        }
-		    }
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		if (empty($result) || $result === false) {
-			return false;
-		}
+                    $feedItem = $feed_data->current();
+
+                    $content = strip_tags( $feedItem->getContent() );
+                    $content = trim(strip_tags($content, 'em,b,u,strong'));
+
+                    // Проверка на русский язык
+                    if (preg_match('/[\p{Cyrillic}]+/ui', $content)){
+
+                        // Проверка на длину описания
+                        if ( Xmltv_String::strlen($content) >= $min_length ) {
+
+                            /*
+                             * Replace trash
+                             */
+                            $search = array(
+                                'source_title',
+                                'source_desc',
+                                'attach1_title',
+                                'attach1_desc',
+                                'attach1_text',
+                            );
+                            foreach ($search as $string){
+                                if (Xmltv_String::stristr($content, $string)){
+                                    $content = Xmltv_String::str_ireplace($string, '', $content);
+                                }
+                            }
+
+                            $regex = array(
+                                '/#[\d\w]+/ui'
+                            );
+                            foreach ($regex as $expr){
+                                if (preg_match($expr, $content)){
+                                    $content = preg_replace($expr, '', $content);
+                                }
+                            }
+
+                            if (strstr($content, '. ')) {
+                                $ca = explode('.', $content);
+                                foreach ($ca as $k=>$a) {
+                                    $ca[$k] = trim( $a );
+                                }
+                                $content = implode('. ', $ca);
+                            } else {
+                                $content = trim( $content );
+                            }
+
+                            $content = preg_replace('/\s+/', ' ', $content);
+
+                            // Проверка совпадения текста заголовка и сообщения	
+                            $t = trim( preg_replace('/\s+/mui', ' ', strip_tags( $feedItem->getTitle() )));
+                            $expl   = explode(' ', $t);
+                            $chunks = array_chunk($expl, 3);
+
+                            foreach ($chunks as $p) {
+                                $impl = implode(' ', $p);
+                                if (Xmltv_String::stristr($content, $impl ));
+                                $match = true;
+                            }
+
+                            if ($match===true) {
+                                $intro = $content;
+                            } else {
+                                $intro = ( $t.' '.$content );
+                            }
+
+                            $result[$c]['intro'] = strip_tags( html_entity_decode( $intro ));
+                            $result[$c]['src_url']  = $feedItem->getLink();
+
+                            try {
+                                $result[$c]['author'] = $this->_extractBlogAuthor( $feedItem->getLink() );
+                            } catch (Zend_Feed_Exception $e) {
+                                throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
+                            }
+
+                            if ($feedItem->getDateModified()) {
+                                $result[$c]['created'] = new Zend_Date( $feedItem->getDateCreated());
+                            }
+
+                            $c++;
+                        }
+                    }
+                }
+            }
+            
+        }
 		
 		return $result;
+		
 		
 	}
 	
@@ -252,13 +192,9 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
 		}
 
+        $saved = array();
 		foreach ( $list as $li ) {
 			
-		    if (APPLICATION_ENV=='development'){
-		    	//var_dump($li);
-		    	//die(__FILE__.': '.__LINE__);
-		    }
-		    
 		    $new = $li;
 		    $new['created'] = is_a($li['created'], 'Zend_Date') ? $li['created']->toString("YYYY-MM-dd HH:mm:ss") : $li['created'];
 		    
@@ -271,28 +207,16 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		    $new['intro'] = $li['intro'];
 		    $new['author'] = $this->_extractBlogAuthor( $new['src_url'] );
 		    
-		    if (APPLICATION_ENV=='development'){
-		    	//var_dump($new);
-		    	//die(__FILE__.': '.__LINE__);
-		    }
-		    
 		    $row = $this->channelsCommentsTable->createRow($new);
-		    
-            if (APPLICATION_ENV=='development'){
-            	//var_dump($row);
-            	//die(__FILE__.': '.__LINE__);
-            }
+            $row->save();
             
-            try {
-                $row->save();
-            } catch (Exception $e) {
-                return false;
-            }
+            var_dump($row);
+            die(__FILE__.': '.__LINE__);
             
-		    
-	        return $row->toArray();
-	        
+            $saved[] = $row->toArray();
 		}
+        
+        return $saved;
 		
 	}
 	
@@ -377,8 +301,8 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 	 * @param  string $alias	//Channel or program alias
 	 * @param  string $type	 //channel|program
 	 * @param  bool   $paginate
-	 * @throws Zend_Exception
-	 * @return array
+	 * @return array|false
+     * @throws Zend_Exception
 	 */
 	public function channelComments($id=null, $paginate=false){
 	
@@ -388,38 +312,20 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		
 		$amt = (int)Zend_Registry::get('site_config')->channels->comments->get('amount');
 		$select = $this->db->select()
-			->from( array('comment'=>$this->channelsCommentsTable->getName()) )
+			->from( array('CM'=>$this->channelsCommentsTable->getName()) )
 			->where("`parent_id` = '$id'")
 			->order("added DESC")
 			->limit($amt);
 		
-		if (APPLICATION_ENV=='development'){
-		    Zend_Registry::get('fireLog')->log( $select->assemble(), Zend_Log::INFO );
-		    //parent::debugSelect($select, __METHOD__);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		$result = $this->db->fetchAll($select);
-		
-		if (!count($result)) {
-		    return false;
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		foreach ($result as $k=>$r){
-			$result[$k]['published'] = (bool)$r['published'];
-			$result[$k]['date_created'] = new Zend_Date( $r['date_created'] );
-			$result[$k]['date_added']   = new Zend_Date( $r['date_added'] );
-		}
-			
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
+        
+		if (count($result)){
+            foreach ($result as $k=>$r){
+                $result[$k]['published'] = (bool)$r['published'];
+                $result[$k]['date_created'] = new Zend_Date( $r['date_created'] );
+                $result[$k]['date_added']   = new Zend_Date( $r['date_added'] );
+            }
+        }
 			
 		return $result;
 		

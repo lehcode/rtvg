@@ -51,7 +51,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		try {
 		    $response = $fc->dispatch();
 		} catch (Exception $e) {
-            throw new Exception($e->getMessage(), 500, $e);
+            if(get_class($e)=='Zend_Loader_PluginLoader_Exception'){
+                //skip
+            } else {
+                throw new Exception($e->getMessage(), 500, $e);
+            }
+            
 		}
 		
         if (isset($response) && !$response->isException()) {
