@@ -10,10 +10,10 @@
  -->
 <config>
 	<nav>
-		<home>
+		<!-- <home>
         	<label>Ruvtgid</label>
             <route>default</route>
-        </home>
+        </home> -->
 		<channelList>
             <label>Все каналы</label>
             <route>default_channels_list</route>
