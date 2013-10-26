@@ -56,7 +56,7 @@ class FrontpageController extends Rtvg_Controller_Action
             $top = $this->bcModel->topBroadcasts($amt);
             if ($this->cache->enabled){
                 $this->cache->setLifetime(600);
-                $f = '/Listings/Frontpage';
+                $f = 'Listings/Frontpage';
                 $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
                 if (($list = $this->cache->load( $hash, 'Core', $f))===false) {
                     $list = $this->bcModel->frontpageListing($top);
@@ -71,7 +71,7 @@ class FrontpageController extends Rtvg_Controller_Action
         // Channels data for dropdown
 		if ($this->cache->enabled){
 		    $this->cache->setLifetime(600);
-		    $f = '/Channels';
+		    $f = 'Channels';
 			$hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
 	        if (($channels = $this->cache->load( $hash, 'Core', $f))===false) {
 		        $channels = $this->channelsModel->allChannels("title ASC");
@@ -88,7 +88,7 @@ class FrontpageController extends Rtvg_Controller_Action
         if ($articlesAmt>0){
             if ( $this->cache->enabled && APPLICATION_ENV=='production' ){
                 $this->cache->setLifetime(600);
-                $f = '/Content/Articles';
+                $f = 'Content/Articles';
                 $hash = md5( 'frontpage-articles' );
                 if (($channels = $this->cache->load( $hash, 'Core', $f))===false ) {
                     $articles = $this->articlesModel->frontpageItems( $articlesAmt );
