@@ -124,7 +124,8 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         //Channels comments
         $this->_commentsModel->channelComments( $channel['id'] );
         
-        
+        $this->assertQueryCount("#maincontent h1", 1 );
+        $this->assertQueryContentContains( "#maincontent h1", $channel['title']);
         
 	}
     
@@ -149,10 +150,10 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->dispatch($url);
 
         // Assertions
-        $this->assertResponseCode(200);
         $this->assertModule( $urlParams['module'] );
         $this->assertController( $urlParams['controller'] );
         $this->assertAction( $urlParams['action'] );
+        $this->assertResponseCode(200);
         
         //$this->assertQueryCount("#maincontent h1", 1 );
         $this->assertQueryContentContains( "#maincontent h1", $channel['title']);
@@ -181,8 +182,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertModule( $urlParams['module'] );
         $this->assertController( $urlParams['controller'] );
         $this->assertAction( 'day-listing' );
+        $this->assertResponseCode(200);
         
-        $this->assertQueryContentContains( "#maincontent h1", $channel['title']);
+        //$this->assertQueryContentContains( "#maincontent h1", $channel['title']);
         
     }
     

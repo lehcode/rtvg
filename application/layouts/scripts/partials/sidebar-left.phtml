@@ -40,9 +40,9 @@ if (isset($this->announces) && ($this->announces!==false)  && ($this->show_annou
 <div class="module">
 	<ul class="nav nav-pills nav-list">
 	<?php foreach ($this->announces as $article){ 
-		$linkAttrHref = $this->url( array(
-			'category_id'=>$article->content_cat_id,
-			'article_alias'=>$this->escape($article->alias)), 'default_content_article' );
+        $linkAttrHref = $this->url( array(
+        'category'=>$article['content_cat_alias'],
+        'article_alias'=>$this->escape($article['alias'])), 'default_content_article' );
 		?>
 		<li><a href="<?php echo $linkAttrHref; ?>" title="<?php printf( "%s новости", $article->content_cat_title ); ?>"><?php echo $article->title; ?></a></li>  
 	<?php } ?>

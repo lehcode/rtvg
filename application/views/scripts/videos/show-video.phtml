@@ -60,7 +60,7 @@ if (isset($this->main_video)){
 	    
 	    foreach ($this->related_videos as $v) {
 	        
-	        if (!empty($v['alias'])) {
+            if (!empty($v['alias'])) {
 				?>
 			<div class="video">
 				
@@ -89,11 +89,15 @@ if (isset($this->main_video)){
 					
 					<?php if (isset($v['category_ru']) && !empty($v['category_ru'])) { ?>
 					<p class="category">
+                        <?php
+                        $urlHref = $this->url( array(
+                            'category'=>Xmltv_String::strtolower( $v['category_ru']['channel_cat_alias'] )), 'default_channels_category');
+                        ?>
 						Категория: 
-						<a href="<?php echo $this->url( array('category'=>Xmltv_String::strtolower( $v['category_ru'] )), 'default_channels_category'); ?>"
+						<a href="<?= $urlHref;  ?>"
 							target="_self"
 							title="<?php printf("%s каналы телепрограмма", $v['category_ru']) ?>">
-							<?php echo $v['category_ru']; ?>
+							<?php echo $v['category_ru']['channel_cat_title']; ?>
 						</a>
 					</p>
 					<?php 
