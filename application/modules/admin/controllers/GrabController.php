@@ -59,9 +59,6 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 	public function doAction()
 	{
 	    
-	    //var_dump($this->_getAllParams());
-	    //die(__FILE__.': '.__LINE__);
-	    
 	    $this->_helper->getHelper('Layout')->disableLayout();
 	    $startDate = new Zend_Date($this->_getParam('weekstart'), 'dd.MM.YYYY');
 	    $form = new Xmltv_Form_Admin_SitesToGrab();
@@ -291,15 +288,10 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		        $newBc->producers    = is_array( $newBc->producers) ? implode( ',', $newBc->producers) : '' ;
 			    		        
 			    		        if ((int)$newBc->channel==0){
-			    		        	var_dump($newBc->toArray());
+			    		        	Zend_Debug::dump($newBc->toArray());
 			    		        	die( "Cannot save row with channel '0'" );
 			    		        }
 			    		         
-			    		        if (APPLICATION_ENV=='development'){
-			    		        	//var_dump($newBc);
-			    		        	//die(__FILE__.': '.__LINE__);
-			    		        }
-			    		        
 			    		        $newBc->save();
 				    		    $log = new Zend_Log( new Zend_Log_Writer_Stream( APPLICATION_PATH . '/../log/grab.log' ));
 				    		    $log->log("Saved: ".$newBc->title.':'.$newBc->hash, Zend_Log::INFO);
@@ -307,15 +299,8 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 			    		         
 			    		    }
 			    		}
-			    		
-			    		if (APPLICATION_ENV=='development'){
-			    			//die(__FILE__.': '.__LINE__);
-			    		}
-			    		
-			    	}
-			    }
-			    if (APPLICATION_ENV=='development'){
-			    	//die(__FILE__.': '.__LINE__);
+                        
+                    }
 			    }
 		    }
 		    
@@ -324,19 +309,7 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 		    
 		} while( $yaDayCount < 7 );
 		
-		
-		if (APPLICATION_ENV=='development'){
-			var_dump($broadcasts);
-			die(__FILE__.': '.__LINE__);
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			var_dump(count($activeChannels));
-			var_dump($activeChannels);
-			die(__FILE__.': '.__LINE__);
-		}
-		
-		
+		/*
 		foreach ($activeChannels as $active) {
             $allChannels = $this->channelsModel->allChannels();
             $unpub = array();
@@ -347,6 +320,7 @@ class Admin_GrabController extends Rtvg_Controller_Admin
             }
             $this->channelsModel->unpublishMulti($unpub);
         }
+         * */
 	    
 	}
 	
@@ -389,8 +363,6 @@ class Admin_GrabController extends Rtvg_Controller_Admin
     	$model->setConnectTimeout(30);
     	$model->setChannelsInfo($request['target']);
     	
-    	var_dump($model);
-    	die(__FILE__.': '.__LINE__);
     }
     
     public function grabMovies()
@@ -398,13 +370,6 @@ class Admin_GrabController extends Rtvg_Controller_Admin
     	$request = $this->_getAllParams();
     	$siteKey = $this->_getParam('site', null);
     	$debug   = $this->_getParam('debug', 0);
-    	
-    	//$use_proxy = $this->_getParam('proxy', 0);
-    	var_dump($request);
-    	var_dump($siteKey);
-    	
-    	//var_dump(get_include_path());
-    	die(__FILE__.': '.__LINE__);
     	
     	$site_table = new Admin_Model_DbTable_Site();
     	$site_model = new Admin_Model_Site();
@@ -418,34 +383,27 @@ class Admin_GrabController extends Rtvg_Controller_Admin
 		));
     	$site->setBaseUrl($site_config->baseUrl);
     	
-    	//var_dump($site);
-    	//die(__METHOD__);
-    	
     	try {
     		$site->fetchPage($site_config->startUri, $site->getEncoding());
     		$site->getAlphaLinks();
 			$site->getPaginationLinks();
 			$site->getMoviesLinks();
     	} catch (Zend_Exception $e) {
-    		echo $e->getMessage();
-    		die(__METHOD__.': '.__LINE__);
-    	}
+    		throw new Zend_Exception("Error grabbing movies", 500, $e);
+        }
     	
     	$i=0;
     	$links = $site->moviesLinks;
     	do {
-    		if ($info = $site->getMovieInfo($links[$i]))
-    		unset($site->moviesLinks[$i]);
-    		else 
-    		throw new Exception("Cannot get movie info for URL ".$site->getBaseUrl().$links[$i]);
-    		//$site->getMovieInfo();
-    		$i++;
+    		if ($info = $site->getMovieInfo($links[$i])) {
+                unset($site->moviesLinks[$i]);
+            } else {
+                throw new Exception("Cannot get movie info for URL ".$site->getBaseUrl().$links[$i]);
+            }
+            $i++;
     	} while(!empty($site->moviesLinks));
-    	//var_dump($site);
+    	
 		
-    	
-    	
-		die(__METHOD__.': '.__LINE__);
     }
         
 }

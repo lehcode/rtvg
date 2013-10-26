@@ -72,8 +72,7 @@ $view->headScript()->appendScript("$(document).ready(function($){
 <div class="btn-group">
 <?php
 foreach ($this->container as $page) {
-    //var_dump($page->getResource());
-	if ( $this->isAllowed($page->getResource()) ){
+    if ( $this->isAllowed($page->getResource()) ){
 		?><button class="btn btn-mini"
 			type="submit" <?php echo (null !== $page->get('idAttr', null)) ? 'id="'.$page->get('idAttr').'"' : null ; ?>>
 			<?php echo $page->getLabel() ?></button><?php 

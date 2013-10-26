@@ -15,9 +15,6 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
     		$pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix', 'rtvg_');
     	}
     	
-    	//var_dump($this);
-    	//die();
-    	
     	$this->setName($this->_name);
     	
     }
@@ -51,7 +48,6 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 		try {
 			$result = $this->_db->fetchAll($select);
 		} catch (Exception $e) {
-			echo $e->getMessage();
 			die(__FILE__.': '.__LINE__);
 			
 		}
@@ -71,13 +67,7 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 	    		->where("`prog`.`start`>='$start' AND `prog`.`start` < '$end'");
 	    	
 	    	
-	    	//var_dump($select->assemble());
-	    	
 	    	$result = $this->_db->fetchAll($select);
-	    	
-	    	//var_dump($result);
-	    	//die(__FILE__.': '.__LINE__);
-	    	
 	    	foreach ($result as $item) {
 	    		
 	    		if ($descsTable->find($item->hash))
@@ -91,24 +81,14 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 	    		
 	    		$this->delete("`hash`='".$item->hash."'" );
 	    		
-	    		//var_dump($d->toArray());
-	    		//die(__FILE__.': '.__LINE__);
-	    		
 	    	}
-	    	
-	    	//die(__FILE__.': '.__LINE__);
         }
     	
     }
     
     public function fetchPremieres(Zend_Date $start, Zend_Date $end){
     	
-    	if( $this->_profiling ) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$profiler = $this->_db->getProfiler();
-		}
-		
-		$select = $this->_db->select()->from(array('prog'=>$this->_name), '*')
+    	$select = $this->_db->select()->from(array('prog'=>$this->_name), '*')
 			->where("prog.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00:00'")
 			->where("prog.`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'")
 			->joinLeft(array('d'=>'rtvg_programs_descriptions'), "prog.`hash` = d.`hash`", array('desc_intro'=>'intro', 'desc_body'=>'body'))
@@ -123,23 +103,13 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 			}
 		
 		
-    	if( $this->_profiling ) {
-			$query = $profiler->getLastQueryProfile();
-			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
-		}
-		
-		return $result;
+    	return $result;
     	
     }
     
     public function fetchProgramsForPeriod(Zend_Date $start, Zend_Date $end, $category=null){
     	
-    	if( $this->_profiling ) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$profiler = $this->_db->getProfiler();
-		}
-    	
-		$select = $this->_db->select()
+    	$select = $this->_db->select()
 			->from(array('prog'=>$this->_name), '*')
 			->where("prog.`start` >= '".$start->toString('yyyy-MM-dd')." 00:00:00'")
 			->where("prog.`start` < '".$end->toString('yyyy-MM-dd')." 23:59:59'")
@@ -159,23 +129,10 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 		$select->order("prog.ch_id ASC")->order("prog.start ASC");
 		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
     	
-    	if( $this->_profiling ) {
-			$query = $profiler->getLastQueryProfile();
-			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
-		}
-		
-    	//var_dump(count($result));
-    	//die(__FILE__.': '.__LINE__);
-    	
     	return $result;
     }
     
     public function fetchSeries(Zend_Date $start, Zend_Date $end, $category=null, $channels=null){
-    	
-		if( $this->_profiling ) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$profiler = $this->_db->getProfiler();
-		}
     	
 		$select = $this->_db->select()
 			->from(array('prog'=>$this->_name), '*')
@@ -205,22 +162,11 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 		
 		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
     	
-    	if( $this->_profiling ) {
-			$query = $profiler->getLastQueryProfile();
-			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
-		}
-		//var_dump(count($result));
-    	//die(__FILE__.': '.__LINE__);
-		return $result;
+    	return $result;
     	
     }
     
     public function fetchMovies(Zend_Date $start, Zend_Date $end, $category=null, $channels=null){
-    	
-		if( $this->_profiling ) {
-			$this->_db->getProfiler()->setEnabled( true );
-			$profiler = $this->_db->getProfiler();
-		}
     	
 		$select = $this->_db->select()
 			->from(array('prog'=>$this->_name), '*')
@@ -250,32 +196,8 @@ class Admin_Model_DbTable_Programs extends Xmltv_Model_DbTable_Programs
 		
 		$result = $this->_db->query( $select )->fetchAll( self::FETCH_MODE );
     	
-    	if( $this->_profiling ) {
-			$query = $profiler->getLastQueryProfile();
-			echo 'Method: '.__METHOD__.'<br />Time: '.$query->getElapsedSecs().'<br />Query: '.$query->getQuery().'<br />';
-		}
-		//var_dump(count($result));
-    	//die(__FILE__.': '.__LINE__);
-		return $result;
+    	return $result;
     	
-    }
-    
-    
-    public function insert(array $data)
-    {
-        return parent::insert($data);
-        /*$row = parent::createRow($data);
-        $keys = array();
-        $vals = array();
-        foreach ($data as $k=>$v) {
-            $keys[] = $this->_db->quoteIdentifier($k);
-            $vals[] = $this->_db->quote($v);
-        }
-        
-        $sql = "INSERT INTO `rtvg_bc` (".  implode(',', $keys).") VALUES (".  implode(',', $vals).")
-            ON DUPLICATE KEY UPDATE `hash` =VALUES(`hash`)";
-        $this->_db->insert('rtvg_bc_events', $data);
-        return true;*/
     }
 
 }

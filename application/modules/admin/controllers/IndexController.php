@@ -24,8 +24,8 @@ class Admin_IndexController extends Rtvg_Controller_Admin
 	 * Redirect to login
 	 */
 	public function indexAction () {
-		//var_dump($this->isAllowed);
-	    if ( $this->isAllowed !== true) {
+		
+        if ( $this->isAllowed !== true) {
 	    	$this->_forward('login');
 	    	return;
 	    }

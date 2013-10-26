@@ -39,21 +39,11 @@ class Xmltv_Model_Users extends Xmltv_Model_Abstract
     
     	$auth = Zend_Auth::getInstance();
     	
-    	if (APPLICATION_ENV=='development'){
-    		//var_dump($auth->hasIdentity());
-    		//die(__FILE__.': '.__LINE__);
-    	}
-    	
     	if ($auth->hasIdentity()) {
     		$user = $this->usersTable->fetchByOpenId( $auth->getIdentity()->email );
     	} else {
     		$user = $this->usersTable->createRow(array());
     		$user->role = 'guest';
-    	}
-    	
-    	if (APPLICATION_ENV=='development'){
-    	    //var_dump($user);
-    	    //die(__FILE__.': '.__LINE__);
     	}
     	
     	return $user;
@@ -79,11 +69,6 @@ class Xmltv_Model_Users extends Xmltv_Model_Abstract
      */
     public function searchByOpenId($email=null){
     	
-        if (APPLICATION_ENV=='development'){
-            //var_dump($email);
-            //die(__FILE__.': '.__LINE__);
-        }
-        
         if (!is_string($email)){
             throw new Zend_Exception("Email must be a string!", 500);
         }

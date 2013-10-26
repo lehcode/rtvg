@@ -1,6 +1,9 @@
 <?php
-class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
-        
+/**
+ * Video cache model class
+ */
+class Xmltv_Model_Vcache extends Xmltv_Model_Abstract 
+{
     /**
      * Model constructor
      * 
@@ -24,7 +27,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         if ($rtvg_id){
             
             $select = $this->db->select()
-            	->from(array('v'=>$this->vcacheMainTable->getName()), array(
+            	->from(array('VID'=>$this->vcacheMainTable->getName()), array(
             		'rtvg_id',
             		'yt_id',
             		'title',
@@ -36,34 +39,45 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
             		'category',
             		'thumbs',
             	))
-            	->where("`v`.`rtvg_id`='$rtvg_id'")
+                ->join(array('VCAT'=>$this->ytCategoriesTable->getName()), "`VID`.`category` = `VCAT`.`title_en`", null)
+                ->join(array('CHCAT'=>  $this->channelsCategoriesTable->getName()), "VCAT.ch_cat_id = CHCAT.id", array(
+                    'channel_cat_id'=>'id',
+                    'channel_cat_title'=>'title',
+                    'channel_cat_alias'=>'alias',
+                    'channel_image'=>'image',
+                ))
+                ->join(array('BCCAT'=>  $this->bcCategoriesTable->getName()), "VCAT.bc_cat_id = BCCAT.id", array(
+                    'bc_cat_id'=>'id',
+                    'bc_cat_title'=>'title',
+                    'bc_cat_title_single'=>'title_single',
+                    'bc_cat_alias'=>'alias',
+                ))
+                ->join(array('CONTCAT'=>  $this->contentCategoriesTable->getName()), "VCAT.content_cat_id = CONTCAT.id", array(
+                    'content_cat_id'=>'id',
+                    'content_cat_title'=>'title',
+                    'content_cat_alias'=>'alias',
+                ))
+                ->where("VID.rtvg_id = ".$this->db->quote($rtvg_id))
             	->limit(1);
-            
-            if (APPLICATION_ENV=='development'){
-                parent::debugSelect($select, __METHOD__);
-                //die(__FILE__.': '.__LINE__);
-            }
             
             $result = $this->db->fetchRow($select);
             
-            if (!$result) {
-                return false;
+            if (empty($result)){
+                return $result;
             }
             
-            if (APPLICATION_ENV=='development'){
-            	//var_dump($result);
-            	//die(__FILE__.': '.__LINE__);
-            }
-            
-            $now = Zend_Date::now();
             $deleteAt = new Zend_Date( $result['delete_at'], 'YYYY-MM-dd HH:mm:ss' );
-            if ($deleteAt->compare($now)>-1){
+            if ($deleteAt->compare(Zend_Date::now()) != -1){
             	$this->vcacheListingsTable->delete("`rtvg_id`='$rtvg_id'");
             }
             
             $result['published'] = new Zend_Date($result['published'], 'YYYY-MM-dd');
-            $result['duration']  = new Zend_Date($result['duration'], 'HH:mm:ss');
-            $result['thumbs']    = unserialize($result['thumbs']);
+            $result['duration'] = new Zend_Date($result['duration'], 'HH:mm:ss');
+            $result['thumbs'] = unserialize($result['thumbs']);
+            $result['views'] = (int)$result['views'];
+            $result['channel_cat_id'] = (int)$result['channel_cat_id'];
+            $result['bc_cat_id'] = (int)$result['bc_cat_id'];
+            $result['content_cat_id'] = (int)$result['content_cat_id'];
             
             return $result;
             
@@ -79,25 +93,30 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
     public function saveMainVideo($video=null){
     	
         if (!$video){
-            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM );
         }
         
-        if (APPLICATION_ENV=='development'){
-            //var_dump($video);
-            //die(__FILE__.': '.__LINE__);
+        if (!is_array($video)){
+            throw new Zend_Exception('$video must be an array');
         }
         
-        $model = new Xmltv_Model_Videos();
+        $row = $this->vcacheMainTable->createRow( $video );
+        $row->category = strtolower($video['category']);
+        $row->published = $video['published']->toString('YYYY-MM-dd');
+        $row->duration = $video['duration']->toString('HH:mm:ss');
+        $row->thumbs = serialize($video['thumbs']);
+        $row->delete_at = Zend_Date::now()->addDay(7)->toString('YYYY-MM-dd HH:mm:ss');
         
-        if (is_a($video, 'Zend_Gdata_YouTube_VideoEntry')) {
-            $newRow = $this->vcacheMainTable->createRow( $model->parseYtEntry($video));
-        } elseif (is_array($video)) {
-            $newRow = $video;
-        } else {
-            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+        try {
+            $row->save();
+        } catch (Exception $e) {
+            if($e->getCode()==23000){
+                $this->vcacheMainTable->delete("yt_id = ".$this->db->quote($video['yt_id']));
+                $row->save();
+            }
         }
         
-        return $this->vcacheMainTable->store($newRow);
+        return $row->toArray();
         
     }
     
@@ -114,38 +133,37 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
             throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
         }
         
-        if (APPLICATION_ENV=='development'){
-            //var_dump(func_get_args());
-            //die(__FILE__.': '.__LINE__);
-        }
-        
         $row = $this->vcacheListingsTable->createRow( $video );
         $row->published = $video['published']->toString( 'YYYY-MM-dd HH:mm:ss' );
-        $row->duration  = $video['duration']->toString( 'HH:mm:ss' );
-        $row->thumbs    = Zend_Json::encode( $video['thumbs'] );
-        $row->delete_at = Zend_Date::now()->addHour(12)->toString("YYYY-MM-dd HH:mm:ss");
-        $row->hash      = $video['hash'];
+        $row->duration = $video['duration']->toString( 'HH:mm:ss' );
+        $row->thumbs = Zend_Json::encode( $video['thumbs'] );
+        $row->delete_at = Zend_Date::now()->addHour(72)->toString("YYYY-MM-dd HH:mm:ss");
+        $row->hash = $video['hash'];
+        $row->category = strtolower($video['category']);
         
-        foreach ($row->toArray() as $rowK=>$rowVal){
-	        $keys[]   = $this->db->quoteIdentifier($rowK);
-	        $values[] = "'".str_ireplace("'", '"', $rowVal)."'";
-	    }
-				    
-	    $sql = "INSERT INTO `".$this->vcacheListingsTable->getName()."` ( ".implode(', ', $keys)." ) 
-	    VALUES (".implode(', ', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$row['delete_at']."'";
+        if (!$row->category){
+            $chCat = $this->channelsCategoriesTable->fetchOne("alias='разное'");
+            $ytCat = $this->ytCategoriesTable->fetchOne("ch_cat_id=".(int)$chCat['id']);
+            $row->category = $ytCat['title_en'];
+        }
         
-	    if (APPLICATION_ENV=='development'){
-	        Zend_Debug::dump($sql);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    try {
-	        $this->db->query($sql);
-	    } catch (Exception $e) {
-	        return $video;
-	    }
-	    
-	    return $video;
+        try{
+            $row->save();
+        } catch (Exception $e){
+            
+            $catExists = $this->ytCategoriesTable->find($row->category);
+            if(count($catExists)==0){
+                throw new Zend_Exception("Video category '".$row->category."' does not exist");
+            } elseif($e->getCode()==23000){
+                $this->vcacheMainTable->delete("yt_id = ".$this->db->quote($video['yt_id']));
+                $row->save();
+            } else {
+                throw new Zend_Exception("Cannot save row", 500, $e);
+            }
+            
+        }
+        
+        return $row->toArray();
         
     }
     
@@ -182,11 +200,6 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         $row->thumbs    = Zend_Json::encode($row->thumbs);
         $row->delete_at = Zend_Date::now()->addDay(7)->toString("YYYY-MM-dd HH:mm:ss");
         
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($row->toArray());
-        	//die(__FILE__.': '.__LINE__);
-        }
-        
         foreach ($row->toArray() as $rowK=>$rowVal){
 	        $keys[]   = $this->db->quoteIdentifier($rowK);
 	        $values[] = "'".str_ireplace("'", '"', $rowVal)."'";
@@ -195,11 +208,6 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
 	    $sql = "INSERT INTO `".$this->vcacheRelatedTable->getName()."` ( ".implode(', ', $keys)." ) 
 	    VALUES (".implode(', ', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$row['delete_at']."'";
         
-	    if (APPLICATION_ENV=='development'){
-	        Zend_Debug::dump($sql);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
 	    $this->db->query($sql);
         
 	    return $row;
@@ -217,11 +225,6 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
     	
         $vModel = new Xmltv_Model_Videos();
         
-        if (APPLICATION_ENV=='development'){
-        	//var_dump(func_get_args());
-        	//die(__FILE__.': '.__LINE__);
-        }
-        
         if (!$video || !$channel_id){
             throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM );
         }
@@ -238,21 +241,11 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         
         $row = $this->vcacheSidebarTable->createRow($row);
         
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($row);
-        	//die(__FILE__.': '.__LINE__);
-        }
-        
         $row->channel   = $channel_id;
         $row->published = $video['published']->toString('YYYY-MM-dd HH:mm:ss');
         $row->duration  = $video['duration']->toString('HH:mm:ss');
         $row->thumbs    = serialize( $video['thumbs'] );
         $row->delete_at = Zend_Date::now()->addDay(7)->toString( "YYYY-MM-dd HH:mm:ss" );
-        
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($row);
-        	//die(__FILE__.': '.__LINE__);
-        }
         
         foreach ($row->toArray() as $rowK=>$rowVal){
 	        $keys[]   = $this->db->quoteIdentifier($rowK);
@@ -262,11 +255,6 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
 	    $sql = "INSERT INTO `".$this->vcacheSidebarTable->getName()."` ( ".implode(', ', $keys)." ) 
 	    VALUES (".implode(', ', $values).") ON DUPLICATE KEY UPDATE `delete_at`='".$row['delete_at']."'";
         
-	    if (APPLICATION_ENV=='development'){
-	        Zend_Debug::dump($sql);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
 	    $this->db->query($sql);
         
 	    return $row->toArray();
@@ -281,12 +269,6 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
      */
     public function getRelated( $yt_id=null, $limit=10 ){
     	
-        /*
-        if($yt_id){
-            $result = $this->vcacheRelatedTable->fetchAll("`yt_parent`='$yt_id'", null, $limit)->toArray();
-        }
-        */
-        
         $select = $this->db->select()
         	->from(array('v'=>$this->vcacheRelatedTable->getName()), array(
         		'rtvg_id',
@@ -301,17 +283,8 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         	))
         	->where("`yt_parent`='$yt_id'");
         
-        if (APPLICATION_ENV=='development'){
-            parent::debugSelect($select, __METHOD__);
-        }
-        
         $result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
         
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($result);
-        	//die(__FILE__.': '.__LINE__);
-        }
-
         if (count($result)) {
             return $result;
         }
@@ -351,17 +324,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         	))
         	->where("`vid`.`channel`='$channel_id'");
         
-        if (APPLICATION_ENV=='development'){
-        	parent::debugSelect($select, __METHOD__);
-        	//die(__FILE__.': '.__LINE__);
-        }
-        
         $result = $this->db->fetchAll( $select  );
-        
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($result);
-        	//die(__FILE__.': '.__LINE__);
-        }
         
         if (!count($result)){
             return false;
@@ -371,11 +334,6 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
             $result[$k]['published'] = new Zend_Date( $row['published'], 'YYYY-MM-dd' );
             $result[$k]['duration']  = new Zend_Date( $row['duration'], 'HH:mm:ss' );
             $result[$k]['thumbs']    = unserialize( $row['thumbs'] );
-        }
-        
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($result);
-        	//die(__FILE__.': '.__LINE__);
         }
         
         return $result;
@@ -395,12 +353,6 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
     	
         if (empty($list) || !is_array($list)) {
         	throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
-        }
-        
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($date->Tostring('dd-MM-YYYY'));
-        	//var_dump(empty($list));
-        	//die(__FILE__.': '.__LINE__);
         }
         
         if ($date->isToday()){
@@ -423,7 +375,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         }
         
         $select = $this->db->select()
-        ->from( array('video'=>$this->vcacheListingsTable->getName()), array(
+            ->from( array('video'=>$this->vcacheListingsTable->getName()), array(
         		'rtvg_id',
         		'yt_id',
         		'title',
@@ -436,14 +388,10 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         		'thumbs',
         		'delete_at',
         		'hash',
-        ))
-        ->where( "`video`.`hash` IN ( \n".implode(",\n", $hashes)." )");
+            ))
+            ->where( "`video`.`hash` IN ( \n".implode(",\n", $hashes)." )")
+        ;
         
-        if (APPLICATION_ENV=='development'){
-        	parent::debugSelect($select, __METHOD__);
-        	//die(__FILE__.': '.__LINE__);
-        }
-        	
         $cached = $this->db->fetchAll( $select, null, Zend_Db::FETCH_ASSOC);
         
         if (count($cached)){
@@ -457,7 +405,8 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         			$result[$p['hash']]['published'] = new Zend_Date( $p['published'], 'YYYY-MM-dd HH:mm:ss');
         			$result[$p['hash']]['duration']  = new Zend_Date( $p['duration'], 'HH:mm:ss');
         			$result[$p['hash']]['thumbs']	 = Zend_Json::decode( $p['thumbs']);
-        		} else { // delete from cache if now is later than deletion date
+        		} else { 
+                    // delete from cache if now is later than deletion date
         			$this->vcacheListingsTable->delete("`hash`='".$p['hash']."'");
         		}
         	}
@@ -465,11 +414,6 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract {
         
         if (!count($result)){
             return false;
-        }
-        	
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($result);
-        	//die(__FILE__.': '.__LINE__);
         }
         
         return $result;

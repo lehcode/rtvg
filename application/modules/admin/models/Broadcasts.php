@@ -135,18 +135,12 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			->where($where)
 			->order('prog.start ASC');
 		
-		//var_dump($select->assemble());
 		$list = $this->bcTable->fetchAll($select);
-		
-		var_dump(count($list));
-		
+				
 		do {
 			if (count($list)>0){
 					
 				foreach ($list as $i) {
-					
-					//var_dump($i->toArray());
-					//die(__FILE__.': '.__LINE__);
 					
 					$programData = $i->toArray();
 					$descData = $this->programsDescTable->fetchRow("`hash`='".$programData['hash']."'");
@@ -160,11 +154,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 						$propsData = $propsData->toArray();
 					else
 						$propsData = array();
-					
-					//var_dump($programData);
-					//var_dump($descData);
-					//var_dump($propsData);
-					//die(__FILE__.': '.__LINE__);
 					
 					try {
 						
@@ -232,22 +221,14 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	 */
 	public function extractAgeRating($string){
 	    
-	    //var_dump($string);
 	    $r=0;
 	    foreach ($this->ageRatingRegex as $regex){
-	        //var_dump($regex);
-	        //var_dump(preg_match($regex, $string));
 	        if (preg_match($regex, $string, $m)) {
 	            $r = (int)$m[1];
 	        }
 	    }
 	    
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($r);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-		return $r;
+	    return $r;
 				
 	}
 
@@ -336,41 +317,11 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			$result['sub_title'] = Xmltv_String::ucfirst( $trim->filter($r[1]) );
 		}
 		
-		// Смесь кирилицы и латинницы (бывает)
-		/*
-		if (preg_match('/^([\p{Cyrillic}\s]+)\s+and\s+([\p{Cyrillic}\s]+)$/ui', $result['title'], $m)){
-			$result['title'] = $m[1];
-			$result['sub_title'] = Xmltv_String::ucfirst(trim($m[2]));
-		
-		}
-		*/
-		
-		//"Кто хочет стать миллионером?" с Дмитрием Дибровым
-		/*
-		if (preg_match('/^([\p{Common}\p{Cyrillic}\p{Latin}]+) ((с|со)\s\w+\s\w+[\.-]*)$/u', $result['title'], $m)){
-			
-			$trim = new Zend_Filter_StringTrim( array('charlist'=>'" ') );
-			$result['title']	 = $trim->filter( $m[1]);
-			$result['sub_title'] = $trim->filter( Xmltv_String::ucfirst( $trim->filter($m[2])), '" ');
-		}
-		*/
-		
 		if (Xmltv_String::stristr($result['title'], '+')){
 			$result['title'] = Xmltv_String::str_ireplace('+', 'плюс', $result['title']);
 		}
 		
-        /*
-		if (preg_match('/^"([\p{Common}\p{Cyrillic}\p{Latin}]+)"\.\s+(.+)$/ui', $result['title'], $m)){
-		    if (APPLICATION_ENV=='development'){
-		    	//var_dump($m);
-		    	//die(__FILE__.': '.__LINE__);
-		    }
-		    $result['title']     = $m[1];
-		    $result['sub_title'] = $m[2];
-		}
-        */
-		
-		$result['title'] = str_replace('...', '…', $result['title']);
+        $result['title'] = str_replace('...', '…', $result['title']);
 		$trim = new Zend_Filter_StringTrim(array('charlist'=>',!?:;- \/\''));
 		$result['title'] = $trim->filter($result['title']);
 		$result['sub_title'] = trim($result['sub_title']);
@@ -391,11 +342,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	 */
 	public function catIdFromTitle($title){
 		
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($title);
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	    
 	    $catLower = Xmltv_String::strtolower( trim($title));
 	    if (array_key_exists($catLower, $this->categoriesMap)){
 	    	$title = $this->categoriesMap[$catLower];
@@ -405,11 +351,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			if( Xmltv_String::strtolower($title) == Xmltv_String::strtolower($cat['title'])) {
 				$catId = (int)$cat['id'];
 			}
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($catId);
-			//die(__FILE__.': '.__LINE__);
 		}
 		
 		return $catId;
@@ -426,11 +367,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	 */
 	public function getProgramCategory ($cat_title=null, $prog_desc=null) {
 		
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump(func_get_args());
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	    
 	    if ($cat_title) {
 		    
 			$exists   = false;
@@ -439,32 +375,13 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 				$cat_title = $this->categoriesMap[$catLower];
 			}
 			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($cat_title);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
 			foreach ($this->programsCategoriesList as $c) {
 			    if( Xmltv_String::strtolower( $c->title ) == Xmltv_String::strtolower($cat_title)) {
 					$catId  = (int)$c->id;
 					$exists = true;
 				}
 			}
-			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($catId);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
-			// If not found
-			if (!$exists){
-			    if (APPLICATION_ENV=='development'){
-			        //var_dump( func_get_args());
-			        //var_dump($c->title);
-			        //die(__FILE__.': '.__LINE__);
-			    }
-				
-			}
+            
 		} elseif ($prog_desc) {
 		    
 			$categoriesRegex = array(
@@ -484,11 +401,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			return false;
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($catId);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		return $catId;
 	
 	}
@@ -505,9 +417,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 		
 		if ($desc){
 			
-		    //var_dump($desc);
-		    
-			$result = array();
+		    $result = array();
 			
 			//Проверка возрастного рейтинга в названии
 			if (($r = $this->extractAgeRating($desc))>0) {
@@ -530,12 +440,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			foreach ($regex as $r) {
 				if (preg_match($r, $desc, $m)) {
 					 
-					// Breakpoint
-					if (APPLICATION_ENV=='development'){
-					    //var_dump($desc);
-						//var_dump($m);
-					}
-					 
 					$result['category'] = $this->catIdFromTitle(trim($m[2]));
 					$result['actors'] = implode(",", $this->_parsePersonsNames(trim($m[3]), 'actor') );
 					$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
@@ -545,11 +449,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 					$result['year'] = (int)trim($m[6]);
 					$result['title'] = Xmltv_String::ucfirst( Xmltv_String::strtolower(trim($m[1])));
 					$desc = preg_replace('/^.+$/ui', '', $desc);
-					
-					if (APPLICATION_ENV=='development'){
-						//var_dump($result);
-						//die(__FILE__.': '.__LINE__);
-					}
 					
 					return $result;
 						  
@@ -570,12 +469,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			foreach ($regex as $r){
 				if (preg_match($r, $desc, $m)){
 					
-					// Breakpoint
-					if (APPLICATION_ENV=='development'){
-						//var_dump($m);
-						//die(__FILE__.': '.__LINE__);
-					}
-					
 					$result['category'] = $this->catIdFromTitle(trim($m[1]));
 					$result['studio']   = trim($m[2]);
 					$result['country'] = self::countryRuToIso(trim($m[3]));
@@ -586,12 +479,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 					$result['directors'] = implode(",", $this->_parsePersonsNames(trim($m[5]), 'director') );
 					$desc = $this->_removePersonsNames($desc, $result['directors'], 'director');
 			    	
-					// Breakpoint
-					if (APPLICATION_ENV=='development'){
-						//var_dump($result);
-						//die(__FILE__.': '.__LINE__);
-					}
-					
 				}
 			}
 			
@@ -605,33 +492,15 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			    $result['actors'] = implode(",", $this->_parsePersonsNames( trim($m[4]), 'actor') );
 			    $desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
 			    
-				// Breakpoint
-				if (APPLICATION_ENV=='development'){
-					//var_dump($m);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
 				$result['country'] = self::countryRuToIso(trim($m[5]));
 				$result['year']    = (int)trim($m[6]);
 				
 				$desc = preg_replace('/^.+$/ui', '', $desc);
 				
-				// Breakpoint
-				if (APPLICATION_ENV=='development'){
-					//var_dump($result);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
 			} elseif (preg_match('/^([\w\s,]+)\.\s+(.+)\,\s+(\w+),\s+([\d]{4})г\.\s+Режиссер:\s+([-\w+\s\w+,^A-Z]+)\.\sСценарий:\s+([-\w+\s\w+,^A-Z]+)\.\s+В ролях:\s+([-\w+\s\w+,^A-Z]+,?)\.\s(.+)/ui', $desc, $m)){
 				//Фантастика, приключения, мелодрама. Warner Bros. - DreamWorks SKG, США, 2001г. Режиссер: Стивен Спилберг. Сценарий: Стивен Спилберг. В ролях: Стивен Спилберг, Бонни Кертис, Хэйли Джоэл Осмент, Джуд Ло, Фрэнсис О"Коннор, Брендан Глисон, Сэм Робардс, Уильям Херт, Джейк Томас, Кен Леунг. Середина 21 века. Из - за глобального потепления климат на планете становится непредсказуемым. Люди создают новое поколение роботов, способное помочь им в борьбе за выживание. И, хотя природные ресурсы скудеют, высокие технологии развиваются со стремительной скоростью. Киборги живут бок о бок с людьми и выручают их во всех сферах деятельности. И тут наука преподносит человечеству очередной сюрприз - создается чудо - робот совершенно иного порядка: с разумом, нервной системой, способный испытывать все человеческие эмоции и главное - любить. Это настоящий подарок для супружеских пар, не имеющих детей. Творение нарекают Дэвидом. Кибернетический мальчик, по виду ничем не отличающийся от живого ребенка, попадает в семью ученых Генри и Моники, участвовавших в работе над проектом, и становится их сыном. Но готовы ли его новые родители ко всем последствиям такого рискованного эксперимента?
 				
-				// Breakpoint
-				if (APPLICATION_ENV=='development'){
-					//var_dump($m);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
-				$genres = explode(', ', $m[1]);
+                $genres = explode(', ', $m[1]);
 				$result['category']  = mt_rand( 0, count($genres)-1);
 				$result['producer']  = trim($m[2]);
 				$result['country']   = self::countryRuToIso(trim($m[3]));
@@ -644,12 +513,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 				$desc = $this->_removePersonsNames($desc, $result['actors'], 'actor');
 				$result['desc'] = $desc = trim($m[8]);
 
-				// Breakpoint
-				if (APPLICATION_ENV=='development'){
-					//var_dump($result);
-					//die(__FILE__.': '.__LINE__);
-				}
-				
 			}
 			
 			$movies = array(
@@ -681,16 +544,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			foreach ($regex as $r){
 				 
 				if (preg_match($r, $desc, $m)){
-						
-					// Breakpoint
-					if (APPLICATION_ENV=='development'){
-						//var_dump($desc);
-						//var_dump($m);
-					}
 					
-					/*
-					 * Категория
-					 */
 					$f = array(
 						'фильм'=>'художественные фильмы',
 						'драма'=>'кинодрамы',
@@ -746,7 +600,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			
 			if (preg_match('/([\d]{2}-плюс)$/u', $result['alias'], $m)) {
 			    $result['alias'] = Xmltv_String::str_ireplace($m[1], '', $result['alias']);
-			    var_dump($result);
+			    Zend_Debug::dump($result);
 			    die(__FILE__.': '.__LINE__);
 			}
 			
@@ -777,12 +631,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    		$key = trim($e);
 	    		if ( array_key_exists( $key, $this->countriesList)){
 	    			$result['country'][] = $this->countriesList[$key];
-	    		} else {
-	    		    $profile = (bool)Zend_Registry::get('site_config')->profile;
-			    	if ($profile){
-	    				var_dump($country);
-	    				die(__FILE__.': '.__LINE__);
-	    			}
 	    		}
 	    	}
 	    	if (count($result) && is_array($result)){
@@ -794,12 +642,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    	$country = $string;
 	    	if ( array_key_exists( $country, $this->countriesList)){
 	    		return $this->countriesList[$country];
-	    	} else {
-	    	    $profile = (bool)Zend_Registry::get('site_config')->profile;
-			    if ($profile){
-	    			var_dump($country);
-	    			die(__FILE__.': '.__LINE__);
-	    		}
 	    	}
 	    }
 	    
@@ -845,9 +687,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	 */
 	private function _removePersonsNames($text=null, $persons=array(), $type='actor'){
 		
-	    //var_dump(func_get_args());
-	    //die(__FILE__.': '.__LINE__);
-	    
 	    switch ($type){
 	    	case 'director':
 	    	    $table = new Xmltv_Model_DbTable_Directors();
@@ -866,10 +705,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	        $names = $table->fetchAll("`id` IN (".$persons.")")->toArray();
 		    foreach ($names as $p){
 		        
-		        //var_dump($names);
-		        //var_dump($p['complete_name']);
-		        //die(__FILE__.': '.__LINE__);
-				
 		        if ( Xmltv_String::stristr( $text, ' В ролях: '.$p['complete_name'])) {
 		            $text = Xmltv_String::str_ireplace( ' и '.$p['complete_name'], '', $text);
 		        }
@@ -886,9 +721,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 		            $text = Xmltv_String::str_ireplace( $p['complete_name'], '', $text);
 		        }
 		        $text = trim( preg_replace('/\s+/ui', ' ', $text), ' ,.');
-		        //var_dump(Xmltv_String::stristr( $text, $p['complete_name']));
-		        //var_dump($text);
-		    	
+		        
 		    }
 		    
 		    $replace = new Zend_Filter_PregReplace(array('match'=>'/( \(\)(\.|\s)?)/ui', 'replace'=>' '));
@@ -896,9 +729,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    }
 	    
 	    $text = trim($text);
-	    //var_dump($text);
-	    //die(__FILE__.': '.__LINE__);
-	    
 	    return $text;
 	    
 	}
@@ -912,32 +742,25 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	 */
 	private function _parsePersonsNames($string='', $type='actor'){
 		
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($string);
-	    }
-	    
 	    $result  = array();
 		$trim    = new Zend_Filter_StringTrim( array('charlist'=>' .,'));
 		$string  = $trim->filter( $string);
 		$string  = $trim->filter( $string);
 		$e = explode('. ', $string);
-		//var_dump($e);
-		$names = array();
+		
+        $names = array();
 		$fm=null;
 		foreach ($e as $k=>$s){
 		    if (!preg_match('/\.\.$/ui', $s)){
 		    	if (preg_match('/(\s\p{Lu}|\s\p{Lu}\.\p{Lu})$/u', $s)){
-		        	//var_dump($s);
 		        	$names[]=$e[$k];
 		        }
 	        }
 	        
 		}
-		//var_dump($names);
-		$names[]=$e[count($e)-1];
-		$string = implode('. ', $names);
 		
-		//die(__FILE__.': '.__LINE__);
+        $names[]=$e[count($e)-1];
+		$string = implode('. ', $names);
 		
 		if (Xmltv_String::stristr( $string, ' и ')) {
 	    	$string = Xmltv_String::str_ireplace( " и ", ", ", $string);
@@ -951,9 +774,8 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    if (Xmltv_String::stristr( $string, ' и др')){
 	    	$string = Xmltv_String::str_ireplace( " и др", "", $string);
 	    }
-	    //var_dump($string);
-	    $names = explode(', ', trim($string, ' .,'));
-	    //var_dump($names);
+	    
+        $names = explode(', ', trim($string, ' .,'));
 	    foreach ( $names as $part) {
 	        $name = trim($part);
 	    	foreach ( self::$namesRegex as $r){
@@ -968,10 +790,8 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    		}
 	    	}
 	    }
-		//var_dump($result);
-		//die(__FILE__.': '.__LINE__);
 		
-		return $result;
+        return $result;
 		
 	}
 	
@@ -1021,10 +841,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 		$table   = new Admin_Model_DbTable_Actors();
 		$tolower = new Zend_Filter_StringToLower( $this->_tolower_options );
 		$props   = new Admin_Model_DbTable_ProgramsProps();
-		//$cache   = new Xmltv_Cache();
-		
-		//var_dump($credits);
-		//die(__FILE__.': '.__LINE__);
 		
 		foreach ($credits['actors'] as $k => $p) {
 			
@@ -1042,10 +858,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 						
 						$existingName = $tolower->filter( sprintf( "%s %s", $sn->f_name, $sn->s_name ) );
 						
-						//var_dump($sn);
-						//var_dump($existingName);
-						//die(__FILE__.': '.__LINE__);
-						
 						try {
 							if( $existingName == $tolower->filter( implode( ' ', $parts ) ) ) {
 								$this->_updateProgramActors( $sn->toArray(), $info );
@@ -1058,14 +870,10 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 					}
 				} else {
 					
-					//die(__FILE__.': '.__LINE__);
-					
 					$new = $this->_addCreditsName( $parts, 'actor', $info );
 					$this->_updateProgramActors( $new, $info );
 				}
 			} elseif( count( $parts ) == 3 ) {
-				
-				//die(__FILE__.': '.__LINE__);
 				
 				$snames = $table->fetchAll(
 				"`f_name` LIKE '" . $tolower->filter( $parts[0] ) . "'
@@ -1079,14 +887,11 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 							try {
 								$this->_updateProgramActors( $sn->toArray(), $info );
 							} catch (Exception $e) {
-								echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
-								die(__FILE__.': '.__LINE__);
+								throw new Zend_Exception("Cannot update broadcast actors", 500, $e);
 							}
 						}
 					}
 				} else {
-					
-					//die(__FILE__.': '.__LINE__);
 					
 					$new = $this->_addCreditsName( $parts, 'actor', $info );
 					$this->_updateProgramActors( $new, $info );
@@ -1116,8 +921,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 							try {
 								$this->_updateProgramDirectors( $existingName, $info );
 							} catch (Exception $e) {
-								echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
-								die(__FILE__.': '.__LINE__);
+								throw new Zend_Exception("Cannot update broadcast directors", 500, $e);
 							}
 						}
 					}
@@ -1141,8 +945,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 							try {
 								$this->_updateProgramDirectors( $existingName, $info );
 							} catch (Exception $e) {
-								echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
-								die(__FILE__.': '.__LINE__);
+								throw new Zend_Exception("Cannot update broadcast directors", 500, $e);
 							}
 						}
 					}
@@ -1193,10 +996,9 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			return $new->toArray();
 		
 		} catch (Exception $e) {
-			echo __METHOD__.": Не могу сохранить запись";
-			die( __FILE__ . ': ' . __LINE__ );
+			throw new Zend_Exception("Cannot save row", 500, $e);
 		}
-		//die(__FILE__.': '.__LINE__);
+        
 	}
 
 
@@ -1226,17 +1028,11 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 					$p_props->save();
 				} catch (Exception $e) {
 					if ($e->getCode()!=1062){
-						var_dump($e->getCode());
-						echo "Не могу добавить актера: " . $e->getMessage();
-						var_dump($e->getTrace());
 						die( __FILE__ . ': ' . __LINE__ );
 					}
 				}
 			} catch (Exception $e) {
 				if ($e->getCode()!=1062){
-					var_dump($e->getCode());
-					echo "Не могу добавить актера: " . $e->getMessage();
-					var_dump($e->getTrace());
 					die( __FILE__ . ': ' . __LINE__ );
 				}
 			}
@@ -1252,21 +1048,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 				$p_props['actors'] = $serializer->serialize( $persons );
 				$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
 			} catch (Exception $e) {
-				echo "Не могу обновить актера: ";
-				echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
 				die(__FILE__.': '.__LINE__);
-				/*
-				if( $e->getCode() == 0 ) {
-					
-					$p_props['actors'] = $serializer->serialize( array($existing['id']) );
-					try {
-						$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
-					} catch (Exception $e) {
-						echo "Не могу обновить актера: " . $e->getMessage();
-						die( __FILE__ . ': ' . __LINE__ );
-					}
-				}
-				*/
 			}
 		}
 	}
@@ -1282,9 +1064,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 		if( empty($existing) || empty( $info ) )
 		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
 		
-		//var_dump(func_get_args());
-		//die(__FILE__.': '.__LINE__);
-		
 		$props = new Admin_Model_DbTable_ProgramsProps();
 		$serializer = new Zend_Serializer_Adapter_Json();
 		$p_props = $props->fetchRow("`hash`='".$info['hash']."'" );
@@ -1296,11 +1075,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 				$p_props->directors = $serializer->serialize( array($existing['id']) );
 				$p_props->save();
 			} catch (Exception $e) {
-				if ($e->getCode()!=1062) {
-					echo "Не могу добавить режиссера: ";
-					echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
-					die(__FILE__.': '.__LINE__);
-				}
+				die(__FILE__.': '.__LINE__);
 			}
 		} else {
 			try {
@@ -1314,20 +1089,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 				$p_props['directors'] = $serializer->serialize( $persons );
 				$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
 			} catch (Exception $e) {
-				echo "Не могу обновить режиссера: " . $e->getMessage();
-				echo __FUNCTION__.' Error# '.$e->getCode().': '. $e->getMessage();
 				die(__FILE__.': '.__LINE__);
-				/*
-				if( $e->getCode() == 0 ) {
-					$p_props['directors'] = $serializer->serialize( array($existing['id']) );
-					try {
-						$props->update( $p_props, "`hash`='" . $info['hash'] . "'" );
-					} catch (Exception $e) {
-						echo "Не могу обновить режиссера: " . $e->getMessage();
-						die( __FILE__ . ': ' . __LINE__ );
-					}
-				}
-				*/
 			}
 		}
 	}
@@ -1354,17 +1116,9 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 			"`title` LIKE '%премьера%'"
 		), "start ASC");
 		for ($i=0; $i<count($result); $i++) {
-			//var_dump($result[$i]);
-			//var_dump($result[$i]->title);
-			/*
-			if (Xmltv_String::stristr($current->title, 'премьера'){
-				
-			}
-			*/
+			
 		}
-		
-		//var_dump($weekStart->toString(Zend_Date::DATE_MEDIUM));
-		//var_dump($weekEnd->toString(Zend_Date::DATE_MEDIUM));
+        
 	}
 	
 	/**
@@ -1499,9 +1253,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 
 	public function deletePrograms($start=null, $end=null, $linked=false){
 		
-	    //var_dump(func_get_args());
-	    //die(__FILE__.': '.__LINE__);
-	    
 	    if ($start && $end){
 	        
 			if ($linked) {
@@ -1526,12 +1277,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	 */
 	public static function makeAlias($input, $replace_plus=false){
 		
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($input);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-		$result = $input;
+	    $result = $input;
 		
 		$symbols = array('"', '.', ',', '...', '…', '!', '?', ':', ';', '-', '  ');
 		foreach ($symbols as $s){
@@ -1554,20 +1300,12 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 		 
 		$result = preg_replace('/[^0-9\p{Cyrillic}\p{Latin}]+/ui', ' ', $result);
 		
-		//$f = new Zend_Filter_StringTrim(array('charlist'=>'".,…!?:;- \/\''));
-		//$result = $f->filter($result);
-		
 		$f = new Zend_Filter_Word_SeparatorToDash(' ');
 		$result = Xmltv_String::strtolower( $f->filter( $result ));
 		
 		$result = trim( $result, '-' );
 		
 		$result = Xmltv_String::strtolower( $result );
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
 		
 		return $result;
 		
@@ -1655,14 +1393,8 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    	}
 	    }
 	    
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
-	    
 		$regex = '/^(Мировой Кубок)\.\s+([\p{Common}\p{Cyrillic}\p{Latin}]+)$/ui';
 	    if (preg_match($regex, $input['title'], $m)){
-	    	//var_dump($string);
 	    	$result['title']	 = trim($m[1]);
 	    	$result['sub_title'] = isset($m[2]) ? trim($m[2]) : '' ;
 	    	$result['category'] = $this->catIdFromTitle('спорт');
@@ -1701,11 +1433,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    		$result['sub_title'] = Xmltv_String::ucfirst(trim($m[2]));
 	    		
 	    	}
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($result);
-	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
 	    if ($result) {
@@ -1953,20 +1680,10 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	        
 	        $result = $input;
 	        
-	        if (APPLICATION_ENV=='development'){
-	        	//var_dump($input['title']);
-	        	//var_dump($m);
-	        }
-	        
 	        $result['title']     = trim($m[1]);
 	    	$result['sub_title'] = trim($m[2]);
 	    	$result['episode']   = (int)$m[3];
 	    	$result['category']  = $this->catIdFromTitle('Сериал');
-	    	
-	    	if (APPLICATION_ENV=='development'){
-	    		//var_dump($result);
-	    		//die(__FILE__.': '.__LINE__);
-	    	}
 	    	
 	    	return $result;
 	    	
@@ -1975,20 +1692,10 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    $regex = '/^(.+),\s(ч|часть)\.?\s?([\d]+)\.?$/ui'; //"Горница", ч. 1.
 	    if (preg_match($regex, $input['title'], $m)){
 	        
-	        if (APPLICATION_ENV=='development'){
-	        	var_dump($input['title']);
-	        	var_dump($m);
-	        }
-	        
 	        $result = $input;
 	    	$result['title'] = trim($m[1]);
 	    	$result['episode'] = (int)$m[3];
 	    	$result['category'] = $this->catIdFromTitle('Сериал');
-	    	
-	    	if (APPLICATION_ENV=='development'){
-	    		var_dump($result);
-	    		die(__FILE__.': '.__LINE__);
-	    	}
 	    	
 	    }
 	    
@@ -1996,30 +1703,16 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    $regex = '/\s*\(\s*"(.+)",\s+([\d]+)-[\w]\s+и\s+([\d]+)-[\w]\s+серии\)/ui'; //Опергруппа-2 ( "Деньги - это бумага", 1-я и 2-я серии)
 	    if (preg_match($regex, $input['title'], $m)){
 	        
-	        if (APPLICATION_ENV=='development'){
-	        	//var_dump($input['title']);
-	        	//var_dump($m);
-	        }
-	        
 	        $result = $input;
 	    	$result['title'] = Xmltv_String::str_ireplace($m[0], '', $input['title']);
 	    	$result['sub_title'] = trim($m[1]);
 	    	$result['episode'] = (int)$m[2].','.(int)$m[3];
 	    	$result['category'] = $this->catIdFromTitle('Сериал');
 	    	
-	    	if (APPLICATION_ENV=='development'){
-	    	    //var_dump($result);
-	    		//die(__FILE__.': '.__LINE__);
-	    	}
 	    }
 	    
 	    
 	    if (preg_match_all('/(([\d]+)-я серия - "([\w\d\s]+)"\.?)/ui', $input['title'], $m)){
-	        
-	        if (APPLICATION_ENV=='development'){
-	        	//var_dump($m);
-	        	//die(__FILE__.': '.__LINE__);
-	        }
 	        
 	        $result = $input;
 	        $trim = new Zend_Filter_StringTrim(array('charlist'=>' ()'));
@@ -2039,11 +1732,6 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	        
 	        $result['category'] = $this->catIdFromTitle('Сериал');
 	        
-	        if (APPLICATION_ENV=='development'){
-	        	//var_dump($result);
-	        	//die(__FILE__.': '.__LINE__);
-	        }
-	        
 	        return $result;
 	        
 	    }
@@ -2059,19 +1747,10 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    	    
 	    	    $result = $input;
 	    	    
-	    		if (APPLICATION_ENV=='development'){
-	    		    //var_dump($m);
-	    		}
-	    	    
 	    		$result['title']     = trim($m[1]);
 	    		$result['sub_title'] = trim($m[3]);
 	    		$result['episode']   = (int)$m[2];
 	    		$result['category']  = $this->catIdFromTitle('Познавательные');
-	    		
-	    		if (APPLICATION_ENV=='development'){
-	    			//var_dump($result);
-	    			//die(__FILE__.': '.__LINE__);
-	    		}
 	    		
 	    		return $result;
 	    	}
@@ -2089,19 +1768,9 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    	    
 	    	    $result = $input;
 	    	    
-	    		if (APPLICATION_ENV=='development'){
-	    			//var_dump($m);
-	    		    //die(__FILE__.': '.__LINE__);
-	    		}
-	    		
 	    		$result['title']    = trim( Xmltv_String::str_ireplace($m[0], '', $input['title']), '" ,.' );
 	    		$result['episode']  = (int)$m[1];
 	    		$result['category'] = $this->catIdFromTitle('Сериал');
-	    		
-	    		if (APPLICATION_ENV=='development'){
-	    			//var_dump($result);
-	    			//die(__FILE__.': '.__LINE__);
-	    		}
 	    		
 	    		return $result;
 	    	}
@@ -2116,20 +1785,10 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    	if (preg_match($r, $input['title'], $m)) {
 	    	    
 	    	    $result = $input;
-	    	    
-	    	    if (APPLICATION_ENV=='development'){
-	    	        //var_dump($m);
-	    	    }
-	    	    
 	    	    $result['title'] = Xmltv_String::str_ireplace($m[0], '', $input['title']);
 	    		unset($m[0]);
 	    		$result['episode']  = implode(',', $m);
 	    		$result['category'] = $this->catIdFromTitle('Сериал');
-	    		
-	    		if (APPLICATION_ENV=='development'){
-	    			//var_dump($result);
-	    			//die(__FILE__.': '.__LINE__);
-	    		}
 	    		
 	    		return $result;
 	    	}
@@ -2144,19 +1803,10 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    	    
 	    	    $result = $input;
 	    	    
-	    	    if (APPLICATION_ENV=='development'){
-	    	    	//var_dump($m);
-	    	    }
-	    	    
 	    		$result['title'] = trim($m[1]);
 	    		$result['sub_title'] = trim($m[2]).'. '.trim($m[4]);
 	    		$result['episode'] = (int)$m[3];
 	    		$result['category'] = $this->catIdFromTitle('Познавательные');
-	    		
-	    		if (APPLICATION_ENV=='development'){
-	    			//var_dump($result);
-	    			//die(__FILE__.': '.__LINE__);
-	    		}
 	    		
 	    		return $result;
 	    		
@@ -2182,11 +1832,12 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	     */
 	    $regex = '/^(.+)\s+\(Фильм\s+([\w]+):?\s+"(.+)"\)/ui';
 	    if (preg_match($regex, $result['title'], $m)){
-	        var_dump($regex);
-	        var_dump($input['title']);
-	        var_dump($m);
+            
+	        Zend_Debug::dump($regex);
+	        Zend_Debug::dump($input['title']);
+	        Zend_Debug::dump($m);
 	        die(__FILE__.': '.__LINE__);
-	        die(__FILE__.': '.__LINE__);
+            
 	        $result = $input;
 	    	$result['title'] = trim($m[1]);
 	    	$result['sub_title'] = trim($m[3]);
@@ -2211,10 +1862,12 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    
 	    
 	    if ( preg_match('/^(.+)\s?\(([\d]+)-?я?\s+серия\s-\s"([\w\d\s]+)"\.?\)/ui', $result['title'], $m)) { //(25-я серия - "Рейдерский захват".
-	    	var_dump($regex);
-	        var_dump($input['title']);
-	        var_dump($m);
+            
+	    	Zend_Debug::dump($regex);
+	        Zend_Debug::dump($input['title']);
+	        Zend_Debug::dump($m);
 	        die(__FILE__.': '.__LINE__);
+            
 	    	$result = $input;
 	    	$result['title']     = trim($m[1]).'. «'.trim($m[3]).'»';
 	    	$result['sub_title'] = '';
@@ -2232,28 +1885,13 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	    	if (preg_match($r, $input['title'], $m)){
 	    	    
 	    	    $result = $input;
-	    	    
-	    	    if (APPLICATION_ENV=='development'){
-	    	        //var_dump($m);
-	    	    }
-	    	    
 	    	    $result['title'] = Xmltv_String::str_ireplace($m[0], '', $input['title']);
 	    	    $result['sub_title'] = '';
 	    		$result['episode'] = (int)$m[1];
 	    		$result['category'] = $this->catIdFromTitle('Сериал');
-	    		
-	    		if (APPLICATION_ENV=='development'){
-	    			//var_dump($result);
-	    			//die(__FILE__.': '.__LINE__);
-	    		}
-	    		
+                
 	    		return $result;
 	    	}
-	    }
-	    
-	    if(APPLICATION_ENV=='development'){
-	    	//var_dump($result);
-	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
 	    if ($result) {

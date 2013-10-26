@@ -77,10 +77,11 @@ class Admin_ProgramsController extends Rtvg_Controller_Admin
      */
 	private function _parseRequestValid($action=null){
 		
-		if (!$action)
-		return false;
-		//var_dump(func_get_args());
-		$filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
+		if (!$action){
+            throw new Zend_Exception("Action not specified");
+        }
+		
+        $filters = array( '*'=>'StringTrim', '*'=>'StringToLower' );
 		$validators = array(
 	    	'module'=>array( new Zend_Validate_Regex('/^[a-z]+$/')),
 	    	'controller'=>array( new Zend_Validate_Regex('/^[a-z]+$/')),
@@ -105,9 +106,7 @@ class Admin_ProgramsController extends Rtvg_Controller_Admin
  	public function programsDeleteProgressAction(){
  		
  		$model = new Admin_Model_Broadcasts();
- 		var_dump($this->_getAllParams());
- 		//echo "Completed";
-    	exit();
+ 		exit();
     }
 
 }

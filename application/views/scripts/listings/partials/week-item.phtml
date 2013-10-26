@@ -10,11 +10,6 @@
 $newDate=null;
 foreach ($this->items as $single) {
     
-    if (APPLICATION_ENV=='development'){
-    	//var_dump($single);
-    	//die(__FILE__.': '.__LINE__);
-    }
-    
     $programTitle = $this->escape( $single['title'] );
     $programAlias = $this->escape( $single['alias'] );
     $channelTitle = $this->escape( $single['channel_title'] );

@@ -13,8 +13,8 @@ class Admin_Model_Directors
 		$p=0;
 		foreach ($chunks as $chunk) {
 			foreach ($chunk as $item) {
-				//var_dump($item);
-				$p++;
+				
+                $p++;
 				$d = $table->fetchAll(array(
 					"`s_name` = '".$item['s_name']."'"),  "id DESC");
 				if (count($d)>1) {
@@ -47,10 +47,8 @@ class Admin_Model_Directors
 			    		continue;
 			    	}
 				}
-				//die(__FILE__.': '.__LINE__);
 			}
 		}
-		//die(__FILE__.': '.__LINE__);
 	}
 	
 	public function fixNames(){
@@ -61,8 +59,8 @@ class Admin_Model_Directors
 			foreach ($chunk as $item) {
 				$parts = explode(' ', $item['f_name']);
 				if (count($parts)==3) {
-					//var_dump($parts);
-					$table->update(array(
+					
+                    $table->update(array(
 						'f_name'=>trim($parts[0]),
 						'm_name'=>trim($parts[1]),
 						's_name'=>trim($parts[2])), "`f_name`='".$item['f_name']."'");

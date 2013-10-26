@@ -28,14 +28,6 @@ class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Hel
         if (!$controller){
             $controller = $params['controller'];
         }
-        /*if (!$action){
-            $action = $params['action'];
-        }*/
-        
-        if (APPLICATION_ENV=='development'){
-        	//var_dump(func_get_args());
-        	//die(__FILE__.': '.__LINE__);
-        }
         
         $front = Zend_Controller_Front::getInstance();
 	    $bs = $front->getParam('bootstrap');
@@ -60,13 +52,6 @@ class Zend_Controller_Action_Helper_IsAllowed extends Zend_Controller_Action_Hel
     				$resource = $module;
     			}
     		}
-    	}
-    	
-    	if (APPLICATION_ENV=='development'){
-    		//var_dump($params);
-    		//var_dump($resource);
-    		//var_dump($acl->isAllowed( $role, $resource, $privilege ));
-    		//die(__FILE__.': '.__LINE__);
     	}
     	
     	return (bool)$this->getAcl()->isAllowed( $role, $resource, $privilege );

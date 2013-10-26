@@ -304,11 +304,6 @@ class Bootstrap_Auth extends Bootstrap
 	public static function getCurrentUser($db=null)
 	{
 	  
-		if (APPLICATION_ENV=='development'){
-			//var_dump(self::$_currentUser);
-			//die(__FILE__.': '.__LINE__);
-		}
-	  
 		if (null === self::$_currentUser) {
 
 			if (isset($db)){

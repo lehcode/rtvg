@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Broadcasts ratings table class
+ */
 class Xmltv_Model_DbTable_ProgramsRatings extends Xmltv_Db_Table_Abstract
 {
 

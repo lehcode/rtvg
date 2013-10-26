@@ -24,12 +24,6 @@ $this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/tem
 $request    = Zend_Controller_Front::getInstance()->getRequest();
 $controller = $request->getControllerName();
 
-if (APPLICATION_ENV=='development'){
-	//var_dump($this->user);
-	//die(__FILE__.': '.__LINE__);
-}
-
-
 ?>
 <?php echo $this->doctype(); ?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">

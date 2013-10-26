@@ -70,17 +70,13 @@ class Admin_DuplicatesController extends Rtvg_Controller_Admin
 			}
 		} else {
 			
-			var_dump(count($progs));
-			
 			foreach ($progs as $p) {
 				$prog = $p->toArray();
-				var_dump($prog);
 				$serializer = new Zend_Serializer_Adapter_Json();
 				$actors = $serializer->unserialize($prog['actors']);
 				$model  = new Admin_Model_Actors();
     			$main   = $model->getPersonByKey($id);
     			$dupes  = $model->getPersonDuplicates($main);
-    			var_dump($main);
     			die(__FILE__.': '.__LINE__);
     			
 				if ($k = array_search($id, $actors)){
@@ -88,7 +84,6 @@ class Admin_DuplicatesController extends Rtvg_Controller_Admin
 						$actors[$k] = (int)$dupes['origin']['id'];
 					}
 				}
-				var_dump($actors);
 				die(__FILE__.': '.__LINE__);
 			}
 			die(__FILE__.': '.__LINE__);

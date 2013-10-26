@@ -68,9 +68,6 @@ if (count($this->list)){
 				$added       = new Zend_Date($item['added'], 'YYYY-MM-dd');
 				$publishDown = new Zend_Date($item['publish_down'], 'YYYY-MM-dd');
 				
-				if(APPLICATION_ENV=='development'){
-					//var_dump($item);
-				}
 				?>
 				<tr>
 					<td><input type="checkbox" id="<?php printf('cb%s', $c); ?>" name="idx[]" value="<?php echo (int)$item['id']; ?>" /></td>

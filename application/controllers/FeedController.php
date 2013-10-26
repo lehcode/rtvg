@@ -49,7 +49,6 @@ class FeedController extends Rtvg_Controller_Action
         parent::validateRequest();
         
         $feed = new Zend_Feed_Writer_Feed;
-        //$feed->setTitle('');
         die(__FILE__.': '.__LINE__);
         
     }
@@ -61,10 +60,6 @@ class FeedController extends Rtvg_Controller_Action
     {
     	
         parent::validateRequest();
-        
-        //var_dump($this->_getAllParams());
-        //var_dump($this->channelsModel->getById( $this->input->getEscaped('channel') ));
-        //die(__FILE__.': '.__LINE__);
         
         if (!$this->input->getEscaped('channel')){
             $this->render('no-channel');
@@ -84,10 +79,6 @@ class FeedController extends Rtvg_Controller_Action
             	'channel'  => $channel['alias'],
             	'timespan' => $timespan ), 'default_listings_day-listing' ) );
         }
-        
-        
-        var_dump($feed);
-        die(__FILE__.': '.__LINE__);
         
     }
 }

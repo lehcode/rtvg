@@ -88,11 +88,6 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 			default:
 			case'edit':
 			    
-			    if (APPLICATION_ENV=='development'){
-			    	var_dump($this->_getAllParams());
-			    	//die(__FILE__.': '.__LINE__);
-			    }
-			    
 			    $this->view->headTitle( sprintf( self::HEAD_TITLE_PATTERN,  $_SERVER['HTTP_HOST'], $this->user->display_name, "Работа со статьями"));
 			    $this->view->headScript()
 			    	->appendFile( 'http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.0/jquery.validate.js' )
@@ -103,11 +98,7 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 				$this->view->assign( 'authors', $authorsModel->allAuthors(true) );
 				if (null !== ($idx = $this->input->getEscaped( 'idx' ))) {
 				    $article = $this->mainModel->getArticle($idx[0]);
-				    if (APPLICATION_ENV=='development'){
-				    	//var_dump($article);
-				    	//die(__FILE__.': '.__LINE__);
-				    }
-					$this->view->assign( 'article', $article );
+				    $this->view->assign( 'article', $article );
 				}
 				$this->view->assign( 'hide_breadcrumb', true);
 				$messages = array();
@@ -132,7 +123,6 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 			 * #######################################
 			 */
 			case 'delete':
-			    //die(__FILE__.': '.__LINE__);
 			    if (is_array($this->input->getEscaped('idx'))){
 					foreach ($this->input->getEscaped('idx') as $id){
 						$this->mainModel->deleteArticle( (int)$id );
@@ -215,13 +205,6 @@ class Admin_ContentController extends Rtvg_Controller_Admin
 						$article[$type]=1;
 					}
 				}
-				
-				if(APPLICATION_ENV=='development'){
-				    //var_dump($this->_getAllParams());
-				    //var_dump($article);
-				    //die(__FILE__.': '.__LINE__);
-				}
-
 				
 				try {
 					$this->mainModel->saveArticle( $article );

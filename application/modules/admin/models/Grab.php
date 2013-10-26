@@ -93,7 +93,6 @@ class Admin_Model_Grab
     			$htmlParser->setWrap($this->_DOM->query('td.main'));
     			$htmlParser->parseChannelsList();
     			$channels_info = $htmlParser->getChannelsInfo();
-    			var_dump($channels_info);
     			
     		}
     	}
@@ -288,8 +287,7 @@ class Admin_Model_Grab
 		
 		$this->_caching = $caching;
 		$this->_cache_lifetime = $lifetime;
-		//var_dump($this);
-		//die();
+		
 	}
 
 	

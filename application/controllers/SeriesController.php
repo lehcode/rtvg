@@ -32,14 +32,7 @@ class SeriesController extends Rtvg_Controller_Action
 		$data['date'] = new Zend_Date(null, null, 'ru');
 		$weekEnd = $this->_helper->WeekDays( array( 'method'=>'getEnd', 'data'=>$data));
 		$seriesList = $this->bcModel->getCategoryForPeriod( $weekStart, $weekEnd, $this->categoriesMap['series'] );
-		//var_dump($weekStart->toString('YYYY-MM-dd'));
-		//var_dump($weekEnd->toString('YYYY-MM-dd'));
 		
-		
-		//var_dump($seriesList);
-		//die(__FILE__.': '.__LINE__);
-		
-		//$this->render('under-constriction');
 	}
 	
 	private function _isValidRequest($action=null) {
@@ -58,25 +51,13 @@ class SeriesController extends Rtvg_Controller_Action
 	    	'format'=>array(
 	    		new Zend_Validate_Regex('/^html|json$/')));
 		switch ($action) {
-			/*
-			case 'show-video':
-				$validators['id']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
-				$validators['alias'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
-				break;
-			case 'show-tag':
-				$validators['id']    = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}]+/iu' ));
-				$validators['tag'] = array( new Zend_Validate_Regex( '/^[\p{L}\p{N}-]+/iu' ));
-				break;
-			*/
+			
 			default:
 				return false;
 		}
 		
 		$input = new Zend_Filter_Input($filters, $validators, $this->_getAllParams());
     	
-		//var_dump($input->isValid());
-		//die(__FILE__.': '.__LINE__);
-		
 		if ($input->isValid())
     	return true;
     	else

@@ -79,8 +79,7 @@ class Admin_Model_Actors
 						$item['s_name'] = trim($expl[2]);
 						$actors->update($item, "`id`='".$item['id']."'");
 					}
-					//var_dump($item);
-					//die(__FILE__.': '.__LINE__);
+					
 				} elseif (count($parts)==2) {
 					$f = $this->_fixNameRank($item);
 					$parts = explode(' ', $f['name']);
@@ -92,15 +91,13 @@ class Admin_Model_Actors
 					} elseif (mb_strlen($name)>=32) {
 						$actors->delete("`id`='".$item['id']."'");
 					}
-					//var_dump($p);
-					//var_dump($expl);
-					//die(__FILE__.': '.__LINE__);
+					
 				} else { 
 					if (!$item['name_en']) {
 						$tl = new Xmltv_Cyrillic_Translit();
 						$translit = $tl->transliterate_return($item['name'].' '.$item['m_name'].' '.$item['s_name']);
 						if (!preg_match('/[a-zA-Z- ]+/', $translit)) {
-							var_dump($translit);
+							Zend_Debug::dump($translit);
 							die(__FILE__.': '.__LINE__);
 						}
 					}
@@ -108,8 +105,9 @@ class Admin_Model_Actors
 				
 			}
 		}
+        
 		return true;
-		//die(__FILE__.': '.__LINE__);
+        
 	}
 	
 	private function _fixNameRank ($data = null) {
@@ -126,58 +124,6 @@ class Admin_Model_Actors
 		}
 		return $data;
 	
-	}
-	
-	
-	
-	public function getClonesOf($id=null) {
-		
-		if (!$id) return;
-		
-		$actors  = new Admin_Model_DbTable_Actors();
-		$origin  = $actors->find($id)->toArray();
-		$tolower = new Zend_Filter_StringToLower($this->_tolower_options);
-		$clones  = $actors->fetchAll(array(
-			//"`f_name` LIKE '".$tolower->filter($origin['f_name'])."'",
-			//"`m_name` LIKE '".$tolower->filter($origin['m_name'])."'",
-			"`s_name` LIKE '".$tolower->filter($origin['s_name'])."'",
-			"`id` != '$id'"
-		));
-		
-		var_dump($origin);
-		var_dump(count($clones));
-		die(__FILE__.': '.__LINE__);
-		
-		$r = array();
-		if (count($d)) {
-			foreach ($d as $row) {
-				var_dump($row->toArray());
-			}
-			die(__FILE__.': '.__LINE__);
-		}
-		return $r;
-		
-	}
-	
-	public function getPersonByKey($key=null){
-		if (!$key) return;
-		$table = new Admin_Model_DbTable_Actors();
-		return $table->find($key)->toArray();
-	}
-	
-	/**
-	 * Get duplicates of actor
-	 * 
-	 * @param array $main	Person information
-	 */
-	
-	public function getPersonDuplicates($main=array()){
-		if (empty($main)) return;
-		$tolower = new Zend_Filter_StringToLower($this->_tolower_options);
-		$origin_f = $tolower->filter(Xmltv_String::str_ireplace('е', 'ё', $main['f_name']));
-    	$origin_m = $tolower->filter(Xmltv_String::str_ireplace('е', 'ё', $main['m_name']));
-    	$origin_s = $tolower->filter(Xmltv_String::str_ireplace('е', 'ё', $main['s_name']));
-    	
 	}
 	
 }

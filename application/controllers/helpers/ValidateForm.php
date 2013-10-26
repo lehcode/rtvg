@@ -18,11 +18,6 @@ class Xmltv_Controller_Action_Helper_ValidateForm extends Zend_Controller_Action
 	    $errors = array();
     	if(!$form->isValid($data)) {
     	    
-    	    if (APPLICATION_ENV=='development'){
-    	        //var_dump($form->getMessages());
-    	        //die(__FILE__.': '.__LINE__);
-    	    }
-    	    
     	    $formMessages = $form->getMessages();
     		foreach($formMessages as $field=>$message) {
     		    foreach($message as $error) {

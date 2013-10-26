@@ -18,11 +18,6 @@ $this->headMeta( $this->category['title']." на неделю на всех те
 
 <?php 
 foreach ($this->list as $single){
-    
-    if (APPLICATION_ENV=='development'){
-    	//var_dump($single);
-    	//die(__FILE__.': '.__LINE__);
-    }
     ?>
     
     <div class="item programcontainer">
@@ -36,8 +31,8 @@ foreach ($this->list as $single){
 					target="_blank">
 					<em><?php echo $single['title'] ?></em>
 			</a> на канале <b><?php echo $single['channel_title'] ?></b>
-			<?php //echo (bool)$single['live']==-true ? 'в прямом эфире' : '' ; ?>
-			<?php //echo (bool)$single['premiere']===true ? '. Премьера!' : '' ; ?>
+			<?php echo (bool)$single['live']==-true ? 'в прямом эфире' : '' ; ?>
+			<?php echo (bool)$single['premiere']===true ? '. Премьера!' : '' ; ?>
 			
 		</p>
     </div>

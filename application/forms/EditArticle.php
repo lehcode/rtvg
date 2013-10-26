@@ -483,11 +483,6 @@ class Xmltv_Form_EditArticle extends ZendX_JQuery_Form
 			'is_paid'=>'Плат.',
 		);
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($this->data);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		if ($this->view->isAllowed('admin:content.article', 'income')){
 			
 		    $income = new Zend_Form_Element_Radio( 'income' );

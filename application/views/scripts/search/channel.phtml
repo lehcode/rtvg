@@ -7,8 +7,6 @@ $this->headMeta()
 //Browser window title
 $this->headTitle( 'Результаты поиска' );
 
-
-//var_dump($this->results);
 ?>
 
 <div class="top-position">
@@ -28,7 +26,6 @@ $this->headTitle( 'Результаты поиска' );
 
 <?php 
 foreach ($this->result as $r){
-    //var_dump($r);
     ?>
     <h3 class="channeltitle">
     	<img src="<?php echo $this->baseUrl("images/channel_logo/".$r['icon']) ?>" />

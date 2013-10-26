@@ -49,8 +49,8 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 </p>
 
 <div id="programlist" class="container-fluid">
-	<div class="pull-left span9">
-	<?php 
+	
+    <?php 
 	$pc=0;
 	foreach ($this->items as $k=>$prog) {
 		
@@ -58,13 +58,6 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 			$active = @$prog['now_showing']===true ? ' active' : '' ;
 		} else {
 			$active = $pc==0 ? ' active' : '' ;
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($k);
-			//var_dump($active);
-			//var_dump($prog);
-			//die(__FILE__.': '.__LINE__);
 		}
 		
 		switch ($k){
@@ -183,54 +176,13 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 		</div>
 		<?php } ?>
 		
-		
-		<?php /* 
-		if (isset($prog['actors']) && !empty($prog['actors'])) { 
-			if (APPLICATION_ENV=='development'){
-			    var_dump($prog['actors']);
-				die(__FILE__.': '.__LINE__);
-			}
-			?>
-		<p>В ролях:
-			<ul class="persons btn-group">
-				<?php foreach ($prog['actors'] as $p): ?>
-				<li class="btn btn-mini">
-					<?php echo $p['complete_name'] ?>
-				</li>
-				<?php endforeach; ?>
-			</ul>
-		</p>
-		<?php } */ ?>
-		
-		<?php /* if (isset($prog['directors']) && !empty($prog['directors'])): ?>
-		<p>Режиссер:
-			<ul class="persons btn-group">
-				<?php foreach ($prog['directors'] as $p): ?>
-				<li class="btn btn-mini">
-					<?php echo $p['complete_name'] ?>
-				</li>
-				<?php endforeach; ?>
-			</ul>
-		</p>
-		<?php endif; */ ?>
-		
 	</div>
 	
 	<?php 
 		$pc++;
 	}
 	?>
-	</div>
 	
-	<div class="span3" class="sidebar">
-		<?php echo $this->adCode(array(
-			'w'=>300,
-			'h'=>300,
-			'type'=>'cpa',
-			'output'=>'stack',
-			'amt'=>2,
-		)); ?>
-	</div>
 	
 </div>
 
@@ -246,10 +198,6 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 		<?php 
 		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
 		$d->subDay(1);
-		if (APPLICATION_ENV=='development'){
-			//var_dump($this->listing_date->toString('dd-MM-YYYY'));
-			//var_dump($d->toString('dd-MM-YYYY'));
-		}
 		?>
 		<a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-YYYY')), 'default_listings_day-date') ?>"
 			class="btn"
@@ -262,9 +210,6 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 		<?php 
 		$d = new Zend_Date($this->listing_date->toString('U'), 'U');
 		$d->addDay(1);
-		if (APPLICATION_ENV=='development'){
-			//var_dump($d->toString('dd-MM-YYYY'));
-		}
 		?>
 		<a href="<?php echo $this->url(array( 'channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
 			class="btn"

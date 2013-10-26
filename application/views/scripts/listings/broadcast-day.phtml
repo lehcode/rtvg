@@ -6,17 +6,8 @@
  * @version $Id: broadcast-day.phtml,v 1.14 2013-04-03 04:08:16 developer Exp $
  *
  */
-?>
 
-<?
-if (APPLICATION_ENV=='development') {
-	//var_dump( $this->programs);
-	//die(__FILE__.': '.__LINE__);
-}
-
-/*
- * Channel properties
- */
+//Channel properties
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
 
@@ -39,11 +30,6 @@ if (count($this->programs)) {
 	}
 }
 $this->headMeta()->setName('keywords', implode(',', $kw) );
-
-if (APPLICATION_ENV=='development') {
-	//var_dump($this->current_program['title']);
-	//die(__FILE__.': '.__LINE__);
-}
 
 if (!empty($this->programs)) {
 
@@ -123,7 +109,6 @@ if (!empty($this->programs)) {
 <?php 
 
 } ?>
-<?php //die(__FILE__.': '.__LINE__); ?>
 
 
 

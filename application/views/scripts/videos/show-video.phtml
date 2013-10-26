@@ -8,12 +8,6 @@
  *
  */
 
-if (APPLICATION_ENV=='development'){
-	//var_dump($this->main_video);
-	//var_dump($this->related_videos);
-	//die(__FILE__.': '.__LINE__);
-}
-
 if (isset($this->main_video)){
     
     $videoTitle = Xmltv_String::ucfirst( Xmltv_String::strtolower( $this->main_video['title'] ));
@@ -63,11 +57,6 @@ if (isset($this->main_video)){
 	$amount=(int)Zend_Registry::get('site_config')->videos->related->get('amt');
 	$i=0;
 	if (!empty($this->related_videos)) {
-	    
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($this->related_videos);
-	        //die(__FILE__.': '.__LINE__);
-	    }
 	    
 	    foreach ($this->related_videos as $v) {
 	        

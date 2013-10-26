@@ -31,27 +31,13 @@ class Xmltv_Model_DbTable_Articles extends Xmltv_Db_Table_Abstract
 	public function fetchAll($where = null, $order = null, $count = null, $offset = null){
 		
 	    $select = $this->_db->select()
-	    	->from( array('a'=>$this->getName()), array(
-	    		'id',
-	    		'title',
-	    		'alias',
-	    		'intro',
-	    		'body',
-	    		'tags',
-	    		'metadesc',
-	    		'added',
-	    		'publish_up',
-	    		'publish_down',
-	    		'hits',
-	    		'is_ref',
-	    		'is_paid',
-	    		'is_cpa',
-	    ))
-	    ->joinLeft( array('cc'=>$this->categoriesTable->getName()), "`a`.`content_cat`=`cc`.`id`",array(
-	    	'content_cat_id'=>'cc.id',
-	    	'content_cat_title'=>'cc.title',
-	    	'content_cat_alias'=>'cc.alias',
-	    ) );
+	    	->from( array('A'=>$this->getName()), '*')
+            ->joinLeft( array('CONTCAT'=>$this->categoriesTable->getName()), "`A`.`content_cat`=`CONTCAT`.`id`",array(
+                'content_cat_id'=>'id',
+                'content_cat_title'=>'title',
+                'content_cat_alias'=>'alias',
+            ))
+        ;
 	    
 	    if (is_array($where) && !empty($where)){
 	        foreach ($where as $string){
@@ -63,19 +49,7 @@ class Xmltv_Model_DbTable_Articles extends Xmltv_Db_Table_Abstract
 	    
 	    $select->limit( $count, $offset );
 	     
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($select->assemble());
-	    	Zend_Registry::get('fireLog')->log( $select->assemble(), Zend_Log::INFO );
-	    	//die(__FILE__.': '.__LINE__);
-	    }
-	     
 	    $result = $this->_db->fetchAll( $select );
-	     
-	    if (APPLICATION_ENV=='development'){
-	        //var_dump($result);
-	    	Zend_Registry::get('fireLog')->log( $result, Zend_Log::INFO );
-	    	//die(__FILE__.': '.__LINE__);
-	    }
 	     
 	    if (!count($result)){
 	    	return false;

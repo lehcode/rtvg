@@ -10,8 +10,7 @@
 <div class="btn-group">
 <?php
 foreach ($this->container as $page) {
-    //var_dump($page->getResource());
-	if ( $this->isAllowed($page->getResource()) ){
+    if ( $this->isAllowed($page->getResource()) ){
 	    switch ($page->idAttr){
 	    	default:
 	        case 'back':

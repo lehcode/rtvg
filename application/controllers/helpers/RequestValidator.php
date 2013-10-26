@@ -27,16 +27,6 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 	public function isValidRequest($params=null, $options=null) {
 		
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump( $this->getRequest()->getParams() );
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		if (isset($_GET['RTVG_PROFILE'])){
-			var_dump( $this->getRequest()->getParams() );
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		$filters = array( 
 			'*'=>'StringTrim',
 			'module'=>'StringToLower',
@@ -58,16 +48,6 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 			)
 		);
 		
-		//$profile = (bool)Zend_Registry::get('site_config')->site->get('profile');
-		if (isset($_GET['RTVG_PROFILE'])){
-			$validators['RTVG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
-		}
-		if (isset($_GET['XDEBUG_PROFILE'])){
-			$validators['XDEBUG_PROFILE'] = array(new Zend_Validate_Regex( '/^(0|1)$/u' ));
-		}
-		if (isset($_GET['XDEBUG_SESSION_START'])){
-			$validators['XDEBUG_SESSION_START'] = array(new Zend_Validate_InArray( array('netbeans-xdebug')));
-		}
 		$module	 = $params['module'];
 		$controller = $params['controller'];
 		$action	 = $params['action'];
@@ -81,11 +61,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 				
 				switch ($controller){
 					
-					/*
-					 * ##############################################
-					 * Search frontend controller
-					 * ##############################################
-					 */
+					//Search frontend controller
 					case 'search':
 						
 						switch ($action) {
@@ -104,11 +80,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 						
 						
 					
-					/*
-					 * ##############################################
-					 * Channels frontend controller
-					 * ##############################################
-					 */
+					//Channels frontend controller
 					case 'channels':
 						
 						switch ($action) {
@@ -133,11 +105,6 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 								
 							case 'channel-week':
 								$validators['channel'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
-								/* $validators['week_start'] = array( 
-									new Zend_Validate_Date( array(
-										'format'=>'dd.MM.yyyy',
-										'locale'=>'ru' ))
-								); */
 							break;
 								
 							case 'search':
@@ -167,11 +134,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 						
 					break;
 					
-					/*
-					 * ##############################################
-					 * Listings frontend controller
-					 * ##############################################
-					 */
+					//Listings frontend controller
 					case 'listings':
 						
 						$validators['channel'] = array(new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
@@ -240,11 +203,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 						
 					break;
 
-					/*
-					 * ##############################################
-					 * Videos frontend controller
-					 * ##############################################
-					 */
+					//Videos frontend controller
 					case 'videos':
 						
 						$validators['alias'] = array( new Zend_Validate_Regex( self::VIDEO_ALIAS_REGEX ));
@@ -253,11 +212,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					break;
 					
 					
-					/*
-					 * ##############################################
-					 * Frontpage controller
-					 * ##############################################
-					 */
+					//Frontpage controller
 					case'frontpage':
 							
 						switch ($action){
@@ -273,11 +228,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					break;
 
 					
-					/*
-					 * ##############################################
-					 * Users frontend controller
-					 * ##############################################
-					 */
+					//Users frontend controller
 					case 'user':
 						
 						switch ($action){
@@ -309,7 +260,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					    switch ($action){
 					    	
 					    	case 'article':
-					    	    $validators['category_id']   = array( new Zend_Validate_Digits() );
+					    	    $validators['category'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
 					    	    $validators['article_alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
 					    	break;
 					        
@@ -336,11 +287,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					    
 					break;
 
-					/*
-					 * ##############################################
-					 * Wrong frontend controller
-					 * ##############################################
-					 */
+					//Wrong frontend controller
 					default: 
 						throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 					
@@ -355,11 +302,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 				
 				switch ($controller){
 					
-					/*
-					 * ##############################################
-					 * Backend archive controller
-					 * ##############################################
-					 */
+					//Backend archive controller
 					case 'archive':
 						
 						switch ($action){
@@ -378,11 +321,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					break;
 
 					
-					/*
-					 * ##############################################
-					 * Backend import controller
-					 * ##############################################
-					 */
+					//Backend import controller
 					case 'import':
 						
 						switch ($action){
@@ -404,19 +343,12 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							default:
 							case 'upload':
 								break;
-								
-							//default:
-							//	throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ACTION, 404);
-								
+                            
 						}
 						
 					break;
 					
-					/*
-					 * ##############################################
-					 * Backend programs controller
-					 * ##############################################
-					 */
+					//Backend programs controller
 					case 'programs':
 						
 						switch ($action) {

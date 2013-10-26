@@ -135,16 +135,10 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				$info['icon'] = 'default.png';
 			}
 			
-			//var_dump($info);
-			//die(__FILE__.': '.__LINE__);
-			//var_dump( $channelsTable->fetchRow( array("`alias`='".$info['alias']."' OR `title` LIKE '%".$info['title']."%'")));
-			
 			$channelsTitles = array();
 			foreach ($channelsRows as $row){
 				$channelsTitles[] = $row['title'];
 			}
-			
-			//die(__FILE__.': '.__LINE__);
 			
 			if (($mapped = $this->_mapChannel($info['title'], $channelsTitles, $channelsMap))!==false){
 			    $info['title'] = $mapped;
@@ -157,10 +151,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$info['alias'] = $plusToPlus->filter($info['alias']);
 			$info['alias'] = str_replace('--', '-', trim($info ['alias'], ' -'));
 			
-            //var_dump($channelsTable->fetchRow( array("`alias` LIKE 'cbs-drama' OR `title` LIKE '%CBS Drama%'") ));
-            //die(__FILE__.': '.__LINE__);
-            
-			if ( !($present = $channelsTable->fetchRow( array("`alias` LIKE '".$info['alias']."' OR `title` LIKE '%".$info['title']."%'") ))) {
+            if ( !($present = $channelsTable->fetchRow( array("`alias` LIKE '".$info['alias']."' OR `title` LIKE '%".$info['title']."%'") ))) {
 				
 			    if ((bool)$channelsTable->find($info['id'])->toArray()===false){
 			        //Save if new
@@ -177,7 +168,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			    } else {
 			        echo "<h3>Канал отсутствует!</h3><br />";
 			        Zend_Debug::dump($info);
-                    //Zend_Debug::dump($channelsTable->find($info['id'])->toArray());
 			        die();
 			    }
 			    
@@ -268,21 +258,8 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$bc  = new stdClass();
             $evt = $eventsModel->create();
 			
-			/*if (APPLICATION_ENV=='development'){
-				var_dump($bc);
-				var_dump($evt);
-				die(__FILE__.': '.__LINE__);
-			}*/
-			
 			//Process program title and detect some properties
 			$parsed = $broadcasts->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
-			
-			/*if (APPLICATION_ENV=='development'){
-				if ($node->getElementsByTagName('title')->item(0)->nodeValue=='Биатлон. Кубок мира. Трансляция из Ханты-Мансийска'){
-					var_dump($parsed);
-					die(__FILE__.': '.__LINE__);
-				}
-			}*/
 			
 			$bc->title = $parsed['title'];
 			$bc->sub_title = $parsed['sub_title'];
@@ -296,12 +273,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			if (!is_numeric($bc->category)) {
 				$bc->category = $broadcasts->catIdFromTitle( $bc->category );
 			}
-			
-			/*if (APPLICATION_ENV=='development'){
-				var_dump($bc->toArray());
-				var_dump($evt->toArray());
-				die(__FILE__.': '.__LINE__);
-			}*/
 			
 			//Parse description
 			if (@$node->getElementsByTagName('desc')->item(0)){
@@ -319,7 +290,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 					} elseif(stristr($parseDesc['actors'], ',')){
 					    $bc->actors = $parseDesc['actors'];
 					} else {
-					    var_dump($parseDesc['actors']);
+					    Zend_Debug::dump($parseDesc['actors']);
 					    die(__FILE__.': '.__LINE__);
 					}
 				}
@@ -332,7 +303,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 					} elseif(stristr($parseDesc['directors'], ',')){
 						$bc->directors = $parseDesc['directors'];
 					} else {
-						var_dump($parseDesc['directors']);
+						Zend_Debug::dump($parseDesc['directors']);
 						die(__FILE__.': '.__LINE__);
 					}
 				}
@@ -342,11 +313,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
                 $bc->date = isset( $parseDesc['year'] ) ? $parseDesc['year'] : null ;
 				$bc->episode_num = isset( $parseDesc['episode'] ) && (int)$bc->episode_num==0 ? (int)$parseDesc['episode'] : $bc->episode_num;
 				$bc->category = isset( $parseDesc['category'] ) && (bool)$bc->category===false ? $parseDesc['category'] : $bc->category ;
-				//$rating = isset( $parseDesc['rating'] ) && (bool)$prog['rating']===false  ? $parseDesc['rating'] : (int)$prog->rating ;
-				/*if (APPLICATION_ENV=='development'){
-					var_dump($bc->toArray());
-					die(__FILE__.': '.__LINE__);
-				}*/
+				
 				
 			} else {
                 $bc->country = 'na';
@@ -372,14 +339,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			    }
 			}
 			
-			
-			/*if (APPLICATION_ENV=='development'){
-				var_dump($bc->toArray());
-				var_dump($evt->toArray());
-				die(__FILE__.': '.__LINE__);
-			}*/
-			
-			/*
+            /*
 			 * Fix split title for particular channels
 			 * mostly movies
 			 */
@@ -388,19 +348,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				$bc->title .= ' '.$bc->sub_title;
 				$bc->sub_title = '';
 			}
-			
-            /*
-			$e = explode('. ', $bc->title);
-			if (count($e)>2){
-				$bc->title = trim($e[0]).'. '.trim($e[1]).'.';
-				unset($e[0]);
-				unset($e[1]);
-				if (isset($bc->sub_title))
-					$bc->sub_title .= implode('. ', $e);
-				else
-					$bc->sub_title = implode('. ', $e);
-			}
-            */
 			
 			// Start and end datetime
 			$start = $broadcasts->startDateFromAttr( $node->getAttribute( 'start' ) );
@@ -417,8 +364,8 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			if ($i<$debugAmt){
 				if (APPLICATION_ENV=='development'){
 					//echo $i;
-					//var_dump($bc->toArray());
-					//var_dump($evt->toArray());
+					//Zend_Debug::dump($bc->toArray());
+					//Zend_Debug::dump($evt->toArray());
 				}
 			}
             
@@ -496,9 +443,8 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		$ext = Xmltv_Parser_FilenameParser::getExt($name);
 		preg_match('/^application\/(.+)$/', $mimeType, $m);
 		$type = $m[1];
-		//var_dump($fn);
-		//die(__METHOD__);
-		try {
+		
+        try {
 			
 			$uploads = $upload->getDestination();
 			$nn=md5($fn.time()).'.'.$type;
@@ -557,17 +503,14 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	 */
 	private function _programsParseProgress(){
 		
-		var_dump($this->_getAllParams());
 		die(__FILE__.': '.__LINE__);
 		
 		$xml_file = Xmltv_Filesystem_File::getName($this->_request->get('xml'));
 		$path = Xmltv_Filesystem_File::getPath($this->_request->get('xml'));
-		//var_dump($xml_file);
-		//$total_count=0;
-		//$cache = new Xmltv_Cache(array('cache_lifetime'=>7200));
-		$this->_lockFile = APPLICATION_PATH.'/../cache/'.$cache->getHash($xml_file).'.lock';
-		//var_dump($this->_lockFile);
-		$hash = $cache->getHash(__METHOD__.$xml_file);
+		
+        $this->_lockFile = APPLICATION_PATH.'/../cache/'.$cache->getHash($xml_file).'.lock';
+		
+        $hash = $cache->getHash(__METHOD__.$xml_file);
 		if (!($locked = @fopen($this->_lockFile, 'r'))){
 			
 			$fh = fopen($this->_lockFile, 'w');
@@ -599,21 +542,16 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			unlink($this->_lockFile);
 			
 		}
-		//var_dump($this->_lockFile);
-		//var_dump($locked);
-		//die(__FILE__.': '.__LINE__);
-		/*
-		 * dates
-		 */
+		
+        //dates
 		$parts = explode('.', $xml_file);
 		$parts = explode('-', $parts[0]);
 		$start = substr($parts[0], 4, 4) . '-' . substr($parts[0], 2, 2) . '-' . substr($parts[0], 0, 2);
 		$end   = substr($parts[1], 4, 4) . '-' . substr($parts[1], 2, 2) . '-' . substr($parts[1], 0, 2);
 		$weekStart = new Zend_Date($start);
 		$weekEnd   = new Zend_Date($end);
-		/*
-		 * Get programs count
-		 */
+		
+        //Get programs count
 		$programs = new Admin_Model_Broadcasts();
 		$current = $programs->getProgramsCountForWeek($weekStart, $weekEnd);
 		
@@ -639,18 +577,9 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				$gzFile  = $this->_xmlFolder.'current.xml.gz';
 				$xmlFile = Xmltv_String::substr_replace( $gzFile, '', Xmltv_String::strlen($gzFile)-3);
 				
-				//var_dump($gzFile);
-				//var_dump($xmlFile);
-				//var_dump(file_exists($gzFile));
-				//var_dump(file_exists($xmlFile));
-				//var_dump($this->_teleguideUrl);
-				//die(__FILE__.': '.__LINE__);
-				
 				if ( !file_exists($gzFile) && !file_exists($xmlFile)) {
 					
-				    //die(__FILE__.': '.__LINE__);
-				    
-					$curl = new Zend_Http_Client_Adapter_Curl();
+				    $curl = new Zend_Http_Client_Adapter_Curl();
 					$curl->setCurlOption( CURLOPT_HEADER, false );
 					$curl->setCurlOption( CURLOPT_RETURNTRANSFER, 1 );
 					$curl->setCurlOption( CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] );
@@ -662,26 +591,17 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 					
 				} 
 				
-				//var_dump(file_exists($gzFile));
-				//var_dump(file_exists($xmlFile));
-				
 				if(file_exists($gzFile) && !file_exists($xmlFile)) {
 					system("gzip -d $gzFile");
 				} 
 				
-				if (!file_exists($xmlFile))
+				if (!file_exists($xmlFile)){
 					throw new Exception("Error downloading XML from $site!");
-				
-				
-				//var_dump($xmlFile);
-				//die(__FILE__.': '.__LINE__);
+                }
 				
 				$this->xmlParseChannels($xmlFile);
-				$this->xmlParsePrograms($xmlFile);
-				//die(__FILE__.': '.__LINE__);
+				$this->xmlParsePrograms($xmlFile);				
 				
-				
-				//unlink($xmlFile);
 				system("mv $xmlFile $xmlFile.last");
 				
 				break;

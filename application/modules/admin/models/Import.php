@@ -106,9 +106,6 @@ class Admin_Model_Import
 		if (!$data || !is_array($data) || !$hash)
 		throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
 		
-		//var_dump($data);
-		//die(__FILE__.': '.__LINE__);
-		
 		try {
 			$this->_broadcasts->insert($data);
 		} catch (Exception $e) {
@@ -116,12 +113,10 @@ class Admin_Model_Import
 				try {
 					$this->_broadcasts->update($data, "`hash`='$hash'");
 				} catch (Exception $e) {
-					echo __METHOD__.' Ошибка#'.$e->getCode().': '.$e->getMessage();
-					die(__FILE__.': '.__LINE__);
+					throw new Zend_Exception("Cannot update", 500, $e);
 				}
 			} else {
-				echo '<b>'.__METHOD__.' Ошибка#</b>'.$e->getCode().': '.$e->getMessage();
-				die(__FILE__.': '.__LINE__);
+				throw new Zend_Exception("Cannot update", 500, $e);
 			}
 		}
 	}
@@ -139,8 +134,7 @@ class Admin_Model_Import
 			$props->premiere_date=$start;
 			$this->_propsTable->update($props->toArray(), "`hash`='$hash'");
 		} catch (Exception $e) {
-			echo __METHOD__.' error#'.$e->getCode().': '.$e->getMessage();
-			die(__FILE__.': '.__LINE__);
+			throw new Zend_Exception("Cannot update", 500, $e);
 		}
 	}
 	
@@ -192,10 +186,6 @@ class Admin_Model_Import
     		}
     		
     	}
-    	
-    	//var_dump(count($result));
-    	//var_dump($result[0]);
-    	//die(__FILE__.': '.__LINE__);
     	
     	return $result;
     	

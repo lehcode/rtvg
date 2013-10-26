@@ -103,11 +103,6 @@ class Admin_ErrorController extends Zend_Controller_Action
 		    $logger->log( $e->getMessage(), Zend_log::CRIT );
 		}
 		
-		if (APPLICATION_ENV=='development'){
-			var_dump($this->getInvokeArg('displayExceptions')==true);
-			die(__FILE__.': '.__LINE__);
-		}
- 
 		// conditionally display exceptions
         if ($this->getInvokeArg('displayExceptions')==true) {
             $this->view->assign('exception', $errors->exception);

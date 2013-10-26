@@ -14,8 +14,6 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
     		$privilege = null )
     {
         
-        //die(__FILE__.': '.__LINE__);
-        
         $this->_userAgent = Zend_Controller_Front::getInstance()
         	->getParam('bootstrap')
         	->getResource('useragent');
@@ -25,9 +23,9 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         	'Windows NT 6.1',
         	'Mozilla/5.0 (compatible; SearchBot)',
         );
+        
         foreach ($badAgents as $bad){
         	if ($userAgent==$bad) {
-        	    //die(__FILE__.': '.__LINE__);
         	    $this->_exception();
         	}
         }
@@ -45,9 +43,6 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         		$this->_exception();
         	}
         }
-        
-        //var_dump($userAgent);
-        //die(__FILE__.': '.__LINE__);
         
         // Check by browser type
         $browserType = $this->_userAgent->getBrowserType();

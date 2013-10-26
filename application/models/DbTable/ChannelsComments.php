@@ -59,11 +59,6 @@ class Xmltv_Model_DbTable_ChannelsComments extends Xmltv_Db_Table_Abstract
         $rowData->published = $this->_defaultValues['published'];
         $rowData->url_crc = base64_encode( hash('crc32', $rowData->src_url, true));
         
-        if (APPLICATION_ENV=='development'){
-            //var_dump($rowData);
-            //die(__FILE__.': '.__LINE__);
-        }
-        
         return $rowData;
         
     }

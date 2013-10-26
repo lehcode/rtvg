@@ -209,10 +209,6 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		    
 		    $row = $this->channelsCommentsTable->createRow($new);
             $row->save();
-            
-            var_dump($row);
-            die(__FILE__.': '.__LINE__);
-            
             $saved[] = $row->toArray();
 		}
         

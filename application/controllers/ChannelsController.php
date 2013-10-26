@@ -211,8 +211,7 @@ class ChannelsController extends Rtvg_Controller_Action
             } else {
                 $cats = $this->channelsModel->channelsCategories();
             }
-            //var_dump($cats);
-            //die(__FILE__.': '.__LINE__);
+            
             $this->view->assign('channels_cats', $cats);
             
             

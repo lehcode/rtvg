@@ -81,12 +81,6 @@ class Xmltv_Model_DbTable_Users extends Xmltv_Db_Table_Abstract
         $where = "`email`='$email'";
         $row = $this->fetchRow($where);
         
-        if (APPLICATION_ENV=='development'){
-            //var_dump($where);
-            //var_dump($row);
-            //die(__FILE__.': '.__LINE__);
-        }
-        
         if ($row && is_a($row, 'Xmltv_User')){
         	return $row;
         }

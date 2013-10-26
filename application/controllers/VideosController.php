@@ -57,23 +57,9 @@ class VideosController extends Rtvg_Controller_Action
 		$youtube = new Xmltv_Youtube($ytConfig);
 		$rtvgId = $this->input->getEscaped('id');
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($rtvgId);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		if ($rtvgId) {
 		    
 		    $ytId = Xmltv_Youtube::decodeRtvgId( $rtvgId );
-			
-			if (APPLICATION_ENV=='development'){
-				//var_dump($this->cache->enabled);
-				//var_dump(parent::$videoCache);
-				//var_dump($rtvgId);
-				//var_dump($ytId);
-				//die(__FILE__.': '.__LINE__);
-			}
-			
 			
 			/*
 			 * ################################################################################
@@ -89,14 +75,9 @@ class VideosController extends Rtvg_Controller_Action
 				$f = '/Youtube/ShowVideo/Main';
 				$hash = Rtvg_Cache::getHash( $ytId );
 				
-				if (APPLICATION_ENV=='development'){
-				    //var_dump(parent::$videoCache);
-				    //var_dump($this->isAllowed);
-				}
-				
-				if (parent::$videoCache && $this->isAllowed){
+                if (parent::$videoCache && $this->isAllowed){
 				    
-				    // Search in database cache if was not found in file cache
+                    // Search in database cache if was not found in file cache
 				    // and if database cache is enabled
 				    if (($mainVideo = $this->vCacheModel->getVideo($rtvgId))===false){
 				        
@@ -119,11 +100,6 @@ class VideosController extends Rtvg_Controller_Action
 				            
 				        }
 				    }
-				    
-				    if (APPLICATION_ENV=='development'){
-			            //var_dump($mainVideo);
-			            //die(__FILE__.': '.__LINE__);
-			        }
 				    
 				    if ($mainVideo){
 					    if (parent::$videoCache===true){
@@ -163,11 +139,6 @@ class VideosController extends Rtvg_Controller_Action
 					//return true;
 				}
 			
-			}
-			
-			if (APPLICATION_ENV=='development'){
-			    //var_dump($mainVideo);
-			    //die(__FILE__.': '.__LINE__);
 			}
 			
 			$this->view->assign( 'main_video', $mainVideo );
@@ -229,11 +200,6 @@ class VideosController extends Rtvg_Controller_Action
 				    }
 			
 				}
-				
-				if (APPLICATION_ENV=='development'){
-					//var_dump($relatedVideos);
-					//die(__FILE__.': '.__LINE__);
-				}
 			
 			} else {
 			
@@ -256,28 +222,17 @@ class VideosController extends Rtvg_Controller_Action
 		}
 		
 		
-		/*
-		 * #####################################################################
-		 * Данные для модуля самых популярных программ
-		 * #####################################################################
-		 */
+		//Данные для модуля самых популярных программ
 		$top = $this->bcModel->topBroadcasts();
-		$this->view->assign('top_programs', $top);
+		$this->view->assign('bc_top', $top);
 		
-		/*
-		 * #####################################################################
-		 * Данные для модуля категорий каналов
-		 * #####################################################################
-		 */
-		$this->view->assign('channels_cats', $this->getChannelsCategories());
+		//Данные для модуля категорий каналов
+		$this->view->assign('channels_cats', $this->channelsModel->channelsCategories());
 
-		/*
-		 * #####################################################################
-		 * Данные для модуля популярных каналов
-		 * #####################################################################
-		 */
-		$this->view->assign('featured_channels', $this->getFeaturedChannels(36));
+		//Данные для модуля популярных каналов
+		$this->view->assign('featured_channels', $this->channelsModel->featuredChannels(12));
 		
+        $this->view->assign('hide_sidebar', 'left');
 	}
 	
 	
@@ -295,20 +250,11 @@ class VideosController extends Rtvg_Controller_Action
 	    
 	    foreach ($video_feed as $v){
 	        
-	        if (APPLICATION_ENV=='development'){
-	        	//var_dump($v);
-	        	//die(__FILE__.': '.__LINE__);
-	        }
-	        
 	        if (!is_a($v, 'Zend_Gdata_YouTube_VideoEntry')) {
 	            throw new Zend_Exception(parent::ERR_INVALID_INPUT.__METHOD__, 404);
 	        } else {
 	            
 	            if (($parsed = $this->videosModel->parseYtEntry($v))!==false) {
-	                if (APPLICATION_ENV=='development'){
-	                	//var_dump($result[$c]);
-	                	//die(__FILE__.': '.__LINE__);
-	                }
 	                $r[$c] = $parsed;
 	                $r[$c]['yt_parent'] = $yt_id;
 	                $result[$c] = $this->vCacheModel->saveRelatedVideo($r[$c]);
@@ -316,11 +262,6 @@ class VideosController extends Rtvg_Controller_Action
 	            }
 	        }
 	        
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	//var_dump($result);
-	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
 	    if (count($result)) {

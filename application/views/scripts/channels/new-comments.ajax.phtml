@@ -8,21 +8,10 @@
  *
  */
 
-
-if(APPLICATION_ENV=='development'){
-    //var_dump($this->items);
-    //die(__FILE__.': '.__LINE__);
-}
-
 if (isset($this->items) && count($this->items) && $this->items!==false){
 	foreach ($this->items as $comment) {
 	    
-	    if(APPLICATION_ENV=='development'){
-			//var_dump($comment);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
-		?>
+	    ?>
 		
 	<div>
 	

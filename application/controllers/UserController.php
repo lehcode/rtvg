@@ -44,18 +44,8 @@ class UserController extends Rtvg_Controller_Action
         $formValidator = $this->_helper->getHelper('ValidateForm');
         $r = $this->getRequest();
         
-        if (APPLICATION_ENV=='development'){
-            //var_dump($r->isPost());
-            //die(__FILE__.': '.__LINE__);
-        }
-        
         if ($r->isPost()) {
             $postData = $r->getPost();
-            
-            if (APPLICATION_ENV=='development'){
-            	//var_dump($formValidator->direct( $form, $postData));
-            	//die(__FILE__.': '.__LINE__);
-            }
             
             if(($errors = $formValidator->direct( $form, $postData))!==false) {  //i.e. no errors
                 
@@ -80,23 +70,11 @@ class UserController extends Rtvg_Controller_Action
                 $auth = Zend_Auth::getInstance();
                 $result = $auth->authenticate($authAdapter);
                 
-                if (APPLICATION_ENV=='development'){
-                	//var_dump($result);
-                	//var_dump($result->isValid());
-                	//die(__FILE__.': '.__LINE__);
-                }
-                
                 if ($result->isValid()) {
                     
                 	$identity = $result->getIdentity();
                 	$data = $authAdapter->getResultRowObject( null, 'hash' );
 
-                	if (APPLICATION_ENV=='development'){
-                		//var_dump($identity);
-                		//var_dump($data);
-                		//die(__FILE__.': '.__LINE__);
-                	}
-                		
                 	$auth->getStorage()->write( $data );
                 	$this->_redirect('/моя-страница');
                 	

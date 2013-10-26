@@ -134,11 +134,6 @@ class ContentController extends Rtvg_Controller_Action
     	
         $categories = $this->articlesModel->getCategories();
         
-        if (APPLICATION_ENV=='development'){
-            //var_dump($categories);
-            //die(__FILE__.': '.__LINE__);
-        }
-        
         $pages = array();
         foreach ($categories as $c){
             $pages[] = new Zend_Navigation_Page_Mvc(array(
@@ -151,11 +146,6 @@ class ContentController extends Rtvg_Controller_Action
             		'category'=>$c['alias']
             	)
             ));
-        }
-        
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($pages);
-        	//die(__FILE__.': '.__LINE__);
         }
         
         $this->view->assign( 'submenu', $pages );

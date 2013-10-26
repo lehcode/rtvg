@@ -27,9 +27,6 @@ class Admin_MoviesController extends Rtvg_Controller_Admin
 			$this->_forward('select-site');
 			return;
 		}
-		
-		var_dump( $request['site'] );
-		die( __FILE__ . ': ' . __LINE__ );
 	
 	}
 	

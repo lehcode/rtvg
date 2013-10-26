@@ -200,11 +200,6 @@ class Admin_Model_Articles {
             $this->updateArticle($data);
     	} else {
     	    $row = $this->contentTable->createRow($data);
-    	    if (APPLICATION_ENV=='development'){
-    	        //var_dump($row->toArray());
-    	    	//Zend_Registry::get('fireLog')->log($sql, Zend_Log::INFO);
-    	    	//die(__FILE__.': '.__LINE__);
-    	    }
     	    $this->contentTable->insert( $row->toArray(), 'id' );
     	}
     	
@@ -225,11 +220,6 @@ class Admin_Model_Articles {
         	$update[] = $this->db->quoteIdentifier($key) . '=' . $this->db->quote( $value );
         }
         $sql = "UPDATE `".$this->contentTable->getName()."` SET ".implode( ',', $update )." WHERE `id`=".$data['id'];
-        
-        if (APPLICATION_ENV=='development'){
-        	Zend_Registry::get('fireLog')->log($sql, Zend_Log::INFO);
-        	//die(__FILE__.': '.__LINE__);
-        }
         
         if(!$this->db->query( $sql )){
         	throw new Zend_Exception( Rtvg_Message::ERR_CANNOT_UPDATE_ROW, 500 );
@@ -264,8 +254,7 @@ class Admin_Model_Articles {
         }
         
         $row = $this->contentTable->fetchRow( "`id`=".(int)$id );
-        //var_dump($row->id);
-        var_dump($row->published);
+        
         if (!$row->published){
             $published=1;
         }
@@ -276,11 +265,6 @@ class Admin_Model_Articles {
         $sql = "UPDATE `".$this->contentTable->getName()."` SET `published`=$published WHERE `id`=".(int)$id;
         $this->db->query($sql);
         
-        if (APPLICATION_ENV=='development'){
-	        //var_dump($result);
-	        //die(__FILE__.': '.__LINE__);
-        }
-        
     }
     
     public function getContentTags(){
@@ -288,11 +272,6 @@ class Admin_Model_Articles {
         $select = $this->db->select()
         	->from($this->contentTable->getName(), array('tags'=>'LOWER(`tags`)'));
         $result = $this->db->fetchAll($select);
-        
-        if (APPLICATION_ENV=='development'){
-            //var_dump($result);
-        	//die(__FILE__.': '.__LINE__);
-        }
         
         $acTags = array();
         foreach ($result as $item){
@@ -304,11 +283,6 @@ class Admin_Model_Articles {
                 }
             }
             
-        }
-        
-        if (APPLICATION_ENV=='development'){
-        	//var_dump($acTags);
-        	//die(__FILE__.': '.__LINE__);
         }
         
         return $acTags;
