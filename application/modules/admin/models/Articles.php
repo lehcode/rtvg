@@ -127,14 +127,6 @@ class Admin_Model_Articles {
 				$select->where("`a`.`published`=1");
 			}
 			
-		if (APPLICATION_ENV=='development'){
-			self::debugSelect($select, __METHOD__);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		/**
-		 * @var Zend_Paginator
-		 */
 		$result = $this->getPaginator( $select );
 		
 		return $result;
@@ -155,22 +147,7 @@ class Admin_Model_Articles {
 		
 	}
 	
-	/**
-     * Debug select statement
-     * @param Zend_Db_Select $select
-     */
-    protected function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
-        
-        echo '<b>'.$method.'</b><br />';
-        try {
-           echo '<pre>'.$select->assemble().'</pre>';
-        } catch (Zend_Db_Table_Select_Exception $e) {
-            throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
-        }
-        
-    }
-    
-    public function allCategories($as_array=false){
+	public function allCategories($as_array=false){
     	
         $r = $this->programsCategoriesTable->fetchAll(null, "title ASC");
         $result['programs'] = $as_array===true ? $r->toArray() : $r ;

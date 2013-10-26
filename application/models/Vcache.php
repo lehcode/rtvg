@@ -155,7 +155,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract
             if(count($catExists)==0){
                 throw new Zend_Exception("Video category '".$row->category."' does not exist");
             } elseif($e->getCode()==23000){
-                $this->vcacheMainTable->delete("yt_id = ".$this->db->quote($video['yt_id']));
+                $this->vcacheMainTable->delete("yt_id = ".$this->db->quote($row->yt_id));
                 $row->save();
             } else {
                 throw new Zend_Exception("Cannot save row", 500, $e);

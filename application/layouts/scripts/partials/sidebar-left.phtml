@@ -10,6 +10,32 @@
 ?>
 
 <?php 
+//Top broadcasts block
+if (isset($this->bc_top) && !empty($this->bc_top)) {
+	?>
+<div class="module">
+	<h4>Популярные программы на этой неделе</h4>
+	<ul id="program-top">
+		<?php 
+		foreach ($this->bc_top as $bc){
+		?>
+		<li>
+			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$bc['channel_icon'] ) ?>" width="16" />
+			<a href="<?php echo $this->url( array('channel'=>$bc['channel_alias'], 'alias'=>$bc['alias']), 'default_listings_broadcast-week'); ?>"
+				title="<?php echo $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>"
+				target="_blank"><?php echo $this->truncateString( $bc['title'], 3, 'words') ?>
+			</a>
+		</li>
+		<?php 	
+		}
+		?>
+	</ul>
+</div>	
+	<?php 
+}
+?>
+
+<?php 
 if (isset($this->announces) && ($this->announces!==false)  && ($this->show_announces===true)) { ?>
 <div class="module">
 	<ul class="nav nav-pills nav-list">
@@ -24,7 +50,6 @@ if (isset($this->announces) && ($this->announces!==false)  && ($this->show_annou
 </div>	
 	<?php 
 }
-
 ?>
 
 <?php
@@ -55,106 +80,4 @@ if (isset($this->channels_categories) && !empty($this->channels_categories)) {
 	<?php 
 }
 ?>
-
-<?php 
-/*
- * Top programs block
- */
-if (isset($this->top_programs) && !empty($this->top_programs)) {
-	?>
-<div class="module">
-	<h4>Популярные программы на этой неделе</h4>
-	<ul id="program-top">
-		<?php 
-		foreach ($this->top_programs as $prog){
-		?>
-		<li>
-			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$prog['channel_icon'] ) ?>" width="16" />
-			<a href="<?php echo $this->url( array('channel'=>$prog['channel_alias'], 'alias'=>$prog['alias']), 'default_listings_broadcast-week'); ?>"
-				title="<?php echo $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $prog['title'], $prog['channel_title'])) ?>"
-				target="_blank"><?php echo $this->truncateString( $prog['title'], 3, 'words') ?>
-			</a>
-		</li>
-		<?php 	
-		}
-		?>
-	</ul>
-</div>	
-	<?php 
-}
-?>
-
-
-
-<?php 
-if (isset($this->comments)) {
-	
-	if (APPLICATION_ENV=='development'){
-		//var_dump($this->comments);
-		//die(__FILE__.': '.__LINE__);
-	}
-	
-?>
-<div class="module" id="comments">
-
-	<h4><?php echo $this->escape( sprintf('В блогах  про %s', $this->channel['title']) ); ?></h4>
-	
-		<?php
-		if (isset($this->comments) && (bool)$this->comments!==false) {
-			
-		    foreach ($this->comments as $comment) {
-				if (APPLICATION_ENV=='development'){
-					//var_dump($comment);
-					//die(__FILE__.': '.__LINE__);
-				}
-				?>
-			
-		<div>
-			
-			<?php /* if (!empty($comment['title'])) : ?>
-			<div class="summary"><?php echo $comment['title'] ?></div>
-			<?php endif; */ ?>
-			
-			
-			<?php if (!empty($comment['author'])) : ?>
-			<div class="author">
-				<a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
-					<small><?php echo $comment['author'] ?></small>
-				</a>
-			</div>
-			<?php endif; ?>
-			
-			
-			<?php 
-			/* if (!empty($comment['date_created'])) { ?>
-			<div class="date">
-				<?php echo $comment['date_created']->toString('EEEE, dd MMM yyyy hh:mm'); ?>
-				<span property="v:dtreviewed" content="<?php echo $comment['date_created']->toString('yyyy-MM-dd') ?>">
-			</div>
-			<?php 
-			} */ 
-			?>
-			
-			
-			<p class="description">
-				<?php 
-				$desc =  str_ireplace( $this->channel['title'], '<em>'.$this->channel['title'].'</em>', $comment['intro']);
-				echo $this->truncateString($desc, 20, 'words', false);
-				?>
-			</p>
-			
-			
-		</div>
-			<?php 
-			}
-		}
-		?>
-		<a href="<?php //echo $this->url(array(), 'default_comments_create'); ?>">Добавить комментарий</a>
-	
-	<div class="copy3rdparty">
-		<a href="http://blogs.yandex.ru/" title="Yandex поиск по блогам" rel="nofollow"><img src="http://img.yandex.net/i/logo100x43.png" width="37" height="16" /></a>
-	</div>
-</div>
-<?php 
-} ?>
 

@@ -75,11 +75,6 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             ->where($where)
             ->order('start DESC');
         
-        if (APPLICATION_ENV=='development') {
-            parent::debugSelect($select, __METHOD__);
-            //die(__FILE__.': '.__LINE__);
-        }
-        
         $result = $result = $this->db->fetchAll($select);
         return $result[0];
         
@@ -521,8 +516,6 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             ->where( "`EVT`.`channel` = '$channel_id'")
             ->order( "EVT.start DESC" );
         
-        parent::debugSelect($select, __METHOD__);
-        
         $result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
         
         if (!count($result)){
@@ -665,8 +658,12 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
      */
     public function frontpageListing($channels=array()){
         
-        if (!is_array($channels) || empty($channels))
-            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+        if (empty($channels)){
+            throw new Zend_Exception( "Channels cannot be empty" );
+        }
+        if (!is_array($channels)){
+            throw new Zend_Exception( "Channels must be an array" );
+        }
         
         $select = $this->db->select()
             ->from( array('BC'=>$this->bcTable->getName()), array(
@@ -676,30 +673,36 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'alias',
                 'age_rating',
             ))
-            ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
+            ->join(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
                 'start',
                 'end',
                 'channel'
             ))
-            ->joinLeft( array('CAT'=>$this->bcCategoriesTable->getName()), "`CAT`.`id`=`BC`.`category`", array(
+            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BCCAT`.`id`=`BC`.`category`", array(
                 'category'=>'id',
                 'category_title'=>'title',
                 'category_alias'=>'alias',
                 'category_single'=>'title_single'
             ))
-            ->joinLeft( array('CH'=>$this->channelsTable->getName()), "`CH`.`id`=`EVT`.`channel`", array(
+            ->join( array('CH'=>$this->channelsTable->getName()), "`CH`.`id`=`EVT`.`channel`", array(
                 'channel'=>'id',
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',
                 'adult',
             ))
-            ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd")." 00:00:00"))
-            ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm").":00"))
-            ->order(array("EVT.channel ASC", "EVT.start ASC"));
+            ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel_id`", null)
+            ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")))
+            ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm:00")))
+            ->group("EVT.start")
+            ->order(array(
+                "EVT.channel ASC", 
+                "EVT.start ASC",
+                "CHRAT.hits DESC",
+            ));
         
-        if ((int)Zend_Registry::get('site_config')->frontend->get('adult')!==1) {
+        if ((int)Zend_Registry::get('site_config')->frontend->adult !== 1) {
             $select->where("`CH`.`adult` = FALSE");
-            $select->where("`BC`.`age_rating` < 16 OR `BC`.`age_rating` = 0");
+            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
         }
         
         if (is_array($channels) && !empty($channels)){
@@ -710,7 +713,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             $select->where("EVT.channel IN (".implode(",", $ids).")");
         }
         
-        $result = $this->db->fetchAssoc($select->assemble());
+        $result = $this->db->fetchAll($select->assemble());
         
         if (!empty($result)){
             $items = array();
@@ -718,9 +721,12 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             foreach ($result as $k=>$d){
                 $end = new Zend_Date($d['end']);
                 if ($end->compare($now) >= 0) {
-                    $items[$d['channel']][$k] = $d;
-                    $items[$d['channel']][$k]['start'] = new Zend_Date($d['start']);
-                    $items[$d['channel']][$k]['end']   = new Zend_Date($d['end']);
+                    $items[$d['channel']][$d['hash']] = $d;
+                    $items[$d['channel']][$d['hash']]['start'] = new Zend_Date($d['start'], 'YYYY-MM-dd HH:mm:ss');
+                    $items[$d['channel']][$d['hash']]['end']   = new Zend_Date($d['end'], 'YYYY-MM-dd HH:mm:ss');
+                    $items[$d['channel']][$d['hash']]['age_rating'] = (int)$d['age_rating']>0 ? (int)$d['age_rating']>0 : null ;
+                    $items[$d['channel']][$d['hash']]['channel'] = (int)$d['channel'];
+                    $items[$d['channel']][$d['hash']]['category'] = (int)$d['category'];
                 }
             }
         }
@@ -856,12 +862,12 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'desc',
                 'episode_num'
             ))
-            ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash` = `EVT`.`hash`", array(
+            ->join(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash` = `EVT`.`hash`", array(
                 'live',
                 'premiere',
                 'new'
             ))
-            ->joinLeft(array('RT'=>$this->bcRatingsTable->getName()), "`BC`.`hash`=`RT`.`hash`", array(
+            ->join(array('RT'=>$this->bcRatingsTable->getName()), "`BC`.`hash`=`RT`.`hash`", array(
                 'hits',
                 'star_rating'
             ))
@@ -876,7 +882,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'category_title_multi'=>'title',
                 'category_alias'=>'alias',
             ))
-            ->joinLeft(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category`=`CHCAT`.`id`", array(
+            ->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category`=`CHCAT`.`id`", array(
                 'channel_category_title'=>'title',
                 'channel_category_alias'=>'alias',
                 'channel_category_icon'=>'image',
@@ -889,21 +895,28 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             ->limit((int)$amt)
         ;
         
-        if ((bool)Zend_Registry::get('site_config')->frontend->get('adult_channels', false)===false){
+        if ((bool)Zend_Registry::get('site_config')->frontend->adult !== true){
             $select->where("`CH`.`adult` = FALSE");
+            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
         }
                 
         $result = $this->db->fetchAll($select);
+        
         if (count($result)){
             foreach ($result as $k=>$item){
-                $result[$k]['live']        = (bool)$item['live'];
-                $result[$k]['episode_num'] = (int)$item['episode_num'];
-                $result[$k]['premiere']    = (bool)$item['premiere'];
+                $result[$k]['live'] = (bool)$item['live'];
+                $result[$k]['episode_num'] = (int)$item['episode_num']>0 ? (int)$item['episode_num'] : null ;
+                $result[$k]['premiere'] = (bool)$item['premiere'];
+                $result[$k]['new'] = (bool)$item['new'];
+                $result[$k]['hits'] = (int)$item['hits'];
+                $result[$k]['star_rating'] = floatval($item['star_rating']);
+                $result[$k]['channel_id'] = (int)$item['channel_id'];
+                $result[$k]['age_rating'] = (int)$item['age_rating'];
+                ksort($result[$k]);
             }
-            return $result;
         }
         
-        return false;
+        return $result;
         
     }
     
@@ -962,6 +975,35 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             }
         }
     }
+    
+    /**
+	 * Current date from request variable
+	 */
+	public function listingDate(Zend_Filter_Input $validator){
+        
+        if (!$validator) {
+            throw new Zend_Controller_Action_Exception("Validator not passed", 500);
+        }
+		
+	    $now = Zend_Date::now();
+		if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $validator->getEscaped('date'))) {
+			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'dd-MM-YYYY' ), 'dd-MM-YYYY' );
+		} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $validator->getEscaped('date'))) {
+			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
+			
+		}
+		
+		if (isset($d) && ($d->compare($now, 'DD')!=0)) {
+		    $date = $d->toString('YYYY-MM-dd');
+		    $time = $now->toString('HH:mm:ss');
+		    return new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
+		} else {
+			return $now;
+		}
+		
+		return $d;
+		
+	}
     
 }
 

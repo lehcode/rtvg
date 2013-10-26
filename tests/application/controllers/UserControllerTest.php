@@ -26,6 +26,9 @@ class UserControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		$front->setRouter($router->getRouter());
     }
 
+    /**
+     * @group userControllerActions
+     */
     public function testIndexAction()
     {
         $urlParams = $this->urlizeOptions( array(

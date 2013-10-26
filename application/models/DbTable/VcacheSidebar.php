@@ -76,11 +76,6 @@ class Xmltv_Model_DbTable_VcacheSidebar extends Xmltv_Db_Table_Abstract
 		$video['delete_at'] = Zend_Date::now()->addDay(1);
 		$new['delete_at']   = $video['delete_at']->toString('YYYY-MM-dd HH:mm:ss');
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($new);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		$keys = array();
 		$values = array();
 		foreach ($new as $k=>$v){
@@ -89,11 +84,6 @@ class Xmltv_Model_DbTable_VcacheSidebar extends Xmltv_Db_Table_Abstract
 		}
 		$sql = "INSERT INTO `".$this->getName()."` (".implode(',', $keys).") VALUES (".implode(',', $values).") 
 		ON DUPLICATE KEY UPDATE `delete_at`='".$new['delete_at']."'";
-		
-		if (APPLICATION_ENV=='development'){
-			var_dump($sql);
-			//die(__FILE__.': '.__LINE__);
-		}
 		
 		$this->_db->query($sql);
 		

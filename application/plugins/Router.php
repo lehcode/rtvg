@@ -286,12 +286,12 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             )));
         
         $this->_router->addRoute( 'default_content_article', 
-            new Zend_Controller_Router_Route( 'новости/:category_id/:article_alias', array(
+            new Zend_Controller_Router_Route( 'новости/:category/:article_alias', array(
                 'module'=>'default',
                 'controller'=>'content',
                 'action'=>'article',
             ), array(
-                'category_id'=>'[0-9]+',
+                'category'=>self::ALIAS_REGEX,
                 'article_alias'=>self::ALIAS_REGEX
             )));
         
@@ -428,6 +428,15 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'module'=>'admin',
                 'controller'=>'import',
                 'action'=>'xml-parse-programs'
+            ))
+        );
+        
+        $this->_router->addRoute( 'admin_import_xml-parse-channels',
+            new Zend_Controller_Router_Route_Static( 'admin/import/xml-parse-channels',
+            array(
+                'module'=>'admin',
+                'controller'=>'import',
+                'action'=>'xml-parse-channels'
             ))
         );
         

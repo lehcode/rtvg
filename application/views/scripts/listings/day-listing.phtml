@@ -139,37 +139,46 @@ if ($this->is_today) {
 }
 ?>
 
-
-
-
-
-
 <?php 
-/*
- * Torrent links
- */
-if ($this->torrent_links) { 
-	//var_dump($this->torrent_links);
-	?>
-<ul class="dl">
-	
-	<?php 
-	foreach ($this->torrent_links as $item){
-		?>
-		<li>
-			<img src="/images/icons/arrow_down_24x24.png">
-			<a rel="nofollow" href="<?php echo $item->url; ?>" target="_blank">
-				<?php echo $this->truncateString($item->title, 18, 'words') ; ?>
-			</a>
-		</li>
-		<?php
-		$k++; 
-	}
-	?>
-	
-</ul>
-<?php 
+if (isset($this->comments) && !empty($this->comments)) { 
+    ?>
+    <div id="comments">
+
+        <h4><?php echo $this->escape( sprintf('В блогах  про %s', $this->channel['title']) ); ?></h4>
+
+            <?php
+            if (isset($this->comments) && (bool)$this->comments!==false) {
+                foreach ($this->comments as $comment) {
+                    ?>
+
+            <div>
+
+                <?php if (!empty($comment['author'])) : ?>
+                <div class="author">
+                    <a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
+                        <small><?php echo $comment['author'] ?></small>
+                    </a>
+                </div>
+                <?php endif; ?>
+
+                <p class="description">
+                    <?php 
+                    $desc =  str_ireplace( $this->channel['title'], '<em>'.$this->channel['title'].'</em>', $comment['intro']);
+                    echo $this->truncateString($desc, 20, 'words', false);
+                    ?>
+                </p>
+
+
+            </div>
+                <?php 
+                }
+            }
+            ?>
+            <a href="<?php //echo $this->url(array(), 'default_comments_create'); ?>">Добавить комментарий</a>
+
+        <div class="copy3rdparty">
+            <a href="http://blogs.yandex.ru/" title="Yandex поиск по блогам" rel="nofollow"><img src="http://img.yandex.net/i/logo100x43.png" width="37" height="16" /></a>
+        </div>
+    </div>
+    <?php 
 } ?>
-
-
-

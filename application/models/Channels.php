@@ -132,28 +132,13 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	
 	/**
 	 *
-	 * @param  array $channel
-	 * @param  string $baseUrl
-	 * @return void|string
-	 */
-	public function createUrl($channel=null, $baseUrl=null){
-		
-		if (!$channel || $baseUrl===null)
-			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM.__METHOD__, 500);
-		
-		$channel['icon'] = $baseUrl.'/images/channel_logo/'.$channel['icon'];
-		return $channel;
-	}
-	
-	/**
-	 *
 	 * @param  string $alias
 	 * @return stdClass
 	 */
 	public function getByAlias($alias=null){
 		
 	    $select = $this->db->select()
-			->from( array('ch'=>$this->channelsTable->getName()), array(
+			->from( array('CH'=>$this->channelsTable->getName()), array(
 				'id',
 				'title',
 				'alias',
@@ -172,33 +157,21 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'video_quality',
 				'audio',
 			))
-			->where( "`ch`.`alias` LIKE '$alias'")
-			->where( "`ch`.`published`='1'")
-			->joinLeft( array('cat'=>$this->channelsCategoriesTable->getName()), '`ch`.`category`=`cat`.`id`', array(
-				'category_title'=>'cat.title',
-				'category_alias'=>'LOWER(`cat`.`alias`)',
-				'category_image'=>'cat.image')
+			->where( "`CH`.`alias` LIKE '$alias'")
+			->where( "`CH`.`published` = TRUE")
+			->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+				'category_title'=>'title',
+				'category_alias'=>'LOWER(`CHCAT`.`alias`)',
+				'category_image'=>'image')
 			);
 	    
-	    // Breakpoint
-	    if (APPLICATION_ENV=='development') {
-	        $this->debugSelect($select, __METHOD__);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-		
-		$result = $this->db->fetchRow( $select, null, Zend_Db::FETCH_ASSOC );
+	    $result = $this->db->fetchRow( $select, null, Zend_Db::FETCH_ASSOC );
 		
 		if ($result){
 			$result['adult'] = (bool)$result['adult'];
+			$result['id'] = (int)$result['id'];
 		}
 		
-		
-		// Breakpoint
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
-
 		return $result;
 		
 	}
@@ -218,11 +191,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 		$result = $this->channelsTable->fetchRow(" `title` LIKE '$title'");
 		$result->alias = Xmltv_String::strtolower($result->alias);
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($result);
-			//die(__FILE__.': '.__LINE__);
-		}
 		
 		return $result;
 		
@@ -315,26 +283,16 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 		
 		$select = $this->db->select()
-			->from(array('ch'=>$this->channelsTable->getName()), '*')
-			->join(array('cat'=>$this->channelsCategoriesTable->getName()), "`ch`.`category`=`cat`.`id`", array())
-			->where("`cat`.`alias` LIKE '$cat_alias'")
-			->where("`ch`.`published`='1'")
-			->order("ch.title ASC");
-		
-		if (APPLICATION_ENV=='development'){
-		    parent::debugSelect($select, __METHOD__);
-		    //die(__FILE__.': '.__LINE__);
-		}
+			->from(array('CH'=>$this->channelsTable->getName()), '*')
+			->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category`=`CHCAT`.`id`", array())
+			->where("`CHCAT`.`alias` LIKE '$cat_alias'")
+			->where("`CH`.`published` = TRUE")
+			->order("CH.title ASC");
 		
 		$result = $this->db->fetchAll($select);
 		
 		if ($result===false || empty($result)){
 	    	return false;
-	    }
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	//Zend_Debug::dump($result);
-	    	//die(__FILE__.': '.__LINE__);
 	    }
 	    
 	    return $result;
@@ -376,8 +334,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 ->group("EVT.start")
                 ->order("EVT.start", "ASC")
             ;
-            
-            var_dump($select->assemble());
             
             $days[$start->toString('U')] = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
 	    	$start->addDay(1);
@@ -439,30 +395,22 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function searchChannel( $string=null, $strict=false){
 		
 	    if ($string){
-	        $pfx = Zend_Registry::get('app_config')->resources->multidb->local->get('tbl_prefix');
 	        $select = $this->db->select()
-	        	->from(array( 'ch'=>$this->channelsTable->getName()), array('*', 'alias'=>'LOWER(ch.alias)'))
-	        	->joinLeft( array('cat'=>$pfx.'channels_categories'), '`ch`.`category`=`cat`.`id`', array(
+	        	->from(array( 'CH'=>$this->channelsTable->getName()), '*')
+	        	->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
 	        		'category_title'=>'title',
 	        		'category_alias'=>'alias',
 	        		'category_icon'=>'image'));
 	        
 	        if ($strict===true){
-	            $select->where("`ch`.`title` = '$string'");
+	            $select->where("`CH`.`title` = '$string'");
 	            $result = $this->db->fetchRow( $select );
 	        } else {
-	            $select->where("`ch`.`title` LIKE '%$string%'");
+	            $select->where("`CH`.`title` LIKE '%$string%'");
 	            $result = $this->db->fetchAll( $select);
 	        }
 	        
-	        
-	        if (APPLICATION_ENV=='development'){
-		        var_dump($select->assemble());
-		        //var_dump($result);
-		        //die(__FILE__.': '.__LINE__);
-	        }
-	        
-	        return $result;
+            return $result;
 	        
 	    }
 	    
@@ -474,10 +422,10 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function allChannels($order=null){
 		
 		$select = $this->db->select()
-			->from( array('ch'=>$this->channelsTable->getName()), array(
+			->from( array('CH'=>$this->channelsTable->getName()), array(
 				'id',
 				'title',
-				'alias'=>'LOWER(`ch`.`alias`)',
+				'alias',
 				'desc_intro',
 				'desc_body',
 				'category',
@@ -494,28 +442,20 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'video_quality',
 				'audio',
 			))
-			->joinLeft( array('cat'=>$this->channelsCategoriesTable->getName()), '`ch`.`category`=`cat`.`id`', array(
-				'category_title'=>'cat.title',
-				'category_alias'=>'LOWER(`cat`.`alias`)',
-				'category_image'=>'cat.image')
+			->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+				'category_title'=>'title',
+				'category_alias'=>'alias',
+				'category_image'=>'image')
 			)
-			->where("`ch`.`published`='1'");
+			->where("`CH`.`published` = TRUE");
 		
 		if ($order){
 		    $select->order( $order );
 		}
 		
-		if (APPLICATION_ENV=='development'){
-		    parent::debugSelect($select, __METHOD__);
-		}
+		$result = $this->db->fetchAll( $select );
 		
-		try {
-		    $result = $this->db->fetchAll( $select );
-		} catch (Zend_Db_Table_Exception $e) {
-		    throw new Zend_Exception($e->getMessage());
-		}
-		
-		return $result;
+        return $result;
 	    
 	}
 	
@@ -536,17 +476,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    	->where("`ch`.`published`='1'")
 	    	->order("r.hits DESC");
 	    	
-	    if (APPLICATION_ENV=='development'){
-	        parent::debugSelect($select, __METHOD__);
-	        //die(__FILE__.': '.__LINE__);
-	    }
-	    
 	    $result = $this->db->fetchAssoc($select);
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	//Zend_Debug::dump($result);
-	    	//die(__FILE__.': '.__LINE__);
-	    }
 	    
 	    return $result;
 	    
@@ -560,24 +490,13 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function featuredChannels($amt=null){
 		
 	    $select = $this->db->select()
-    		->from( array( 'ch'=>$this->channelsTable->getName()), array(
-    			'id',
-    			'title',
-    			'alias'=>'LOWER(`ch`.`alias`)'
-    		))
-    		->join( array( 'rating'=>$this->channelsRatingsTable->getName()), "`ch`.`id`=`rating`.`id`", null )
-	    	->where( "`ch`.`featured`='1'" )
-	    	->order( "rating.hits")
+    		->from( array( 'CH'=>$this->channelsTable->getName()))
+    		->join( array( 'RAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id`=`RAT`.`channel_id`", null )
+	    	->where( "`CH`.`featured`='1'" )
+	    	->order( "RAT.hits")
     		->limit( (int)$amt );
 	    
-	    if (APPLICATION_ENV=='development'){
-	        parent::debugSelect($select, __METHOD__);
-		    //die(__FILE__.': '.__LINE__);
-	    }
-	    
-	    $result = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
-	    
-	    return $result;
+	    return $this->db->fetchAll($select);
 	    
 	}
 	
@@ -606,10 +525,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function unpublishMulti($channels=array()){
 	
-	    var_dump($channels);
-	    die(__FILE__.': '.__LINE__);
-	    
-		$sql = "UPDATE ".$this->channelsTable->getName()." SET `published`='0' WHERE `id` IN ( ".implode(',', $channels)." )";
+	    $sql = "UPDATE ".$this->channelsTable->getName()." SET `published`='0' WHERE `id` IN ( ".implode(',', $channels)." )";
 		$this->db->query($sql);
 		return true;
 		 

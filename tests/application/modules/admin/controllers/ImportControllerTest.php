@@ -40,16 +40,18 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $urlParams = $this->urlizeOptions( array(
             'module'=>'admin',
             'controller'=>'import',
-            'action'=>'remote', ));
+            'action'=>'remote',
+            'site'=>'teleguide'
+        ));
         $url = $this->url( $urlParams, 'admin_import_remote' );
         //$this->dispatch($url);
         
         // assertions
-        $this->assertModule( $urlParams['module'] );
-        $this->assertController( $urlParams['controller'] );
-        $this->assertAction( $urlParams['action'] );
+        //$this->assertModule( $urlParams['module'] );
+        //$this->assertController( $urlParams['controller'] );
+        //$this->assertAction( $urlParams['action'] );
         
-        $this->marTestIncomplete();
+        $this->markTestIncomplete();
         
         
     }
@@ -62,7 +64,8 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $urlParams = $this->urlizeOptions( array(
             'module'=>'admin',
             'controller'=>'import',
-            'action'=>'xml-parse-channels', ));
+            'action'=>'xml-parse-channels',
+            ));
         $url = $this->url( $urlParams, 'admin_import_xml-parse-channels' );
         //$this->dispatch($url);
         
@@ -71,7 +74,7 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         //$this->assertController( $urlParams['controller'] );
         //$this->assertAction( $urlParams['action'] );
         
-        $this->marTestIncomplete();
+        $this->markTestIncomplete();
         
     }
     

@@ -93,6 +93,16 @@ class Xmltv_Model_Abstract
      */
     protected $eventsTable;
     
+    /**
+     * @var Xmltv_Model_DbTable_ContentCategories 
+     */
+    protected $contentCategoriesTable;
+    
+    /**
+     * @var Xmltv_Model_DbTable_YtCategories
+     */
+    protected $ytCategoriesTable;
+    
     
 	/**
      * Model constructor
@@ -139,6 +149,15 @@ class Xmltv_Model_Abstract
 		}
 		$this->$method($value);
 	}
+    
+    /**
+     * 
+     * @return Rtvg_Cache
+     */
+    protected function getCache(){
+        $cache = new Rtvg_Cache();
+        return $cache;
+    }
 	
 	/**
 	 * Get row value
@@ -146,8 +165,7 @@ class Xmltv_Model_Abstract
 	 * @param  string $name
 	 * @throws Exception
 	 */
-	public function __get($name)
-	{
+	public function __get($name) {
 		$method = 'get' . ucfirst( $name );
 		if (('mapper' == $name) || !method_exists($this, $method)) {
 			throw new Zend_Exception('Invalid model method: '.$method);
@@ -186,21 +204,9 @@ class Xmltv_Model_Abstract
         $this->bcRatingsTable = new Xmltv_Model_DbTable_ProgramsRatings();
         $this->eventsTable = new Xmltv_Model_DbTable_Events();
 	    $this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
+        $this->contentCategoriesTable = new Xmltv_Model_DbTable_ContentCategories();
+        $this->ytCategoriesTable = new Xmltv_Model_DbTable_YtCategories();
 	    
-	}
-	
-	/**
-	 * Debug select statement
-	 *
-	 * @param Zend_Db_Select $select
-	 * @param string $method
-	 */
-	protected static function debugSelect( Zend_Db_Select $select, $method=__METHOD__){
-	    
-	    if (APPLICATION_ENV=='development'){
-            Zend_Registry::get('fireLog')->log(__METHOD__.': '.$select->assemble(), Zend_Log::INFO);
-        }
-        
 	}
 
 	public function setOptions(array $options) {

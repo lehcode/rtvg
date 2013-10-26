@@ -11,7 +11,7 @@ $pageClass   = isset($this->pageclass) && !empty($this->pageclass) ? ' '.(string
 $isFrontpage = trim($pageClass)=='frontpage' ? true  : false ;
 
 $this->maincontent_width = 6;
-if ($this->hide_sidebar=='left'){
+if ($this->hide_sidebar == 'left'){
 	$this->maincontent_width = 8;
 }
 if ($this->hide_sidebar=='right'){
@@ -29,7 +29,7 @@ $this->jQuery()
 $this->headScript()
 	->appendFile( 'http://yandex.st/share/share.js' )
 	->appendFile( '//vk.com/js/api/openapi.js?75' )
-	->appendScript( "VK.init({ apiId: 2963750, onlyWidgets: true });" );
+	->appendFile( "//vk.com/js/api/openapi.js?101" );
 
 
 if ($this->vk_group_init === true){
@@ -64,12 +64,11 @@ if ($pageClass=='show-video'){
  * #### Left Sidebar ####
  */
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
-	'top_programs'=>$this->top_programs,
+	'bc_top'=>$this->bc_top,
 	'channels_categories'=>$this->channels_cats,
-	'channel'=>$this->channel,
+	//'channel'=>$this->channel,
 	'announces'=>$this->announces,
 	'show_announces'=>$this->show_announces,
-	'comments'=>$this->comments,
 )));
 
 /*
@@ -80,6 +79,7 @@ $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-righ
 	'videos'=>$this->sidebar_videos,
 	'channel'=>$this->channel,
 	'gcse'=>$this->gcse,
+	'admitad'=>true,
 )));
 
 /*
@@ -157,19 +157,17 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 		<?php 
 	} else {
 		?>
-		<?php if (!($this->hide_sidebar=='left')): ?>
-		<div class="span2" id="col_l">
-			<?php echo $this->placeholder('sidebar_left'); ?>
-		</div>
-		<?php endif; ?>
+		
 		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
 			<?php echo $this->placeholder('maincontent'); ?>
 		</div>	
-		<?php if (!($this->hide_sidebar=='right')): ?>
-		<div class="span3" id="col_r">
+		
+        <?php if (!($this->hide_sidebar=='right')): ?>
+		<div class="span4" id="col_r">
 			<?php echo $this->placeholder('sidebar_right'); ?>
 		</div>
 		<?php endif; ?>
+    
 	<?php 
 	} ?>
 	

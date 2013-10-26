@@ -29,7 +29,7 @@ class VideosControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
     }
     
     /**
-     * 
+     * @group videosControllerActions
      */
     public function testIndexAction(){
     	
@@ -47,6 +47,9 @@ class VideosControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         
     }
     
+    /**
+     * @group videosControllerActions
+     */
     public function testShowVideoAction(){
         
         $urlParams = $this->urlizeOptions( array(

@@ -40,7 +40,7 @@ class SitemapControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
     }
     
     /**
-     * @group sitemap
+     * @group sitemapControllerActions
      */
     public function testSitemapAction(){
     	

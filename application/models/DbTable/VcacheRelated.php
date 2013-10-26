@@ -74,11 +74,6 @@ class Xmltv_Model_DbTable_VcacheRelated extends Xmltv_Db_Table_Abstract
 
     	$video['delete_at'] = Zend_Date::now()->addHour(24)->toString('YYYY-MM-dd HH:mm:ss');
     	
-    	if (APPLICATION_ENV=='development'){
-    		//var_dump($video);
-    		//die(__FILE__.': '.__LINE__);
-    	}
-    	
     	if ($video['rtvg_id'] && !empty($video['rtvg_id'])) {
     		$this->insert($video);
     	}

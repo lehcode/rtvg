@@ -172,18 +172,13 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			'module'=>'default',
 			'controller'=>$this->_getParam('controller', 'index'),
 			'action'=>$this->_getParam('action', 'index'),
-			));
+        ));
 		
 		$this->cache = new Rtvg_Cache();
-		$e = ((bool)Zend_Registry::get( 'site_config' )->cache->system->get( 'enabled' ));
-        $this->cache->enabled = ($e===true) ? true : false;
+		$this->cache->enabled = (bool)Zend_Registry::get( 'site_config' )->cache->system->enabled;
         if ($this->cache->enabled){
-            $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->get( 'lifetime' ) );
+            $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->lifetime);
         }
-        //var_dump($this->cache->enabled);
-        //die();
-		
-        //$this->errorUrl = $this->view->url( array(), 'default_error_error' );
         
         /**
          * Load bootstrap
@@ -408,8 +403,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		if ($this->cache->enabled){
 		    
 		    $this->cache->setLifetime( 86400*7 );
-			$f = '/Channels/Info';
-			
+			$f = 'Channels/Info';
 			$hash = $this->cache->getHash( 'channel_'.$alias );
 			if (($channel = $this->cache->load( $hash, 'Core', $f))===false) {
 				$channel = $model->getByAlias( $alias );
@@ -425,43 +419,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
 		
 		return $channel;
-		
-	}
-	
-	/**
-	 * Current date from request variable
-	 */
-	public function listingDate(Zend_Filter_Input $validator){
-        
-        if (!$validator) {
-            throw new Zend_Controller_Action_Exception("Validator not passed", 500);
-        }
-		
-	    $now = Zend_Date::now();
-		if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $validator->getEscaped('date'))) {
-			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'dd-MM-YYYY' ), 'dd-MM-YYYY' );
-		} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $validator->getEscaped('date'))) {
-			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
-			
-		}
-		
-		//var_dump($d->compare($now, 'DD'));
-		//die(__FILE__.': '.__LINE__);
-		
-		if (isset($d) && ($d->compare($now, 'DD')!=0)) {
-		    $date = $d->toString('YYYY-MM-dd');
-		    $time = $now->toString('HH:mm:ss');
-		    return new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
-		} else {
-			return $now;
-		}
-		
-		if ( APPLICATION_ENV=='development' ){
-		    //var_dump($d->toString());
-		    //die(__FILE__.': '.__LINE__);
-		}
-		
-		return $d;
 		
 	}
 	
@@ -527,31 +484,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	
 	}
 	
-	
-	/**
-	 * Channels categories
-	 */
-	protected function getChannelsCategories(){
-	
-		$model = new Xmltv_Model_Channels();
-		if ($this->cache->enabled){
-		    
-			$f = "/Channels";
-			$this->cache->setLifetime(86400*30);
-			
-			$hash  = Rtvg_Cache::getHash("channels-categories");
-			if (!$cats = $this->cache->load($hash, 'Core', $f)) {
-				$cats = $model->channelsCategories();
-				$this->cache->save($cats, $hash, 'Core', $f);
-			}
-		} else {
-			$cats = $model->channelsCategories();
-		}
-		return $cats;
-	
-	}
-	
-	
 	/**
 	 * Top channels programs listing
 	 * 
@@ -581,195 +513,50 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	}
 	
 	/**
-	 * Featured channels
-	 * 
-	 * @param  int $amt
-	 * @return array
-	 */
-	protected function getFeaturedChannels($amt=null){
-		
-		if (!$amt || !is_numeric($amt)){
-			$a = (int)Zend_Registry::get('site_config')->featured->channels->get('amount');
-			$amt = $a>0 ? $a : self::FEATURED_CHANNELS_AMT;
-		}
-		
-		if ($this->cache->enabled){
-		    $hash = Rtvg_Cache::getHash( 'featuredchannels_'.(string)$amt );
-			$f = '/Channels/Featured';
-			if (($result = $this->cache->load($hash, 'Core', $f))===false) {
-				$result = $this->channelsModel->featuredChannels($amt);
-				$this->cache->save($result, $hash, 'Core', $f);
-			}
-			
-		} else {
-			$result = $this->channelsModel->featuredChannels($amt);
-		}
-		
-		return $result;
-		
-	}
-	
-	/**
 	 * Display offline page
 	 */
 	public function offlineAction(){
 		
-	}
-	
-	/**
-	 * Fetch blog entries from blogs.yandex.ru
-	 *
-	 * @param  array $channel
-	 * @throws Zend_Exception
-	 * @return array
-	 * 
-	 */
-	protected function yandexComments($channel=array()){
-	
-		if (empty($channel) && !is_array($channel)){
-			throw new Zend_Exception( parent::ERR_WRONG_PARAM.__METHOD__, 500);
-		}
-		
-		$comments = $this->commentsModel->channelComments( $channel['id'] );
-		
-		if ($comments===false) {
-		    return false;
-		}
-		
-		
-		return $comments;
-		
-	}
-	
-	/**
-	 * Videos for right sidebar
-	 *
-	 * @param  array $channel
-	 * @return array
-	 */
-	protected function sidebarVideos($channel){
-	
-		$vc  = Zend_Registry::get('site_config')->videos->sidebar->right;
-		$max = (int)Zend_Registry::get('site_config')->videos->sidebar->right->get('max_results');
-		$ytConfig = array(
-				'order'=>$vc->get('order'),
-				'max_results'=>(int)$vc->get('max_results'),
-				'start_index'=>(int)$vc->get('start_index'),
-				'safe_search'=>$vc->get('safe_search'),
-				'language'=>'ru',
-		);
-		
-		$videos = array();
-		$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
-		
-		// If file cache is enabled
-		if ($this->cache->enabled) {
-			 
-			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
-			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
-			$f = '/Youtube/SidebarRight';
-			$hash = Rtvg_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
-			/*  
-			if (self::$videoCache && $this->isAllowed){
-
-			    // Query database cache for video
-				if (($videos = $this->vCacheModel->sidebarVideos( $channel['id'] ))===false){
-					
-				    // Query file cache
-				    // if video was not found inDB cache
-				    if (($videos = $this->cache->load( $hash, 'Core', $f))===false) {
-				    
-				        // Query Youtube if video was not found 
-				        // in neither DB cache nor file cache
-				        $videos = $this->videosModel->ytSearch( $ytSearch, $ytConfig);
-				        
-				        if (!count($videos) || $videos===false){
-				        	return false;
-				        }
-				    	
-				    }
-				    
-				    // Save to file cache
-				    $this->cache->save( $videos, $hash, 'Core', $f );
-				    
-			        // Save to database cache if it is enabled
-			        if (self::$videoCache==true){
-			        	foreach ($videos as $vid){
-			        		$this->vCacheModel->saveSidebarVideo( $vid, $channel['id'] );
-			        	}
-			        }
-			        
-				}
-				
-			} else {
-			 */	 
-				// Database cache is disabled
-				// Try to fetch from file cache
-				if (($videos = $this->cache->load( $hash, 'Core', $f))===false) {
-					$videos = $this->videosModel->ytSearch( $ytSearch, $ytConfig);
-					$this->cache->save( $videos, $hash, 'Core', $f );
-				}
-			//}
-			 
-		} else {
-		    
-		    // No caching
-			$videos = $this->videosModel->ytSearch( $ytSearch, $ytConfig);
-		}
-		 
-		return $videos;
-		 
-	}
-	
-	/*
-	protected function getChannel( $alias=null )
-	{
-	    if (!$alias){
-	        throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500 );
-	    }
-	    
-	    if ($this->cache->enabled){
-	    	 
-	    	$f = '/Channels';
-	    	$this->cache->setLifetime(86400);
-	    	$hash = $this->cache->getHash('channel_'.$alias);
-	    
-	    	if (false === ($result = $this->cache->load( $hash, 'Core', $f))) {
-	    		$result = $this->channelsModel->getByAlias( $alias );
-	    		$this->cache->save( $result, $hash, 'Core', $f);
-	    	}
-	    } else {
-	    	$result = $this->channelsModel->getByAlias($alias);
-	    }
-
-	    return $result;
-	    
-	}
-	*/
+    }
+    
+    public function getChannelsCategories(){
+        return $this->channelsModel->channelsCategories();
+    }
+    
+    public function channelSidebarVideos($channel=null){
+        
+        if (!$channel || !is_array($channel)){
+            throw new Zend_Exception('$channel is not defined');
+        }
+        return $this->videosModel->sidebarVideos($channel);
+        
+    }
+    
+    public function getFeaturedChannels($amt=null){
+        return $this->channelsModel->featuredChannels($amt);
+    }
 	
 	/**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::__call()
 	 */
-	public function __call($method, $args)
+	public function __call($method=null, $args=array())
     {
         if ('Action' == substr($method, -6)) {
             $controller = $this->getRequest()->getControllerName();
             $url = '/' . $controller . '/index';
-            return $this->_redirect($url);
+            return $this->_redirect($url, $args);
         }
-        throw new Exception('Invalid method');
+        throw new Zend_Exception('Invalid method \''.$method.'\'');
     }
 	
 	/**
-	 * Contruct pageclass name 
-	 * using actual PHP class name
+	 * Contruct pageclass name using actual PHP class name
 	 * 
 	 * @param  string $classname
 	 * @return string
 	 */
-	public function pageclass($classname=null)
-	{
+	public function pageclass($classname=null) {
 	    return strtolower(str_ireplace('controller', '', $classname));
 	}
 	

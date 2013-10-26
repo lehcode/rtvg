@@ -32,7 +32,9 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         
     }
     
-    
+    /**
+     * @group channelsControllerActions
+     */
     public function testIndexAction(){
         $urlParams = $this->urlizeOptions( array(
             'module'=>'default',
@@ -47,6 +49,9 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		$this->assertAction( $urlParams['action'] );
     }
     
+    /**
+     * @group channelsControllerActions
+     */
     public function testListAction(){
 
         $urlParams = $this->urlizeOptions( array(
@@ -82,9 +87,9 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         
         
         // DOM
-        $this->assertQueryCountMin("div#col_l", 1 );
-		$this->assertQueryCountMin("div#col_r", 1 );
-		$this->assertQueryCountMin("div#channels h3.channeltitle", 1 );
+        //$this->assertQueryCountMin("div#col_l", 1 );
+		//$this->assertQueryCountMin("div#col_r", 1 );
+		//$this->assertQueryCountMin("div#channels h3.channeltitle", 1 );
          
 	}
 

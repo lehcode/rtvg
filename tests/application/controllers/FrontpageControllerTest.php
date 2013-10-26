@@ -35,6 +35,9 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		$front->setRouter($router->getRouter());
     }
 	
+    /**
+     * @group frontpageControllerActions
+     */
 	public function testIndexAction(){
 		
 	    $urlParams = $this->urlizeOptions( array(

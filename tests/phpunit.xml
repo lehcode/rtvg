@@ -27,14 +27,14 @@
 		<listener class="Lagged_Test_PHPUnit_ControllerTestCase_Listener" file="Lagged/Test/PHPUnit/ControllerTestCase/Listener.php" />
 	</listeners>
     
-    <logging>
+    <!-- <logging>
         <log type="coverage-html" 
             target="./log/coverage" 
             charset="UTF-8"
             yui="true" highlight="true"
             lowUpperBound="50" 
             highLowerBound="80"/>
-    </logging>
+    </logging> -->
     
     <!-- <groups>
         <include>
@@ -48,7 +48,7 @@
     <php>
         <ini name="html_errors" value="Off" />
         <ini name="max_execution_time" value="0" />
-        <ini name="memory_limit" value="512M" />
+        <ini name="memory_limit" value="1024M" />
         <ini name="xdebug.default_enable" value="1" />
         <ini name="xdebug.var_display_max_data" value="4096" />
         <ini name="xdebug.auto_trace" value="0" />
