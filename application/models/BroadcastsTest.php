@@ -22,8 +22,11 @@ class Xmltv_Model_BroadcastsTest extends Xmltv_Model_Broadcasts
             ->group("BC.alias")
         ;
         
-        if (Zend_Registry::get('adult')!==true){
-            $select->where("`CH`.`adult` = FALSE");
+        if (Zend_Registry::get('adult') !== true){
+            $select->where(array(
+                "`CH`.`adult` IS NULL",
+                "`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0",
+            ));
         }
         
         $result = $this->db->fetchAll($select);
@@ -45,8 +48,11 @@ class Xmltv_Model_BroadcastsTest extends Xmltv_Model_Broadcasts
             ->where("`EVT`.`channel` = ".$channel_id)
         ;
         
-        if (Zend_Registry::get('adult')!==true){
-            $select->where("`CH`.`adult` = FALSE");
+        if (Zend_Registry::get('adult') !== true){
+            $select->where(array(
+                "`CH`.`adult` IS NULL",
+                "`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0",
+            ));
         }
         
         $result = $this->db->fetchAll($select);

@@ -77,11 +77,11 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'alias',
                 'icon'
             ))
-            ->where('`CH`.`published` = 1')
+            ->where('`CH`.`published` IS NOT NULL')
         ;
         
-        if (Zend_Registry::get('adult')!==true){
-            $select->where("`CH`.`adult` = '0'");
+        if ((bool)Zend_Registry::get('adult') !== true){
+            $select->where("`CH`.`adult` IS NULL");
         }
         
         $channels = $this->db->fetchAll($select->assemble());

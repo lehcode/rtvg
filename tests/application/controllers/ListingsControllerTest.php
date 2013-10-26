@@ -92,7 +92,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             'action'=>'day-listing',
             'channel'=>$channel['alias'],
         ));
-        
+        Zend_Debug::dump($urlParams);
         $url = $this->url( $urlParams, 'default_listings_day-listing' );
         try {$url = $this->url( $urlParams, 'default_listings_day-listing' );
             $this->dispatch($url);

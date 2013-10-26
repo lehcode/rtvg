@@ -700,8 +700,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 "CHRAT.hits DESC",
             ));
         
-        if ((int)Zend_Registry::get('site_config')->frontend->adult !== 1) {
-            $select->where("`CH`.`adult` = FALSE");
+        if ((bool)Zend_Registry::get('adult') !== true) {
+            $select->where("`CH`.`adult` IS NULL");
             $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
         }
         
@@ -888,18 +888,18 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'channel_category_icon'=>'image',
             ))
             ->where("`CH`.`published` = TRUE")
-            ->where("`EVT`.`start` >= '".$week_start->toString("YYYY-MM-dd")." 00:00'")
-            ->where("`EVT`.`start` < '".$week_end->toString("YYYY-MM-dd")." 23:59'")
+            ->where("`EVT`.`start` >= '".$week_start->toString("YYYY-MM-dd 00:00:00")."'")
+            ->where("`EVT`.`start` < '".$week_end->toString("YYYY-MM-dd 23:59:00")."'")
             ->group("BC.alias")
             ->order("RT.hits DESC")
             ->limit((int)$amt)
         ;
         
-        if ((bool)Zend_Registry::get('site_config')->frontend->adult !== true){
-            $select->where("`CH`.`adult` = FALSE");
+        if ((bool)Zend_Registry::get('adult') !== true){
+            $select->where("`CH`.`adult` IS NULL");
             $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
         }
-                
+        
         $result = $this->db->fetchAll($select);
         
         if (count($result)){
@@ -941,23 +941,22 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             ->order("EVT.start ASC")
         ;
         
-        if (Zend_Registry::get('adult')!==true){
-            $select->where("`CH`.`adult` = FALSE");
+        if ((bool)Zend_Registry::get('adult') !== true) {
+            $select->where("`CH`.`adult` IS NULL");
+            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
         }
     
         $result = $this->db->fetchAll($select);
         
-        if (!count($result)){
-            return array();
-        }
-        
-        foreach ($result as $k=>$row){
-            $encoded = urlencode($row['alias']);
-            if (strlen($encoded)>254){
-                unset($result[$k]);
+        if (count($result)){
+            foreach ($result as $k=>$row){
+                $encoded = urlencode($row['alias']);
+                if (strlen($encoded)>254){
+                    unset($result[$k]);
+                }
             }
         }
-    
+        
         return $result;
     
     }
