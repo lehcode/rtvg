@@ -206,8 +206,9 @@ class Xmltv_Model_Comments extends Xmltv_Model_Abstract
 		    $new['parent_id'] = $parent_id;
 		    $new['intro'] = $li['intro'];
 		    $new['author'] = $this->_extractBlogAuthor( $new['src_url'] );
-		    
-		    $row = $this->channelsCommentsTable->createRow($new);
+		    $new['published'] = true;
+            $new['url_crc'] = base64_encode( hash('crc32', $li['src_url'], true));
+            $row = $this->channelsCommentsTable->createRow($new);
             $row->save();
             $saved[] = $row->toArray();
 		}

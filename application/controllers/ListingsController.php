@@ -234,7 +234,7 @@ class ListingsController extends Rtvg_Controller_Action
         $this->view->assign('listing_videos', $listingVideos);
         
         
-        
+        /*
         if ($listingDate->isToday() && (int)Zend_Registry::get('site_config')->channels->comments->enabled===1){
             //Комменты
             if ($this->cache->enabled){
@@ -267,6 +267,8 @@ class ListingsController extends Rtvg_Controller_Action
             
             $this->view->assign('comments', $comments);
         }
+         * 
+         */
         
         //Данные для модуля видео в правой колонке
         $vids = $this->channelSidebarVideos($channel);

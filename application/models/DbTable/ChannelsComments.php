@@ -42,26 +42,7 @@ class Xmltv_Model_DbTable_ChannelsComments extends Xmltv_Db_Table_Abstract
     
     
     
-    /**
-     * (non-PHPdoc)
-     * @see Zend_Db_Table_Abstract::createRow()
-     */
-    public function createRow(array $data = array(), $defaultSource = null){
-    	
-        $rowData = parent::createRow($data, $defaultSource);
-        
-        foreach ($this->_defaultValues as $dK=>$dV){
-            if (!$rowData->$dK) {
-            	$rowData->$dK = $dV;
-            }
-        }
-        
-        $rowData->published = $this->_defaultValues['published'];
-        $rowData->url_crc = base64_encode( hash('crc32', $rowData->src_url, true));
-        
-        return $rowData;
-        
-    }
+    
 
 }
 
