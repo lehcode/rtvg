@@ -191,7 +191,7 @@ class ChannelsController extends Rtvg_Controller_Action
              * Данные для модуля самых популярных программ
              * #####################################################################
              */
-            $this->view->assign('top_programs', $this->topPrograms());
+            $this->view->assign('bc_top', $this->bcModel->topBroadcasts());
             
             /*
              * ######################################################
