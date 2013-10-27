@@ -55,9 +55,12 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         $badIps = array(
         	'46.164.176.66',
         	'38.99.82.243',
+        	'192.168',
         );
-        if (in_array(@$_SERVER['HTTP_HOST'], $badIps)) {
-        	$this->_exception();
+        foreach ($badIps as $ip){
+            if (stristr($ip, @$_SERVER['HTTP_HOST'])){
+                $this->_exception();
+            }
         }
         
         return true;
