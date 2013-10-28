@@ -10,10 +10,7 @@
 $this->headScript()->appendScript("$(function(){
 $('.remote').click(function(){
 	var debug = $('input#debug').is(':checked');
-	var jxUrl = '".$this->baseUrl('admin/import/remote/site/teleguide?debug=0')."';
-	if (debug==true){
-		var jxUrl = '".$this->baseUrl('admin/import/remote/site/teleguide?debug=1')."';
-	}
+	var jxUrl = '".$this->baseUrl('admin/import/listings/site/teleguide')."';
 	$.ajax({
 		url: jxUrl,
 		data: 'format=html',
@@ -34,17 +31,6 @@ $('.remote').click(function(){
 ?>
 <h2 class="page_heading">Загрузка XML</h2>
 <?php echo $this->form; ?>
-<?php echo $this->checkBox( 'debug', 0, array(
-	'tag'=>array(
-		'tag'=>'div',
-		'class'=>'form-item',
-	),
-	'label'=>array(
-		'tag'=>null,
-		'text'=>'Debug',
-	)
-), array(
-	'checked'=>''
-)); ?>
+
 <a class="remote" id="teleguide" href="#">Загрузить файл с teleguide.info</a>
 <div id="result"></div>

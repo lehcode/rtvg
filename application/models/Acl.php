@@ -104,7 +104,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'admin:grab' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:import' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:import.index' ), 'admin:import' );
-	    $this->add( new Zend_Acl_Resource( 'admin:import.remote' ), 'admin:import' );
+	    $this->add( new Zend_Acl_Resource( 'admin:import.listings' ), 'admin:import' );
 	    $this->add( new Zend_Acl_Resource( 'admin:movies' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:programs' ), $adminModule );
 	    $this->add( new Zend_Acl_Resource( 'admin:series' ), $adminModule );

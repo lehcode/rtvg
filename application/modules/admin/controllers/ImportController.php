@@ -568,7 +568,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 	 * Download from remote source and parse 
 	 * gzipped listings XMLTV file
 	 */
-	public function remoteAction(){
+	public function listingsAction(){
 				
 		$site = $this->_getParam('site', 'teleguide');
 		switch ($site){

@@ -17,7 +17,7 @@ $this->jQuery()->enable()
 	->setUiVersion('1.10.2') //jQuery UI version, automatically 1.8 = 1.8.latest
 	->uiEnable();
 
-$this->headLink( array('rel'=>'stylesheet/less', 'href'=>$this->baseUrl('css/template.less')), 'APPEND')
+$this->headLink()
 	->appendStylesheet( $this->baseUrl('css/admin-template.css'), 'screen')
 	->appendStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
 

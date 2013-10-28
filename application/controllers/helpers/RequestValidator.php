@@ -326,7 +326,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 						
 						switch ($action){
 							
-							case 'remote':
+							case 'listings':
 								$validators['site']   = array( new Zend_Validate_Alnum());
 								$validators['format'] = array( new Zend_Validate_InArray( array( 'html', 'json' ) ));
 								$validators['debug']  = array( new Zend_Validate_InArray( array( 0, 1 ) ));

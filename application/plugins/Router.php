@@ -412,34 +412,16 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             ))
         );
         
-        $this->_router->addRoute( 'admin_import_remote', 
-        new Zend_Controller_Router_Route( 'admin/import/listings/:site',
+        $this->_router->addRoute( 'admin_import_listings', 
+        new Zend_Controller_Router_Route( 'admin/import/listings/',
             array(
                 'module'=>'admin',
                 'controller'=>'import',
-                'action'=>'remote'),
+                'action'=>'listings'),
             array('site'=>'teleguide')
             )
         );
-        
-        $this->_router->addRoute( 'admin_import_parse-programs',
-            new Zend_Controller_Router_Route_Static( 'admin/import/xml-parse-programs',
-            array(
-                'module'=>'admin',
-                'controller'=>'import',
-                'action'=>'xml-parse-programs'
-            ))
-        );
-        
-        $this->_router->addRoute( 'admin_import_xml-parse-channels',
-            new Zend_Controller_Router_Route_Static( 'admin/import/xml-parse-channels',
-            array(
-                'module'=>'admin',
-                'controller'=>'import',
-                'action'=>'xml-parse-channels'
-            ))
-        );
-        
+                
         $this->_router->addRoute( 'admin_programs_delete-programs',
         new Zend_Controller_Router_Route( 'admin/programs/delete-programs/format/html',
             array(
@@ -450,7 +432,6 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'delete_start'=>'/\d{2}-\d{2}-\d{4}/',
             ))
         );
-        
         
         $this->_router->addRoute( 'admin_grab_do',
             new Zend_Controller_Router_Route( 'admin/grab-site',
@@ -463,8 +444,6 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'weekstart'=>'/\d{2}\.\d{2}\.\d{2}/',
             ))
         );
-        
-        
         
         return $this->_router;
     
