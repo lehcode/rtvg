@@ -105,9 +105,9 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
             $result[$k]['content_cat_id'] = (int)$item['content_cat_id'];
             $result[$k]['bc_cat_id'] = (int)$item['bc_cat_id'];
             $result[$k]['channel_cat_id'] = (int)$item['channel_cat_id'];
-            $result[$k]['date_added']   = new Zend_Date( $item['date_added'], 'YYYY-MM-dd' );
-            $result[$k]['publish_up']   = new Zend_Date( $item['publish_up'], 'YYYY-MM-dd' );
-            $result[$k]['publish_down'] = new Zend_Date( $item['publish_down'], 'YYYY-MM-dd' );
+            //$result[$k]['date_added']   = new Zend_Date( $item['date_added'], 'YYYY-MM-dd' );
+            //$result[$k]['publish_up']   = new Zend_Date( $item['publish_up'], 'YYYY-MM-dd' );
+            //$result[$k]['publish_down'] = new Zend_Date( $item['publish_down'], 'YYYY-MM-dd' );
 	    }
 	    
 	    return $result;

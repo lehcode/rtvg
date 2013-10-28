@@ -10,7 +10,7 @@
 $this->headScript()->appendScript("$(function(){
 $('.remote').click(function(){
 	var debug = $('input#debug').is(':checked');
-	var jxUrl = '".$this->baseUrl('admin/import/listings/site/teleguide')."';
+	var jxUrl = '".$this->baseUrl('admin/import/listings/')."';
 	$.ajax({
 		url: jxUrl,
 		data: 'format=html',

@@ -38,6 +38,7 @@ class Xmltv_Model_Vcache extends Xmltv_Model_Abstract
             		'duration',
             		'category',
             		'thumbs',
+            		'delete_at',
             	))
                 ->join(array('VCAT'=>$this->ytCategoriesTable->getName()), "`VID`.`category` = `VCAT`.`title_en`", null)
                 ->join(array('CHCAT'=>  $this->channelsCategoriesTable->getName()), "VCAT.ch_cat_id = CHCAT.id", array(

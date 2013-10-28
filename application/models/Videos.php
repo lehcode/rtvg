@@ -598,7 +598,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
                 'bc_cat_alias'=>'alias',
                 'bc_cat_single'=>'title_single',
             ))
-            ->join(array('CHCAT'=>$this->bcCategoriesTable->getName()), "REF.ch_cat_id = CHCAT.id", array(
+            ->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "REF.ch_cat_id = CHCAT.id", array(
                 'channel_cat_id'=>'id',
                 'channel_cat_title'=>'title',
                 'channel_cat_alias'=>'alias',

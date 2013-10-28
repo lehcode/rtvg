@@ -860,7 +860,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'title',
                 'alias',
                 'desc',
-                'episode_num'
+                'episode_num',
+                'age_rating',
             ))
             ->join(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash` = `EVT`.`hash`", array(
                 'live',
