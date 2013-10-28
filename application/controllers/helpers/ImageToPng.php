@@ -6,7 +6,7 @@
  * @author  Acuminate http://stackoverflow.com/users/2482/acuminate
  * @version $Id: ImageToPng.php,v 1.3 2013-03-03 23:34:13 developer Exp $
  */
-class Xmltv_Controller_Helper_ImageToPng extends Zend_Controller_Action_Helper_Abstract
+class Xmltv_Controller_Action_Helper_ImageToPng extends Zend_Controller_Action_Helper_Abstract
 {
     
     /**
