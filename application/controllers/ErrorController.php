@@ -51,7 +51,8 @@ class ErrorController extends Zend_Controller_Action
 		"\tURI: ".urldecode( $_SERVER['REQUEST_URI'] )."\n".
 		"\tBrowser Type: ".$userAgent->getBrowserType()."\n\n".
 		"\tUser-Agent: ".$_SERVER['HTTP_USER_AGENT']."\n\n".
-		"\tReferer: ".( isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'none' )."\n\n";
+		"\tReferer: ".( isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'none' )."\n\n".
+		"\tException: ".$errors->exception."\n\n";
 		foreach ( $errors->request->getParams() as $key=>$val){
 			$msg .= $key.': '.$val."\n\n";
 		}
