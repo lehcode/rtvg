@@ -398,27 +398,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			$alias = $this->input->getEscaped('channel');
 	    }
 	    
-	    $model = new Xmltv_Model_Channels();
-		
-		if ($this->cache->enabled){
-		    
-		    $this->cache->setLifetime( 86400*7 );
-			$f = 'Channels/Info';
-			$hash = $this->cache->getHash( 'channel_'.$alias );
-			if (($channel = $this->cache->load( $hash, 'Core', $f))===false) {
-				$channel = $model->getByAlias( $alias );
-				$this->cache->save($channel, $hash, 'Core', $f);
-			}
-		} else {
-			$channel = $model->getByAlias( $alias );
-		}
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($channel);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
-		return $channel;
+	    return $this->channelsModel->getByAlias( $alias );
 		
 	}
 	

@@ -10,7 +10,11 @@ class Xmltv_Model_BroadcastsTest extends Xmltv_Model_Broadcasts
     public function thisWeekBroadcasts($channel_id=null, Zend_Date $week_start, Zend_Date $week_end){
         
         if (!$channel_id) {
-            throw new Exception ('Channel ID not provided', 500);
+            throw new Zend_Exception ('Channel ID not provided');
+        }
+        
+        if (is_array($channel_id)){
+            throw new Zend_Exception ('Channel ID not a digit');
         }
         
         $select = $this->db->select()

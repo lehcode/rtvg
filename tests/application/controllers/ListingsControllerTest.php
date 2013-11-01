@@ -92,7 +92,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             'action'=>'day-listing',
             'channel'=>$channel['alias'],
         ));
+        
         Zend_Debug::dump($urlParams);
+        
         $url = $this->url( $urlParams, 'default_listings_day-listing' );
         try {$url = $this->url( $urlParams, 'default_listings_day-listing' );
             $this->dispatch($url);
@@ -138,6 +140,8 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertNotEmpty($channels);
         $channel = $channels[array_rand($channels, 1)];
         
+        Zend_Debug::dump($channel);
+        
         // Test with today's date
         $urlParams  = $this->urlizeOptions( array(
             'module'=>'default',
@@ -146,6 +150,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             'channel' =>$channel['alias'],
             'date'=>Zend_Date::now()->toString('dd-MM-YYYY'),
         ));
+        
+        Zend_Debug::dump($urlParams);
+        
         $url = $this->url( $urlParams, 'default_listings_day-listing' );
         $this->dispatch($url);
 
@@ -176,6 +183,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             'channel' =>$channel['alias'],
             'date'=>  Zend_Date::now()->subDay(3)->toString('dd-MM-YYYY'),
         ));
+        
+        Zend_Debug::dump($urlParams);
+        
         $url = $this->url( $urlParams, 'default_listings_day-listing' );
         $this->dispatch($url);
         
@@ -184,7 +194,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertAction( 'day-listing' );
         $this->assertResponseCode(200);
         
-        //$this->assertQueryContentContains( "#maincontent h1", $channel['title']);
+        $this->assertQueryContentContains( "#maincontent h1", $channel['title']);
         
     }
     
@@ -209,6 +219,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             'alias'=>$bc['alias'],
             'date'=>'неделя',
 	    ));
+        
+        Zend_Debug::dump($urlParams);
+        
 	    $url = $this->url( $urlParams, 'default_listings_broadcast-week' );
 	    $this->dispatch($url);
         
@@ -243,6 +256,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    	'category'=>$cat['alias'],
 	    	'timespan'=>'неделя',
 	    ));
+        
+        Zend_Debug::dump($urlParams);
+        
         $url = $this->url( $urlParams, 'default_listings_category' );
 	    $this->dispatch($url);
         
@@ -283,6 +299,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    	'channel'=>$channel['alias'],
             'date'=>Zend_Date::now()->subDay(rand(1,7))->toString('dd-MM-YYYY'),
 	    ));
+        
+        Zend_Debug::dump($urlParams);
+        
         $url = $this->url( $urlParams, 'default_listings_day-date' );
 	    $this->dispatch($url);
 	    
@@ -313,6 +332,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             'channel'=>$channel['alias'],
             'alias'=>$todayBcs[array_rand($todayBcs, 1)]['alias'],
 	    ));
+        
+        Zend_Debug::dump($urlParams);
+        
         $url = $this->url( $urlParams, 'default_listings_broadcast-day' );
 	    $this->dispatch($url);
         
@@ -334,6 +356,9 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 	    	'controller'=>'listings',
 	    	'action'=>'outdated',
 	    ));
+        
+        Zend_Debug::dump($urlParams);
+        
         $url = $this->url( $urlParams, 'default_listings_outdated' );
 	    $this->dispatch($url);
         

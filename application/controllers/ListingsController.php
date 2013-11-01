@@ -56,7 +56,8 @@ class ListingsController extends Rtvg_Controller_Action
         if (($date = $this->_getParam('date', null))===null){
             $date = $this->bcModel->listingDate();
         }
-        return $this->_forward('day-listing', null, null, array(
+        
+        $this->_forward('day-listing', null, null, array(
             'date'=>$date,
             'channel'=>$this->_getParam('channel')
         ));
@@ -79,6 +80,7 @@ class ListingsController extends Rtvg_Controller_Action
             ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
         
         $channel = $this->channelInfo($this->_getParam('channel'));
+        
         if (!isset($channel['id']) || empty($channel['id'])){
             throw new Zend_Exception("Channel not found.");
         }
