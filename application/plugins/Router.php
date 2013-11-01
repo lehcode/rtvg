@@ -325,7 +325,9 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'controller'=>'smth',
                 'action'=>'rollin'
             )));
-        */
+        
+         * 
+         */
         
         $this->_router->addRoute( 'default_feed_atom',
         new Zend_Controller_Router_Route( 'feed/atom/:channel',
