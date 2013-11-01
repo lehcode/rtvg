@@ -75,7 +75,7 @@ class Xmltv_Controller_Action_Helper_ImageToPng extends Zend_Controller_Action_H
 		// Temporarily increase the memory limit to allow for larger images
 		ini_set('memory_limit', '32M');
 	
-		switch ($type)
+        switch ($type)
 		{
 			case IMAGETYPE_GIF:
 				$image = imagecreatefromgif($srcFile);
@@ -87,6 +87,9 @@ class Xmltv_Controller_Action_Helper_ImageToPng extends Zend_Controller_Action_H
 				$image = imagecreatefrompng($srcFile);
 				break;
 			default:
+                var_dump($image);
+                var_dump($type);
+                die(__FILE__.': '.__LINE__);
 				throw new Exception('Unrecognized image type ' . $type);
 		}
 	

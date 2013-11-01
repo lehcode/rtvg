@@ -70,12 +70,6 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
         array(
             'channel' => self::CHANNEL_ALIAS_REGEX)));
             
-            
-        //$this->_router->addRoute( 'default_rumors_recent', new Zend_Controller_Router_Route( 'хроника', array(
-        //    'module'=>'default',
-        //    'controller'=>'rumors',
-        //    'action'=>'recent')));
-            
         $this->_router->addRoute( 'default_series_week', 
         new Zend_Controller_Router_Route( 'сериалы',
         array(
@@ -117,7 +111,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
         
         
         $this->_router->addRoute( 'default_listings_broadcast-day',
-            new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/сегодня',
+            new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/сериалы',
             array(
                 'module'=>'default',
                 'controller'=>'listings',
@@ -138,7 +132,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'channel'=>self::CHANNEL_ALIAS_REGEX,
             ), array(
                 'alias'=>self::ALIAS_REGEX,
-                'date'=>'('.self::DATE_REGEX.'|сегодня)'
+                'date'=>'('.self::DATE_REGEX.'|сериалы)'
             ))
         );
             
@@ -160,7 +154,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             ),
             array(
                 'channel'=>self::CHANNEL_ALIAS_REGEX,
-                'date'=>'('.self::DATE_REGEX.'|сегодня)')));
+                'date'=>'('.self::DATE_REGEX.'|сериалы)')));
             
         $this->_router->addRoute( 'default_listings_premieres-week', 
         new Zend_Controller_Router_Route( 'телепрограмма/премьеры/:timespan', array(
@@ -171,7 +165,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             )));
         
         $this->_router->addRoute( 'default_listings_outdated', 
-            new Zend_Controller_Router_Route( 'телепрограмма/устаревшая', array(
+            new Zend_Controller_Router_Route( 'телепрограмма/не-найдено', array(
                 'module'=>'default',
                 'controller'=>'listings',
                 'action'=>'outdated',
@@ -235,7 +229,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'action'=>'category',
             ), array(
                 'category'=>self::ALIAS_REGEX,
-                'timespan'=>'(сегодня|неделя)'
+                'timespan'=>'(сериалы|неделя)'
             )));
         
         $this->_router->addRoute( 'default_user_index', 
@@ -306,6 +300,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'tag'=>self::ALIAS_REGEX
             )));
         
+        /*
         $this->_router->addRoute( 'default_script_vk-message',
         new Zend_Controller_Router_Route( 'msg.js',
             array(
@@ -330,6 +325,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'controller'=>'smth',
                 'action'=>'rollin'
             )));
+        */
         
         $this->_router->addRoute( 'default_feed_atom',
         new Zend_Controller_Router_Route( 'feed/atom/:channel',
@@ -352,18 +348,6 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             array('channel'=>'\d+')
             )
         );
-        
-        // @todo 
-        // Полный список программ в определенный день
-        // В отличие от используемого по умолчанию default_listings_day-date
-        /*
-        $this->_router->addRoute( 'default_listings_day_complete', 
-        new Zend_Controller_Router_Route( 'передачи/:channel/:date', 
-        array(
-            'module'=>'default',
-            'controller'=>'listings',
-            'action'=>'day-complete')));
-        */
         
         
         //admin routes
