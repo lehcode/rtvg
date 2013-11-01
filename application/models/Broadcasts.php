@@ -1005,5 +1005,11 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
 		
 	}
     
+    public function getCategoryByAlias($alias){
+        
+        return $this->bcCategoriesTable->fetchRow("alias='$alias'");
+        
+    }
+    
 }
 

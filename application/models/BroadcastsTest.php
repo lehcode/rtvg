@@ -13,13 +13,14 @@ class Xmltv_Model_BroadcastsTest extends Xmltv_Model_Broadcasts
             throw new Zend_Exception ('Channel ID not provided');
         }
         
-        if (is_array($channel_id)){
+        if (!is_int($channel_id)){
             throw new Zend_Exception ('Channel ID not a digit');
         }
         
         $select = $this->db->select()
             ->from(array('BC'=>$this->bcTable->getName()), 'alias')
             ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", null)
+            ->joinLeft(array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", null)
             ->where("`EVT`.`start` >= '".$week_start->toString("YYYY-MM-dd 00:00:00")."'")
             ->where("`EVT`.`start` < '".$week_end->toString("YYYY-MM-dd 23:59:59")."'")
             ->where("`EVT`.`channel` = ".$channel_id)
@@ -27,10 +28,8 @@ class Xmltv_Model_BroadcastsTest extends Xmltv_Model_Broadcasts
         ;
         
         if (Zend_Registry::get('adult') !== true){
-            $select->where(array(
-                "`CH`.`adult` IS NULL",
-                "`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0",
-            ));
+            $select->where("`CH`.`adult` IS NULL");
+            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
         }
         
         $result = $this->db->fetchAll($select);
@@ -47,16 +46,15 @@ class Xmltv_Model_BroadcastsTest extends Xmltv_Model_Broadcasts
         $select = $this->db->select()
             ->from(array('BC'=>$this->bcTable->getName()), 'alias')
             ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", null)
+            ->joinLeft(array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", null)
             ->where("`EVT`.`start` >= '".Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")."'")
             ->where("`EVT`.`start` < '".Zend_Date::now()->toString("YYYY-MM-dd 23:59:00")."'")
             ->where("`EVT`.`channel` = ".$channel_id)
         ;
         
         if (Zend_Registry::get('adult') !== true){
-            $select->where(array(
-                "`CH`.`adult` IS NULL",
-                "`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0",
-            ));
+            $select->where("`CH`.`adult` IS NULL");
+            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
         }
         
         $result = $this->db->fetchAll($select);

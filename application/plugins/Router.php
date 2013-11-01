@@ -223,13 +223,14 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'action'=>'create')));
         
         $this->_router->addRoute( 'default_listings_category', 
-            new Zend_Controller_Router_Route( ':timespan/:category/', array(
+            new Zend_Controller_Router_Route( ':category/:timespan', 
+            array(
                 'module'=>'default',
                 'controller'=>'listings',
-                'action'=>'category',
-            ), array(
+                'action'=>'category'),
+            array(
                 'category'=>self::ALIAS_REGEX,
-                'timespan'=>'(сериалы|неделя)'
+                'timespan'=>'(неделя|сегодня)',
             )));
         
         $this->_router->addRoute( 'default_user_index', 
@@ -284,7 +285,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'module'=>'default',
                 'controller'=>'content',
                 'action'=>'article',
-            ), array(
+                ), 
+            array(
                 'category'=>self::ALIAS_REGEX,
                 'article_alias'=>self::ALIAS_REGEX
             )));
