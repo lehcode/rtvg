@@ -47,6 +47,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:content.article-tag' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:content.blog' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:content.blog-category' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:content.index' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:feed.atom' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:feed.index' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:feed.rss' ), $default );

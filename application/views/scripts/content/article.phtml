@@ -1,24 +1,36 @@
 <?php
 /**
- * View script to dosplay single article
+ * View script to display single article
  * 
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @version $Id: article.phtml,v 1.3 2013-04-03 18:18:05 developer Exp $
  */
 
-if (APPLICATION_ENV=='development'){
-	Zend_Registry::get('fireLog')->log( $this->article, Zend_Log::INFO);
-}
+// META descrption
+$this->headMeta()->setName( 'description', $this->article['metadesc'] );
+// Назначение pageclass
+$this->assign('hide_sidebar', 'left');
+// Название страницы
+$this->headTitle()->append( $this->article['title'] );
+// OpenGraph
+$this->doctype( 'XHTML1_RDFA' );
+$this->assign('ogp_ns', 'http://ogp.me/ns/article');
+$this->headMeta()->setName( 'og:type', 'article' );
+$this->headMeta()->setName( 'article:title', $this->article['title'] );
+$this->headMeta()->setName( 'article:published_time', $this->article['publish_up']->toString('YYYY-MM-dd'));
+$this->headMeta()->setName('article:section', $this->article['content_cat_title']);
+$this->headMeta()->setName('article:tag', Xmltv_String::strtolower( $this->article['tags']));
 ?>
 <div class="article" itemscope itemtype="http://schema.org/CreativeWork">
-	<h1 itemprop="headline"><?php echo $this->article['title']; ?></h1>
+	<h1 itemprop="headline"><?= $this->article['title']; ?></h1>
 	<div itemptop="text">
+        <p class="dateAdded"><?= $this->article['date_added']->toString("dd MMMM YYYY"); ?></p>
 		<p class="lead"><?php echo $this->article['intro']; ?></p>
 		<?php $body = array();
 		$replaced = array();
 		foreach (explode("\r\n", $this->article['body']) as $p){
-		    $p = $this->escape($p);
-		    foreach ( $this->tags as $tag ) {
+            $p = $this->escape($p);
+            foreach ( $this->tags as $tag ) {
 		        $tag = $this->escape($tag);
 		        $linkAttrHref = '<a href="'.$this->url( array('tag'=>$this->safeTag( $tag )), 'default_content_tag').'" target="_blank" title="'.sprintf("Новости про %s", $tag).'"><em>'.$tag.'</em></a>';
 		        if (preg_match('/\s'.$tag.'\s/ui', $p)){
@@ -33,52 +45,45 @@ if (APPLICATION_ENV=='development'){
 		}
 		echo implode('', $body); ?>
 	</div>
-	<div class="microformat" itemprop="keywords"><?php echo $this->escape( $this->article['tags'] ); ?></div>
-	<div class="microformat" itemprop="dateCreated"><?php echo $this->article['date_added']->toString("YYYY-MM-dd"); ?></div>
-	<div class="microformat" itemprop="datePublished"><?php echo $this->article['publish_up']->toString("YYYY-MM-dd"); ?></div>
+	<div class="microformat" itemprop="keywords"><?= $this->escape( $this->article['tags'] ); ?></div>
+	<div class="microformat" itemprop="dateCreated"><?= $this->article['date_added']->toString("YYYY-MM-dd"); ?></div>
+	<div class="microformat" itemprop="datePublished"><?= $this->article['publish_up']->toString("YYYY-MM-dd"); ?></div>
 	<div class="microformat" itemprop="copyrightHolder">rutvgid.ru</div>
-	<div class="microformat" itemprop="copyrightYear"><?php echo Zend_Date::now()->toString('YYYY'); ?></div>
+	<div class="microformat" itemprop="copyrightYear"><?= Zend_Date::now()->toString('YYYY'); ?></div>
 	<div class="microformat" itemprop="publisher">rutvgid.ru</div>
 	
 </div>
 
-<?php /*
+
 <div class="category">
 	<?php $linkAttrHref = $this->url( array(
 		'content_cat' => $this->escape( $this->article['content_cat_alias']),
 		'article_alias' => $this->escape( $this->article['alias'])), 'default_content_blog-category' ); ?>
-	<a href="<?php echo $linkAttrHref; ?>">
+	<a href="<?= $linkAttrHref; ?>">
 		<?php printf( "Все %s на rutvgid", Xmltv_String::strtolower( $this->article['content_cat_title']) ); ?>
 	</a>
 </div>
-*/ ?>
+
 
 <?php 
-/*
- * ######################################
- * Related articles
- * ######################################
- */
+//Related articles
 $related= $this->related_articles;
 $relatedAmt = count( $related );
-$spanW = floor(12/$relatedAmt);
 if ($relatedAmt>0) {
-?>
-<div id="related">
-	<?php foreach ($related as $item) { 
-		$linkAttrHref = $this->url( array(
-			'cat_alias'=>$item->content_cat_alias,
-			'article_alias'=>$item->alias,
-		), 'default_content_article' );
-	    ?>
-	<div class="span<?php echo $spanW; ?>">
-		<h3>
-			<a href="<?php echo $linkAttrHref; ?>"><?php echo $item->title; ?></a></h3>
-		<?php //foreach (explode("\r\n", $item->intro) as $p){ ?>
-		<?php //echo '<p>'.trim($p).'</p>'; ?>
-		<?php //} ?>
-	</div>
-	<?php } ?>
-</div>
+    $spanW = floor(12/$relatedAmt);
+    ?>
+    <div id="related">
+        <?php foreach ($related as $item) {
+            $linkAttrHref = $this->url( array(
+                'category'=>$item['content_cat_alias'],
+                'article_alias'=>$item['alias'],
+            ), 'default_content_article' );
+            ?>
+        <div class="span<?= $spanW; ?>">
+            <h3>
+                <a href="<?= $linkAttrHref; ?>"><?= $item['title'] ?></a></h3>
+        </div>
+        <?php } ?>
+    </div>
 <?php 
 } ?>

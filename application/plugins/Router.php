@@ -267,7 +267,16 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'module'=>'default',
                 'controller'=>'content',
                 'action'=>'blog',
-            )));
+            ))
+        );
+        
+        $this->_router->addRoute( 'default_content_index', 
+            new Zend_Controller_Router_Route( 'новости', array(
+                'module'=>'default',
+                'controller'=>'content',
+                'action'=>'index',
+            ))
+        );
         
         
         $this->_router->addRoute( 'default_content_blog-category', 

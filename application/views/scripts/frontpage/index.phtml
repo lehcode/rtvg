@@ -60,10 +60,10 @@ $this->inlineScript()->appendScript( $js );
             }
 		    
 		    ?>
-		    <div class="span<?php echo $w; ?> announce">
+		    <div class="span<?= $w; ?> announce">
 		    	<img width="42" height="42" src="/images/icons/article-image-default.png" border="0" />
-		    	<a href="<?php echo $linkAttrHref; ?>"
-		    		title="<?php echo $article['metadesc']; ?>"
+		    	<a href="<?= $linkAttrHref; ?>"
+		    		title="<?= $article['metadesc']; ?>"
 		    		target="_blank">
 		    		<?php echo $this->escape($article['title']); ?>
 		    	</a>
@@ -119,9 +119,9 @@ $this->inlineScript()->appendScript( $js );
 	    $weekLinkAttrTitle = $this->escape( sprintf("Передачи «%s» на этой неделе", $this->escape($channel[$keys[0]]['channel_title'])));
         $weekLinkText =  $this->escape( sprintf("«%s» расписание на неделю" , $channel[$keys[0]]['channel_title']));
 	    ?>
-	    <div class="channel" id="<?php echo $channelHash ?>">
-	    	<h3 class="title"><a href="<?php echo $weekLinkAttrHref ?>" target="_blank" title="<?php echo $weekLinkAttrTitle ?>"><?php echo $weekLinkText; ?></a></h3>
-	    	<h2 class="title"><a href="<?php echo $dayLinkAttrHref ?>" target="_blank" title="<?php echo $dayLinkAttrTitle ?>"><?php echo $dayLinkText ?></a></h2>
+	    <div class="channel" id="<?= $channelHash ?>">
+	    	<h3 class="title"><a href="<?= $weekLinkAttrHref ?>" target="_blank" title="<?= $weekLinkAttrTitle ?>"><?= $weekLinkText; ?></a></h3>
+	    	<h2 class="title"><a href="<?= $dayLinkAttrHref ?>" target="_blank" title="<?= $dayLinkAttrTitle ?>"><?= $dayLinkText ?></a></h2>
 	    	<div class="progs">
 	    <?php 
 	    $w = count($channel)>$max ? floor((100-$max)/$max) : floor((100-count($channel))/count($channel));
@@ -154,31 +154,31 @@ $this->inlineScript()->appendScript( $js );
 	            }
 		        ?>
 		    
-	        <div class="item" style="width:<?php echo $w."%" ?>;">
+	        <div class="item" style="width:<?= $w."%" ?>;">
 	        
-	        	<div class="time" style="background-color: <?php echo $bg ?>;">
-	        		<?php echo $timespan ?>
+	        	<div class="time" style="background-color: <?= $bg ?>;">
+	        		<?= $timespan ?>
 	        	</div>
 	        	
 	        	<div class="info">
 	        	
 	        		<p>
 	        			<?php $text = $timespan=='Сейчас' ? '' : 'Начало в '  ; ?>
-	        			<?php echo $text ?><strong><?php echo $prog['start']->toString("HH:mm") ?></strong>
+	        			<?= $text ?><strong><?= $prog['start']->toString("HH:mm") ?></strong>
 	        		</p>
 	        		
 	        		<p class="title">
-		        		<a href="<?php echo $this->url( array(
+		        		<a href="<?= $this->url( array(
 		        		'channel'=>$this->escape($prog['channel_alias']),
 		        		'alias'=>$this->escape($prog['alias']) ), 'default_listings_broadcast-week') ?>"
-		        		title="<?php echo $this->escape(sprintf("Программа «%s» на неделе", $this->escape($prog['title']))) ?>">
-		        			<?php echo $this->escape( $prog['title'] ) ?>
+		        		title="<?= $this->escape(sprintf("Программа «%s» на неделе", $this->escape($prog['title']))) ?>">
+		        			<?= $this->escape( $prog['title'] ) ?>
 		        		</a>
 	        		</p>
 	        		
 	        		<?php if (!empty($prog['sub_title'])): ?>
 	        		<p class="sub_title">
-	        			<?php echo $this->escape( $prog['sub_title'] ) ?>
+	        			<?= $this->escape( $prog['sub_title'] ) ?>
 	        		</p>
 	        		<?php endif; ?>
 	        		
@@ -186,11 +186,11 @@ $this->inlineScript()->appendScript( $js );
 		        		title="<?php printf("Все %s на канале «%s» сегодня", 
 		        			Xmltv_String::strtolower( $this->escape( $prog['category_title'] )),
 		        			$this->escape( $prog['channel_title'] )) ?>">
-		        		<?php echo $this->escape( $prog['category_single'] ) ?>
+		        		<?= $this->escape( $prog['category_single'] ) ?>
 		        	</a>
 		        	<br />
 		        	<?php if ((int)@$prog['rating']>0 && $showRating===true): ?>
-		        	<span class="rating">Возрастной рейтинг: <?php echo $this->escape( $prog['rating'] ).'+' ?></span>
+		        	<span class="rating">Возрастной рейтинг: <?= $this->escape( $prog['rating'] ).'+' ?></span>
 		        	<?php endif; ?>
 	        	</div>
 	        	

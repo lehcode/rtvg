@@ -102,6 +102,11 @@ class Xmltv_Model_Abstract
      * @var Xmltv_Model_DbTable_YtCategories
      */
     protected $ytCategoriesTable;
+
+	/**
+     * @var Xmltv_Model_DbTable_ArticlesRating
+     */
+    protected $articlesRatingTable;
     
     
 	/**
@@ -206,6 +211,7 @@ class Xmltv_Model_Abstract
 	    $this->channelsCommentsTable = new Xmltv_Model_DbTable_ChannelsComments();
         $this->contentCategoriesTable = new Xmltv_Model_DbTable_ContentCategories();
         $this->ytCategoriesTable = new Xmltv_Model_DbTable_YtCategories();
+        $this->articlesRatingTable = new Xmltv_Model_DbTable_ArticlesRating();
 	    
 	}
 
