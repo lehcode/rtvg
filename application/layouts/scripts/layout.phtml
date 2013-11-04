@@ -37,38 +37,31 @@ if ($this->vk_group_init === true){
     	->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, width: "300", height: "200" }, 27716041);');
 }
 
-/*
- * #### Header ####
- */
+//#### Header ####
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array(
 		'pageclass'=>$this->pageclass,
 		'nav_html'=>$this->navigation()->menu()->renderMenu( Zend_Registry::get('FpMenu'), array('ulClass' => 'nav')),
 		'is_frontpage'=>$this->is_frontpage,
 )));
 
-/*
- * #### Main content ####
- */
+//#### Main content ####
 $this->placeholder('maincontent')->set( $this->layout()->content );
 
-/*
- * #### Featured channels list ####
- */
+//#### Featured channels list ####
 if ($pageClass=='show-video'){
     $this->placeholder('featured_channels')->set( 
     	$this->partial('partials/featured-channels.phtml', array(
     		'list'=>$this->featured_channels)) );
 }
 
-/*
- * #### Left Sidebar ####
- */
+//#### Left Sidebar ####
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'bc_top'=>$this->bc_top,
 	'channels_categories'=>$this->channels_cats,
 	//'channel'=>$this->channel,
 	'announces'=>$this->announces,
 	'show_announces'=>$this->show_announces,
+	'bc_top'=>$this->bc_top,
 )));
 
 /*
@@ -104,15 +97,13 @@ if ($this->doctype()->isRdfa()){
 } ?>
 xml:lang="ru" lang="ru">
 <head>
-<?php 
-echo $this->headTitle(), PHP_EOL;
-echo $this->headMeta(), PHP_EOL;
-echo $this->headLink(), PHP_EOL;
-echo $this->jQuery(), PHP_EOL;
-echo $this->headScript(), PHP_EOL;
-echo $this->headStyle(), PHP_EOL;
-
-?>
+<?= $this->headTitle() ?>
+<?= $this->headMeta() ?>
+<?= $this->headLink() ?>
+<?= $this->jQuery() ?>
+<?= $this->headScript() ?>
+<?= $this->headStyle() ?>
+    
 <?php 
 if (APPLICATION_ENV=='production') {
 ?>
@@ -128,12 +119,15 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 <body>
 <div class="row-fluid" id="header">
 <?php if (APPLICATION_ENV=='production') : ?>
-<!-- Rating@Mail.ru counter --><div style="position:absolute;left:-10000px;"><img src="http://d8.c6.b3.a2.top.mail.ru/counter?id=2320499" style="border:0;" height="1" width="1" alt="Рейтинг@Mail.ru" /></div><!-- //Rating@Mail.ru counter -->
+<!-- Rating@Mail.ru counter -->
+<div style="position:absolute;left:-10000px;"><img src="http://d8.c6.b3.a2.top.mail.ru/counter?id=2320499" style="border:0;" height="1" width="1" alt="Рейтинг@Mail.ru" /></div>
+<!-- //Rating@Mail.ru counter -->
 <?php endif; ?>
-<?php echo $this->placeholder('header'); ?>
+
+<?= $this->placeholder('header'); ?>
 </div>
 	
-<div id="content" class="row-fluid<?php echo $pageClass; ?>">
+<div id="content" class="row-fluid<?= $pageClass; ?>">
 	<?php 
 	if (count($this->messages)) {
 		foreach ($this->messages as $text) {
@@ -151,20 +145,26 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 	if ($isFrontpage) {
 		?>
 	<div class="span12" id="maincontent">
-		<?php echo $this->placeholder('maincontent'); 
+		<?= $this->placeholder('maincontent'); 
 		?>
 	</div>
 		<?php 
 	} else {
 		?>
 		
+        <?php if (!($this->hide_sidebar=='left')): ?>
+		<div class="span2" id="col_l">
+			<?= $this->placeholder('sidebar_left'); ?>
+		</div>
+		<?php endif; ?>
+    
 		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
-			<?php echo $this->placeholder('maincontent'); ?>
+			<?= $this->placeholder('maincontent'); ?>
 		</div>	
 		
         <?php if (!($this->hide_sidebar=='right')): ?>
 		<div class="span4" id="col_r">
-			<?php echo $this->placeholder('sidebar_right'); ?>
+			<?= $this->placeholder('sidebar_right'); ?>
 		</div>
 		<?php endif; ?>
     
@@ -174,9 +174,8 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 </div>
 
 <?php 
+//Featured channels links
 /*
- * Featured channels links
- */
 if ($pageClass=='show-video'){
 	$fChannels = $this->placeholder('featured_channels');
 	if (!empty($fChannels)) { ?>
@@ -185,9 +184,9 @@ if ($pageClass=='show-video'){
 	</div>
 	<?php 
 	} 
-} ?>
+} */ ?>
 <div class="row-fluid" id="footer">
-	<?php echo $this->placeholder('footer'); ?>
+	<?= $this->placeholder('footer'); ?>
 </div>
 
 <?php if (APPLICATION_ENV=='production') { 
@@ -206,7 +205,7 @@ s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru
 if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f); } 
 else { f(); }
 })(document, window, "yandex_metrika_callbacks");'; ?>
-<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+<script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <?php } ?>
 
@@ -220,7 +219,7 @@ _gaq.push(['_trackPageview']);
   ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
   var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();"; ?>
-<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+<script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <?php } ?>
 
 <script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314"></script>
