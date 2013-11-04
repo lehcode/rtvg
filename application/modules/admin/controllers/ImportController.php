@@ -175,13 +175,13 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				
 			} else {
 				
-				$pngFile	= APPLICATION_PATH.'/../public/images/channel_logo/'.$info['icon'];
+                $pngFile	= APPLICATION_PATH.'/../public/images/channel_logo/'.$info['icon'];
 				$bigPngFile = APPLICATION_PATH.'/../public/images/channel_logo/100/'.$info['icon'];
 				
 				if ( !file_exists($pngFile) || !file_exists($bigPngFile)){
 					
-					$gifIcon = Xmltv_String::substr_replace($iconOriginal, '', 0, Xmltv_String::strrpos($iconOriginal, '/')+1);
-					$gifFile = APPLICATION_PATH.'/../tmp/'.$gifIcon;
+                    $gifIcon = Xmltv_String::substr_replace($iconOriginal, '', 0, Xmltv_String::strrpos($iconOriginal, '/')+1);
+					$gifFile = realpath(APPLICATION_PATH.'/../tmp/').$gifIcon;
 					$curl	= new Zend_Http_Client_Adapter_Curl();
 					$curl->setCurlOption( CURLOPT_HEADER, false);
 					$curl->setCurlOption( CURLOPT_RETURNTRANSFER, 1);
@@ -359,16 +359,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$bc->hash  = $this->broadcasts->getBroadcastHash($bc);
             $evt->hash = $bc->hash;
             
-            // debug breakpoint
-			$debugAmt=5;
-			if ($i<$debugAmt){
-				if (APPLICATION_ENV=='development'){
-					//echo $i;
-					//Zend_Debug::dump($bc->toArray());
-					//Zend_Debug::dump($evt->toArray());
-				}
-			}
-            
             // Save records
             try {
                 $broadcasts->create($bc);
@@ -377,7 +367,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
                 Zend_Debug::dump( $e->getPrevious() );
                 Zend_Debug::dump($bc->toArray());
                 die("Broadcast save failed!");
-                //throw new Zend_Exception("Cannot save Broadcast: ". print_r($bc->toArray(), true));
             }
 			
             
@@ -386,21 +375,12 @@ class Admin_ImportController extends Rtvg_Controller_Admin
                     $evt->save();
                 } catch (Zend_Exception $e){
                     echo $e->getMessage().'<br />';
-                    Zend_Debug::dump( $e->getPrevious() );
+                    Zend_Debug::dump($e->getPrevious() );
+                    Zend_Debug::dump($bc );
                     Zend_Debug::dump($evt->toArray());
                     die("Event save failed!");
-                    //throw new Zend_Exception("Cannot save Event: ". print_r($evt->toArray(), true));
                 }
             }
-            
-			// debug breakpoint
-			if ($i>=$debugAmt){
-				if (APPLICATION_ENV=='development'){
-					//die(__FILE__.': '.__LINE__);
-				}
-			}
-			
-			$i++;
 			
 		}		
 		
