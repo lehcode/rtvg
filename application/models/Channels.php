@@ -542,8 +542,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 	    $select = $this->db->select()
     		->from( array( 'CH'=>$this->channelsTable->getName()))
-    		->join( array( 'RAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id`=`RAT`.`channel_id`", null )
-	    	->where( "`CH`.`featured`='1'" )
+    		->join( array( 'RAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id`=`RAT`.`channel`", null )
+	    	->where( "`CH`.`featured` IS TRUE" )
 	    	->order( "RAT.hits")
     		->limit( (int)$amt );
 	    

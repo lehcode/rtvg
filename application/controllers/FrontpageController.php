@@ -45,7 +45,7 @@ class FrontpageController extends Rtvg_Controller_Action
 	 */
 	public function indexAction () {
         
-        $amt = (int)Zend_Registry::get('site_config')->top->broadcasts->amount;
+        $amt = (int)Zend_Registry::get('site_config')->frontend->frontpage->channels;
         if(!$amt){
             $list = array();
         } else {
