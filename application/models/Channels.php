@@ -468,16 +468,28 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function topChannels($amt=10){
 		
 		$select = $this->db->select()
-	    	->from( array('ch'=>$this->channelsTable->getName()),
-	    		array( 'id', 'title', 'alias'=>'LOWER(`ch`.`alias`)', 'featured', 'icon', ''))
-	    	->join( array('r'=>$this->channelsRatingsTable->getName()), "`r`.`id`=`ch`.`id`", array('hits'))
-	    	->join( array('cat'=>$this->channelsCategoriesTable->getName()), "`ch`.`category`=`cat`.`id`",
-	    		array('category_title'=>'title', 'category_alias'=>'alias', 'category_image'=>'image'))
-	    	->limit($amt)
-	    	->where("`ch`.`published`='1'")
-	    	->order("r.hits DESC");
-	    	
-	    $result = $this->db->fetchAssoc($select);
+	    	->from( array('CH'=>$this->channelsTable->getName()), array( 
+                'id',
+                'title',
+                'alias',
+                'featured',
+                'icon'
+            ))
+	    	->join( array('RATING'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `RATING`.`channel`", array(
+                'hits',
+                'rating',
+            ))
+	    	->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category`=`CHCAT`.`id`", array(
+                'category_title'=>'title',
+                'category_alias'=>'alias',
+                'category_image'=>'image'
+            ))
+	    	->where("`CH`.`published` = TRUE")
+	    	->order("RATING.hits DESC")
+            ->limit($amt)
+        ;
+        
+        $result = $this->db->fetchAll($select);
 	    
 	    return $result;
 	    
@@ -492,7 +504,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		
 	    $select = $this->db->select()
     		->from( array( 'CH'=>$this->channelsTable->getName()))
-    		->join( array( 'RAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id`=`RAT`.`channel_id`", null )
+    		->join( array( 'RAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id`=`RAT`.`channel`", null )
 	    	->where( "`CH`.`featured`='1'" )
 	    	->order( "RAT.hits")
     		->limit( (int)$amt );

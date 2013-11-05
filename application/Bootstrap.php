@@ -223,7 +223,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             ->appendStylesheet($view->baseUrl('css/fonts.css'));
 
 	    $view->headScript()
-	    	->setAllowArbitraryAttributes(true)
+	    	->setAllowArbitraryAttributes(false)
 	    	->prependFile( $view->baseUrl( 'js/less.min.js' ));
 	    
 	    if (APPLICATION_ENV=='development'){

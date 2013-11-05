@@ -49,12 +49,12 @@ class FrontpageController extends Rtvg_Controller_Action
 	 */
 	public function indexAction () {
         
-        $amt = (int)Zend_Registry::get('site_config')->top->broadcasts->get('amount');
+        $amt = (int)Zend_Registry::get('site_config')->frontend->frontpage->channels;
         if($amt===0){
             $list = array();
         } else {
-            $top = $this->bcModel->topBroadcasts($amt);
-            if ($this->cache->enabled){
+            $top = $this->channelsModel->topChannels($amt);
+            if ($this->cache->enabled && APPLICATION_ENV!='development'){
                 $this->cache->setLifetime(600);
                 $f = 'Listings/Frontpage';
                 $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);

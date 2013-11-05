@@ -690,7 +690,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'channel_alias'=>'alias',
                 'adult',
             ))
-            ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel_id`", null)
+            ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel`", null)
             ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")))
             ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm:00")))
             ->group("EVT.start")
@@ -708,7 +708,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         if (is_array($channels) && !empty($channels)){
             $ids = array();
             foreach ($channels as $i){
-                $ids[] = "'".$i['channel_id']."'";
+                $ids[] = "'".$i['id']."'";
             }
             $select->where("EVT.channel IN (".implode(",", $ids).")");
         }

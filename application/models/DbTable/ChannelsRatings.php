@@ -4,7 +4,7 @@ class Xmltv_Model_DbTable_ChannelsRatings extends Xmltv_Db_Table_Abstract
 {
 
     protected $_name = 'channels_ratings';
-    protected $_primary = 'channel_id';
+    protected $_primary = 'channel';
 
     /**
      * Constructor

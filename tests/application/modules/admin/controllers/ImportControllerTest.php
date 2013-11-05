@@ -37,13 +37,7 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
      */
     public function testRemoteAction(){
         
-        $urlParams = $this->urlizeOptions( array(
-            'module'=>'admin',
-            'controller'=>'import',
-            'action'=>'remote',
-            'site'=>'teleguide'
-        ));
-        $url = $this->url( $urlParams, 'admin_import_remote' );
+        $url = 'admin/import/remote';
         //$this->dispatch($url);
         
         // assertions
@@ -61,12 +55,7 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
      */
     public function testXmlParseChannelsAction(){
         
-        $urlParams = $this->urlizeOptions( array(
-            'module'=>'admin',
-            'controller'=>'import',
-            'action'=>'xml-parse-channels',
-            ));
-        $url = $this->url( $urlParams, 'admin_import_xml-parse-channels' );
+        $url = 'admin/import/xml-parse-channels';
         //$this->dispatch($url);
         
         // assertions
