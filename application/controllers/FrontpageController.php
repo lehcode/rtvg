@@ -26,21 +26,17 @@ class FrontpageController extends Rtvg_Controller_Action
     
     	parent::init();
     
-    	/**
-    	 * Change layout for AJAX requests
-    	 */
+        //Change layout for AJAX requests
     	if ($this->getRequest()->isXmlHttpRequest()) {
-    		$ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
-			$ajaxContext->addActionContext( 'single-channel', 'html' )
+    		$this->_helper->getHelper( 'AjaxContext' )
+                ->addActionContext( 'single-channel', 'html' )
 				->initContext();
-    	}
+    	} else {
+            $this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
+			$this->view->assign( 'vk_group_init', false );
+        }
     	
     	$this->articlesModel = new Xmltv_Model_Articles();
-    	
-    	if (!$this->_request->isXmlHttpRequest()){
-			$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
-			$this->view->assign( 'vk_group_init', false );
-		}
     	
     }
     	
@@ -49,12 +45,12 @@ class FrontpageController extends Rtvg_Controller_Action
 	 */
 	public function indexAction () {
         
-        $amt = (int)Zend_Registry::get('site_config')->top->broadcasts->get('amount');
-        if($amt===0){
+        $amt = (int)Zend_Registry::get('site_config')->frontend->frontpage->channels;
+        if(!$amt){
             $list = array();
         } else {
-            $top = $this->bcModel->topBroadcasts($amt);
-            if ($this->cache->enabled){
+            $top = $this->channelsModel->topChannels($amt);
+            if ($this->cache->enabled && APPLICATION_ENV!='development'){
                 $this->cache->setLifetime(600);
                 $f = 'Listings/Frontpage';
                 $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
@@ -69,7 +65,7 @@ class FrontpageController extends Rtvg_Controller_Action
         $this->view->assign('list', $list);
 	    
         // Channels data for dropdown
-		if ($this->cache->enabled){
+		if ($this->cache->enabled && APPLICATION_ENV!='development'){
 		    $this->cache->setLifetime(600);
 		    $f = 'Channels';
 			$hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
@@ -86,7 +82,7 @@ class FrontpageController extends Rtvg_Controller_Action
 	    $articlesAmt = (int)Zend_Registry::get('site_config')->frontend->frontpage->get('articles');
 	    $this->view->assign( 'articles_amt', $articlesAmt);
         if ($articlesAmt>0){
-            if ( $this->cache->enabled && APPLICATION_ENV=='production' ){
+            if ( $this->cache->enabled && APPLICATION_ENV!='development' ){
                 $this->cache->setLifetime(600);
                 $f = 'Content/Articles';
                 $hash = md5( 'frontpage-articles' );
@@ -110,14 +106,16 @@ class FrontpageController extends Rtvg_Controller_Action
 	public function singleChannelAction(){
 		
 	    if (!$this->_request->isXmlHttpRequest()){
-	        throw new Zend_Exception( Rtvg_Message::ERR_INVALID_INPUT );
+	        throw new Zend_Exception( "Not found", 404 );
 	    }
+        
+        $this->_helper->layout->disableLayout();
 	    
 	    if (parent::validateRequest()){
 	        
 	        $channelId = $this->input->getEscaped('id');
 	        
-	        if ($this->cache->enabled){
+	        if ($this->cache->enabled && APPLICATION_ENV!='development'){
 	            
 	            $this->cache->setLifetime(3600);
 	            $f = '/Listings/Frontpage';
@@ -130,25 +128,24 @@ class FrontpageController extends Rtvg_Controller_Action
 	        } else {
 	            $channel = $this->channelsModel->getById($this->input->getEscaped('id'));
 	        }
+            
+            $this->view->assign( 'channel', $channel );
+	        $this->channelsModel->addHit( $channel['id'] );
 	        
-	        $ch[] = $channel;
-	        $this->view->assign( 'channel', $ch[0] );
-	        $this->channelsModel->addHit($ch[0]['id']);
-	        
-	        if ($this->cache->enabled){
+	        if ($this->cache->enabled && APPLICATION_ENV!='development'){
 	        	
 	            $this->cache->setLifetime(1800);
 	            $f = '/Listings/Frontpage';
 	            $hash = md5('frontpage-channel-'.$channelId);
-	            if (($list = $this->cache->load( $hash, 'Core', $f))===false) {
-	            	$list = $this->bcModel->frontpageListing($ch);
+	            if (($list = $this->cache->load( $hash, 'Core', $f)) === false) {
+	            	$list = $this->bcModel->frontpageListing( array($channel) );
 	            	$this->cache->save( $list, $hash, 'Core', $f);
 	            }
 	        } else {
-	            $list = $this->bcModel->frontpageListing($ch);
+	            $list = $this->bcModel->frontpageListing( array($channel) );
 	        }
-	        
-	        if ($list){
+            
+            if ($list){
 	        	$keys = array_keys($list);
 	        	$this->view->assign( 'list', $list[$keys[0]] );
 	        }

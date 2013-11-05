@@ -665,6 +665,9 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             throw new Zend_Exception( "Channels must be an array" );
         }
         
+        //var_dump(func_get_args());
+        //die(__FILE__ . ': ' . __LINE__);
+        
         $select = $this->db->select()
             ->from( array('BC'=>$this->bcTable->getName()), array(
                 'hash',
@@ -678,19 +681,19 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'end',
                 'channel'
             ))
-            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BCCAT`.`id`=`BC`.`category`", array(
+            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BC`.`category` = `BCCAT`.`id`", array(
                 'category'=>'id',
                 'category_title'=>'title',
                 'category_alias'=>'alias',
                 'category_single'=>'title_single'
             ))
-            ->join( array('CH'=>$this->channelsTable->getName()), "`CH`.`id`=`EVT`.`channel`", array(
+            ->join( array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel` = `CH`.`id`", array(
                 'channel'=>'id',
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',
                 'adult',
             ))
-            ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel_id`", null)
+            ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel`", null)
             ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")))
             ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm:00")))
             ->group("EVT.start")
@@ -708,7 +711,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         if (is_array($channels) && !empty($channels)){
             $ids = array();
             foreach ($channels as $i){
-                $ids[] = "'".$i['channel_id']."'";
+                $ids[] = "'".$i['id']."'";
             }
             $select->where("EVT.channel IN (".implode(",", $ids).")");
         }

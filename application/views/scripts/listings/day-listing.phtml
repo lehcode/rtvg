@@ -86,7 +86,13 @@ $this->headStyle()->appendStyle($css);
 <div class="container-fluid">
 	<?php 
 	if (!$this->is_today) {
-		$linkAttrHref  = $this->url(array('channel'=>$channelAlias), 'default_listings_day-listing');
+        try {
+            $linkAttrHref  = $this->url(array('channel'=>$channelAlias), 'default_listings_day-listing');
+        } catch (Exception $e) {
+            throw new Zend_Exception("Cannot assemble URL", 500, $e);
+        }
+
+        
 		$linkAttrTitle = $this->escape( sprintf('Телепрограмма «%s» на сегодня', $channelTitle) );
 		$linkText = sprintf ('«%s» сегодня', $channelTitle);
 		?>
@@ -99,8 +105,12 @@ $this->headStyle()->appendStyle($css);
 	
 	<h3>
 		<?php 
-		$linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
-		$linkAttrTitle = $this->escape( sprintf('Передачи «%s» на неделю', $channelTitle) );
+        try {
+            $linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
+        } catch (Exception $e) {
+            throw new Zend_Exception("Cannot assemble URL", 500, $e);
+        }
+        $linkAttrTitle = $this->escape( sprintf('Передачи «%s» на неделю', $channelTitle) );
 		$linkText      = $this->escape( sprintf ('Программа передач "%s" на всю неделю', $channelTitle) );
 		?>
 		<a href="<?php echo $linkAttrHref; ?>" title="<?php echo $linkAttrTitle; ?>" class="btn week-link">
@@ -140,6 +150,7 @@ if ($this->is_today) {
 ?>
 
 <?php 
+/*
 if (isset($this->comments) && !empty($this->comments)) { 
     ?>
     <div id="comments">
@@ -181,4 +192,5 @@ if (isset($this->comments) && !empty($this->comments)) {
         </div>
     </div>
     <?php 
-} ?>
+} */
+?>

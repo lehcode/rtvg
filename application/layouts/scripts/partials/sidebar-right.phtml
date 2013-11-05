@@ -10,12 +10,8 @@
 ?>
 
 <?php
-$this->inlineScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').show(300); });");
+$this->headScript()->appendScript("$(document).ready(function(){ $('#rumor-ads').show(300); });");
 ?>
-<div class="module" id="rumor-ads">
-	<?php /*<h4 class="mediumheading">Желтая пресса</h4>*/ ?>
-	<div class="content" id="DIV_DA_85753"></div>
-</div>
 
 
 <?php
@@ -108,7 +104,7 @@ if (count($this->videos) && $this->videos!==false) {
 ?>
 
 <?php
-if ($this->admitad === true){
+/*if ($this->admitad === true){
     echo $this->adCode(array(
         'w'=>300,
         'h'=>300,
@@ -116,10 +112,15 @@ if ($this->admitad === true){
         'output'=>'stack',
         'amt'=>1,
     ));
-}
+}*/
 ?>
 
-<div class="module">
+<div class="module" id="rumor-ads">
+	<?php /*<h4 class="mediumheading">Желтая пресса</h4>*/ ?>
+	<div id="DIV_DA_85753"></div>
+</div>
+
+<div class="module tablet-hidden phone-hidden">
 	<h5 class="mediumheading">Телепрограмма vkontakte</h5>
 	<div id="vk_groups"></div>
     <script type="text/javascript">

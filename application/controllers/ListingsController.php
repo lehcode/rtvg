@@ -292,7 +292,7 @@ class ListingsController extends Rtvg_Controller_Action
         $this->channelsModel->addHit( $channel['id'] );
         $this->view->assign('featured', $this->getFeaturedChannels());
         
-        $this->view->assign('hide_sidebar', 'left');
+        $this->view->assign('hide_sidebar', 'none');
     }
     
     /**
