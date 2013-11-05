@@ -33,11 +33,11 @@ class ImportControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
     }
     
     /**
-     * @group admin
+     * @group importControllerActions
      */
     public function testRemoteAction(){
         
-        $url = 'admin/import/remote';
+        $url = 'admin/import/remote/site/teleguide';
         //$this->dispatch($url);
         
         // assertions

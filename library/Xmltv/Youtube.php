@@ -293,29 +293,17 @@ class Xmltv_Youtube {
 	public static function decodeRtvgId( $rtvg_id=null){
 	
 		if (!$rtvg_id) {
-			throw new Zend_Exception(self::ERR_MISSING_PARAMS, 500);
+			throw new Zend_Exception("Не указан ID");
 		}
 	
 		$params['id'] = base64_decode( strrev($rtvg_id).'=');
-		
-		if (APPLICATION_ENV=='development'){
-			//var_dump($params['id']);
-			//die(__FILE__.': '.__LINE__);
-		}
-		
 		$validators = array( 'id'=>array(
-			new Zend_Validate_Regex('/^[a-z0-9-]+$/i')
+			new Zend_Validate_Regex('/^[a-z0-9]+$/i')
 		));
 		$input = new Zend_Filter_Input(array(), $validators, $params);
 		
-		if (APPLICATION_ENV=='development'){
-		    //var_dump($input->isValid('id'));
-		    //var_dump($input);
-		    //die(__FILE__.': '.__LINE__);
-		}
-		
 		if ($input->isValid('id')!==true){
-		    die("Не могу декодировать");
+		    throw new Zend_Exception("Не могу декодировать ID");
 		}
 		
 		return $input->getEscaped('id');

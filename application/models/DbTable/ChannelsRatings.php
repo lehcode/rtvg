@@ -22,6 +22,10 @@ class Xmltv_Model_DbTable_ChannelsRatings extends Xmltv_Db_Table_Abstract
 			throw new Zend_Exception('Не указан $channel_id');
         }
         
+        if (!is_numeric($channel_id)){
+            throw new Zend_Exception('Channel ID is wrong');
+        }
+        
 		if (!$row = $this->find($channel_id)->current())
 			$row = $this->createRow(array('channel_id'=>$channel_id), true);
 		

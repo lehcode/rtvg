@@ -665,6 +665,9 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             throw new Zend_Exception( "Channels must be an array" );
         }
         
+        //var_dump(func_get_args());
+        //die(__FILE__ . ': ' . __LINE__);
+        
         $select = $this->db->select()
             ->from( array('BC'=>$this->bcTable->getName()), array(
                 'hash',
@@ -678,13 +681,13 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'end',
                 'channel'
             ))
-            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BCCAT`.`id`=`BC`.`category`", array(
+            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BC`.`category` = `BCCAT`.`id`", array(
                 'category'=>'id',
                 'category_title'=>'title',
                 'category_alias'=>'alias',
                 'category_single'=>'title_single'
             ))
-            ->join( array('CH'=>$this->channelsTable->getName()), "`CH`.`id`=`EVT`.`channel`", array(
+            ->join( array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel` = `CH`.`id`", array(
                 'channel'=>'id',
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',

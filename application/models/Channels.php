@@ -187,7 +187,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function getByTitle($title=null){
 		
 		if (!$title) {
-			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM);
 		}
 		
 		$result = $this->channelsTable->fetchRow(" `title` LIKE '$title'");
@@ -199,14 +199,49 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 
 	public function getById($id=null){
 		
-		if (!$id) {
-			throw new Zend_Exception("Не указан один или более параметров для ".__FUNCTION__, 500);
+		if (!$id || !is_numeric($id)) {
+			throw new Zend_Exception("Не указан один или более параметров");
 		}
 		
-		$result = $this->channelsTable->fetchRow("`id`='$id'")->toArray();
-		$result['alias'] = Xmltv_String::strtolower($result['alias']);
-		$result['start'] = new Zend_Date($result['start'], 'yyyy-MM-dd HH:mm:ss');
-		$result['end']   = new Zend_Date($result['end'], 'yyyy-MM-dd HH:mm:ss');
+		$select = $this->db->select()
+            ->from(array("CH"=>$this->channelsTable->getName()), array(
+                'id',
+                'title',
+                'alias',
+                'free',
+                'featured',
+                'icon',
+                'desc_intro',
+                'desc_body',
+                'format',
+                'published',
+                'parse',
+                'url',
+                'keywords',
+                'metadesc',
+                'video_aspect',
+                'video_quality',
+                'audio',
+                'address',
+                'geo_lt',
+                'geo_lg',
+            ))
+            ->join(array("CHCAT"=>$this->channelsCategoriesTable->getName()), "`CH`.`category` = `CHCAT`.`id`", array(
+                'category_id'=>'id',
+                'category_title'=>'title',
+                'category_alias'=>'alias',
+            ))
+            ->where("CH.id = ".(int)$id)
+            ->limit(1)
+        ;
+        
+        $result = $this->db->fetchRow($select);
+        
+        $result['alias'] = Xmltv_String::strtolower($result['alias']);
+		$result['start'] = new Zend_Date($result['start'], 'YYYY-MM-dd HH:mm:ss');
+		$result['end']   = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
+		$result['id'] = (int)$result['id'];
+		$result['category'] = (int)$result['category'];
 		
 		return $result;
 		
@@ -241,7 +276,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	public function addHit($id=null){
 		
 		if (!$id || !is_numeric($id)) {
-			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM);
 		}
 		
 		$this->ratingsTable->addHit($id);
@@ -489,7 +524,10 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             ->limit($amt)
         ;
         
-        $result = $this->db->fetchAll($select);
+        //var_dump($select->assemble());
+        //die(__FILE__ . ': ' . __LINE__);
+	    	
+	    $result = $this->db->fetchAll($select);
 	    
 	    return $result;
 	    
@@ -505,7 +543,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    $select = $this->db->select()
     		->from( array( 'CH'=>$this->channelsTable->getName()))
     		->join( array( 'RAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id`=`RAT`.`channel`", null )
-	    	->where( "`CH`.`featured`='1'" )
+	    	->where( "`CH`.`featured` IS TRUE" )
 	    	->order( "RAT.hits")
     		->limit( (int)$amt );
 	    

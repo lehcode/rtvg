@@ -3,8 +3,8 @@
  * View script to output user-selected channel
  * 
  * @author  Antony Repin
- * @version $Id: single-channel.ajax.phtml,v 1.4 2013-04-03 04:08:16 developer Exp $
  */
+
 $channelHash = hash( 'crc32', $this->channel['id'] );
 $weekLinkAttrHref = $this->url( array(
 		'channel'=>$this->escape($this->channel['alias'])), 'default_channels_channel-week');

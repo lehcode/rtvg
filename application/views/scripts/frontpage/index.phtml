@@ -37,7 +37,7 @@ $js = '$(document).ready(function($){
 	});
 });';
 $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( $js ) : $js ;
-$this->inlineScript()->appendScript( $js );
+$this->headScript()->appendScript( $js );
 
 
 ?>
