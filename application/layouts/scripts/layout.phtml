@@ -10,7 +10,7 @@
 $pageClass   = isset($this->pageclass) && !empty($this->pageclass) ? ' '.(string)$this->pageclass : '' ;
 $isFrontpage = trim($pageClass)=='frontpage' ? true  : false ;
 
-$this->maincontent_width = 6;
+$this->maincontent_width = 7;
 if ($this->hide_sidebar == 'left'){
 	$this->maincontent_width = 8;
 }
@@ -31,9 +31,8 @@ $this->headScript()
 	->appendFile( '//vk.com/js/api/openapi.js?75' )
 	->appendFile( "//vk.com/js/api/openapi.js?101" );
 
-
 if ($this->vk_group_init === true){
-    $this->inlineScript()
+    $this->headScript()
     	->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, width: "300", height: "200" }, 27716041);');
 }
 
@@ -163,7 +162,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 		</div>	
 		
         <?php if (!($this->hide_sidebar=='right')): ?>
-		<div class="span4" id="col_r">
+		<div class="span3" id="col_r">
 			<?= $this->placeholder('sidebar_right'); ?>
 		</div>
 		<?php endif; ?>
@@ -223,10 +222,7 @@ _gaq.push(['_trackPageview']);
 <?php } ?>
 
 <script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314"></script>
-
-<?php if ($this->hide_sidebar!='right'): ?>
 <script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script>
-<?php endif; ?>
 
 <?php ob_start(); ?>
 $(document).ready(function(){

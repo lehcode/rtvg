@@ -5,7 +5,7 @@
  * @version $Id: AdCode.php,v 1.4 2013-04-11 05:21:23 developer Exp $
  *
  */
-class Rtvg_View_Helper_AdCode extends Zend_View_Helper_Abstract
+class Zend_Controller_Action_Helper_AdCode extends Zend_View_Helper_Abstract
 {
     
     private $codes=array();

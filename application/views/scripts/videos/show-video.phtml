@@ -20,7 +20,7 @@ if (isset($this->main_video)){
     
     $this->inlineScript()
     	->appendFile("/js/swfobject/swfobject.js");
-    
+    /*
     $this->headScript()->appendScript( Rtvg_Compressor_JSMin::minify("$(document).ready(function() {
     		var descP = $('.video.thumbnails p.desc');
     		var descHeight = descP.prop('offsetHeight');
@@ -29,6 +29,7 @@ if (isset($this->main_video)){
     		$('#maincontent div.videos div.main div.player-wrap').val('');
     
     });"));
+     * */
     ?>
     
 <div class="page videos">

@@ -51,6 +51,16 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             'action'=>'index'))
         );
         
+        $this->_router->addRoute( 'default_frontpage_single-channel', new Zend_Controller_Router_Route( 'frontpage/single-channel/format/html/id/:id',  array(
+            'module'=>'default',
+            'controller'=>'frontpage',
+            'action'=>'single-channel'),
+            array(
+                'format'=>'html',
+                'id'=>'[0-9]{1,16}',
+            ))
+        );
+        
         $this->_router->addRoute( 'default_channels_list', new Zend_Controller_Router_Route( 'телепрограмма', array(
             'module'=>'default',
             'controller'=>'channels',

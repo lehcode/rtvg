@@ -14,15 +14,19 @@
 if (isset($this->bc_top) && !empty($this->bc_top)) {
 	?>
 <div class="module">
-	<h4>Популярные программы на этой неделе</h4>
 	<ul id="program-top">
 		<?php 
 		foreach ($this->bc_top as $bc){
-		?>
+            try {
+                $hrefUrl = $this->url( array('channel'=>$bc['channel_alias'], 'alias'=>$bc['alias']), 'default_listings_broadcast-week');
+            } catch (Exception $e) {
+                throw new Zend_Exception("Cannot assemble URL", 500, $e);
+            }
+        		?>
 		<li>
-			<img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$bc['channel_icon'] ) ?>" width="16" />
-			<a href="<?php echo $this->url( array('channel'=>$bc['channel_alias'], 'alias'=>$bc['alias']), 'default_listings_broadcast-week'); ?>"
-				title="<?php echo $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>"
+			<img src="<?= $this->baseUrl( 'images/channel_logo/'.$bc['channel_icon'] ) ?>" width="16" />
+			<a href="<?= $hrefUrl ?>"
+				title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>"
 				target="_blank"><?php echo $this->truncateString( $bc['title'], 3, 'words') ?>
 			</a>
 		</li>
@@ -39,10 +43,15 @@ if (isset($this->bc_top) && !empty($this->bc_top)) {
 if (isset($this->announces) && ($this->announces!==false)  && ($this->show_announces===true)) { ?>
 <div class="module">
 	<ul class="nav nav-pills nav-list">
-	<?php foreach ($this->announces as $article){ 
-        $linkAttrHref = $this->url( array(
-        'category'=>$article['content_cat_alias'],
-        'article_alias'=>$this->escape($article['alias'])), 'default_content_article' );
+	<?php 
+    foreach ($this->announces as $article){
+        try {
+            $linkAttrHref = $this->url( array(
+                'category'=>$article['content_cat_alias'],
+                'article_alias'=>$this->escape($article['alias'])), 'default_content_article' );
+        } catch (Exception $exc) {
+            throw new Zend_Exception("Cannot assemble URL", 500, $e);
+        }
 		?>
 		<li><a href="<?php echo $linkAttrHref; ?>" title="<?php printf( "%s новости", $article->content_cat_title ); ?>"><?php echo $article->title; ?></a></li>  
 	<?php } ?>
@@ -66,8 +75,12 @@ if (isset($this->channels_categories) && !empty($this->channels_categories)) {
 		$catTitle	 = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
 		$imgAttrAlt   = $this->escape( $c['title'] ).' лого';
 		$imgAttrSrc   = $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] ));
-		$linkAttrHref = $this->url(array('category'=>$catAlias), 'default_channels_category' );
-		?>
+        try {
+            $linkAttrHref = $this->url(array('category'=>$catAlias), 'default_channels_category' );
+        } catch (Exception $exc) {
+            throw new Zend_Exception("Cannot assemble URL", 500, $e);
+        }
+        ?>
 		<li><a href="<?php echo $linkAttrHref ?>" target="_blank">
 			<img src="<?php echo $imgAttrSrc ?>" class="icon" alt="<?php echo $imgAttrAlt ?>" />
 			<?php echo $catTitle ?>
