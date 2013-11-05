@@ -103,7 +103,7 @@ class ContentController extends Rtvg_Controller_Action
      */
     public function tagAction(){
     	
-        die(__FILE__.': '.__LINE__);
+        //die(__FILE__.': '.__LINE__);
         
     }
     
@@ -116,7 +116,7 @@ class ContentController extends Rtvg_Controller_Action
      */
     public function blogCategoryAction(){
     	
-        die(__FILE__.': '.__LINE__);
+        //die(__FILE__.': '.__LINE__);
         
     }
     

@@ -500,7 +500,7 @@ class ListingsController extends Rtvg_Controller_Action
             
             if (empty($list[0]) && empty($similarBcs)) {
                 $this->view->assign('hide_sidebar', 'right');
-                return $this->render('program-not-found');
+                return $this->render('broadcast-not-found');
             }
             
             $this->bcModel->addHit( $list[0]['hash'] );
