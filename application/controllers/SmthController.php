@@ -48,7 +48,7 @@ class SmthController extends Rtvg_Controller_Action
     {
         if ($this->getRequest()->isXmlHttpRequest()) {
             $this->getResponse()->setHeader( 'Content-type', 'application/javascript' );
-            $js = file_get_contents( 'file:///'. APPLICATION_PATH. '/../public/js/ss/wizard/rollin.js');
+            $js = file_get_contents( 'file:///'. realpath(APPLICATION_PATH. '/../public/js/ss/wizard/rollin.js') );
             $script = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( $js ) : $js ;
 	        $this->view->assign( 'script', $script );
 	        $this->render( 'script' );
@@ -64,7 +64,7 @@ class SmthController extends Rtvg_Controller_Action
     {
         if ($this->getRequest()->isXmlHttpRequest()) {
             $this->getResponse()->setHeader( 'Content-type', 'application/javascript' );
-            $js = file_get_contents( 'file:///'. APPLICATION_PATH. '/../public/js/ss/wizard/vk.js');
+            $js = file_get_contents( 'file:///'. realpath(APPLICATION_PATH. '/../public/js/ss/wizard/vk.js') );
             $script = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( $js ) : $js ;
 	        $this->view->assign( 'script', $script );
 	        $this->render( 'script' );
@@ -92,7 +92,7 @@ class SmthController extends Rtvg_Controller_Action
         		$file = (int)mt_rand(0, count($files)-1);
         	}
         	
-        	$js = file_get_contents( 'file:///'. APPLICATION_PATH. '/../public/'.$files[$file]);
+        	$js = file_get_contents( 'file:///'. realpath(APPLICATION_PATH. '/../public/'.$files[$file]) );
         	$script = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( $js ) : $js ;
        		$this->view->assign( 'script', $script );
         	$this->render( 'script' );

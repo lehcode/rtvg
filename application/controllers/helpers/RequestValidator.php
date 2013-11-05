@@ -271,6 +271,9 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 					    	case 'blog':
 					    	    $validators['channel'] = array( new Zend_Validate_Digits() );
 					    	    break;
+					    	
+                            case 'index':
+					    	    break;
 					    	    
 				    	    default:
 				    	    	throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);

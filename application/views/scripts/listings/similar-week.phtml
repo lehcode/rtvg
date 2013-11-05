@@ -18,7 +18,7 @@ $this->headTitle( $this->escape( 'Похожие программы на это�
 <h1>Похожие программы на этой неделе</h1>
 <p>
 <?php 
-if (isset($this->similar)) {
+if (count($this->similar)) {
     foreach ($this->similar as $single) {
         $channelIcon = $this->baseUrl('images/channel_logo/'.$single->channel_icon);
         $date = new Zend_Date($single->start, 'YYYY-MM-dd HH:mm:ss' );

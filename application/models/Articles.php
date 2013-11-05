@@ -68,33 +68,35 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
 	public function frontpageItems($amt=10){
 		
 	    $select = $this->db->select()
-	    	->from( array('A'=>$this->articlesTable->getName()), array( 
+	    	->from( array('ART'=>$this->articlesTable->getName()), array( 
 	    		'id',
 	    		'title',
 	    		'alias',
 	    		'image',
 	    		'metadesc',
+	    		'added',
 	    	))
-	    	->joinLeft( array('CC'=>$this->contentCategoriesTable->getName()), "`A`.`content_cat_id`=`CC`.`id`", array(
+	    	->joinLeft( array('CC'=>$this->contentCategoriesTable->getName()), "`ART`.`content_cat_id`=`CC`.`id`", array(
 	    		'content_cat_id'=>'id',
 	    		'content_cat_title'=>'title',
 	    		'content_cat_alias'=>'alias',
 	    	))
-	    	->joinLeft( array('CHC'=>$this->channelsCategoriesTable->getName()), "`A`.`content_cat_id`=`CHC`.`id`", array(
+	    	->joinLeft( array('CHC'=>$this->channelsCategoriesTable->getName()), "`ART`.`content_cat_id`=`CHC`.`id`", array(
 	    		'channel_cat_id'=>'id',
 	    		'channel_cat_title'=>'title',
 	    		'channel_cat_alias'=>'alias',
 	    	))
-	    	->joinLeft( array('PC'=>$this->channelsCategoriesTable->getName()), "`A`.`bc_cat_id`=`PC`.`id`", array(
+	    	->joinLeft( array('PC'=>$this->channelsCategoriesTable->getName()), "`ART`.`bc_cat_id`=`PC`.`id`", array(
 	    		'bc_cat_id'=>'id',
 	    		'bc_cat_title'=>'title',
 	    		'bc_cat_alias'=>'alias',
 	    	))
-	    	->where( "`A`.`active` = TRUE AND `A`.`publish_down`<'".Zend_Date::now()->toString('YYYY-MM-dd')."'")
-	    	->order( "A.publish_up DESC" )
+	    	->where("`ART`.`active` = TRUE")
+            ->where("`ART`.`publish_down` IS NULL OR `ART`.`publish_down` < '".Zend_Date::now()->toString('YYYY-MM-dd')."'")
+	    	->order("ART.publish_up DESC" )
 	    	->limit( $amt );
 	    
-	    $result = $this->db->fetchAll($select);
+        $result = $this->db->fetchAll($select);
 	    
         if (!count($result)){
 	        return array();
@@ -105,9 +107,7 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
             $result[$k]['content_cat_id'] = (int)$item['content_cat_id'];
             $result[$k]['bc_cat_id'] = (int)$item['bc_cat_id'];
             $result[$k]['channel_cat_id'] = (int)$item['channel_cat_id'];
-            //$result[$k]['date_added']   = new Zend_Date( $item['date_added'], 'YYYY-MM-dd' );
-            //$result[$k]['publish_up']   = new Zend_Date( $item['publish_up'], 'YYYY-MM-dd' );
-            //$result[$k]['publish_down'] = new Zend_Date( $item['publish_down'], 'YYYY-MM-dd' );
+            $result[$k]['added']   = new Zend_Date( $item['added'], 'YYYY-MM-dd' );
 	    }
 	    
 	    return $result;
@@ -120,7 +120,7 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
 	public function singleItem( $articleAlias ){
 		
 	    $select = $this->db->select()
-	    	->from( array('a'=>$this->articlesTable->getName()), array(
+	    	->from( array('ART'=>$this->articlesTable->getName()), array(
 	    		'id',
 	    		'title',
 	    		'alias',
@@ -128,36 +128,47 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
 	    		'body',
 	    		'tags',
 	    		'metadesc',
-				'hits',
-				'is_ref',
-				'is_paid',
-				'is_cpa',
 	    	))
-	    	->joinLeft(array('cc'=>$this->contentCategoriesTable->getName()), "`a`.`content_cat`=`cc`.`id`", array(
+	    	->join(array('CONTCAT'=>$this->contentCategoriesTable->getName()), "`ART`.`content_cat_id`=`CONTCAT`.`id`", array(
 	    		'content_cat_id'=>'id',
 	    		'content_cat_title'=>'title',
 	    		'content_cat_alias'=>'alias',
 	    	))
-	    	->joinLeft(array('chc'=>$this->channelsCategoriesTable->getName()), "`a`.`channel_cat`=`chc`.`id`", array(
+	    	->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`ART`.`channel_cat_id`=`CHCAT`.`id`", array(
 	    		'channel_cat_id'=>'id',
 	    		'channel_cat_title'=>'title',
 	    		'channel_cat_alias'=>'alias',
 	    	))
-	    	->joinLeft(array('pc'=>$this->programsCategoriesTable->getName()), "`a`.`prog_cat`=`pc`.`id`", array(
-	    		'program_cat_id'=>'id',
-	    		'program_cat_title'=>'title',
-	    		'program_cat_alias'=>'alias',
+	    	->join(array('BCCAT'=>$this->programsCategoriesTable->getName()), "`ART`.`bc_cat_id`=`BCCAT`.`id`", array(
+	    		'bc_cat_id'=>'id',
+	    		'bc_cat_title'=>'title',
+	    		'bc_cat_alias'=>'alias',
 	    	))
-	    	->where("`a`.`published`='1' AND `a`.`publish_down`<'".Zend_Date::now()->toString('YYYY-MM-dd')."' AND `a`.`alias`='$articleAlias' ")
-	    	->limit( 1 );
-
-		$result = $this->db->fetchAll($select);
+            ->joinLeft(array('RATING'=>$this->articlesRatingTable->getName()), "`ART`.`id` = `RATING`.`article`", array(
+                'hits',
+                'rating'
+            ))
+	    	->where("`ART`.`active` = TRUE")
+            ->where("`ART`.`publish_down` > '".Zend_Date::now()->toString('YYYY-MM-dd')."' OR `ART`.`publish_down` IS NULL")
+            ->where("`ART`.`alias` = '$articleAlias'")
+	    	->limit(1)
+        ;
+        
+        $result = $this->db->fetchAll($select);
 	     
 	    if (!count($result)){
-	    	return false;
+	    	return array();
 	    }
 	    
 	    foreach ($result as $k=>$item){
+	    	$result[$k]['id'] = (int)$item['id'];
+	    	$result[$k]['hits'] = (int)$item['hits'];
+	    	$result[$k]['is_ref'] = (bool)$item['is_ref'];
+	    	$result[$k]['is_paid'] = (bool)$item['is_paid'];
+	    	$result[$k]['is_cpa'] = (bool)$item['is_cpa'];
+	    	$result[$k]['content_cat_id'] = (int)$item['content_cat_id'];
+	    	$result[$k]['channel_cat_id'] = (int)$item['channel_cat_id'];
+	    	$result[$k]['bc_cat_id'] = (int)$item['bc_cat_id'];
 	    	$result[$k]['date_added']   = new Zend_Date( $item['date_added'], 'YYYY-MM-dd' );
 	    	$result[$k]['publish_up']   = new Zend_Date( $item['publish_up'], 'YYYY-MM-dd' );
 	    	$result[$k]['publish_down'] = new Zend_Date( $item['publish_down'], 'YYYY-MM-dd' );
@@ -176,7 +187,7 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
 	public function relatedItems( $item=null, $type='article' ){
 		
 	    if (!$item || empty($item) || !is_array($item)){
-	        throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM );
+	        throw new Zend_Exception( "Parent article for related items is missing" );
 	    }
 	    
 	    switch ($type){
@@ -208,21 +219,39 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
 	 */
 	private function articleRelatedItems( $article, $amt=4 ){
 		
-		return $this->articlesTable->fetchAll(array(
-			"`a`.`content_cat`='".$article['content_cat_id']."'",
-			"`a`.`id` != '".(int)$article['id']."'"
-		), "a.publish_up DESC", $amt );
-	    
+        $select = $this->db->select()
+            ->from(array('ART'=>$this->articlesTable->getName()))
+            ->join(array('CONTCAT'=>$this->contentCategoriesTable->getName()), "`ART`.`content_cat_id` = `CONTCAT`.`id`", array(
+                'content_cat_alias'=>'alias'
+            ))
+            ->where("`ART`.`content_cat_id`= ".(int)$article['content_cat_id'])
+            ->where("`ART`.`id` != ".(int)$article['id'])
+            ->order("publish_up DESC")
+            ->limit((int)$amt);
+        
+        return $this->db->fetchAll($select);
 	}
 	
 	/**
-	 * All articles categories list
+	 * Complete list of categories of articles
 	 */
 	public function getCategories(){
 		
-	    return $this->contentCategoriesTable->fetchAll()->toArray();
-	    
+	    $result = $this->contentCategoriesTable->fetchAll()->toArray();
+        foreach ($result as $k=>$val){
+            $result[$k]['id'] = $val['id'];
+        }
+        return $result;
+        
 	}
+    
+    public function randomCategory(){
+        
+        $cats = $this->getCategories();
+        $idx = array_rand($cats, 1);
+        return $cats[$idx];
+        
+    }
 	
 	/**
 	 * Fetch articles for ListingsController::day-listing()
@@ -262,5 +291,55 @@ class Xmltv_Model_Articles extends Xmltv_Model_Abstract
         
         return $result;
 	}
+    
+    /**
+     * Fetch list of articles belonging to particular category
+     * 
+     * @param int $cat_id
+     * @param int $amt
+     */
+    public function categoryItems($cat_id=null, $amt=5){
+        
+        if (!$cat_id || !is_int($cat_id)){
+            
+        }
+        
+        $select = $this->db->select()
+            ->from(array('ART'=>$this->articlesTable->getName()), array(
+                'id',
+                'title',
+                'alias',
+                'intro',
+                'body',
+                'metadesc',
+                'tags'=>'LOWER(ART.tags)',
+                'added',
+                'author',
+            ))
+            ->join(array('CONTCAT'=>$this->contentCategoriesTable->getName()), "`ART`.`content_cat_id` = `CONTCAT`.`id`", array(
+                'content_cat_id'=>'id',
+                'content_cat_title'=>'title',
+                'content_cat_alias'=>'alias',
+            ))
+            ->where("ART.active = TRUE")
+            ->where("ART.publish_up <= '".Zend_Date::now()->toString("YYYY-MM-dd")."'")
+            ->where("ART.publish_down > '".Zend_Date::now()->toString("YYYY-MM-dd")."' OR ART.publish_down IS NULL")
+            ->where("ART.content_cat_id = " . (int)$cat_id)
+            ->limit((int)$amt);
+        ;
+        
+        $result = $this->db->fetchAll($select);
+        
+        foreach ($result as $k=>$item){
+            $result[$k]['id'] = (int)$item['id'];
+            $result[$k]['content_cat_id'] = (int)$item['content_cat_id'];
+            $result[$k]['added'] = new Zend_Date($item['added'], "YYYY-MM-dd");
+        }
+        
+        return $result;
+        
+    }
+    
+    
 	
 }

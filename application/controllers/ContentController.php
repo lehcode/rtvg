@@ -62,13 +62,16 @@ class ContentController extends Rtvg_Controller_Action
      */
     public function articleAction(){
     	
+        
+        
         parent::validateRequest();
         
         $articleAlias = $this->input->getEscaped('article_alias');
-        $content_categoryAlias = $this->input->getEscaped('content_cat');
+        
         if (!$articleAlias || is_numeric($articleAlias) || !is_string($articleAlias)){
-            throw new Exception( Rtvg_Message::ERR_WRONG_PARAM );
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM );
         }
+        
         // Fetch articles
         $articles = $this->articlesModel->singleItem( $articleAlias );
         $article  = $articles[0];
@@ -77,7 +80,7 @@ class ContentController extends Rtvg_Controller_Action
         // Article tags
         $tags = array();
         $trim = new Zend_Filter_StringTrim();
-        foreach ( explode(',', $article['tags']) as $tag ) {
+        foreach ( explode(',', $article['tags']) as $tag ){
         	$tags[] = $trim->filter( $tag );
         }
         $this->view->assign('tags', $tags);
@@ -88,23 +91,10 @@ class ContentController extends Rtvg_Controller_Action
         	$kw[] = $this->view->escape( Xmltv_String::strtolower( trim( $tag )));
         }
         $this->view->headMeta()->setName( 'keywords', implode(',',$kw) );
-        // META descrption
-        $this->view->headMeta()->setName( 'description', $article['metadesc'] );
-        // Назначение pageclass
-        $this->view->assign('hide_sidebar', 'left');
-        // Название страницы
-        $this->view->headTitle()->append( $article['title'] );
-        // OpenGraph
-        $this->view->doctype( 'XHTML1_RDFA' );
-        $this->view->assign('ogp_ns', 'http://ogp.me/ns/article');
-        $this->view->headMeta()->setName( 'og:type', 'article' );
-        $this->view->headMeta()->setName( 'article:title', $article['title'] );
-        $this->view->headMeta()->setName( 'article:published_time', $article['publish_up']->toString('YYYY-MM-dd'));
-        $this->view->headMeta()->setName('article:section', $article['content_cat_title']);
-        $this->view->headMeta()->setName('article:tag', Xmltv_String::strtolower( $article['tags']));
         
         // Fetch related articles
-        $this->view->assign('related_articles', $this->articlesModel->relatedItems( $article, 'article' ));
+        $rel = $this->articlesModel->relatedItems( $article, 'article' );
+        $this->view->assign('related_articles', $rel);
         
     }
     
@@ -150,5 +140,9 @@ class ContentController extends Rtvg_Controller_Action
         
         $this->view->assign( 'submenu', $pages );
         
+    }
+    
+    public function indexAction(){
+        $this->_forward('blog');
     }
 }

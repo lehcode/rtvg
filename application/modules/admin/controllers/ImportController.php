@@ -252,7 +252,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		$programs = $xml->getElementsByTagName('programme');
 		$broadcasts = new Admin_Model_Broadcasts();
 		$eventsModel = new Xmltv_Model_Event();
-		$i=0; //for debug
 		foreach ($programs as $node){
 			
 			$bc  = new stdClass();
@@ -319,8 +318,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
                 $bc->country = 'na';
             }
             
-            
-			
 			// Alias
 			$bc->alias = $broadcasts->makeAlias( $bc->title );
 			

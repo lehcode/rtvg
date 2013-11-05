@@ -125,12 +125,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $front = $this->bootstrap( "frontController" )->frontController;
 		$modules = $front->getControllerDirectory();
 		$default = $front->getDefaultModule();
-		foreach (array_keys( $modules ) as $module) {
-			if( $module === $default ) continue;
-			$moduleloader = new Zend_Application_Module_Autoloader( array(
-				'namespace'=>ucfirst( $module ),
-				'basePath'=>$front->getModuleDirectory( $module )) 
-			);
+        
+        foreach (array_keys( $modules ) as $module) {
+			if( $module !== $default ) {
+                $moduleloader = new Zend_Application_Module_Autoloader( array(
+                    'namespace'=>ucfirst( $module ),
+                    'basePath'=>$front->getModuleDirectory( $module )) 
+                );
+            }
 		}
         return $moduleloader;
 	}

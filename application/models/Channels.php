@@ -157,15 +157,16 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'video_quality',
 				'audio',
 			))
-			->where( "`CH`.`alias` LIKE '$alias'")
+			->where( "`CH`.`alias` = '$alias'")
 			->where( "`CH`.`published` = TRUE")
 			->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+				'category_id'=>'id',
 				'category_title'=>'title',
-				'category_alias'=>'LOWER(`CHCAT`.`alias`)',
+				'category_alias'=>'alias',
 				'category_image'=>'image')
-			);
+        );
 	    
-	    $result = $this->db->fetchRow( $select, null, Zend_Db::FETCH_ASSOC );
+        $result = $this->db->fetchRow( $select, null, Zend_Db::FETCH_ASSOC );
 		
 		if ($result){
 			$result['adult'] = (bool)$result['adult'];

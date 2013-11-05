@@ -56,7 +56,8 @@ class ListingsController extends Rtvg_Controller_Action
         if (($date = $this->_getParam('date', null))===null){
             $date = $this->bcModel->listingDate();
         }
-        return $this->_forward('day-listing', null, null, array(
+        
+        $this->_forward('day-listing', null, null, array(
             'date'=>$date,
             'channel'=>$this->_getParam('channel')
         ));
@@ -79,6 +80,7 @@ class ListingsController extends Rtvg_Controller_Action
             ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
         
         $channel = $this->channelInfo($this->_getParam('channel'));
+        
         if (!isset($channel['id']) || empty($channel['id'])){
             throw new Zend_Exception("Channel not found.");
         }
@@ -534,20 +536,18 @@ class ListingsController extends Rtvg_Controller_Action
         
         if ( parent::validateRequest( array('programsCategories'=>$cats))){
             
-            $categoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
-            $cat = $this->input->getEscaped('category');
-            $category = $categoriesTable->fetchRow("`alias`='$cat'")->toArray();
+            $category = $this->bcModel->getCategoryByAlias( $this->input->getEscaped('category') );
             $this->view->assign('category', $category);
             $categoryId = $category['id'];
             $now = Zend_Date::now();
             
-            /*
-             * #####################################################################
-             * Данные для модуля самых популярных программ
-             * #####################################################################
-             */
+            //Данные для модуля самых популярных программ
             $top = $this->bcModel->topBroadcasts();
             $this->view->assign('bc_top', $top);
+            
+            //Данные для модуля категорий каналов
+            $cats = $this->getChannelsCategories();
+            $this->view->assign('channels_cats', $cats);
             
             switch ($this->input->getEscaped('timespan')){
                     
@@ -573,9 +573,7 @@ class ListingsController extends Rtvg_Controller_Action
                     $this->view->assign( 'weekEnd', $weekEnd);
                     $this->view->assign( 'list', $list);
                     $this->view->assign( 'pageclass', 'category-week');
-                    $this->render( 'category-week');
-                    
-                    break;
+                    return $this->render( 'category-week');
     
                 case 'сегодня':
                     
@@ -591,26 +589,12 @@ class ListingsController extends Rtvg_Controller_Action
                         $list = $this->bcModel->categoryDay( $categoryId, $now);
                     }
                     
-                    
                     $this->view->assign('list', $list);
                     $this->view->assign('pageclass', 'category-day');
                     $this->view->assign('today', $now);
+                    return $this->render('category-day');
                     
-                    $this->render('category-day');
-                    
-                    break;
             }
-            
-            /*
-             * #####################################################################
-             * Данные для модуля категорий каналов
-             * #####################################################################
-             */
-            $cats = $this->getChannelsCategories();
-            $this->view->assign('channels_cats', $cats);
-            
-                
-            
     
         } else {
             $this->_redirect( $this->view->url(array(), 'default_error_missing-page'), array('exit'=>true));
