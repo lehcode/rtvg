@@ -58,9 +58,9 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertNotRedirect();
         
         // Frontpage listing
-        $channelsAmt = (int)Zend_Registry::get('site_config')->top->broadcasts->get('amount');
+        $channelsAmt = (int)Zend_Registry::get('site_config')->frontend->frontpage->channels;
         $this->assertNotEmpty($channelsAmt);
-        $top = $this->_bcModel->topBroadcasts($channelsAmt);
+        $top = $this->_channelsModel->topChannels($channelsAmt);
         $this->assertNotEmpty($top);
         $list = $this->_bcModel->frontpageListing($top);
         $this->assertNotEmpty($list);
