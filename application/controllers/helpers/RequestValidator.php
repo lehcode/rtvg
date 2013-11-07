@@ -93,7 +93,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 									$validators['c'] = array( new Zend_Validate_Regex('/^.+$/'));
 								}
 								
-								if (!$this->getRequest()->isXmlHttpRequest()){
+								if (!$this->getRequest()->isXmlHttpRequest() && APPLICATION_ENV=='production'){
 									throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500 );
 								}
 								
