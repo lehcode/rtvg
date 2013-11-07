@@ -10,12 +10,17 @@
 $pageClass   = isset($this->pageclass) && !empty($this->pageclass) ? ' '.(string)$this->pageclass : '' ;
 $isFrontpage = trim($pageClass)=='frontpage' ? true  : false ;
 
+$this->right_sidebar_width = 3;
 $this->maincontent_width = 7;
+$this->left_sidebar_width = 2;
+
 if ($this->hide_sidebar == 'left'){
+	$this->right_sidebar_width = 4;
 	$this->maincontent_width = 8;
 }
 if ($this->hide_sidebar=='right'){
 	$this->maincontent_width = 10;
+	$this->left_sidebar_width = 2;
 }
 
 
@@ -28,13 +33,12 @@ $this->jQuery()
 
 $this->headScript()
 	->appendFile( 'http://yandex.st/share/share.js' )
-	->appendFile( '//vk.com/js/api/openapi.js?75' )
+	//->appendFile( '//vk.com/js/api/openapi.js?75' )
 	->appendFile( "//vk.com/js/api/openapi.js?101" );
 
-if ($this->vk_group_init === true){
-    $this->headScript()
-    	->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, width: "300", height: "200" }, 27716041);');
-}
+$this->headScript()
+    ->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, height: "260" }, 27716041);');
+
 
 //#### Header ####
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array(
@@ -57,21 +61,15 @@ if ($pageClass=='show-video'){
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
 	'bc_top'=>$this->bc_top,
 	'channels_categories'=>$this->channels_cats,
-	//'channel'=>$this->channel,
-	'announces'=>$this->announces,
-	'show_announces'=>$this->show_announces,
-	'bc_top'=>$this->bc_top,
+	'spans'=>$this->left_sidebar_width,
 )));
 
-/*
- * #### Right Sidebar ####
- */
-if ($this->current_program) $sidebarConf['program'] = $this->current_program;
+// #### Right Sidebar ####
 $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', array(
 	'videos'=>$this->sidebar_videos,
 	'channel'=>$this->channel,
-	'gcse'=>$this->gcse,
-	'admitad'=>true,
+	'ads'=>$this->ads,
+	'spans'=>$this->right_sidebar_width,
 )));
 
 /*
@@ -152,9 +150,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 		?>
 		
         <?php if (!($this->hide_sidebar=='left')): ?>
-		<div class="span2" id="col_l">
-			<?= $this->placeholder('sidebar_left'); ?>
-		</div>
+		<?= $this->placeholder('sidebar_left'); ?>
 		<?php endif; ?>
     
 		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
@@ -162,9 +158,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 		</div>	
 		
         <?php if (!($this->hide_sidebar=='right')): ?>
-		<div class="span3" id="col_r">
-			<?= $this->placeholder('sidebar_right'); ?>
-		</div>
+		<?= $this->placeholder('sidebar_right'); ?>
 		<?php endif; ?>
     
 	<?php 
@@ -230,7 +224,9 @@ $(document).ready(function(){
 });
 <?php
 $js = (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
-$this->inlineScript()->appendScript( $js );?>
+$this->inlineScript()->appendScript( $js ); ?>
+
+<?= $this->inlineScript(); ?>
 
 
 </body>

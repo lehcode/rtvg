@@ -293,6 +293,11 @@ class ListingsController extends Rtvg_Controller_Action
         $this->view->assign('featured', $this->getFeaturedChannels());
         
         $this->view->assign('hide_sidebar', 'none');
+        
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $this->view->assign('ads', $adCodes);
+        
     }
     
     /**
@@ -321,11 +326,7 @@ class ListingsController extends Rtvg_Controller_Action
         $this->view->assign( 'channel', $channel );
         
         
-        /*
-         * ######################################################
-         * Decision on listing timespan (date|сегодня|неделя) 
-         * ######################################################
-         */
+        //Decision on listing timespan (date|сегодня|неделя) 
         $dg = $this->input->getEscaped('date');
         if ($dg!='сегодня' && $dg!='неделя') {
             if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $dg)) {
@@ -363,6 +364,10 @@ class ListingsController extends Rtvg_Controller_Action
         
         $current = $broadcasts[0];
         $this->view->assign('current', $current);
+        
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $this->view->assign('ads', $adCodes);
         
         //Список программ
         if (count($broadcasts)>1){
@@ -494,6 +499,10 @@ class ListingsController extends Rtvg_Controller_Action
             }
             $this->view->assign( 'similar', $similarBcs );
             
+            $ads = $this->_helper->getHelper('AdCodes');
+            $adCodes = $ads->direct(1, 'random', 300, 250);
+            $this->view->assign('ads', $adCodes);
+            
             if(empty($list[0]) && !empty($similarBcs)){
                 return $this->render('similar-week');
             }
@@ -548,6 +557,10 @@ class ListingsController extends Rtvg_Controller_Action
             //Данные для модуля категорий каналов
             $cats = $this->getChannelsCategories();
             $this->view->assign('channels_cats', $cats);
+            
+            $ads = $this->_helper->getHelper('AdCodes');
+            $adCodes = $ads->direct(1, 'random', 300, 250);
+            $this->view->assign('ads', $adCodes);
             
             switch ($this->input->getEscaped('timespan')){
                     

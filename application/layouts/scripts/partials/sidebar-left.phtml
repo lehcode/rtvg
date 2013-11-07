@@ -8,89 +8,67 @@
  *
  */
 ?>
+<div class="span<?= $this->spans ?>" id="col_l">
+    
+    <?php 
+    //Top broadcasts block
+    if (isset($this->bc_top) && !empty($this->bc_top)) {
+        ?>
+    <div class="module hidden-phone">
+        <ul id="program-top">
+            <?php 
+            foreach ($this->bc_top as $bc){
+                try {
+                    $hrefUrl = $this->url( array('channel'=>$bc['channel_alias'], 'alias'=>$bc['alias']), 'default_listings_broadcast-week');
+                } catch (Exception $e) {
+                    throw new Zend_Exception("Cannot assemble URL", 500, $e);
+                }
+                    ?>
+            <li>
+                <img src="<?= $this->baseUrl( 'images/channel_logo/'.$bc['channel_icon'] ) ?>" width="16" />
+                <a href="<?= $hrefUrl ?>"
+                    title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
+                        <?php echo $this->truncateString( $bc['title'], 3, 'words') ?>
+                </a>
+            </li>
+            <?php 	
+            }
+            ?>
+        </ul>
+    </div>	
+        <?php 
+    }
+    ?>
 
-<?php 
-//Top broadcasts block
-if (isset($this->bc_top) && !empty($this->bc_top)) {
-	?>
-<div class="module">
-	<ul id="program-top">
-		<?php 
-		foreach ($this->bc_top as $bc){
+    <?php
+    //Channels categories block
+    if (isset($this->channels_categories) && !empty($this->channels_categories)) {
+        ?>
+    <div class="module categories hidden-phone">
+        <ul id="channels_categories" class="nav nav-list">
+        <?php 
+        foreach ($this->channels_categories as $c) {
+            $catAlias	 = $this->escape( $c['alias'] );
+            $catTitle	 = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
+            $imgAttrAlt   = $this->escape( $c['title'] ).' лого';
+            $imgAttrSrc   = $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] ));
             try {
-                $hrefUrl = $this->url( array('channel'=>$bc['channel_alias'], 'alias'=>$bc['alias']), 'default_listings_broadcast-week');
-            } catch (Exception $e) {
+                $linkAttrHref = $this->url(array('category'=>$catAlias), 'default_channels_category' );
+            } catch (Exception $exc) {
                 throw new Zend_Exception("Cannot assemble URL", 500, $e);
             }
-        		?>
-		<li>
-			<img src="<?= $this->baseUrl( 'images/channel_logo/'.$bc['channel_icon'] ) ?>" width="16" />
-			<a href="<?= $hrefUrl ?>"
-				title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>"
-				target="_blank"><?php echo $this->truncateString( $bc['title'], 3, 'words') ?>
-			</a>
-		</li>
-		<?php 	
-		}
-		?>
-	</ul>
-</div>	
-	<?php 
-}
-?>
-
-<?php 
-if (isset($this->announces) && ($this->announces!==false)  && ($this->show_announces===true)) { ?>
-<div class="module">
-	<ul class="nav nav-pills nav-list">
-	<?php 
-    foreach ($this->announces as $article){
-        try {
-            $linkAttrHref = $this->url( array(
-                'category'=>$article['content_cat_alias'],
-                'article_alias'=>$this->escape($article['alias'])), 'default_content_article' );
-        } catch (Exception $exc) {
-            throw new Zend_Exception("Cannot assemble URL", 500, $e);
-        }
-		?>
-		<li><a href="<?php echo $linkAttrHref; ?>" title="<?php printf( "%s новости", $article->content_cat_title ); ?>"><?php echo $article->title; ?></a></li>  
-	<?php } ?>
-	</ul>
-</div>	
-	<?php 
-}
-?>
-
-<?php
-/*
- * Channels categories block
- */ 
-if (isset($this->channels_categories) && !empty($this->channels_categories)) {
-	?>
-<div class="module categories">
-	<ul id="channels_categories" class="nav nav-list">
-	<?php 
-	foreach ($this->channels_categories as $c) {
-		$catAlias	 = $this->escape( $c['alias'] );
-		$catTitle	 = $this->escape( Xmltv_String::ucfirst( Xmltv_String::strtolower( $c['title'] )));
-		$imgAttrAlt   = $this->escape( $c['title'] ).' лого';
-		$imgAttrSrc   = $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] ));
-        try {
-            $linkAttrHref = $this->url(array('category'=>$catAlias), 'default_channels_category' );
-        } catch (Exception $exc) {
-            throw new Zend_Exception("Cannot assemble URL", 500, $e);
+            ?>
+            <li><a href="<?php echo $linkAttrHref ?>" target="_blank">
+                <img src="<?php echo $imgAttrSrc ?>" class="icon" alt="<?php echo $imgAttrAlt ?>" />
+                <?php echo $catTitle ?>
+            </a></li>		
+            <?php 
         }
         ?>
-		<li><a href="<?php echo $linkAttrHref ?>" target="_blank">
-			<img src="<?php echo $imgAttrSrc ?>" class="icon" alt="<?php echo $imgAttrAlt ?>" />
-			<?php echo $catTitle ?>
-		</a></li>		
-		<?php 
-	}
-	?>
-	</ul>
-</div>	
-	<?php 
-}
-?>
+        </ul>
+    </div>	
+        <?php 
+    }
+    ?>
 
+</div>

@@ -80,18 +80,10 @@ class ChannelsController extends Rtvg_Controller_Action
 
         $this->view->assign('channels', $rows);
 
-        /*
-         * ######################################################
-         * Channels categories
-         * ######################################################
-        */
+        //Channels categories
         $this->view->assign('channels_cats', $this->getChannelsCategories());
 
-        /*
-         * #####################################################################
-         * Данные для модуля самых популярных программ
-         * #####################################################################
-         */
+        //Данные для модуля самых популярных программ
         $top = $this->bcModel->topBroadcasts();
         (APPLICATION_ENV=='development') ? Zend_Registry::get('fireLog')->log($top, Zend_Log::INFO) : null ;
         $this->view->assign('top_programs', $top);
@@ -127,7 +119,6 @@ class ChannelsController extends Rtvg_Controller_Action
             $result[$k]['title'] = $row['title'];
             $result[$k]['alias'] = $row['alias'];
         }
-        
         $this->view->assign( 'result', $result );
         
     }
@@ -152,10 +143,9 @@ class ChannelsController extends Rtvg_Controller_Action
                 return;
             }
             
-            if (isset($_GET['RTVG_PROFILE'])){
-                //Zend_Debug::dump($this->cache->enabled);
-                //die(__FILE__.': '.__LINE__);
-            }
+            $ads = $this->_helper->getHelper('AdCodes');
+            $adCodes = $ads->direct(1, 'random', 300, 250);
+            $this->view->assign('ads', $adCodes);
             
             if ($this->cache->enabled){
                 
@@ -165,11 +155,6 @@ class ChannelsController extends Rtvg_Controller_Action
                 $hash = md5('category_'.$catProps['alias']);
                 if (!$rows = $this->cache->load($hash, 'Core', $f)){
                     $rows = $this->channelsModel->categoryChannels($catProps['alias']);
-                    
-                    if (isset($_GET['RTVG_PROFILE'])){
-                        //Zend_Debug::dump($rows);
-                        //die(__FILE__.': '.__LINE__);
-                    }
                     
                     foreach ($rows as $k=>$row) {
                         $rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
@@ -186,18 +171,10 @@ class ChannelsController extends Rtvg_Controller_Action
             
             $this->view->assign('channels', $rows);
             
-            /*
-             * #####################################################################
-             * Данные для модуля самых популярных программ
-             * #####################################################################
-             */
+            //Данные для модуля самых популярных программ
             $this->view->assign('bc_top', $this->bcModel->topBroadcasts());
             
-            /*
-             * ######################################################
-             * Channels categories
-             * ######################################################
-            */
+            //Channels categories
             if ($this->cache->enabled){
                 
                 $this->cache->setLifetime(86400);
@@ -213,7 +190,6 @@ class ChannelsController extends Rtvg_Controller_Action
             }
             
             $this->view->assign('channels_cats', $cats);
-            
             
             $this->render('list');
             
@@ -260,6 +236,10 @@ class ChannelsController extends Rtvg_Controller_Action
             $this->view->assign('days', $schedule);
             
             $this->channelsModel->addHit( $channel['id'] );
+            
+            $ads = $this->_helper->getHelper('AdCodes');
+            $adCodes = $ads->direct(1, 'random', 300, 250);
+            $this->view->assign('ads', $adCodes);
             
         }
         
