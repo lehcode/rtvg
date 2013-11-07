@@ -580,8 +580,7 @@ ul#channels_categories {
 	div.wrap{
 		background-color: @white;
 		border-radius: 12px;
-	    height: 8em;
-	    margin: 0 0 1.5em;
+	    margin: 0 0 0.5em;
 	    padding: 0.5em;
 		-webkit-box-shadow:  0px 0px 2px 2px rgba(150, 150, 150, 0.15);
         box-shadow:  0px 0px 2px 2px rgba(150, 150, 150, 0.15);
@@ -598,6 +597,12 @@ ul#channels_categories {
 		    height: 8em;
 			
 		}
+        
+        &:after{
+            content: "";
+            clear: both;
+            display: block;
+        }
 		
 		img{
 			border: 1px solid @veryDarkGray;
@@ -1199,6 +1204,38 @@ ul#channels_categories {
 	
 }
 
-	
-	
+textarea, input[type="text"]{
+    font-size: 11px;
+}
 
+	
+	
+@media (max-width: 1024px){
+    #maincontent{
+        div.videos{
+            h1{
+                font-size: 24px;
+            }
+            div.related{
+                h3{
+                    a {
+                        font-size: 20px;
+                    }
+                }
+            }
+        }
+        
+    }
+    #col_r {
+        #rumor-ads{
+            p{
+                a{
+                    font-size: 16px;
+                    img {
+                        width: 60px;
+                    }
+                }
+            }
+        }
+    }
+}
