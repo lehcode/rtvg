@@ -939,7 +939,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             ->joinLeft(array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
                     'channel_alias'=>'alias',
             ))
-            ->joinLeft(array('RT'=>$this->channelsRatingsTable->getName()), "`EVT`.`channel`=`RT`.`channel_id`", null)
+            ->joinLeft(array('RT'=>$this->channelsRatingsTable->getName()), "`EVT`.`channel`=`RT`.`channel`", null)
             ->where("`EVT`.`start` >= '".$week_start->toString("YYYY-MM-dd 00:00:00")."'")
             ->where("`EVT`.`start` < '".$week_end->toString("YYYY-MM-dd 23:59:59")."'")
             ->order("EVT.start ASC")

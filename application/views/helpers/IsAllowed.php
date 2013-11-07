@@ -2,13 +2,7 @@
 /**
  * View helper to check if user is alowed to access
  * particular parts of view script output
- * 
- * @version $Id: IsAllowed.php,v 1.3 2013-03-11 13:55:49 developer Exp $
- * @version $Id: IsAllowed.php,v 1.3 2013-03-11 13:55:49 developer Exp $
- * 
  */
-
-
 class Zend_View_Helper_IsAllowed extends Zend_View_Helper_Abstract
 {
     protected $_acl;

@@ -26,6 +26,8 @@ class ChannelsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
             $front->setParam('bootstrap', $this->_application->getBootstrap());
         }
         
+        Zend_Registry::set( 'db_local', $this->_application->getBootstrap()->getResource('multidb')->getDefaultDb() );
+        
         $router = new Xmltv_Plugin_Router();
         $router->setRouter($front->getRouter());
 		$front->setRouter($router->getRouter());
