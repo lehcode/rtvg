@@ -24,12 +24,6 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * @var Zend_Http_UserAgent
 	 */
 	protected $userDevice;
-
-	/**
-	 * User agent properties container
-	 * @var Zend_Http_UserAgent
-	 */
-	protected $userAgent;
 	
 	/**
 	 * Youtube caching
@@ -148,8 +142,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      *
      * @var Zend_Log_Writer_Firebug
      */
-    protected $fireLog;
-	
+    protected $fireLog;	
 	
     /**
 	 * (non-PHPdoc)
@@ -232,6 +225,9 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
 		
         $this->fireLog = new Zend_Log( new Zend_Log_Writer_Firebug() );
+        
+        $device = new Rtvg_UserDevice();
+        $device->getUserAgentString();
 		
 	}
 	
