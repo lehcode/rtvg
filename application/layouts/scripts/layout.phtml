@@ -37,7 +37,7 @@ $this->headScript()
 	->appendFile( "//vk.com/js/api/openapi.js?101" );
 
 if (!$this->is_frontpage){
-$this->headScript()
+$this->inlineScript()
     ->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, height: "260" }, 27716041);');
 }
 
