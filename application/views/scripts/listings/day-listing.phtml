@@ -42,6 +42,22 @@ $this->headStyle()->appendStyle($css);
 	<span class="span2" id="timer">Сейчас<br /><?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
 </div>
 
+<?php 
+if ((int)$this->channel['stream'] > 0){
+$siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; ?>
+
+<iframe scrolling="no" 
+        frameborder="0" 
+        src="http://1ttv.net/iframe.php?site=<?= $siteId ?>&channel=<?= $this->channel['stream'] ?>" 
+        width="640" 
+        height="480" 
+        bgcolor="#FFFFFF" 
+        allowtransparency="true" 
+        allowfullscreen="true" 
+        allowscriptaccess="always">Your browser doesn not support floating frames!</iframe>
+<?php 
+} ?>
+
 <div class="container-fluid top">
 	<?php 
 	if ($this->is_today){
@@ -120,18 +136,16 @@ $this->headStyle()->appendStyle($css);
 	
 	
 	<?php
-	if ($this->is_today) {
 	$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
 	$this->headScript()->appendScript($js);
 	?>
 	<div id="DIV_DA_126314" class="advm"></div>
-	<?php } ?>
 	
 </div>
 
 
 <?php 
-if ($this->is_today) {
+if (count($this->programs) &&  $this->is_today) {
     echo $this->partial( 'listings/partials/programlist.phtml', array( 
 		'items'          => $this->programs, 
 		'channel'        => $this->channel, 
@@ -140,7 +154,8 @@ if ($this->is_today) {
 		'short_link'     => $this->short_link,
     	'listing_date'   => $this->listing_date,
 	)); 
-} else {
+}
+if(count($this->programs) && !$this->is_today) {
     echo $this->partial( 'listings/partials/programtable.phtml', array(
     	'items'        => $this->programs,
     	'channel'      => $this->channel,

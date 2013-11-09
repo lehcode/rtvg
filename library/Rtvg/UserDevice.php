@@ -32,7 +32,7 @@ class Rtvg_UserDevice{
         $wurflConfig->wurflFile($resourcesDir.'/wurfl-2.3.5.zip');
         
         // Set the match mode for the API ('performance' or 'accuracy')
-        $wurflConfig->matchMode('accuracy');
+        $wurflConfig->matchMode('performance');
         
         // Automatically reload the WURFL data if it changes
         $wurflConfig->allowReload(true);
