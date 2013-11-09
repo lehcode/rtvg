@@ -11,9 +11,16 @@ class Xmltv_Model_Abstract
      * @var Zend_Db_Adapter_Pdo_Mysql
      */
     protected $db;
-    protected $dbConf;
-    protected static $tblPfx='';
     
+    /**
+     * @var array
+     */
+    protected $dbConf;
+    
+    /**
+     * @var string
+     */
+    protected static $tblPfx='';
     
     /**
      * Programs descriptions
@@ -108,6 +115,11 @@ class Xmltv_Model_Abstract
      */
     protected $articlesRatingTable;
     
+    /**
+     * @var int
+     */
+    protected $streamId;
+    
     
 	/**
      * Model constructor
@@ -195,6 +207,9 @@ class Xmltv_Model_Abstract
 		return $this->db;
 	}
 	
+    /**
+     * Initialize model tables
+     */
 	protected function initTables(){
 		
 	    $this->bcCategoriesTable = $this->getBcCategoriesTable();
@@ -215,6 +230,11 @@ class Xmltv_Model_Abstract
 	    
 	}
 
+    /**
+     * 
+     * @param array $options
+     * @return Xmltv_Model_Abstract
+     */
 	public function setOptions(array $options) {
 	    
 		$methods = get_class_methods($this);
@@ -233,6 +253,33 @@ class Xmltv_Model_Abstract
      */
     protected function getBcCategoriesTable(){
         return new Xmltv_Model_DbTable_ProgramsCategories();
+    }
+    
+    /**
+     * 
+     * @param int $channel_id
+     * @throws Zend_Exception
+     * @return array
+     */
+    public function getStreamId($channel_id=null){
+        
+        if (!$channel_id){
+            throw new Zend_Exception("Channel ID must be supplied");
+        }
+        if (!is_int($channel_id)){
+            throw new Zend_Exception("Channel ID is not a digit");
+        }
+        
+        $select = $this->db->select()
+            ->from(array('STREAM'=>'rtvg_ref_streams'), 'stream')
+            ->where("`STREAM`.`channel` = ".$channel_id)
+        ;
+        
+        $result = $this->db->fetchOne($select);
+        $this->streamId = (int)$result;
+        return $this->streamId;
+        
+        
     }
     
 }
