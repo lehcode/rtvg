@@ -32,13 +32,13 @@ $this->jQuery()
 	->uiEnable();
 
 $this->headScript()
-	->appendFile( 'http://yandex.st/share/share.js' )
-	//->appendFile( '//vk.com/js/api/openapi.js?75' )
-	->appendFile( "//vk.com/js/api/openapi.js?101" );
+	->appendFile( 'http://yandex.st/share/share.js' );
 
-if (!$this->is_frontpage){
-$this->inlineScript()
-    ->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, height: "260" }, 27716041);');
+if (!$isFrontpage && $this->hide_sidebar != 'right'){
+    $this->inlineScript()
+        ->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, height: "260" }, 27716041);');
+    $this->headScript()
+        ->appendFile( "//vk.com/js/api/openapi.js?101" );
 }
 
 //#### Header ####
