@@ -43,21 +43,7 @@ $this->headStyle()->appendStyle($css);
 	<span id="timer">Сейчас<br /><?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
 </div>
 
-<?php 
-if ((int)$this->channel['stream'] > 0){
-$siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; ?>
 
-<iframe scrolling="no" 
-        frameborder="0" 
-        src="http://1ttv.net/iframe.php?site=<?= $siteId ?>&channel=<?= $this->channel['stream'] ?>" 
-        width="640" 
-        height="480" 
-        bgcolor="#FFFFFF" 
-        allowtransparency="true" 
-        allowfullscreen="true" 
-        allowscriptaccess="always">Your browser doesn not support floating frames!</iframe>
-<?php 
-} ?>
 
 <div class="container-fluid top">
 	<?php 
@@ -125,13 +111,13 @@ $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; ?>
 	
     <?php 
     if ((int)$this->channel['stream'] > 0){
-    $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; ?>
-
+        $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; 
+        ?>
     <iframe scrolling="no" 
             frameborder="0" 
             src="http://1ttv.net/iframe.php?site=<?= $siteId ?>&channel=<?= $this->channel['stream'] ?>" 
-            width="640" 
-            height="480" 
+            width="540" 
+            height="420"
             bgcolor="#FFFFFF" 
             allowtransparency="true" 
             allowfullscreen="true" 
