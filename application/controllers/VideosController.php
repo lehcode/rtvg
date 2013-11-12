@@ -74,7 +74,7 @@ class VideosController extends Rtvg_Controller_Action
 			    $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
 				$f = '/Youtube/ShowVideo/Main';
 				$hash = Rtvg_Cache::getHash( $ytId );
-				
+                
                 if (parent::$videoCache && $this->isAllowed){
 				    
                     // Search in database cache if was not found in file cache
@@ -132,11 +132,11 @@ class VideosController extends Rtvg_Controller_Action
 				 
 			} else {
 			
-				if (($ytEntry = $youtube->fetchVideo( $ytId ))!==false) {
+                if (((bool)$ytEntry = $youtube->fetchVideo( $ytId )) !== false) {
 					$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
 				} else {
+                    $this->view->assign('hide_sidebar', 'right');
 					return $this->render('video-not-found');
-					//return true;
 				}
 			
 			}

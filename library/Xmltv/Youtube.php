@@ -298,11 +298,13 @@ class Xmltv_Youtube {
         
         $params['id'] = base64_decode( strrev($rtvg_id).'=');
         $validators = array( 'id'=>array(
-			new Zend_Validate_Regex('/^[a-z0-9-]+$/i')
+			new Zend_Validate_Regex('/^[a-z0-9-_]+$/i')
 		));
 		$input = new Zend_Filter_Input(array(), $validators, $params);
 		
 		if ($input->isValid('id')!==true){
+            //var_dump(base64_decode( strrev($rtvg_id).'='));
+            //die(__FILE__ . ': ' . __LINE__);
             throw new Zend_Exception("Не могу декодировать ID");
 		}
 		
