@@ -218,8 +218,10 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		
         $this->fireLog = new Zend_Log( new Zend_Log_Writer_Firebug() );
         
-        $device = new Rtvg_UserDevice();
-        $device->getUserAgentString();
+        if (APPLICATION_ENV!=='testing'){
+            $device = new Rtvg_UserDevice();
+            $device->getUserAgentString();
+        }
 		
 	}
 	
