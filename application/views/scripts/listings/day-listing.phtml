@@ -40,12 +40,12 @@ $this->headStyle()->appendStyle($css);
 
 <div>
 	<h1><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
-	<span id="timer">Сейчас<br /><?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
+	<span id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
 </div>
 
 
 
-<div class="container-fluid top">
+<div class="top">
 	<?php 
 	if ($this->is_today){
 		/*
@@ -58,7 +58,7 @@ $this->headStyle()->appendStyle($css);
 			'id'       => 'timezone',
 			'enctype'  => 'application/x-www-form-urlencoded',
 			'label'    => array( 'class' => 'smallheading' ),
-			'html_tag' => array( 'tag'=>'div', 'class'=>'module span1' ),
+			'html_tag' => array( 'tag'=>'div', 'class'=>'module span2' ),
 			'diff'     => $this->timeshift,
 		));
 	}
@@ -104,8 +104,8 @@ $this->headStyle()->appendStyle($css);
 	
 	
 	<?php
-	$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
-	$this->headScript()->appendScript($js);
+	//$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
+	//$this->headScript()->appendScript($js);
 	?>
 	<div id="DIV_DA_126314" class="advm"></div>
 	
@@ -127,7 +127,7 @@ $this->headStyle()->appendStyle($css);
     } ?>
     </div>
     
-</div>
+
 
 
 <?php 

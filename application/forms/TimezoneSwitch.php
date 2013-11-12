@@ -58,7 +58,7 @@ class Xmltv_Form_TimezoneSwitch extends Zend_Form
         }
 		$active = $diff==0 ? 'msk' : $diff ; 
 		$timezone->setValue( $active );
-		$labelText    = $diff==0 ? 'Время(MSK)' : 'Время(MSK '.$diff.')' ;
+		$labelText    = $diff==0 ? 'Время(MSK)' : 'Сдвиг(MSK '.$diff.')' ;
 		$labelClass   = isset( $labelProps['class']) && !empty( $labelProps['class'] ) ? $labelProps['class'] : null ;
 		$labelTag     = isset( $labelProps['tag']) && !empty( $labelProps['tag'] ) ? $labelProps['tag'] : 'div' ;
 		$timezone->setAttribs(array(
