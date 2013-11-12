@@ -301,44 +301,51 @@ li.lastcol:after {
         }
     }
 	
+    #vframe{
+        &:after{ .clearAll }
+    }
+    
+    div.top-position{
+        
+        &:before{ .clearAll }
+        &:after{ .clearAll }
+
+        img.tip{
+            float: left;
+            margin: 0.3em 0.2em 0 0;
+        }
+
+        form{
+            margin-bottom:0;
+            label{
+                cursor: auto;
+                font-size: 0.8em;
+                font-weight: bold;
+                color: @darkGray;
+            }
+            input[type="text"] {
+                font-size: 2em;
+                height: auto;
+                line-height: 2em;
+                width: 68%;
+                margin-bottom: 0;
+            }
+            input[type="submit"]{
+                font-weight: bold;
+                font-size: 1.6em;
+            }
+        }
+
+        div.timeswitch{
+            select{
+                width: 4em;
+            }
+        }
+    }
+    
 }
 
-#maincontent div.top-position{
-	&:before{ .clearAll }
-	&:after{ .clearAll }
-	
-	img.tip{
-		float: left;
-		margin: 0.3em 0.2em 0 0;
-	}
-	
-	form{
-		margin-bottom:0;
-		label{
-			cursor: auto;
-			font-size: 0.8em;
-			font-weight: bold;
-			color: @darkGray;
-		}
-		input[type="text"] {
-			font-size: 2em;
-			height: auto;
-			line-height: 2em;
-			width: 68%;
-			margin-bottom: 0;
-		}
-		input[type="submit"]{
-			font-weight: bold;
-			font-size: 1.6em;
-		}
-	}
-	
-	div.timeswitch{
-		select{
-			width: 4em;
-		}
-	}
-}
+
 
 
 

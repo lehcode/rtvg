@@ -113,7 +113,8 @@ $this->headStyle()->appendStyle($css);
     if ((int)$this->channel['stream'] > 0){
         $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; 
         ?>
-    <iframe scrolling="no" 
+    <div id="vframe">
+        <iframe scrolling="no" 
             frameborder="0" 
             src="http://1ttv.net/iframe.php?site=<?= $siteId ?>&channel=<?= $this->channel['stream'] ?>" 
             width="540" 
@@ -124,6 +125,7 @@ $this->headStyle()->appendStyle($css);
             allowscriptaccess="always">Your browser doesn not support floating frames!</iframe>
     <?php 
     } ?>
+    </div>
     
 </div>
 
