@@ -123,7 +123,6 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 if ($count!=null && $c<$count){
                     if ($prog['end']->compare(Zend_Date::now(), 'YYYY-MM-dd HH:mm') >= 0) {
                         $result[$c] = $this->_updateLoadedValues( $prog );
-                        //$result[$c]['now_showing'] = ($c==0) ? true : false ;
                         $c++;
                     }
                 } elseif($count==null){

@@ -12,6 +12,7 @@ $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
 //$channelCat   = $this->escape( $this->channel['channel_category'] );
 
+$this->headMeta()->setName('title', sprintf ('Канал «%s» онлайн', $channelTitle ));
 $this->headMeta()->setName('description', sprintf ('Передачи сегодня на канале «%s»', $channelTitle ));
 
 $js = "$(function(){
@@ -127,6 +128,22 @@ $this->headStyle()->appendStyle($css);
 	<div id="DIV_DA_126314" class="advm"></div>
 	<?php } ?>
 	
+    <?php 
+    if ((int)$this->channel['stream'] > 0){
+    $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; ?>
+
+    <iframe scrolling="no" 
+            frameborder="0" 
+            src="http://1ttv.net/iframe.php?site=<?= $siteId ?>&channel=<?= $this->channel['stream'] ?>" 
+            width="640" 
+            height="480" 
+            bgcolor="#FFFFFF" 
+            allowtransparency="true" 
+            allowfullscreen="true" 
+            allowscriptaccess="always">Your browser doesn not support floating frames!</iframe>
+    <?php 
+    } ?>
+    
 </div>
 
 

@@ -259,8 +259,8 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			
 			//Process program title and detect some properties
 			$parsed = $broadcasts->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
-			
-			$bc->title = $parsed['title'];
+            
+            $bc->title = $parsed['title'];
 			$bc->sub_title = $parsed['sub_title'];
 			$bc->age_rating = (@$parsed['rating']>0) ? $parsed['rating'] : 0 ;
 			$evt->premiere = (@$parsed['premiere']==1) ? '1' : null ;

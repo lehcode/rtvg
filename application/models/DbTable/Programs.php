@@ -82,7 +82,7 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	 * @param string $date
 	 * @param int $count // optional
 	 */
-	public function fetchDayItems($channel_id=null, $date=null, $count=null) {
+	public function fetchDayItems($channel_id=null, $date=null) {
 		
 		if (!$channel_id || !$date) {
 			throw new Zend_Db_Table_Exception( Rtvg_Message::ERR_MISSING_PARAM );
@@ -127,14 +127,14 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'bc_country_name'=>'name',
                 'bc_country_iso'=>'iso',
             ))
-            ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd")." 00:00:00"))
-            ->where("`EVT`.`start` < ".$this->_db->quote(Zend_Date::now()->addDay(1)->toString("YYYY-MM-dd")." 00:00"))
+            ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd")." 00:00:00") )
+            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->addDay(2)->toString("YYYY-MM-dd")." 00:00") )
             ->where( "`EVT`.`channel` = $channel_id")
             ->where( "`CH`.`published` = TRUE")
             ->group( "EVT.hash")
             ->order( "EVT.start ASC")
         ;
-
+        
         $result = $this->_db->fetchAssoc($select->assemble());
 		
         foreach ($result as $k=>$row) {

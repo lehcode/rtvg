@@ -15,6 +15,8 @@ $this->headScript()->appendScript("$(document).ready(function(){ $('#rumor-ads')
 
 <div class="span<?= $this->spans ?>" id="col_r">
     
+    <h3 class="label">Видео <?= $channelTitle ?></h3>
+    
     <?php
     if (count($this->videos) && $this->videos !== false) {
         

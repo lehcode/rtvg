@@ -14,13 +14,13 @@ $channelAlias = $this->escape( $this->channel['alias'] );
 
 
 //META title
-$this->headMeta()->setName('title', sprintf ('Программа телеканала «%s» на сегодня, %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
+$this->headMeta()->setName('title', sprintf ('Канал «%s» онлайн, %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
 //Browser window title
-$this->headTitle( sprintf ('Телепрограмма «%s» на сегодня', $channelTitle ) );
+$this->headTitle( sprintf ('Канал «%s» сегодня. Телепрограмма и онлайн-вещание', $channelTitle ) );
 
 
 //Generate keywords
-$kw = array($channelTitle, $this->listing_date->toString('d MMMM YYYY'));
+$kw = array($channelTitle, $this->listing_date->toString('d MMMM YYYY'), 'смотреть онлайн');
 if (!empty($this->programs)) {
 	foreach ($this->programs as $p) {
 		if (count($kw)<5) {
