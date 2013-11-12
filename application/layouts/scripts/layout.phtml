@@ -44,7 +44,7 @@ if (!$isFrontpage && $this->hide_sidebar != 'right'){
 //#### Header ####
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array(
 		'pageclass'=>$this->pageclass,
-		'nav_html'=>$this->navigation()->menu()->renderMenu( Zend_Registry::get('FpMenu'), array('ulClass' => 'nav')),
+		'nav_data'=>$this->nav_data['topnav'],
 		'is_frontpage'=>$this->is_frontpage,
 )));
 
@@ -115,72 +115,63 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 } ?>
 </head>
 <body>
-<div class="row-fluid" id="header">
-<?php if (APPLICATION_ENV=='production') : ?>
-<!-- Rating@Mail.ru counter -->
+
+<?php if (APPLICATION_ENV=='production') : //Rating@Mail.ru counter ?>
 <div style="position:absolute;left:-10000px;"><img src="http://d8.c6.b3.a2.top.mail.ru/counter?id=2320499" style="border:0;" height="1" width="1" alt="Рейтинг@Mail.ru" /></div>
-<!-- //Rating@Mail.ru counter -->
 <?php endif; ?>
 
-<?= $this->placeholder('header'); ?>
-</div>
-	
-<div id="content" class="row-fluid<?= $pageClass; ?>">
-	<?php 
-	if (count($this->messages)) {
-		foreach ($this->messages as $text) {
-			if (is_array($text)) {
-				foreach ($text as $string) {
-					echo $this->showMessage( $string );
-				}
-			} else {
-				echo $this->showMessage( $text );
-			}
-		}
-	}
-	?>
-	<?php 
-	if ($isFrontpage) {
-		?>
-	<div class="span12" id="maincontent">
-		<?= $this->placeholder('maincontent'); 
-		?>
-	</div>
-		<?php 
-	} else {
-		?>
-		
-        <?php if (!($this->hide_sidebar=='left')): ?>
-		<?= $this->placeholder('sidebar_left'); ?>
-		<?php endif; ?>
+<div class="container">
     
-		<div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
-			<?= $this->placeholder('maincontent'); ?>
-		</div>	
-		
-        <?php if (!($this->hide_sidebar=='right')): ?>
-		<?= $this->placeholder('sidebar_right'); ?>
-		<?php endif; ?>
-    
-	<?php 
-	} ?>
-	
-</div>
+    <?= $this->placeholder('header'); ?>
 
-<?php 
-//Featured channels links
-/*
-if ($pageClass=='show-video'){
-	$fChannels = $this->placeholder('featured_channels');
-	if (!empty($fChannels)) { ?>
-	<div id="featuredchannels" class="row-fluid">
-		<?php echo $fChannels; ?>
-	</div>
-	<?php 
-	} 
-} */ ?>
-<div class="row-fluid" id="footer">
-	<?= $this->placeholder('footer'); ?>
+    <div id="content" class="row-fluid <?= $pageClass; ?>">
+        
+        <?php 
+        if (count($this->messages)) {
+            foreach ($this->messages as $text) {
+                if (is_array($text)) {
+                    foreach ($text as $string) {
+                        echo $this->showMessage( $string );
+                    }
+                } else {
+                    echo $this->showMessage( $text );
+                }
+            }
+        }
+        ?>
+        
+        <?php 
+        if ($isFrontpage) {
+            ?>
+        <div class="span12" id="maincontent">
+            <?= $this->placeholder('maincontent'); 
+            ?>
+        </div>
+            <?php 
+        } else {
+            ?>
+
+            <?php if (!($this->hide_sidebar=='left')): ?>
+            <?= $this->placeholder('sidebar_left'); ?>
+            <?php endif; ?>
+
+            <div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
+                <?= $this->placeholder('maincontent'); ?>
+            </div>	
+
+            <?php if (!($this->hide_sidebar=='right')): ?>
+            <?= $this->placeholder('sidebar_right'); ?>
+            <?php endif; ?>
+
+        <?php 
+        } ?>
+
+    </div>
+
+    <div class="row" id="footer">
+        <?= $this->placeholder('footer'); ?>
+    </div>
+    
 </div>
 
 <?php if (APPLICATION_ENV=='production') { 
@@ -216,8 +207,10 @@ _gaq.push(['_trackPageview']);
 <script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <?php } ?>
 
+<?php /*
 <script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314"></script>
-<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script>
+*/ ?>
+<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script> 
 
 <?php ob_start(); ?>
 $(document).ready(function(){

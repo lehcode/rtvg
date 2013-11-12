@@ -170,12 +170,11 @@ class ListingsController extends Rtvg_Controller_Action
                     }
                 }
             }
-
-            //Видео для списка программ
-            if (count($list) && ($list!==false) && $listingDate->isToday()) {
-
+            
+            if ($listingDate->isToday()) {
+                
                 $listingVideos = array();
-
+            
                 // Запрос в файловый кэш
                 if ($this->cache->enabled){
 
@@ -229,8 +228,9 @@ class ListingsController extends Rtvg_Controller_Action
                     // запрос к Yoututbe
                     $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
                 }
+                $this->view->assign('listing_videos', $listingVideos);
+                
             }
-            $this->view->assign('listing_videos', $listingVideos);
             
         }
         

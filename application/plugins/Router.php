@@ -51,7 +51,8 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             'action'=>'index'))
         );
         
-        $this->_router->addRoute( 'default_frontpage_single-channel', new Zend_Controller_Router_Route( 'frontpage/single-channel/format/html/id/:id',  array(
+        $this->_router->addRoute( 'default_frontpage_single-channel', 
+            new Zend_Controller_Router_Route( 'frontpage/single-channel/format/html/id/:id',  array(
             'module'=>'default',
             'controller'=>'frontpage',
             'action'=>'single-channel'),
@@ -61,10 +62,21 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             ))
         );
         
-        $this->_router->addRoute( 'default_channels_list', new Zend_Controller_Router_Route( 'телепрограмма', array(
-            'module'=>'default',
-            'controller'=>'channels',
-            'action'=>'list'))
+        $this->_router->addRoute( 'default_channels_list', new Zend_Controller_Router_Route( 'телепрограмма', 
+            array(
+                'module'=>'default',
+                'controller'=>'channels',
+                'action'=>'list'))
+        );
+        
+        $this->_router->addRoute( 'default_channels_typeahead', new Zend_Controller_Router_Route( 'channels/typeahead/format/json', 
+            array(
+                'module'=>'default',
+                'controller'=>'channels',
+                'action'=>'typeahead',
+                ),
+            array('format'=>'json')
+            )
         );
         
         $this->_router->addRoute( 'default_channels_index', new Zend_Controller_Router_Route( 'каналы/', array(
@@ -107,6 +119,13 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             'module'=>'default',
             'controller'=>'channels',
             'action'=>'category')));
+        
+        $this->_router->addRoute( 'default_channels_stream', 
+        new Zend_Controller_Router_Route( 'онлайн/:channel',
+        array(
+            'module'=>'default',
+            'controller'=>'channels',
+            'action'=>'stream')));
             
             
         $this->_router->addRoute( 'default_listings_broadcast-week', 

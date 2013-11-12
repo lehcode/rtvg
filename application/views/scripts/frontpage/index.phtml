@@ -44,7 +44,7 @@ $this->headScript()->appendScript( $js );
 
 <div class="page">
 	
-	<div id="news" class="row-fluid">
+	<div id="news" class="row">
 		<?php 
 		foreach ($this->articles as $article){
             
@@ -63,8 +63,7 @@ $this->headScript()->appendScript( $js );
 		    <div class="span<?= $w; ?> announce">
 		    	<img width="42" height="42" src="/images/icons/article-image-default.png" border="0" />
 		    	<a href="<?= $linkAttrHref; ?>"
-		    		title="<?= $article['metadesc']; ?>"
-		    		target="_blank">
+		    		title="<?= $article['metadesc']; ?>">
 		    		<?php echo $this->escape($article['title']); ?>
 		    	</a>
 		    </div>
@@ -95,15 +94,10 @@ $this->headScript()->appendScript( $js );
 		));
 	echo $dropdown;
 	?>
-		<?php /* <h1><a href="<?php echo $this->url(array(), 'default_channels_list'); ?>">Все каналы</a></h1> */ ?>
 	</div>
 	
-	<div id="gcse-results" style="width: 640px; margin: 0 auto;">
-		<gcse:searchbox></gcse:searchbox>
-		<gcse:searchresults></gcse:searchresults>
-	</div>	
 	
-	<div id="listing">
+    <div id="listing">
 	<?php 
 	$max=4;
 	foreach ($this->list as $channel){
@@ -121,7 +115,7 @@ $this->headScript()->appendScript( $js );
 	    ?>
 	    <div class="channel" id="<?= $channelHash ?>">
 	    	<h3 class="title"><a href="<?= $weekLinkAttrHref ?>" target="_blank" title="<?= $weekLinkAttrTitle ?>"><?= $weekLinkText; ?></a></h3>
-	    	<h2 class="title"><a href="<?= $dayLinkAttrHref ?>" target="_blank" title="<?= $dayLinkAttrTitle ?>"><?= $dayLinkText ?></a></h2>
+	    	<h2 class="title"><a href="<?= $dayLinkAttrHref ?>" title="<?= $dayLinkAttrTitle ?>"><?= $dayLinkText ?></a></h2>
 	    	<div class="progs">
 	    <?php 
 	    $w = count($channel)>$max ? floor((100-$max)/$max) : floor((100-count($channel))/count($channel));

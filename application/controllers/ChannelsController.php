@@ -22,11 +22,10 @@ class ChannelsController extends Rtvg_Controller_Action
         
         parent::init();
         
-        $ajaxContext = $this->_helper->getHelper( 'AjaxContext' );
-        $ajaxContext
+        $this->_helper->getHelper( 'AjaxContext' )
             ->addActionContext( 'typeahead', 'json' )
             ->addActionContext( 'alias', 'json' )
-            ->addActionContext( 'new-comments', 'html' )
+            //->addActionContext( 'new-comments', 'html' )
             ->initContext();
            
            if (false === (bool)$this->_request->isXmlHttpRequest()){
@@ -85,8 +84,11 @@ class ChannelsController extends Rtvg_Controller_Action
 
         //Данные для модуля самых популярных программ
         $top = $this->bcModel->topBroadcasts();
-        (APPLICATION_ENV=='development') ? Zend_Registry::get('fireLog')->log($top, Zend_Log::INFO) : null ;
-        $this->view->assign('top_programs', $top);
+        $this->view->assign('bc_top', $top);
+        
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $this->view->assign('ads', $adCodes);
         
         
     }
@@ -101,9 +103,11 @@ class ChannelsController extends Rtvg_Controller_Action
         }
         
         parent::validateRequest();
+        
+        $this->_helper->layout->disableLayout();
 
         $hash = Rtvg_Cache::getHash( 'typeahead_all' );
-        if ($this->cache->enabled) {
+        if ($this->cache->enabled && APPLICATION_ENV!='development') {
             $this->cache->setLifetime(86400*7);
             $f = "/Channels";
             if (($items = $this->cache->load( $hash, 'Core', $f))===false){
@@ -119,7 +123,8 @@ class ChannelsController extends Rtvg_Controller_Action
             $result[$k]['title'] = $row['title'];
             $result[$k]['alias'] = $row['alias'];
         }
-        $this->view->assign( 'result', $result );
+        
+        echo Zend_Json::encode($result);
         
         
         
