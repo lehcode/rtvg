@@ -340,6 +340,19 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'tag'=>self::ALIAS_REGEX
             )));
         
+        $this->_router->addRoute( 'default_channel_typeahead', 
+            new Zend_Controller_Router_Route( 'channels/typeahead/format/:format', 
+                array(
+                    'module'=>'default',
+                    'controller'=>'channels',
+                    'action'=>'typeahead',
+                ), array(
+                    'format'=>'json'
+                ))
+        );
+        
+        
+        
         /*
         $this->_router->addRoute( 'default_script_vk-message',
         new Zend_Controller_Router_Route( 'msg.js',

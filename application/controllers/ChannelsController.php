@@ -98,8 +98,8 @@ class ChannelsController extends Rtvg_Controller_Action
      */
     public function typeaheadAction () {
         
-        if (!$this->_request->isXmlHttpRequest()){
-            throw new Zend_Exception( Rtvg_Message::ERR_INVALID_INPUT, 401 );
+        if (!$this->_request->isXmlHttpRequest() && APPLICATION_ENV=='production'){
+            throw new Zend_Exception( Rtvg_Message::ERR_INVALID_INPUT, 404 );
         }
         
         parent::validateRequest();
@@ -125,6 +125,8 @@ class ChannelsController extends Rtvg_Controller_Action
         }
         
         echo Zend_Json::encode($result);
+        
+        
         
     }
     

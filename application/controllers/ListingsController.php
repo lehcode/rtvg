@@ -136,12 +136,13 @@ class ListingsController extends Rtvg_Controller_Action
             }
         }
         
-        if ($list!==false &&  count($list)){
+        
+        if (!empty($list)){
             
             $list[0]['now_showing']=true;
             $this->view->assign( 'programs', $list );
             $currentBc = $list[0];
-            
+
             //Articles
             $amt = 10;
             if ($this->cache->enabled) {
@@ -158,7 +159,7 @@ class ListingsController extends Rtvg_Controller_Action
 
             $this->view->assign( 'announces', $articles );
             $this->view->assign( 'show_announces', true );
-            
+
             //Update start and end times of each program in listing
             if ($this->_getParam('tz', null)!==null) {
                 if ($timeShift!=0){
@@ -234,6 +235,8 @@ class ListingsController extends Rtvg_Controller_Action
         }
         
         
+        
+        
         /*
         if ($listingDate->isToday() && (int)Zend_Registry::get('site_config')->channels->comments->enabled===1){
             //Комменты
@@ -281,17 +284,19 @@ class ListingsController extends Rtvg_Controller_Action
                 $this->_getParam('module'),
                 $this->_getParam('controller'),
                 $this->_getParam('action'),
-                $channel['id'],
+                (int)$channel['id'],
             )
         );
         $this->view->assign('short_link', $tinyUrl);
         
         //Add hit for channel and model
-        $this->channelsModel->addHit( $channel['id'] );
+        $this->channelsModel->addHit( (int)$channel['id'] );
         $this->view->assign('featured', $this->getFeaturedChannels());
         
+        //Unhide both sidebars
         $this->view->assign('hide_sidebar', 'none');
         
+        // Ad codes
         $ads = $this->_helper->getHelper('AdCodes');
         $adCodes = $ads->direct(1, 'random', 300, 250);
         $this->view->assign('ads', $adCodes);

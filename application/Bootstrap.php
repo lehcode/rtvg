@@ -47,16 +47,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
         
-		// http://codeutopia.net/blog/2009/03/02/handling-errors-in-zend-framework
 		try {
 		    $response = $fc->dispatch();
 		} catch (Exception $e) {
-            if(get_class($e)=='Zend_Loader_PluginLoader_Exception'){
-                //skip
-            } else {
-                throw new Exception($e->getMessage(), 500, $e);
-            }
-            
+            throw new Exception($e->getMessage(), 500, $e);
 		}
 		
         if (isset($response) && !$response->isException()) {

@@ -140,42 +140,73 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    $select = $this->db->select()
 			->from( array('CH'=>$this->channelsTable->getName()), array(
 				'id',
-				'title',
-				'alias',
-				'desc_intro',
-				'desc_body',
-				'icon',
-				'format',
-				'lang',
-				'url',
-				'country',
-				'adult',
-				'keywords',
-				'metadesc',
-				'video_aspect',
-				'video_quality',
-				'audio',
+                'title',
+                'alias',
+                'category_id'=>'category',
+                'free',
+                'featured',
+                'icon',
+                'desc_intro',
+                'desc_body',
+                'format',
+                'desc_body',
+                'url',
+                'adult',
+                'keywords',
+                'video_aspect',
+                'video_quality',
+                'audio',
+                'added',
+                'address',
+                'region',
+                'location',
+                'geo_lt',
+                'geo_lg',
 			))
-			->where( "`CH`.`alias` = '$alias'")
-			->where( "`CH`.`published` = TRUE")
-			->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+            ->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
 				'category_id'=>'id',
 				'category_title'=>'title',
 				'category_alias'=>'alias',
-				'category_image'=>'image'))
-            ->joinLeft(array("RS"=>"rtvg_ref_streams"), "CH.id = RS.channel", 'stream')
+				'category_image'=>'image'
+            ))
+            ->join(array('COUNTRY'=>'rtvg_countries'), "`CH`.`country` = `COUNTRY`.`iso`", array(
+                'country_iso'=>'iso',
+                'country'=>'name',
+            ))
+            ->join(array('LANG'=>'rtvg_languages'), "`CH`.`lang` = `LANG`.`iso`", array(
+                'lang_iso'=>'iso',
+                'lang'=>'name',
+            ))
+            ->joinLeft(array('STREAM'=>'rtvg_ref_streams'), '`CH`.`id` = `STREAM`.`channel`', array(
+                'stream'
+            ))
+			->where( "`CH`.`alias` = '$alias'")
+			->where( "`CH`.`published` IS TRUE")
         ;
-	    
-        $result = $this->db->fetchRow( $select, null, Zend_Db::FETCH_ASSOC );
-		
-		if ($result){
-			$result['adult'] = (bool)$result['adult'];
-			$result['id'] = (int)$result['id'];
-			$result['stream'] = (int)$result['stream'];
-			$result['category_id'] = (int)$result['category_id'];
-		}
-		
-		return $result;
+        
+        $result = $this->db->fetchRow($select);
+        
+        if (empty($result)){
+            return array();
+        }
+        
+        $result = $this->db->fetchRow($select);
+        $result['stream'] = ($result['stream']!==null) ? (int)$result['stream'] : null ;
+        $result['id'] = (int)$result['id'];
+        $result['free'] = (bool)$result['free'];
+        $result['featured'] = (bool)$result['featured'];
+        $result['category_id'] = (int)$result['category_id'];
+        $result['channel_id'] = (int)$result['channel_id'];
+        $result['adult'] = (bool)$result['adult'];
+        $result['geo_lt'] = (float)$result['geo_lt'];
+        $result['geo_lg'] = (float)$result['geo_lg'];
+        $result['keywords'] = explode(',', $result['keywords']);
+        if ($result['added']){
+            $result['added'] = new Zend_Date($result['added'], 'YYYY-MM-dd');
+        }
+        ksort($result);
+        
+        return $result;
 		
 	}
 
