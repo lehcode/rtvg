@@ -295,15 +295,15 @@ class Xmltv_Youtube {
 		if (!$rtvg_id) {
 			throw new Zend_Exception("Не указан ID");
 		}
-	
-		$params['id'] = base64_decode( strrev($rtvg_id).'=');
-		$validators = array( 'id'=>array(
-			new Zend_Validate_Regex('/^[a-z0-9]+$/i')
+        
+        $params['id'] = base64_decode( strrev($rtvg_id).'=');
+        $validators = array( 'id'=>array(
+			new Zend_Validate_Regex('/^[a-z0-9-]+$/i')
 		));
 		$input = new Zend_Filter_Input(array(), $validators, $params);
 		
 		if ($input->isValid('id')!==true){
-		    throw new Zend_Exception("Не могу декодировать ID");
+            throw new Zend_Exception("Не могу декодировать ID");
 		}
 		
 		return $input->getEscaped('id');
