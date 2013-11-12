@@ -227,12 +227,12 @@ class VideosController extends Rtvg_Controller_Action
 		$this->view->assign('bc_top', $top);
 		
 		//Данные для модуля категорий каналов
-		$this->view->assign('channels_cats', $this->channelsModel->channelsCategories());
+		//$this->view->assign('channels_cats', $this->channelsModel->channelsCategories());
 
 		//Данные для модуля популярных каналов
-		$this->view->assign('featured_channels', $this->channelsModel->featuredChannels(12));
+		//$this->view->assign('featured_channels', $this->channelsModel->featuredChannels(12));
 		
-        $this->view->assign('hide_sidebar', 'left');
+        $this->view->assign('hide_sidebar', 'none');
 	}
 	
 	

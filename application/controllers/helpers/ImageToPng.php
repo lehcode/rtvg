@@ -87,8 +87,8 @@ class Xmltv_Controller_Action_Helper_ImageToPng extends Zend_Controller_Action_H
 				$image = imagecreatefrompng($srcFile);
 				break;
 			default:
-                var_dump($image);
-                var_dump($type);
+                Zend_Debug::dump($image);
+                Zend_Debug::dump($type);
                 die(__FILE__.': '.__LINE__);
 				throw new Exception('Unrecognized image type ' . $type);
 		}

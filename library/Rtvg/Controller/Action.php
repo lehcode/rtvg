@@ -185,18 +185,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
          * @var Bootstrap
          */
         $bootstrap = $this->getInvokeArg('bootstrap');
-        /* 
-        if (!$this->_request->isXmlHttpRequest()){
-	        try {
-	        
-	            $this->userAgent = $bootstrap->getResource('useragent');
-	        	$this->userDevice = $this->userAgent->getDevice();
-	        	$this->view->assign( 'user_device', $this->userDevice );
-	        } catch (Exception $e) {
-	        	
-	        }
-        }
-         */
+        
         self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
 		if (self::$videoCache){
 			$this->vCacheModel = new Xmltv_Model_Vcache();
@@ -230,6 +219,9 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		    $this->view->assign( 'is_frontpage', false );
 		    $this->view->assign( 'vk_group_init', true );
 		}
+        
+        $nav  = $this->navData('topnav');
+        $this->view->assign('nav_data', $nav);
 		
         $this->fireLog = new Zend_Log( new Zend_Log_Writer_Firebug() );
 		
@@ -539,5 +531,25 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	public function pageclass($classname=null) {
 	    return strtolower(str_ireplace('controller', '', $classname));
 	}
+    
+    
+    public function navData($type=null){
+        
+        if (!$type){
+            throw new Zend_Exception("No navigation type provided");
+        }
+        
+        $nav = array();
+        $model = new Xmltv_Model_Abstract();
+        
+        switch ($type){
+            case 'topnav':
+                $nav[$type] = $model->getTopnavData();
+                break;
+        }
+        
+        return $nav;
+        
+    }
 	
 }

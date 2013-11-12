@@ -8,11 +8,23 @@
  */
 ?>
 
-<div class="container-fluid">
+<div class="row" id="header">
 
-	<div class="navbar span4">
+	<div class="navbar span12">
 		<div class="navbar-inner">
-			<?php echo $this->nav_html; ?>
+            <ul class="nav nav-pills">
+                <?php 
+                $i=0;
+                foreach ($this->nav_data as $cat){
+                    ?>
+                <li class="dropdown">
+                    <a href="<?= $this->baseUrl('/каналы/'.$cat['alias']) ?>"><?= $cat['title'] ?></a>
+                </li>
+                    <?php
+                }
+                ?>
+                <li><a href="<?= $this->baseUrl('/телепрограмма') ?>">Все каналы</a></li>
+            </ul>
 		</div>
 	</div>
 	
@@ -34,23 +46,10 @@
 		echo $form;
 	}
 	?>
-	
-	<div class="span2">
-		<div id="vk_like"></div>
-	</div>
-	
-	<?php 
-	if (isset($this->user) && $this->isAllowed()) { 
-	?>
-	<div class="span2">
-		<a href="javascript:void(0);" id="vklogin" class="vklogin" title="Нажмите чтобы войти через vkontakte"><img src="/images/forms/vklogin.png" alt="Войти vkontakte" /></a>
-	</div>
-	<?php 
-	} ?>
     
 </div>
 
-<div class="container">
-    <div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
+<div class="row">
+    <div class="yashare-auto-init span12" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
 </div>
 

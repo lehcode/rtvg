@@ -38,12 +38,12 @@ $css="#content.day-listing .top form {
 $this->headStyle()->appendStyle($css);
 ?>
 
-<div class="container-fluid">
-	<h1 class="span8"><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
-	<span class="span2" id="timer">Сейчас<br /><?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
+<div>
+	<h1><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
+	<span id="timer">Сейчас<br /><?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
 </div>
 
-<div class="container-fluid top">
+<div class="top">
 	<?php 
 	if ($this->is_today){
 		/*
@@ -61,30 +61,11 @@ $this->headStyle()->appendStyle($css);
 		));
 	}
 	
-	/*
-	 * Change channel autocomplete form
-	 */
-	echo new Xmltv_Form_TypeaheadForm( array(
-		'method'   => 'post',
-		'enctype'  => 'application/x-www-form-urlencoded',
-		'name'     => 'typeahead',
-		'scroll'   => false,
-		'html_tag' => array( 'tag' => 'div', 'class' => 'module span4' ),
-		'input'    => array( 
-			'style' => 'width:100%;', 
-			'label' => 'Быстрый поиск канала',
-			'id'    => 'searchinput',
-			'html_tag' => array(
-					'tag'=>'div'
-			)
-		),
-		'ajax_tracking' => true
-	)); 
 	?>
 	
 </div>
 
-<div class="container-fluid">
+<div>
 	<?php 
 	if (!$this->is_today) {
         try {
@@ -148,21 +129,23 @@ $this->headStyle()->appendStyle($css);
 
 
 <?php 
-if ($this->is_today) {
-    echo $this->partial( 'listings/partials/programlist.phtml', array( 
-		'items'          => $this->programs, 
-		'channel'        => $this->channel, 
-		'listing_videos' => $this->listing_videos, 
-		'is_today'       => $this->is_today, 
-		'short_link'     => $this->short_link,
-    	'listing_date'   => $this->listing_date,
-	)); 
-} else {
-    echo $this->partial( 'listings/partials/programtable.phtml', array(
-    	'items'        => $this->programs,
-    	'channel'      => $this->channel,
-    	'listing_date' => $this->listing_date,
-    ));
+if (count($this->programs)){
+    if ($this->is_today) {
+        echo $this->partial( 'listings/partials/programlist.phtml', array( 
+            'items'          => $this->programs, 
+            'channel'        => $this->channel, 
+            'listing_videos' => $this->listing_videos, 
+            'is_today'       => $this->is_today, 
+            'short_link'     => $this->short_link,
+            'listing_date'   => $this->listing_date,
+        )); 
+    } else {
+        echo $this->partial( 'listings/partials/programtable.phtml', array(
+            'items'        => $this->programs,
+            'channel'      => $this->channel,
+            'listing_date' => $this->listing_date,
+        ));
+    }
 }
 ?>
 

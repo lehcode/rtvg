@@ -15,8 +15,6 @@ $this->headScript()->appendScript("$(document).ready(function(){ $('#rumor-ads')
 
 <div class="span<?= $this->spans ?>" id="col_r">
     
-    <h3 class="label">Видео <?= $channelTitle ?></h3>
-    
     <?php
     if (count($this->videos) && $this->videos !== false) {
         
@@ -37,7 +35,7 @@ $this->headScript()->appendScript("$(document).ready(function(){ $('#rumor-ads')
 
         <div class="module hidden-phone">
 
-            <h3 class="label">Онлайн-видео <?= $channelTitle ?></h3>
+            <h3 class="label">Видео <?= $channelTitle ?></h3>
 
             <div class="videos_sidebar">
             
@@ -70,11 +68,11 @@ $this->headScript()->appendScript("$(document).ready(function(){ $('#rumor-ads')
 
     <?php
     if (count($this->ads)){ ?>
-        <div class="module hidden-phone">
+        <div class="module">
         <?php
         foreach ($this->ads as $ad){
             ?>
-            <div class="msg">
+            <div class="msg" style="width: 270px; overflow: hidden;">
                 <?= $ad['html'] ?>
             </div>
             <?php

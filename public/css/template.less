@@ -192,70 +192,17 @@ li.lastcol:after {
  * Header
  */
 #header {
-	
-	div.row{
-		margin-left:0;
-		background: @bgColor;
-		border: 0;
-	    border-bottom: 4px dotted #DEDEDE;
-	    border-radius: 0;
-	    box-shadow: none;
-	    padding-bottom: 1em;
-	}
-	
-	div.navbar {
-		margin-bottom: 5px;
-		
-		div.navbar-inner {
-			border-radius: 0 0 4px 4px;
-			border-top: none;
-			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-			-webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-			-o-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-			/*behavior:url('/css/PIE.htc');*/
-			
-			ul.nav {
-				
-				li {
-					
-					a {
-						text-shadow: none;
-						&:hover{
-							color: @black;
-						}
-					}
-				}
-				
-				li.divider-vertical {
-				    background: none;
-				    border:none;
-				}
-			}
-		}
-	}
-	
-	div.brand {
-		margin-left: 0;
-		
-		h1, p {
-			font-size: 14px;
-			line-height: 1.3em;
-			margin-bottom: 0;
-			color: @lightGray;
-			
-			a {
-				color: @lightGray;
-			}
-			
-		}
-	}
-	
-	div.class728x90{
-		.ad728x90;
-		padding: 1em 0;
-		margin: 0 auto;
-	}
-	
+    .navbar-inner{
+        min-height: 0;
+        ul.nav{
+            li{
+                a{
+                    font-size: 12px;
+                    padding: 5px 10px;
+                }
+            }
+        }
+    }
 }
 
 
@@ -285,7 +232,7 @@ li.lastcol:after {
 		
 	}
 	
-	div.videos{
+	.videos{
 		
 		div.main{
 		
@@ -305,8 +252,8 @@ li.lastcol:after {
 			}
 		}
 		
-		div.related{
-			div.video{
+		.related{
+			.video{
 				&:before{ .clearAll; }
 				&:after{ .clearAll; }
 				div.image{
@@ -329,7 +276,7 @@ li.lastcol:after {
 						margin: 0;
 					}
 				}
-				div.description{
+				.description{
 					p{
 						font-size: @smallFont;
 					}
@@ -347,6 +294,12 @@ li.lastcol:after {
 			}
 		}
 	}
+    
+    .module{
+        label{
+            font-size: @tinyFont;
+        }
+    }
 	
 }
 
@@ -426,11 +379,17 @@ li.lastcol:after {
  * Left sidebar
  */	
 #col_l {
-	
-	div.module {
-		.sidebar-module;
+	.module {
+        h4{
+            font-size: 12px;
+            font-weight: normal;
+        }
+	}
+    .module{
+        margin-bottom: 20px;
         ul{
-            overflow: hidden;
+            margin-left: 0;
+            list-style:none;
             li {
                 font-size:10px;
                 white-space:nowrap;
@@ -439,7 +398,7 @@ li.lastcol:after {
                 }
             }
         }
-	}
+    }
 }
 
 /*
@@ -968,7 +927,7 @@ ul#channels_categories {
 #content.listings {
 	
 	h1{
-		padding: 0 0 0 0.5em;
+		
 	}
 	span#timer{
 		font-size: 1.8em;
@@ -1209,7 +1168,7 @@ textarea, input[type="text"]{
 }
 
 	
-	
+
 @media (max-width: 1024px){
     #maincontent{
         div.videos{

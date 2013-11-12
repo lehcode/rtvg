@@ -144,7 +144,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'alias',
 				'desc_intro',
 				'desc_body',
-				'category',
 				'icon',
 				'format',
 				'lang',
@@ -159,18 +158,21 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 			))
 			->where( "`CH`.`alias` = '$alias'")
 			->where( "`CH`.`published` = TRUE")
-			->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+			->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
 				'category_id'=>'id',
 				'category_title'=>'title',
 				'category_alias'=>'alias',
-				'category_image'=>'image')
-        );
+				'category_image'=>'image'))
+            ->joinLeft(array("RS"=>"rtvg_ref_streams"), "CH.id = RS.channel", 'stream')
+        ;
 	    
         $result = $this->db->fetchRow( $select, null, Zend_Db::FETCH_ASSOC );
 		
 		if ($result){
 			$result['adult'] = (bool)$result['adult'];
 			$result['id'] = (int)$result['id'];
+			$result['stream'] = (int)$result['stream'];
+			$result['category_id'] = (int)$result['category_id'];
 		}
 		
 		return $result;
