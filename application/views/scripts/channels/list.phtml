@@ -57,7 +57,8 @@ if ( isset($this->category) && $this->category!==null) {
 
 	<?php
 	foreach ($this->channels as $channel) { 
-		$id	= $channel['id'];
+        
+        $id	= $channel['id'];
 		$title = $channel['title'];
 		$alias = $channel['alias'];
 		$icon  = $channel['icon'];
@@ -74,15 +75,19 @@ if ( isset($this->category) && $this->category!==null) {
 	<div class="channeldesc">
 		<a class="label" 
 			href="<?= $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_listings_day-listing"); ?>" 
-			title="<?php printf('Телепрограмма %s на сегодня', $title) ?>"
+			title="<?php printf('%s сегодня', $title) ?>"
 			target="_blank">
 			<?php printf('«%s» сегодня', $channel['title']) ?>
 		</a>
 		<a class="label label-info" 
 			href="<?= $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_channels_channel-week"); ?>" 
-			title="<?php printf('Телепрограмма %s на неделю', $channel['title']) ?>">
+			title="<?php printf('%s на неделю', $channel['title']) ?>">
 			Программа на неделю
 		</a>
+        
+        <?php if ((int)$channel['stream']>0){ ?>
+        <a class="label label-info" href="<?= $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_channels_live"); ?>">онлайн</a>
+        <?php } ?>
 		
 		<p>
 			<?php echo $this->escape( strip_tags($channel['desc_intro']) ) ?>

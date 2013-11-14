@@ -540,10 +540,27 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         $nav = array();
         $model = new Xmltv_Model_Abstract();
         
-        switch ($type){
-            case 'topnav':
-                $nav[$type] = $model->getTopnavData();
-                break;
+        if ($this->cache->enabled && APPLICATION_ENV!='development'){
+            
+            $this->cache->setLifetime(604800);
+            $f  = '/Misc';
+            $hash = $this->cache->getHash('navMenus');
+            
+            if (($nav = $this->cache->load( $hash, 'Core', $f))===false) {
+                switch ($type){
+                    case 'topnav':
+                        $nav[$type] = $model->getTopnavData();
+                        break;
+                }
+                $this->cache->save($nav, $hash, 'Core', $f);
+                
+            }
+        } else {
+            switch ($type){
+                case 'topnav':
+                    $nav[$type] = $model->getTopnavData();
+                    break;
+            }
         }
         
         return $nav;

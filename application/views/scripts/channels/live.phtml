@@ -1,0 +1,21 @@
+<?php
+/**
+ * Live channel view script
+ * @author Antony Repin <egeshisolutions@gmail.com>
+ */
+
+$this->headTitle( sprintf('Канал %s онлайн', $this->channel['title'] ));
+$this->headMeta()
+    ->setName('title', $this->channel['title'] )
+    ->setName('description', "Смотреть ". $this->channel['title'].' онлайн на rutvgid.ru. Телепрограмма '.$this->channel['title'].' на сегодня и на неделю.')
+    ->setName('keywords', $this->channel['title'].',смотреть онлайн' );
+
+?>
+
+<?php 
+if ((int)$this->channel['stream'] > 0){
+    $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; 
+    echo $this->aceStream($siteId, (int)$this->channel['stream'], 540, 420);
+} ?>
+
+

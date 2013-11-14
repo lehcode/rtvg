@@ -19,10 +19,10 @@ $kw = array(
 	$this->date->toString('d MMMM YYYY'),
 	'сегодня'
 );
-if (count($this->programs)) {
-	foreach ($this->programs as $p) {
+if (count($this->broadcasts)) {
+	foreach ($this->broadcasts as $b) {
 		if (count($kw)<7) {
-		    $t = Xmltv_String::strtolower( htmlspecialchars( $p['title'], ENT_NOQUOTES, 'utf-8' ) );
+		    $t = Xmltv_String::strtolower( htmlspecialchars( $b['title'], ENT_NOQUOTES, 'utf-8' ) );
 			if (!in_array($t, $kw)) {
 				$kw[] = $t;
 			}
@@ -31,10 +31,10 @@ if (count($this->programs)) {
 }
 $this->headMeta()->setName('keywords', implode(',', $kw) );
 
-if (!empty($this->programs)) {
+if (count($this->broadcasts)) {
 
-	$programTitle = $this->escape( $this->current_program['title'] );
-	$programAlias = $this->escape( $this->current_program['alias'] );
+	$programTitle = $this->escape( $this->current['title'] );
+	$programAlias = $this->escape( $this->current['alias'] );
 		
 	if ($this->is_today) {
 		//META title
@@ -50,26 +50,28 @@ if (!empty($this->programs)) {
 	
 	?>
 	
-	<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
-	
 	<h1><?php echo $programTitle ?> на <?php echo $channelTitle ?></h1>
 	
-	<h2><a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>">
-		<em><?php printf("Программа «%s» на сегодня", $channelTitle) ?></em></a>
+	<h2>
+        <a class="btn btn-small" href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>">
+            <em><?php printf("Программа «%s» на сегодня", $channelTitle) ?></em>
+        </a>
 	</h2>
 	
-	<h3><a href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>">
-		<em><?php printf("Программа «%s» на неделю", $channelTitle) ?></em></a>
+	<h3>
+        <a class="btn btn-small" href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week'); ?>">
+            <em><?php printf("Программа «%s» на неделю", $channelTitle) ?></em>
+        </a>
 	</h3>
 	
-	<p class="label label-important">
+	<p class="btn btn-mini">
 		<a href="/телепрограмма/<?php echo $channelAlias.'/'.$programAlias?>/неделя" title="<?php echo $this->escape( sprintf("Все выпуски программы «%s» на этой неделе", $programTitle)) ?>">
-			Искать <?php echo '"' . $programTitle . '"'?> на этой неделе
+			<?php echo '"' . $programTitle . '"'?> на этой неделе
 		</a>
 	</p>
 	
 	
-	<?php echo $this->partial( 'listings/partials/day-item.phtml', array( 'items'=>$this->programs )); ?>
+	<?php echo $this->partial( 'listings/partials/day-item.phtml', array( 'items'=>$this->broadcasts )); ?>
 	
 	<h3><?php printf( "Про канал «%s»" ,$channelTitle); ?></h3>
 	<p>

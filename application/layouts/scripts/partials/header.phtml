@@ -8,7 +8,7 @@
  */
 ?>
 
-<div class="row" id="header">
+<div class="row-fluid" id="header">
 
 	<div class="navbar span12">
 		<div class="navbar-inner">
@@ -18,7 +18,29 @@
                 foreach ($this->nav_data as $cat){
                     ?>
                 <li class="dropdown">
-                    <a href="<?= $this->baseUrl('/каналы/'.$cat['alias']) ?>"><?= $cat['title'] ?></a>
+                    <a class="dropdown-toggle"
+                       data-toggle="dropdown" 
+                       href="каналы/<?= $this->escape( $cat['alias'] ) ?>"><?= $this->escape( $cat['title'] ) ?>
+                       <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <?php 
+                        foreach ($cat['channels'] as $c){
+                            ?>
+                        <li>
+                            <a href="телепрограмма/<?= $this->escape($c['alias']) ?>"
+                               class="pull-left" 
+                               style="vertical-align: middle;">
+                                <?= $this->escape($c['title']) ?>
+                                <?php if ((int)$c['stream']>0){ ?>
+                                    <span class="btn btn-mini">онлайн</span>
+                                <?php } ?>
+                            </a>
+                        </li>
+                            <?php
+                        }
+                        ?>
+                    </ul>
                 </li>
                     <?php
                 }
@@ -28,28 +50,6 @@
 		</div>
 	</div>
 	
-	<?php 
-	// Login form
-	if (isset($this->user) && $this->isAllowed('default:auth')){
-	    $wrapClass = 'span3';
-		if ($this->user->role == 'guest') {
-		    $form = new Xmltv_Form_Login( array(
-				'action'=>$this->url( array(), 'default_user_login'),
-				'wrap_class'=>$wrapClass,
-			));
-		} else {
-			$form = new Xmltv_Form_Logout(array(
-				'action'=>$this->url( array(), 'default_user_logout'),
-				'wrap_class'=>$wrapClass,
-			));
-		}
-		echo $form;
-	}
-	?>
+    <div class="yashare-auto-init span12" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
     
 </div>
-
-<div class="row">
-    <div class="yashare-auto-init span12" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
-</div>
-

