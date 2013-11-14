@@ -74,7 +74,7 @@ class ChannelsController extends Rtvg_Controller_Action
         } elseif(APPLICATION_ENV!='testing'){
             $rows = $this->channelsModel->getPublished(true);
         } else {
-            $rows = $this->channelsModel->getPublished();
+            $rows = $this->channelsModel->getPublished(true);
         }
 
         $this->view->assign('channels', $rows);
