@@ -40,17 +40,13 @@ $this->headStyle()->appendStyle($css);
 
 <div>
 	<h1><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
-	<span id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
 </div>
 
 
 
-<div class="top">
+<div class="top row-fluid">
 	<?php 
 	if ($this->is_today){
-		/*
-		 * Change time zone
-		 */
 		echo new Xmltv_Form_TimezoneSwitch( array(
 			'action'   => '',
 			'name'     => 'timezone',
@@ -62,12 +58,11 @@ $this->headStyle()->appendStyle($css);
 			'diff'     => $this->timeshift,
 		));
 	}
-	
 	?>
-	
+	<span id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
 </div>
 
-<div>
+<div class="row-fluid">
 	<?php 
 	if (!$this->is_today) {
         try {
@@ -104,29 +99,18 @@ $this->headStyle()->appendStyle($css);
 	
 	
 	<?php
-	//$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
-	//$this->headScript()->appendScript($js);
+	$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
+	$this->headScript()->appendScript($js);
 	?>
 	<div id="DIV_DA_126314" class="advm"></div>
 	
     <?php 
     if ((int)$this->channel['stream'] > 0){
         $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; 
-        ?>
-    <div id="vframe">
-        <iframe scrolling="no" 
-            frameborder="0" 
-            src="http://1ttv.net/iframe.php?site=<?= $siteId ?>&channel=<?= $this->channel['stream'] ?>" 
-            width="540" 
-            height="420"
-            bgcolor="#FFFFFF" 
-            allowtransparency="true" 
-            allowfullscreen="true" 
-            allowscriptaccess="always">Your browser doesn not support floating frames!</iframe>
-    <?php 
+        echo $this->aceStream($siteId, (int)$this->channel['stream'], 540, 420);
     } ?>
-    </div>
     
+</div>
 
 
 

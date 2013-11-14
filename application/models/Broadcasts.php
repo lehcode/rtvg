@@ -222,26 +222,14 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'sub_title',
                 'alias',
                 'age_rating',
-                //'last_chance',
-                //'previously_shown',
                 'country',
-                //'actors',
-                //'directors',
-                //'writers',
-                //'adapters',
-                //'producers',
-                //'composers',
-                //'editors',
-                //'presenters',
-                //'commentators',
-                //'guests',
                 'episode_num',
-                //'date',
-                //'length',
                 'desc',
-                //'hash',
+                'hash',
             ))
             ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
+                'start',
+                'end',
                 'premiere',
                 'new',
                 'live',
@@ -286,7 +274,12 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             $result[$idx]['live']     = (bool)$row['live'];
             $result[$idx]['premiere'] = (bool)$row['premiere'];
             $result[$idx]['episode_num'] = (int)$row['episode_num'];
+            if (strlen($row['hash'])!=32){
+                throw new Zend_Exception("Data inregrity broken");
+            }
         }
+        
+        
         
         return $result;
         
@@ -403,26 +396,33 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'episode_num',
                 'hash' 
             ))
-            ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
+            ->join(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
                 'start',
                 'end',
                 'premiere',
                 'new',
                 'live',
             ))
-            ->joinLeft( array('CH'=>$this->channelsTable->getName() ), "`EVT`.`channel`=`CH`.`id`", array(
+            ->join( array('CH'=>$this->channelsTable->getName() ), "`EVT`.`channel`=`CH`.`id`", array(
                 'channel_id'=>'id',
                 'channel_title'=>'title',
-                'channel_alias'=>'LOWER(`CH`.`alias`)',
+                'channel_alias'=>'alias',
                 'channel_icon'=>'icon'
             ))
-            ->joinLeft( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array(
+            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array(
                 'category_id'=>'title',
                 'category_title'=>'title',
                 'category_title_single'=>'title_single',
-                'category_alias'=>'LOWER(`BCCAT`.`alias`)'
+                'category_alias'=>'alias'
             ))
+            ->where( "`EVT`.`start` >= '".$date->toString('YYYY-MM-dd 00:00:00')."'" )
+            ->where( "`CH`.`published`='1'")
+            ->order( "EVT.channel ASC" )
+            ->order( "EVT.start DESC" )
+            ->where( "`EVT`.`channel` = ".(int)$channel_id)
         ;
+        
+        
         
         $parts = explode('-', $program_alias);
         $where = array();
@@ -439,14 +439,6 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         $where = implode(' OR ', $where);
         $select->where( $where );
         
-        $select
-            ->where( "`EVT`.`start` >= '".$date->toString('YYYY-MM-dd 00:00:00')."'" )
-            ->where( "`CH`.`published`='1'")
-            ->order( "EVT.channel ASC" )
-            ->order( "EVT.start DESC" );    
-
-        $select->where( "`EVT`.`channel` = ".(int)$channel_id);
-        
         $result = $this->db->fetchAll($select);
         
         if (count($result)){
@@ -459,8 +451,6 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 $result[$k]['age_rating'] = (int)$item['age_rating'];
                 $result[$k]['channel_id'] = (int)$item['channel_id'];
             }
-        } else {
-            return false;
         }
         
         return $result;

@@ -259,7 +259,9 @@ class Xmltv_Model_Abstract
         
         $menuData = array();
         $i = 0;
-        foreach ($this->channelsCategoriesTable->fetchAll("featured = '1'", "title ASC") as $c){
+        $cats = $this->channelsCategoriesTable->fetchAll("featured IS TRUE", "title ASC");
+        
+        foreach ($cats as $c){
             
             $menuData[$i] = array(
                 'id'=>(int)$c->id,

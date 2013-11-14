@@ -41,7 +41,7 @@ $this->headScript()->appendScript("$(document).ready(function(){ $('#rumor-ads')
             
             <?php
             foreach ($this->videos as $video) {
-                $data['title'] = $this->escape( $this->truncateString( $video['title'], 32, 'letters' ));
+                $data['title'] = $this->escape( $video['title'] );
                 $data['alias'] = $this->escape( $video['alias'] );
                 $data['published'] = $video['published']->toString( 'd MMMM YYYY');
                 $data['duration']  = $video['duration']->toString( 'MM мин ss сек');
@@ -68,7 +68,7 @@ $this->headScript()->appendScript("$(document).ready(function(){ $('#rumor-ads')
 
     <?php
     if (count($this->ads)){ ?>
-        <div class="module">
+        <div class="module" style="overflow:hidden;">
         <?php
         foreach ($this->ads as $ad){
             ?>

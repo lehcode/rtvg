@@ -128,6 +128,9 @@ class Rtvg_Cache {
 		if (!$hash){
 			throw new Zend_Cache_Exception("Не указан кэш-идентификатор", 500);
         }
+        if (!$sub_folder){
+            throw new Zend_Exception("Не указана папка кэша");
+        }
 		
         if ($frontend!='Core') {
 			
@@ -147,7 +150,9 @@ class Rtvg_Cache {
 		try {
 			$this->_cache->save($contents, $hash);
 		} catch (Exception $e) {
-			echo "Не могу сохранить запись в кэш";
+            if(get_class($e)=='Zend_Cache_Exception'){
+                throw new Zend_Exception("Не могу сохранить запись в папку '".$sub_folder."'!");
+            }
 		}
 		
 		return true;

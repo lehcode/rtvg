@@ -120,12 +120,17 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             'controller'=>'channels',
             'action'=>'category')));
         
-        $this->_router->addRoute( 'default_channels_stream', 
-        new Zend_Controller_Router_Route( 'онлайн/:channel',
-        array(
-            'module'=>'default',
-            'controller'=>'channels',
-            'action'=>'stream')));
+        $this->_router->addRoute( 'default_channels_live', new Zend_Controller_Router_Route( 
+            'live/:channel',
+            array(
+                'module'=>'default',
+                'controller'=>'channels',
+                'action'=>'live'
+            ), 
+            array(
+                'channel'=>self::CHANNEL_ALIAS_REGEX,
+            )
+        ));
             
             
         $this->_router->addRoute( 'default_listings_broadcast-week', 
@@ -140,7 +145,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
         
         
         $this->_router->addRoute( 'default_listings_broadcast-day',
-            new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/сериалы',
+            new Zend_Controller_Router_Route( 'телепрограмма/:channel/:alias/сегодня',
             array(
                 'module'=>'default',
                 'controller'=>'listings',

@@ -24,11 +24,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	public function parseYtEntry($entry, $img_width=120){
 		
 		
-		if (!self::okToOutput($entry)){
-			return false;
-		}
-		
-		if (is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
+        if (is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
 		    
 		    $v = array();
 			$v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
@@ -45,13 +41,15 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$v['views']	   = (int)$entry->getVideoViewCount();
 			$v['category'] = $entry->getVideoCategory();
 			$v['category_ru'] = $this->getCatRu($v['category']);
-			
-			$d = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
-			$v['published'] = $d->addHour(3);
-			$d = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
-			$v['duration'] = $d;
-			
-			$thumbs = $entry->getVideoThumbnails();
+            
+			date_default_timezone_set("Etc/UTC");
+            
+			$v['published'] = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
+            $v['duration']  = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
+            
+            date_default_timezone_set("Europe/Moscow");
+            
+            $thumbs = $entry->getVideoThumbnails();
 			$i=0;
 			$v['thumbs'] = array();
 			foreach($thumbs as $th) {
@@ -73,7 +71,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$v['thumbs']	= is_array($entry['thumbs']) ? $entry['thumbs'] : Zend_Json::decode($entry['thumbs']);
 			
 		} else {
-			throw new Exception( Rtvg_Message::ERR_WRONG_FORMAT );
+			throw new Zend_Exception("Error parsing YT Entry");
 		}
 		
 		return $v;
@@ -88,14 +86,14 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public static function okToOutput( Zend_Gdata_YouTube_VideoEntry $entry){
 		
-		if (self::isPorn( $entry->getVideoTitle())) {
-			return false;
-		}
+		//if (self::isPorn( $entry->getVideoTitle())) {
+		//	return false;
+		//}
 		
 		
-		if (!self::isRussian( $entry->getVideoTitle())) {
-			return false;
-		}
+		//if (!self::isRussian( $entry->getVideoTitle())) {
+		//	return false;
+		//}
 		
 		//if (self::isHack( $entry->getVideoTitle())) {
 		//	return false;
@@ -162,14 +160,6 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @return bool
 	 */
 	public static function isRussian($string=null){
-		
-		$profile = (bool)Zend_Registry::get('site_config')->profile;
-		if ($profile){
-			//Zend_Debug::dump($string);
-			//Zend_Debug::dump(preg_match('/\p{Cyrillic}+/mui', $string));
-			//Zend_Debug::dump(preg_match('/[^\p{Cyrillic}]+/ui', $string));
-		}
-		
 		
 		if (preg_match('/\p{Cyrillic}+/mui', $string)) {
 			return true;

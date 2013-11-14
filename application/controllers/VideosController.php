@@ -68,53 +68,17 @@ class VideosController extends Rtvg_Controller_Action
 			 * in either database or file cache
 			 * ################################################################################
 			 */
-			if ($this->cache->enabled){
+			if ($this->cache->enabled && APPLICATION_ENV!='development'){
 			
 			    $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->main->get( 'lifetime' );
 			    $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
 				$f = '/Youtube/ShowVideo/Main';
 				$hash = Rtvg_Cache::getHash( $ytId );
                 
-                if (parent::$videoCache && $this->isAllowed){
-				    
-                    // Search in database cache if was not found in file cache
-				    // and if database cache is enabled
-				    if (($mainVideo = $this->vCacheModel->getVideo($rtvgId))===false){
-				        
-						// Try to load main video data from file cache
-						if (($mainVideo = $this->cache->load( $hash, 'Core', $f))==false){
-				    		
-						    // Search Youtube service for video
-				            if (false === ($ytEntry = $youtube->fetchVideo( $ytId ))) {
-				                // Video was not found at youtube
-				                $this->view->assign('hide_sidebar', 'right');
-				                return $this->render('video-not-found');
-				            } 
-				            
-				            if (false === ($mainVideo = $this->videosModel->parseYtEntry( $ytEntry))) {
-				                $this->view->assign('hide_sidebar', 'right');
-				                return $this->render('video-not-found');
-				            }
-				            
-				            $this->cache->save( $mainVideo, $hash, 'Core', $f);
-				            
-				        }
-				    }
-				    
-				    if ($mainVideo){
-					    if (parent::$videoCache===true){
-							$this->vCacheModel->saveMainVideo($mainVideo);
-						}
-				    }
-					
-				} else {
-				    
-					if (false === ($mainVideo = $this->cache->load( $hash, 'Core', $f))){
-				    		
-					    // Search Youtube service for video
+                if ($this->isAllowed){
+                    
+                    if (false === ($mainVideo = $this->cache->load( $hash, 'Core', $f))){
 			            if (false === ($ytEntry = $youtube->fetchVideo( $ytId ))) {
-			                
-			                // Video was not found at youtube
 			                $this->view->assign('hide_sidebar', 'right');
 			                return $this->render('video-not-found');
 			            }
@@ -125,20 +89,25 @@ class VideosController extends Rtvg_Controller_Action
 			            }
 			            
 			            $this->cache->save( $mainVideo, $hash, 'Core', $f);
-			            
+                        
 			        }
-				    
-				}
-				 
+                    
+                }
+                 
 			} else {
-			
-                if (((bool)$ytEntry = $youtube->fetchVideo( $ytId )) !== false) {
-					$mainVideo = $this->videosModel->parseYtEntry($ytEntry);
-				} else {
-                    $this->view->assign('hide_sidebar', 'right');
-					return $this->render('video-not-found');
-				}
-			
+                
+                try {
+                    $ytEntry = $youtube->fetchVideo( $ytId );
+                } catch (Exception $e){
+                    throw new Zend_Exception("Cannot fetch remote video", 404, $e);
+                }
+                
+                try {
+                    $mainVideo = $this->videosModel->parseYtEntry($ytEntry);
+                } catch (Exception $e){
+                    throw new Zend_Exception("Cannot parse YT entry", 404, $e);
+                }
+                
 			}
 			
 			$this->view->assign( 'main_video', $mainVideo );
@@ -154,7 +123,7 @@ class VideosController extends Rtvg_Controller_Action
 			$relatedAmt = (int)Zend_Registry::get('site_config')->videos->related->get('amount');
 			$relatedVideos = array();
 			
-			if ($this->cache->enabled){
+			if ($this->cache->enabled && APPLICATION_ENV!='development'){
 			
 				$this->cache->setLifetime( 86400 );
 				$f = '/Youtube/ShowVideo/Related';
@@ -168,15 +137,7 @@ class VideosController extends Rtvg_Controller_Action
 				    // If was not found in file cache
 				    $relatedVideos = false;
 				    
-				    // If DB cache is enabled
-				    if ($this->isAllowed){
-				        // Try to search DB cache
-				        if (($cached = $this->videosModel->dbCacheVideoRelatedVideos($ytId, $relatedAmt))!==false){
-				        	$relatedVideos = $cached;
-				        }
-				    }
-				    
-				    // If was not found in DB cache either
+                    // If was not found in DB cache either
 				    if ($relatedVideos===false){
 				        
 						// Try to load related videos list from youtube
@@ -184,14 +145,10 @@ class VideosController extends Rtvg_Controller_Action
 							foreach ($ytRelated as $ytEntry){
 								if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
 									if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>=256)) {
-									    if (parent::$videoCache===true){
-											$this->vCacheModel->saveRelatedVideo($ytEntry, $ytId);
-									    }
-										$relatedVideos[] = $parsed;
+									    $relatedVideos[] = $parsed;
 									}
 								}
 							}
-							
 							$this->cache->save( $relatedVideos, $hash, 'Core', $f);
 							
 						} else {
@@ -232,6 +189,10 @@ class VideosController extends Rtvg_Controller_Action
 		//Данные для модуля популярных каналов
 		//$this->view->assign('featured_channels', $this->channelsModel->featuredChannels(12));
 		
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $this->view->assign('ads', $adCodes);
+        
         $this->view->assign('hide_sidebar', 'none');
 	}
 	

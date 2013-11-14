@@ -1,4 +1,5 @@
 <?php
+require_once 'Rtvg/Gdata/Youtube.php';
 class Xmltv_Youtube {
 	
     /**
@@ -88,7 +89,7 @@ class Xmltv_Youtube {
 		
 		$httpClient = new Zend_Http_Client();
 		$httpClient->setConfig( $clientConf );
-		$this->client  =@ new Zend_Gdata_YouTube( $httpClient );
+		$this->client  =@ new Rtvg_Gdata_Youtube( $httpClient );
 		$this->client->setGzipEnabled(true);
 		$this->client->setMajorProtocolVersion(2);
 				
@@ -128,17 +129,16 @@ class Xmltv_Youtube {
 	public function fetchVideo($yt_id=null){
 		
 		if (!$yt_id) {
-			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
+			throw new Zend_Exception(Rtvg_Message::ERR_MISSING_PARAM, 500);
 		}
 		
-		try {
-			$result = $this->client->getVideoEntry($yt_id);
-		} catch (Zend_Gdata_App_Exception $e) {
-		    var_dump($e->getMessage());
-		    die(__FILE__.': '.__LINE__);
-		}
-		
-		return $result;
+        $result = $this->client->getVideoEntry($yt_id);
+        
+        if ($result===null){
+            throw new Zend_Exception("Cannot fetch YT entry " . $yt_id, 404);
+        }
+        
+        return $result;
 		
 	}
 	

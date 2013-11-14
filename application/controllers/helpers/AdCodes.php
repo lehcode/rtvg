@@ -74,7 +74,7 @@ class Zend_Controller_Action_Helper_AdCodes extends Zend_Controller_Action_Helpe
             $result[$k]['width'] = (int)$v['width'];
             $result[$k]['height'] = (int)$v['height'];
             $result[$k]['tags'] = explode(',', $v['tags']);
-            $result[$k]['is_script'] = (bool)$v['is_script'];
+            //$result[$k]['is_script'] = (bool)$v['is_script'];
             $result[$k]['active'] = (bool)$v['active'];
             $result[$k]['content_cat_id'] = (int)$v['content_cat_id'];
             $result[$k]['channel_cat_id'] = (int)$v['channel_cat_id'];

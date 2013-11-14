@@ -117,20 +117,25 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 
 
         <ul class="nav nav-pills nav-list program-links">
-            <li><a href="<?php echo $this->url( array(
-                'alias'=>$prog['alias'],
-                'channel'=>$channelAlias,
-                'timespan'=>'сегодня'), 'default_listings_broadcast-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
-                <?php printf('%s, <strong>%s</strong> сегодня', $channelTitle, $prog['title']) ; ?>
-            </a></li>
-            <?php if (isset($prog['category_title']) && !empty($prog['category_title'])) {
+            <li>
+                <a href="<?php echo $this->url( array(
+                    'alias'=>$prog['alias'],
+                    'channel'=>$channelAlias,
+                    'timespan'=>'сегодня'), 'default_listings_broadcast-day'); ?>" title="<?php echo $prog['title'] ?> сегодня">
+                    <?php printf('%s, <strong>%s</strong> сегодня', $channelTitle, $prog['title']) ; ?>
+                </a>
+            </li>
+            
+            <?php 
+            if (isset($prog['category_title']) && !empty($prog['category_title'])) {
                 if ($this->is_today===true){
                 ?>
-            <li><a href="<?php echo $this->url( array(
-                'category'=>$prog['category_alias'],
-                'timespan'=>'неделя'), 'default_listings_category'); ?>" title="Передачи на неделе">
-                <strong><?php echo $prog['category_title']; ?></strong> на этой неделе
-            </a>
+            <li>
+                <a href="<?php echo $this->url( array(
+                    'category'=>$prog['category_alias'],
+                    'timespan'=>'неделя'), 'default_listings_category'); ?>" title="Передачи на неделе">
+                    <strong><?php echo $prog['category_title']; ?></strong> на этой неделе
+                </a>
             </li>
             <?php } ?>
             <li><a href="<?php echo $this->url( array(

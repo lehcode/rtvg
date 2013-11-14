@@ -106,6 +106,10 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							case 'channel-week':
 								$validators['channel'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
 							break;
+							
+                            case 'live':
+								$validators['channel'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
+							break;
 								
 							case 'search':
 								$validators['id'] = array( new Zend_Validate_Regex( '/^[\w\d]+/u' ));

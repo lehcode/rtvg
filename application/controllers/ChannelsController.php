@@ -60,8 +60,8 @@ class ChannelsController extends Rtvg_Controller_Action
         $this->channelsModel = new Xmltv_Model_Channels();
         $this->view->assign( 'hide_sidebar', false );
         $this->view->assign( 'gcse', false );
-
-        if ($this->cache->enabled){
+        
+        if ($this->cache->enabled && APPLICATION_ENV!='development'){
 
             $this->cache->setLifetime(86400);
             $f = '/Channels';
@@ -71,11 +71,11 @@ class ChannelsController extends Rtvg_Controller_Action
                 $rows = $this->channelsModel->getPublished();
                 $this->cache->save($rows, $hash, 'Core', $f);
             }
+        } elseif(APPLICATION_ENV!='testing'){
+            $rows = $this->channelsModel->getPublished(true);
         } else {
             $rows = $this->channelsModel->getPublished();
         }
-
-        (APPLICATION_ENV=='development') ? Zend_Registry::get('fireLog')->log($rows, Zend_Log::INFO) : null ;
 
         $this->view->assign('channels', $rows);
 
@@ -154,7 +154,7 @@ class ChannelsController extends Rtvg_Controller_Action
             $adCodes = $ads->direct(1, 'random', 300, 250);
             $this->view->assign('ads', $adCodes);
             
-            if ($this->cache->enabled){
+            if ($this->cache->enabled && APPLICATION_ENV != 'development'){
                 
                 $this->cache->setLifetime(86400);
                 $f = "/Channels/Category";
@@ -211,44 +211,38 @@ class ChannelsController extends Rtvg_Controller_Action
     public function channelWeekAction(){
         
         // Validation routines
-        if (parent::validateRequest()) {
-            
-            $this->view->assign('hide_sidebar', 'left');
-            //$this->view->assign('sidebar_videos', true);
-            $this->view->assign('pageclass', 'channel-week');
-            
-            // Channel properties
-            $this->channelsModel = new Xmltv_Model_Channels();
-            $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
-            $this->view->assign('channel', $channel);
-            
-            //Week start and end dates
-            $ws = $this->_helper->getHelper('weekDays')
-                ->getStart();
-            $this->view->assign('week_start', $ws);
-            $we = $this->_helper->getHelper('weekDays')
-                ->getEnd();
-            $this->view->assign('week_end', $we);
-            
-            if ($this->cache->enabled){
-                $hash = Rtvg_Cache::getHash('channel_'.$channel['alias'].'_week');
-                $f = '/Channels/Week';
-                if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
-                    $schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($ws), new Zend_Date($we));
-                    $this->cache->save($schedule, $hash, 'Core', $f);
-                }
-            } else {
+        parent::validateRequest();
+        
+        $this->view->assign('hide_sidebar', 'none');
+        $this->view->assign('pageclass', 'channel-week');
+
+        // Channel properties
+        $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
+        $this->view->assign('channel', $channel);
+
+        //Week start and end dates
+        $ws = $this->_helper->getHelper('weekDays')->getStart();
+        $this->view->assign('week_start', $ws);
+        $we = $this->_helper->getHelper('weekDays')->getEnd();
+        $this->view->assign('week_end', $we);
+
+        if ($this->cache->enabled){
+            $hash = Rtvg_Cache::getHash('channel_'.$channel['alias'].'_week');
+            $f = '/Channels/Week';
+            if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
                 $schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($ws), new Zend_Date($we));
+                $this->cache->save($schedule, $hash, 'Core', $f);
             }
-            $this->view->assign('days', $schedule);
-            
-            $this->channelsModel->addHit( $channel['id'] );
-            
-            $ads = $this->_helper->getHelper('AdCodes');
-            $adCodes = $ads->direct(1, 'random', 300, 250);
-            $this->view->assign('ads', $adCodes);
-            
+        } else {
+            $schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($ws), new Zend_Date($we));
         }
+        $this->view->assign('days', $schedule);
+
+        $this->channelsModel->addHit( $channel['id'] );
+
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $this->view->assign('ads', $adCodes);
         
     }
     
@@ -308,7 +302,7 @@ class ChannelsController extends Rtvg_Controller_Action
     }
     
     /**
-     * AJAX
+     * AJAX action
      * Get channel alias from $_GET['title']
      */
     public function aliasAction(){
@@ -320,7 +314,24 @@ class ChannelsController extends Rtvg_Controller_Action
         parent::validateRequest();
         
         $title = $this->input->getEscaped('t');
-        $this->view->assign( 'alias', $this->view->escape( $this->channelsModel->getByTitle( $title )->alias ) );
+        $this->view->assign( 'alias', $this->channelsModel->getByTitle( $title )->alias );
+        
+    }
+    
+    /**
+     * Channel live casting page
+     */
+    public function liveAction(){
+        
+        parent::validateRequest();
+        
+        
+        $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
+        $this->view->assign('channel', $channel);
+        
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $this->view->assign('ads', $adCodes);
         
     }
     
