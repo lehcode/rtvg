@@ -8,9 +8,6 @@
 
 // META descrption
 $this->headMeta()->setName( 'description', $this->article['metadesc'] );
-// Назначение pageclass
-$this->assign('hide_sidebar', 'left');
-// Название страницы
 $this->headTitle()->append( $this->article['title'] );
 // OpenGraph
 $this->doctype( 'XHTML1_RDFA' );

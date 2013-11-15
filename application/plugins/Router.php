@@ -177,7 +177,9 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'action'=>'day-listing'
             ), 
             array(
-                'channel'=>self::CHANNEL_ALIAS_REGEX)));
+                'channel'=>self::CHANNEL_ALIAS_REGEX,
+                'dale'=>'('.self::DATE_REGEX.'|сегодня)',
+            )));
         
         
         $this->_router->addRoute( 'default_listings_day-date', 
@@ -188,14 +190,14 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             ),
             array(
                 'channel'=>self::CHANNEL_ALIAS_REGEX,
-                'date'=>'('.self::DATE_REGEX.'|сериалы)')));
+                'date'=>'('.self::DATE_REGEX.'|сегодня)')));
             
         $this->_router->addRoute( 'default_listings_premieres-week', 
         new Zend_Controller_Router_Route( 'телепрограмма/премьеры/:timespan', array(
                 'module'=>'default',
                 'controller'=>'listings',
                 'action'=>'premieres-week',
-                'timespan'=>'сегодня|неделя|'.self::ISO_DATE_REGEX,
+                'timespan'=>'(сегодня|неделя|'.self::ISO_DATE_REGEX.')',
             )));
         
         $this->_router->addRoute( 'default_listings_outdated', 

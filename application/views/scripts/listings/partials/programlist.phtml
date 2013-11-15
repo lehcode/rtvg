@@ -182,18 +182,20 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 </div>
 
 
-<ul id="daynav" class="nav nav-pills">
+<ul id="daynav" class="nav nav-pills pull-right">
     <li>
         <?php 
         $d = new Zend_Date($this->listing_date->toString('U'), 'U');
         $d->subDay(1);
         ?>
         <a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-YYYY')), 'default_listings_day-date') ?>"
-            class="btn"
+            class="btn btn-small"
             title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-YYYY') ?>">Вчера</a>
     </li>
     <li>
-        <a href="<?php echo $this->url(array(), 'default_channels_list') ?>" class="btn" title="Все телеканалы">Все каналы</a>
+        <a href="<?php echo $this->url(array(), 'default_channels_list') ?>" 
+           class="btn btn-small" 
+           title="Все телеканалы">Все каналы</a>
     </li>
     <li>
         <?php 
@@ -201,7 +203,7 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
         $d->addDay(1);
         ?>
         <a href="<?php echo $this->url(array( 'channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"
-            class="btn"
+            class="btn btn-small"
             title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-yyyy') ?>">Завтра</a>
     </li>
 

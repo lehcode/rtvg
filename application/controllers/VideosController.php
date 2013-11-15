@@ -79,13 +79,11 @@ class VideosController extends Rtvg_Controller_Action
                     
                     if (false === ($mainVideo = $this->cache->load( $hash, 'Core', $f))){
 			            if (false === ($ytEntry = $youtube->fetchVideo( $ytId ))) {
-			                $this->view->assign('hide_sidebar', 'right');
-			                return $this->render('video-not-found');
+			                return $this->render('not-found');
 			            }
 			            
 			            if (false === ($mainVideo = $this->videosModel->parseYtEntry( $ytEntry))) {
-			                $this->view->assign('hide_sidebar', 'right');
-			            	return $this->render('video-not-found');
+			            	return $this->render('not-found');
 			            }
 			            
 			            $this->cache->save( $mainVideo, $hash, 'Core', $f);
@@ -102,15 +100,17 @@ class VideosController extends Rtvg_Controller_Action
                     throw new Zend_Exception("Cannot fetch remote video", 404, $e);
                 }
                 
-                try {
+                if ($ytEntry===404){
+                    return $this->render('not-found');
+                } elseif($ytEntry===404){
+                    return $this->render('private');
+                } else {
                     $mainVideo = $this->videosModel->parseYtEntry($ytEntry);
-                } catch (Exception $e){
-                    throw new Zend_Exception("Cannot parse YT entry", 404, $e);
                 }
                 
 			}
-			
-			$this->view->assign( 'main_video', $mainVideo );
+            
+            $this->view->assign( 'main_video', $mainVideo );
 			
 			
 			/*
@@ -181,20 +181,13 @@ class VideosController extends Rtvg_Controller_Action
 		
 		//Данные для модуля самых популярных программ
 		$top = $this->bcModel->topBroadcasts();
-		$this->view->assign('bc_top', $top);
+		$this->view->assign('bcTop', $top);
 		
-		//Данные для модуля категорий каналов
-		//$this->view->assign('channels_cats', $this->channelsModel->channelsCategories());
-
-		//Данные для модуля популярных каналов
-		//$this->view->assign('featured_channels', $this->channelsModel->featuredChannels(12));
-		
-        $ads = $this->_helper->getHelper('AdCodes');
+		$ads = $this->_helper->getHelper('AdCodes');
         $adCodes = $ads->direct(1, 'random', 300, 250);
         $this->view->assign('ads', $adCodes);
         
-        $this->view->assign('hide_sidebar', 'none');
-	}
+        }
 	
 	
 	/**

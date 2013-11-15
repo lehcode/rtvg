@@ -142,8 +142,24 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      *
      * @var Zend_Log_Writer_Firebug
      */
-    protected $fireLog;	
-	
+    protected $fireLog;
+    
+    /**
+     * @var int
+     */
+    protected $leftWidthSpans = 2;
+    
+    /**
+     * @var int
+     */
+    protected $contentWidthSpans = 7;
+    
+    /**
+     * @var int
+     */
+    protected $rightWidthSpans = 3;
+
+
     /**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
@@ -218,10 +234,9 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		
         $this->fireLog = new Zend_Log( new Zend_Log_Writer_Firebug() );
         
-        //if (APPLICATION_ENV!=='testing'){
-        //    $device = new Rtvg_UserDevice();
-        //    $device->getUserAgentString();
-        //}
+        $this->view->assign('leftWidth', $this->leftWidthSpans);
+        $this->view->assign('contentWidth', $this->contentWidthSpans);
+        $this->view->assign('rightWidth', $this->rightWidthSpans);
 		
 	}
 	
@@ -384,11 +399,25 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 */
 	public function channelInfo($alias=null){
 		
-	    if (!$alias) {
-			$alias = $this->input->getEscaped('channel');
+        if (!$alias) {
+			throw new Zend_Exception("channel was not provided");
 	    }
-	    
-	    return $this->channelsModel->getByAlias( $alias );
+        
+        if ($this->cache->enabled && APPLICATION_ENV!='development') {
+            $this->cache->setLifetime(604800);
+            $f = "/Channels/Info";
+            $hash = Rtvg_Cache::getHash( 'ch_'.$alias.'_info' );
+
+            if ((bool)($data = $this->cache->load($hash, 'Core', $f))===false){
+                $data = $this->channelsModel->getByAlias( $alias );
+                $this->cache->save($data, $hash, "Core", $f);
+            }
+
+        } else {
+            $data = $this->channelsModel->getByAlias( $alias );
+        }
+        
+        return $data;
 		
 	}
 	

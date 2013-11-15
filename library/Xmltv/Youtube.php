@@ -133,11 +133,6 @@ class Xmltv_Youtube {
 		}
 		
         $result = $this->client->getVideoEntry($yt_id);
-        
-        if ($result===null){
-            throw new Zend_Exception("Cannot fetch YT entry " . $yt_id, 404);
-        }
-        
         return $result;
 		
 	}

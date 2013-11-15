@@ -74,15 +74,14 @@ class ListingsController extends Rtvg_Controller_Action
         
         $pageClass = parent::pageclass(__CLASS__);
         $this->view->assign( 'pageclass', $pageClass );
-        $this->view->assign( 'hide_sidebar', 'right' );
         $this->view->assign( 'vk_group_init', false );
         $this->view->headLink()
             ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
         
-        $channel = $this->channelInfo($this->_getParam('channel'));
+        $channel = $this->channelInfo( $this->input->getEscaped('channel') );
         
-        if (!isset($channel['id']) || empty($channel['id'])){
-            throw new Zend_Exception("Channel not found.");
+        if ((bool)$channel['id']===false){
+            throw new Zend_Exception("Channel not found.", 404);
         }
         $this->view->assign('channel', $channel );
         
@@ -109,10 +108,6 @@ class ListingsController extends Rtvg_Controller_Action
         $this->view->assign('timeshift', $timeShift);
         $this->view->assign('listing_date', $listingDate);
         
-        //Данные для модуля самых популярных программ
-        $top = $this->bcModel->topBroadcasts();
-        $this->view->assign('bc_top', $top);
-        
         //Fetch programs list for day and make decision on current program
         $amt = 4;
         if ($this->cache->enabled) {
@@ -135,7 +130,6 @@ class ListingsController extends Rtvg_Controller_Action
                 $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'] );
             }
         }
-        
         
         if (!empty($list)){
             
@@ -273,7 +267,6 @@ class ListingsController extends Rtvg_Controller_Action
          * 
          */
         
-        //Данные для модуля видео в правой колонке
         $vids = $this->channelSidebarVideos($channel);
         $this->view->assign('sidebar_videos', $vids );
         
@@ -293,14 +286,23 @@ class ListingsController extends Rtvg_Controller_Action
         $this->channelsModel->addHit( (int)$channel['id'] );
         $this->view->assign('featured', $this->getFeaturedChannels());
         
-        //Unhide both sidebars
-        $this->view->assign('hide_sidebar', 'none');
-        
         // Ad codes
         $ads = $this->_helper->getHelper('AdCodes');
         $adCodes = $ads->direct(1, 'random', 300, 250);
         $this->view->assign('ads', $adCodes);
         
+        //Channel news
+        if ($channel['rss_url']){
+            $news = $this->channelsModel->channelFeed($channel, 10);
+            $this->view->assign( 'channelNews', $news);
+        }
+        
+        $this->view->assign('pageclass', 'dayListing');
+        
+        
+        //Данные для модуля самых популярных программ
+        $top = $this->bcModel->topBroadcasts();
+        $this->view->assign('bcTop', $top);
         
     }
     
@@ -434,7 +436,6 @@ class ListingsController extends Rtvg_Controller_Action
             
             $channel = parent::channelInfo( $this->input->getEscaped('channel') );
             if (!isset($channel['id'])){
-                $this->view->assign('hide_sidebar', 'right');
                 return $this->render('channel-not-found');
             }
             $this->view->assign( 'channel', $channel );
@@ -448,7 +449,6 @@ class ListingsController extends Rtvg_Controller_Action
             }
             
             if (!$this->checkDate($listingDate)){
-                $this->view->assign('hide_sidebar', 'right');
                 return $this->_forward('outdated');
             }
             
@@ -459,7 +459,7 @@ class ListingsController extends Rtvg_Controller_Action
             $this->view->assign('week_end', $weekEnd);
             
             //Данные для модуля самых популярных программ
-            $this->view->assign('bc_top', parent::topBroadcasts());
+            $this->view->assign('bcTop', parent::topBroadcasts());
             
             //Данные для модуля категорий каналов
             $cats = $this->getChannelsCategories();
@@ -502,8 +502,7 @@ class ListingsController extends Rtvg_Controller_Action
             }
             
             if (empty($list[0]) && empty($similarBcs)) {
-                $this->view->assign('hide_sidebar', 'right');
-                return $this->render('broadcast-not-found');
+                return $this->render('not-found');
             }
             
             $this->bcModel->addHit( $list[0]['hash'] );
@@ -546,7 +545,7 @@ class ListingsController extends Rtvg_Controller_Action
             
             //Данные для модуля самых популярных программ
             $top = $this->bcModel->topBroadcasts();
-            $this->view->assign('bc_top', $top);
+            $this->view->assign('bcTop', $top);
             
             //Данные для модуля категорий каналов
             $cats = $this->getChannelsCategories();
@@ -624,7 +623,6 @@ class ListingsController extends Rtvg_Controller_Action
      */
     public function premieresWeekAction(){
         
-        $this->view->assign('hide_sidebar', 'right');
         
     }
     
