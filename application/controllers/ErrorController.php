@@ -126,17 +126,14 @@ class ErrorController extends Zend_Controller_Action
 	
 	public function missingPageAction(){
 		$this->getResponse()->setHttpResponseCode( 404 );
-		$this->view->assign('hide_sidebar', 'right');
 	}
 	
 	public function invalidInputAction(){
 		$this->getResponse()->setHttpResponseCode( 500 );
-		$this->view->assign('hide_sidebar', 'right');
 	}
 
 	public function accessDeniedAction(){
 		$this->getResponse()->setHttpResponseCode( 401 );
-		$this->view->assign('hide_sidebar', 'right');
 	}
 	
 	protected function logMessage($msg=null, $priority=Zend_Log::WARN, $exception=null){

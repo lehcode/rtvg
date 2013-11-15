@@ -10,20 +10,6 @@
 $pageClass   = isset($this->pageclass) && !empty($this->pageclass) ? ' '.(string)$this->pageclass : '' ;
 $isFrontpage = trim($pageClass)=='frontpage' ? true  : false ;
 
-$this->right_sidebar_width = 3;
-$this->maincontent_width = 7;
-$this->left_sidebar_width = 2;
-
-if ($this->hide_sidebar == 'left'){
-	$this->right_sidebar_width = 4;
-	$this->maincontent_width = 8;
-}
-if ($this->hide_sidebar=='right'){
-	$this->maincontent_width = 10;
-	$this->left_sidebar_width = 2;
-}
-
-
 $this->jQuery()
     ->setRenderMode( ZendX_JQuery::RENDER_ALL )
 	//->setCdnSsl(true) if need to load from ssl location
@@ -34,9 +20,9 @@ $this->jQuery()
 $this->headScript()
 	->appendFile( 'http://yandex.st/share/share.js' );
 
-if (!$isFrontpage && $this->hide_sidebar != 'right'){
+if (!$isFrontpage && (int)$this->rightWidth > 0){
     $this->inlineScript()
-        ->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, height: "260" }, 27716041);');
+        ->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, height: 260, width:250 }, 27716041);');
     $this->headScript()
         ->appendFile( "//vk.com/js/api/openapi.js?101" );
 }
@@ -58,19 +44,20 @@ if ($pageClass=='show-video'){
     		'list'=>$this->featured_channels)) );
 }
 
+
 //#### Left Sidebar ####
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
-	'bc_top'=>$this->bc_top,
-	'channels_categories'=>$this->channels_cats,
-	'spans'=>$this->left_sidebar_width,
+	'bcTop'=>$this->bcTop,
+	'spans'=>$this->leftWidth,
+	'channelNews'=>$this->channelNews,
+    'videos'=>$this->sidebar_videos,
 )));
 
 // #### Right Sidebar ####
 $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', array(
-	'videos'=>$this->sidebar_videos,
 	'channel'=>$this->channel,
 	'ads'=>$this->ads,
-	'spans'=>$this->right_sidebar_width,
+	'spans'=>$this->rightWidth,
 )));
 
 /*
@@ -144,22 +131,21 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
         if ($isFrontpage) {
             ?>
         <div class="span12" id="maincontent">
-            <?= $this->placeholder('maincontent'); 
-            ?>
+            <?= $this->placeholder('maincontent'); ?>
         </div>
             <?php 
         } else {
             ?>
 
-            <?php if (!($this->hide_sidebar=='left')): ?>
+            <?php if ((int)$this->leftWidth > 0): ?>
             <?= $this->placeholder('sidebar_left'); ?>
             <?php endif; ?>
 
-            <div class="span<?php echo $this->maincontent_width ?>" id="maincontent">
+            <div class="span<?php echo $this->contentWidth ?>" id="maincontent">
                 <?= $this->placeholder('maincontent'); ?>
             </div>	
 
-            <?php if (!($this->hide_sidebar=='right')): ?>
+            <?php if ((int)$this->rightWidth > 0): ?>
             <?= $this->placeholder('sidebar_right'); ?>
             <?php endif; ?>
 

@@ -151,7 +151,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'desc_body',
                 'format',
                 'desc_body',
-                'url',
+                'site_url'=>'url',
                 'adult',
                 'keywords',
                 'video_aspect',
@@ -178,6 +178,10 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'lang_iso'=>'iso',
                 'lang'=>'name',
             ))
+            //->joinLeft(array('NEWS'=>'rtvg_channels_news'), "`CH`.`id` = `NEWS`.`channel`", array(
+            //    'rss_url'=>'url',
+            //    'rss_enabled'=>'active',
+            //))
             ->joinLeft(array('STREAM'=>'rtvg_ref_streams'), '`CH`.`id` = `STREAM`.`channel`', array(
                 'stream'
             ))
@@ -198,6 +202,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         $result['featured'] = (bool)$result['featured'];
         $result['category_id'] = (int)$result['category_id'];
         $result['adult'] = (bool)$result['adult'];
+        $result['rss_enabled'] = (bool)$result['rss_enabled'];
         $result['geo_lt'] = (float)$result['geo_lt'];
         $result['geo_lg'] = (float)$result['geo_lg'];
         $result['keywords'] = explode(',', $result['keywords']);
@@ -641,5 +646,54 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		return true;
 		 
 	}
+    
+    public function channelFeed($channel=null, $amt=5){
+        
+        if (!$channel || !is_array($channel)){
+            throw new Zend_Exception();
+        }
+        
+        if ($channel['rss_enabled']===true){
+            
+            $frontendOptions = array(
+                'lifetime' => 7200,
+                'automatic_serialization' => true
+            );
+            $backendOptions = array('cache_dir' => realpath(APPLICATION_PATH .'/../cache/Feeds/Channels/'));
+            $cache = Zend_Cache::factory(
+                'Core', 'File', $frontendOptions, $backendOptions
+            );
+
+            try{
+                if ((bool)($items = $cache->load(md5($channel['id'].':'.$channel['rss_url'])))===false){
+                    $rss = new Zend_Feed_Rss($channel['rss_url']);
+                    $i=0;
+                    $items = array();
+                    foreach ($rss as $item) {
+                        if ($i<5){
+                            $items[$i]['title'] = $item->title();
+                            $items[$i]['link'] = $item->link();
+                            $items[$i]['desc'] = $item->description();
+                            $items[$i]['category'] = $item->category();
+                            $date = new Zend_Date($item->pubDate(), Zend_Date::RFC_1123);
+                            $date->setTimezone("Europe/Moscow");
+                            $items[$i]['pubDate'] = $date;
+                        }
+                        $i++;
+                    }
+                }
+            } catch (Exception $e){
+                throw new Zend_Exception($e->getMessage(), 500, $e);
+            }
+
+            return $items;
+            
+        }
+        
+        
+        
+        
+        
+    }
 }
 

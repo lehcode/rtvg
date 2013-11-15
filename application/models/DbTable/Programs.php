@@ -84,7 +84,7 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	 */
 	public function fetchDayItems($channel_id=null, $date=null) {
 		
-		if (!$channel_id || !$date) {
+        if (!$channel_id || !$date) {
 			throw new Zend_Db_Table_Exception( Rtvg_Message::ERR_MISSING_PARAM );
 		}
 		

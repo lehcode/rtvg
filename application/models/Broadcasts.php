@@ -110,11 +110,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         
         $d = new Zend_Date($date);
         
-        try{
-            $rows = $this->bcTable->fetchDayItems( $channel_id, $date, $count );
-        } catch (Exception $e){
-            return array();
-        }
+        $rows = $this->bcTable->fetchDayItems( $channel_id, $date, $count );
         
         if (count($rows)>0) {
             $result = array();

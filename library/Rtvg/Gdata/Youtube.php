@@ -48,6 +48,12 @@ class Rtvg_Gdata_Youtube extends Zend_Gdata_YouTube
         try{
             $r = parent::getEntry($uri, 'Zend_Gdata_YouTube_VideoEntry');
         } catch (Exception $e){
+            if (stristr($e->getMessage(), 'Private video')){
+                return 403;
+            }
+            if (stristr($e->getMessage(), 'Video not found')){
+                return 404;
+            }
             throw new Zend_Exception($e->getMessage(), 500);
         }
         

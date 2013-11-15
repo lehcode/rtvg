@@ -30,7 +30,6 @@ class ChannelsController extends Rtvg_Controller_Action
            
            if (false === (bool)$this->_request->isXmlHttpRequest()){
                $this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
-               $this->view->assign( 'hide_sidebar', null );
            }
            
     }
@@ -58,8 +57,6 @@ class ChannelsController extends Rtvg_Controller_Action
             ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
 
         $this->channelsModel = new Xmltv_Model_Channels();
-        $this->view->assign( 'hide_sidebar', false );
-        $this->view->assign( 'gcse', false );
         
         if ($this->cache->enabled && APPLICATION_ENV!='development'){
 
@@ -84,7 +81,7 @@ class ChannelsController extends Rtvg_Controller_Action
 
         //Данные для модуля самых популярных программ
         $top = $this->bcModel->topBroadcasts();
-        $this->view->assign('bc_top', $top);
+        $this->view->assign('bcTop', $top);
         
         $ads = $this->_helper->getHelper('AdCodes');
         $adCodes = $ads->direct(1, 'random', 300, 250);
@@ -179,7 +176,7 @@ class ChannelsController extends Rtvg_Controller_Action
             $this->view->assign('channels', $rows);
             
             //Данные для модуля самых популярных программ
-            $this->view->assign('bc_top', $this->bcModel->topBroadcasts());
+            $this->view->assign('bcTop', $this->bcModel->topBroadcasts());
             
             //Channels categories
             if ($this->cache->enabled){
@@ -213,7 +210,6 @@ class ChannelsController extends Rtvg_Controller_Action
         // Validation routines
         parent::validateRequest();
         
-        $this->view->assign('hide_sidebar', 'none');
         $this->view->assign('pageclass', 'channel-week');
 
         // Channel properties
