@@ -370,12 +370,53 @@ ul#channels_categories {
 	div.wrap{
 		margin: 0 0 0.5em;
 	    padding: 0.5em;
-		&:first-child {
-			a {
-				background-color: @yellow;
-				color: @black;
-				
+		
+        img{
+			border: 1px solid @veryDarkGray;
+		    border-radius: 8px 8px 8px 8px;
+		    overflow: hidden;
+			
+		}
+		
+		p { 
+			border-radius: 8px;
+            color: #2B2B2B;
+            display: block;
+            width: 100%;
+            min-height: 74px;
+            padding: 0.5em;
+            margin-bottom: 0;
+            a {
+                color: @black;
+                background: none;
+				font-family: "Univers Condensed Medium Italic", Helvetica, Arial, sans-serif;
+                font-size: 1.4em;
+                &:link{
+                    text-decoration:none;
+                }
+                img {
+					margin-right: 0.5em;
+					float: left;
+					width: 64px;
+					overflow: hidden;
+				}
 			}
+            &:hover{
+                background: @red;
+                color: #FFFFFF;
+                text-decoration: none;
+                animation: directadvert-link 0.3s;
+                -moz-animation: directadvert-link 0.3s; /* Firefox */
+                -webkit-animation: directadvert-link 0.3s; /* Safari and Chrome */
+                -o-animation: directadvert-link 0.3s; /* Opera */
+                a{
+                    color: white;
+                }
+            }
+			
+		}
+        &:first-child {
+			
 		}
 		&:last-child {
 			border-bottom: 0;
@@ -388,43 +429,6 @@ ul#channels_categories {
             clear: both;
             display: block;
         }
-		
-		img{
-			border: 1px solid @veryDarkGray;
-		    border-radius: 8px 8px 8px 8px;
-		    overflow: hidden;
-			
-		}
-		
-		p { 
-			
-			a {
-				border-radius: 8px;
-				color: @black;
-			    display: block;
-			    font-family: @universCondensedMediumItalic;
-			    font-size: 1.4em;
-			    padding: 0.5em;
-				/*behavior:url("/css/PIE.htc");*/
-				width: 93%;
-				/*border: 1px solid @darkGray;*/
-				&:hover {
-					background-color: @red;
-					color: #FFFFFF;
-					text-decoration: none;
-					animation: directadvert-link 0.5s;
-					-moz-animation: directadvert-link 0.5s; /* Firefox */
-					-webkit-animation: directadvert-link 0.5s; /* Safari and Chrome */
-					-o-animation: directadvert-link 0.5s; /* Opera */		
-				}
-				img {
-					margin-right: 0.5em;
-					float: left;
-					width: 64px;
-					overflow: hidden;
-				}
-			}
-		}
 	}
 }
 

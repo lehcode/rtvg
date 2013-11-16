@@ -9,6 +9,13 @@
  */
 ?>
 
+<?php
+$this->headScript()->appendScript("$(document).ready(function(){ 
+    $('#rumor-ads').show(300); 
+    $('#rumor-ads table').hide(); 
+});");
+?>
+
 <div class="span<?= $this->spans ?>" id="col_r">
     
     <?php
