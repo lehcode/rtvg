@@ -84,7 +84,7 @@ class ChannelsController extends Rtvg_Controller_Action
         $this->view->assign('bcTop', $top);
         
         $ads = $this->_helper->getHelper('AdCodes');
-        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $adCodes = $ads->direct(1, 250);
         $this->view->assign('ads', $adCodes);
         
         
@@ -148,7 +148,7 @@ class ChannelsController extends Rtvg_Controller_Action
             }
             
             $ads = $this->_helper->getHelper('AdCodes');
-            $adCodes = $ads->direct(1, 'random', 300, 250);
+            $adCodes = $ads->direct(2, 300, 240);
             $this->view->assign('ads', $adCodes);
             
             if ($this->cache->enabled && APPLICATION_ENV != 'development'){
@@ -237,7 +237,7 @@ class ChannelsController extends Rtvg_Controller_Action
         $this->channelsModel->addHit( $channel['id'] );
 
         $ads = $this->_helper->getHelper('AdCodes');
-        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $adCodes = $ads->direct(2, 300, 240);
         $this->view->assign('ads', $adCodes);
         
     }
@@ -326,7 +326,7 @@ class ChannelsController extends Rtvg_Controller_Action
         $this->view->assign('channel', $channel);
         
         $ads = $this->_helper->getHelper('AdCodes');
-        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $adCodes = $ads->direct(2, 300, 240);
         $this->view->assign('ads', $adCodes);
         
     }

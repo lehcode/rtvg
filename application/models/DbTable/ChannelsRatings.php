@@ -8,7 +8,7 @@ class Xmltv_Model_DbTable_ChannelsRatings extends Xmltv_Db_Table_Abstract
 
     /**
      * Constructor
-     * @param unknown_type $config
+     * @param array $config
      */
     public function __construct ($config = array()) {
     
@@ -16,6 +16,11 @@ class Xmltv_Model_DbTable_ChannelsRatings extends Xmltv_Db_Table_Abstract
     
     }
     
+    /**
+     * Add rating hit to channel
+     * @param int $channel_id
+     * @throws Zend_Exception
+     */
     public function addHit($channel_id){
     	
     	if (!$channel_id){

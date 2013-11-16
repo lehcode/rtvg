@@ -289,7 +289,7 @@ class ListingsController extends Rtvg_Controller_Action
         
         // Ad codes
         $ads = $this->_helper->getHelper('AdCodes');
-        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $adCodes = $ads->direct(2, 300, 240);
         $this->view->assign('ads', $adCodes);
         
         //Channel news
@@ -374,7 +374,7 @@ class ListingsController extends Rtvg_Controller_Action
         $this->view->assign('broadcasts', $broadcasts);
         
         $ads = $this->_helper->getHelper('AdCodes');
-        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $adCodes = $ads->direct(2, 300, 240);
         $this->view->assign('ads', $adCodes);
         
         //Список программ
@@ -504,7 +504,7 @@ class ListingsController extends Rtvg_Controller_Action
             $this->view->assign( 'similar', $similarBcs );
             
             $ads = $this->_helper->getHelper('AdCodes');
-            $adCodes = $ads->direct(1, 'random', 300, 250);
+            $adCodes = $ads->direct(2, 300, 240);
             $this->view->assign('ads', $adCodes);
             
             if(empty($list[0]) && !empty($similarBcs)){
@@ -562,7 +562,7 @@ class ListingsController extends Rtvg_Controller_Action
             $this->view->assign('channels_cats', $cats);
             
             $ads = $this->_helper->getHelper('AdCodes');
-            $adCodes = $ads->direct(1, 'random', 300, 250);
+            $adCodes = $ads->direct(2, 300, 240);
             $this->view->assign('ads', $adCodes);
             
             switch ($this->input->getEscaped('timespan')){
