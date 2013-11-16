@@ -130,7 +130,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
         <?php 
         if ($isFrontpage) {
             ?>
-        <div class="span12" id="maincontent">
+        <div class="span12">
             <?= $this->placeholder('maincontent'); ?>
         </div>
             <?php 
@@ -141,7 +141,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
             <?= $this->placeholder('sidebar_left'); ?>
             <?php endif; ?>
 
-            <div class="span<?php echo $this->contentWidth ?>" id="maincontent">
+            <div class="span<?php echo $this->contentWidth ?>" style="background:#EFEFEF; padding-left: 2em; padding-right: 2em;">
                 <?= $this->placeholder('maincontent'); ?>
             </div>	
 

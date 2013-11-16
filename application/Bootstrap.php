@@ -206,7 +206,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    $view->headMeta()
 	    	->setHttpEquiv( 'Content-Type', 'text/html;charset=utf-8' )
 	    	->setHttpEquiv( 'X-UA-Compatible', 'IE=9;IE=8;' )
-	    	->setName('viewport', 'width=device-width, initial-scale=1.0');
+	    	//->setName('viewport', 'width=device-width, initial-scale=1.0')
+        ;
 	    $view->headTitle()
 	    	->setSeparator(' :: ' )
 	    	->prepend( "rutvgid.ru" );
@@ -247,8 +248,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     
     protected function _initNav(){
 		
-		$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/fp.xml', 'nav' ) );
-		Zend_Registry::set('FpMenu', $menu);
+		//$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/fp.xml', 'nav' ) );
+		//Zend_Registry::set('FpMenu', $menu);
 		
 		$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/admin/main.xml', 'nav' ) );
 		Zend_Registry::set('AdminMenu', $menu);
