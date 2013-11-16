@@ -10,10 +10,9 @@
 
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
-//$channelCat   = $this->escape( $this->channel['channel_category'] );
 
-$this->headMeta()->setName('title', sprintf ('Канал «%s» онлайн', $channelTitle ));
-$this->headMeta()->setName('description', sprintf ('Передачи сегодня на канале «%s»', $channelTitle ));
+$this->headMeta()->setName('title', sprintf ('«%s» онлайн в отличной качестве', $channelTitle ));
+$this->headMeta()->setName('description', sprintf ('Телепрограмма канала «%s» на сегодня', $channelTitle ));
 
 $js = "$(function(){
 	var minHeight = 0;
@@ -36,16 +35,17 @@ $css="#content.day-listing .top form {
 }
 ";
 $this->headStyle()->appendStyle($css);
+
 ?>
 
-<div>
-	<h1><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
+<div class="row">
+    <h1>&laquo;<?= $channelTitle ?>&raquo; <?= Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?>
 </div>
 
 
 
-<div class="top row-fluid">
-	<span class="label span4" id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
+<div class="top row">
+	<span class="span4" id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
     <h3 class="span8 weekLink">
 		<?php 
         try {
@@ -56,13 +56,13 @@ $this->headStyle()->appendStyle($css);
         $linkAttrTitle = $this->escape( sprintf('Передачи %s', $channelTitle) );
 		$linkText      = $this->escape( sprintf ('Программа на неделю', $channelTitle) );
 		?>
-		<a href="<?php echo $linkAttrHref; ?>" title="<?php echo $linkAttrTitle; ?>" class="btn btn-mini">
+		<a href="<?php echo $linkAttrHref; ?>" title="<?php echo $linkAttrTitle; ?>" class="btn btn-mini btn-info">
 			<?php echo $linkText; ?>
 		</a>
 	</h3>
 </div>
 
-<div class="row-fluid">
+<div class="row">
 	<?php
 	$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
 	$this->headScript()->appendScript($js);
@@ -74,7 +74,6 @@ $this->headStyle()->appendStyle($css);
         $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; 
         echo $this->aceStream($siteId, (int)$this->channel['stream'], 580, 326);
     } ?>
-    
 </div>
 
 
@@ -100,50 +99,12 @@ if (count($this->programs)){
 }
 ?>
 
-<?php 
-/*
-if (isset($this->comments) && !empty($this->comments)) { 
-    ?>
-    <div id="comments">
-
-        <h4><?php echo $this->escape( sprintf('В блогах  про %s', $this->channel['title']) ); ?></h4>
-
-            <?php
-            if (isset($this->comments) && (bool)$this->comments!==false) {
-                foreach ($this->comments as $comment) {
-                    ?>
-
-            <div>
-
-                <?php if (!empty($comment['author'])) : ?>
-                <div class="author">
-                    <a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
-                        <small><?php echo $comment['author'] ?></small>
-                    </a>
-                </div>
-                <?php endif; ?>
-
-                <p class="description">
-                    <?php 
-                    $desc =  str_ireplace( $this->channel['title'], '<em>'.$this->channel['title'].'</em>', $comment['intro']);
-                    echo $this->truncateString($desc, 20, 'words', false);
-                    ?>
-                </p>
 
 
-            </div>
-                <?php 
-                }
-            }
-            ?>
-            <a href="<?php //echo $this->url(array(), 'default_comments_create'); ?>">Добавить комментарий</a>
+<div class="row">
+    <p class="ace">Для просмотра телеканала &laquo;<?= $this->channel['title'] ?>&raquo; с помощью <em>Торрент-ТВ в отличном качестве</em> вам нужно
+        скачать и установить специальный плагин <a href="http://acestream.org/ru/" target="blank" rel="nofollow" title="Скачать Торрент ТВ">Ace Stream</a>.
+        Установка занимает минуту. После того как плагин <em>Торрент-ТВ<em> установлен, перезапустите свой браузер. Смотрите - хоть обсмотритесь :)</p>
 
-        <div class="copy3rdparty">
-            <a href="http://blogs.yandex.ru/" title="Yandex поиск по блогам" rel="nofollow"><img src="http://img.yandex.net/i/logo100x43.png" width="37" height="16" /></a>
-        </div>
-    </div>
-    <?php 
-} */
-?>
-
-<div class="span12"><script type="text/javascript" src="http://adc.rutvgid.ru/adc.js"></script></div>
+    <div class="span12"><script type="text/javascript" src="http://adc.rutvgid.ru/adc.js"></script></div>
+</div>

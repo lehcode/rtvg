@@ -7,23 +7,25 @@
  *
  */
 
-
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
-//$channelCat   = $this->escape( $this->channel['cat_title'] );
-
 
 //META title
-$this->headMeta()->setName('title', sprintf ('Канал «%s» онлайн, %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
+$this->headMeta()->setName('title', sprintf ('«%s» онлайн, %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
 //Browser window title
-$this->headTitle( sprintf ('Канал «%s» сегодня. Телепрограмма и онлайн-вещание', $channelTitle ) );
+$this->headTitle( sprintf ('«%s» сегодня. Телепрограмма и онлайн-вещание', $channelTitle ) );
 
+$this->inlineScript()->appendScript("$(function(){ $('.iconLive').popover({ content:'Прямой эфир' }) });");
 
 //Generate keywords
-$kw = array($channelTitle, $this->listing_date->toString('d MMMM YYYY'), 'смотреть онлайн');
-if (!empty($this->programs)) {
-	foreach ($this->programs as $p) {
-		if (count($kw)<5) {
+$kw = array(
+    $channelTitle,
+    'смотреть онлайн',
+    'торрент тв'
+ );
+if (!empty($this->items)) {
+	foreach ($this->items as $p) {
+        if (count($kw)<5) {
 			if (!in_array($p['title'], $kw))
 				$kw[]= Xmltv_String::strtolower( htmlspecialchars( $p['title'], ENT_QUOTES, 'utf-8' ) );
 		}
@@ -44,7 +46,7 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 </p>
 
 
-<div id="programlist" class="row-fluid">
+<div id="programlist" class="row">
 
     <?php 
     $pc=0;
@@ -89,7 +91,7 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
         <span class="start label label-info"><?php echo $prog['start']->toString('HH:mm') ?></span>
 
         <?php if (isset($prog['live']) && ($prog['live']===true)): ?>
-        <img src="<?php echo $this->baseUrl('images/icons/live.png'); ?>" />
+        <img src="<?php echo $this->baseUrl('images/icons/live.png'); ?>" class="iconLive" />
         <?php endif; ?>
 
 

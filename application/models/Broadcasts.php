@@ -679,6 +679,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'adult',
             ))
             ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel`", null)
+            ->joinLeft(array('STREAM'=>'rtvg_ref_streams'), "`CH`.`id` = `STREAM`.`channel`", 'stream')
             ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")))
             ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm:00")))
             ->group("EVT.start")
@@ -715,6 +716,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                     $items[$d['channel']][$d['hash']]['age_rating'] = (int)$d['age_rating']>0 ? (int)$d['age_rating']>0 : null ;
                     $items[$d['channel']][$d['hash']]['channel'] = (int)$d['channel'];
                     $items[$d['channel']][$d['hash']]['category'] = (int)$d['category'];
+                    $items[$d['channel']][$d['hash']]['stream'] = (int)$d['stream'];
                 }
             }
         }

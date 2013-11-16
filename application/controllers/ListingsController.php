@@ -74,9 +74,6 @@ class ListingsController extends Rtvg_Controller_Action
         
         $this->view->assign( 'pageclass', 'DayListing' );
         
-        //$this->view->headLink()
-        //    ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
-        
         $channel = $this->channelInfo( $this->input->getEscaped('channel') );
         
         if ((bool)$channel['id']===false){
@@ -84,11 +81,9 @@ class ListingsController extends Rtvg_Controller_Action
         }
         $this->view->assign('channel', $channel );
         
-        
-        
         //Данные для модуля категорий каналов
-        $cats = $this->getChannelsCategories();
-        $this->view->assign('channels_cats', $cats);
+        //$cats = $this->getChannelsCategories();
+        //$this->view->assign('channels_cats', $cats);
         
         //Текущая дата
         $listingDate = $this->bcModel->listingDate($this->input);
@@ -441,7 +436,7 @@ class ListingsController extends Rtvg_Controller_Action
         
         if (parent::validateRequest()) {
             
-            $this->view->assign( 'pageclass', 'broadcast-week' );
+            $this->view->assign( 'pageclass', 'broadcastWeek' );
             $bcAlias = $this->input->getEscaped('alias');
             
             $channel = parent::channelInfo( $this->input->getEscaped('channel') );

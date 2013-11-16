@@ -14,9 +14,9 @@
     //Top broadcasts block
     if (isset($this->bcTop) && !empty($this->bcTop)) {
         ?>
-    <div class="module hidden-phone">
-        <h4>Популярное на этой неделе</h4>
-        <ul id="program-top">
+    <div id="topBroadcasts" class="module hidden-phone">
+        <h4>Топ 20 программ</h4>
+        <ul>
             <?php 
             foreach ($this->bcTop as $bc){
                 try {
@@ -26,7 +26,7 @@
                 }
                     ?>
             <li>
-                <img src="<?= $this->baseUrl( 'images/channel_logo/'.$this->escape($bc['channel_icon']) ) ?>" width="16" />
+                <img src="<?= $this->baseUrl( 'images/channel_logo/'.$this->escape($bc['channel_icon']) ) ?>" />
                 <a href="<?= $hrefUrl ?>"
                     title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
                         <?= $this->escape($this->truncateString( $bc['title'], 4, 'words')) ?>
@@ -42,7 +42,7 @@
     ?>
     
     <?php
-    if (isset($this->channelNews) && count($this->channelNews)){ 
+    if (isset($this->channelNews) && (bool)$this->channelNews!==false){ 
         ?>
     <div class="module channelNews">
             <h4>Новости канала</h4>
@@ -53,7 +53,6 @@
             $thumb = $vid['thumbs'][rand( 0, count( $vid['thumbs'])-1)];
             $href1 = $this->url(array('alias'=>$vid['alias'], 'id'=>$vid['rtvg_id']), 'default_videos_show-video');
             $href2 = $this->escape($n['link']);
-            //var_dump($this->videos[$i]);
             ?>
         <div class="message">
             
