@@ -682,8 +682,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                         $i++;
                     }
                 }
-            } catch (Exception $e){
-                throw new Zend_Exception($e->getMessage(), 500, $e);
+            } catch (Zend_Feed_Exception $e){
+                return false;
             }
 
             return $items;

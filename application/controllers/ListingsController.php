@@ -420,6 +420,10 @@ class ListingsController extends Rtvg_Controller_Action
         //Add hit to broadcast
         $this->bcModel->addHit( $current['hash'] );
         
+        //Данные для модуля самых популярных программ
+        $top = $this->bcModel->topBroadcasts();
+        $this->view->assign('bcTop', $top);
+        
     }
     
     

@@ -56,13 +56,19 @@
             //var_dump($this->videos[$i]);
             ?>
         <div class="message">
-            <p class="pubDate"><?= Xmltv_String::ucfirst($n['pubDate']->toString(Zend_Date::WEEKDAY)) .' :: '. $this->escape($n['category']) ?></p>
+            
+            <?php if (is_a($n['pubDate'], 'Zend_Date') && is_string($n['category'])) : ?>
+                <p class="pubDate"><?= Xmltv_String::ucfirst($n['pubDate']->toString(Zend_Date::WEEKDAY)) .' :: '. $this->escape($n['category']) ?></p>
+            <?php endif; ?>
+            
             <p class="title"><?= $vid['desc'] ?></p>
+            
             <p class="description">
                 <a href="<?= $href1 ?>" title="<?= $this->escape($n['title']) ?>">
                     <img src="<?= $thumb['url'] ?>" />
                 </a><?= $n['desc'] ?>
             </p>
+            
             <p class="link"><a href="<?= $href2 ?>" target="blank"<?= ($i<3) ? '' : ' rel="nofollow"' ; ?>>вся новость</a> > </p>
         </div>
             <?php

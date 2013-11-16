@@ -193,11 +193,6 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
             title="Программа <?php echo $channelTitle ?> на <?php echo $d->toString('dd-MM-YYYY') ?>">Вчера</a>
     </li>
     <li>
-        <a href="<?php echo $this->url(array(), 'default_channels_list') ?>" 
-           class="btn btn-small" 
-           title="Все телеканалы">Все каналы</a>
-    </li>
-    <li>
         <?php 
         $d = new Zend_Date($this->listing_date->toString('U'), 'U');
         $d->addDay(1);
