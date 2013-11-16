@@ -72,11 +72,10 @@ class ListingsController extends Rtvg_Controller_Action
         
         parent::validateRequest();
         
-        $pageClass = parent::pageclass(__CLASS__);
-        $this->view->assign( 'pageclass', $pageClass );
-        $this->view->assign( 'vk_group_init', false );
-        $this->view->headLink()
-            ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
+        $this->view->assign( 'pageclass', 'DayListing' );
+        
+        //$this->view->headLink()
+        //    ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
         
         $channel = $this->channelInfo( $this->input->getEscaped('channel') );
         
@@ -84,6 +83,8 @@ class ListingsController extends Rtvg_Controller_Action
             throw new Zend_Exception("Channel not found.", 404);
         }
         $this->view->assign('channel', $channel );
+        
+        
         
         //Данные для модуля категорий каналов
         $cats = $this->getChannelsCategories();
@@ -293,8 +294,13 @@ class ListingsController extends Rtvg_Controller_Action
         
         //Channel news
         if ($channel['rss_url']){
-            $news = $this->channelsModel->channelFeed($channel, 10);
+            try{
+                $news = $this->channelsModel->channelFeed($channel, 10);
+            } catch (Exception $e){
+                //skip
+            }
             $this->view->assign( 'channelNews', $news);
+            
         }
         
         $this->view->assign('pageclass', 'dayListing');

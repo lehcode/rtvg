@@ -313,8 +313,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function addHit($id=null){
 		
-		if (!$id || !is_numeric($id)) {
-			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM);
+		if (!$id || !is_int($id)) {
+			throw new Zend_Exception( 'Wrong channel ID', 500);
 		}
 		
 		$this->ratingsTable->addHit($id);
@@ -682,7 +682,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                         $i++;
                     }
                 }
-            } catch (Zend_Feed_Exception $e){
+            } catch (Exception $e){
                 return false;
             }
 

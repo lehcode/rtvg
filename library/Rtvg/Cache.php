@@ -64,11 +64,10 @@ class Rtvg_Cache {
 	 */
 	public static function getHash($input=null){
 		
-		if (!$input)
+		if (!$input){
 			throw new Zend_Cache_Exception("Не указан кэш-идентификатор", 500);
-		
-		$regex  = new Zend_Filter_PregReplace(array('match'=>'/[^a-zA-Z0-9_]/', 'replace'=>'_'));
-		return md5($regex->filter( $input ));
+        }
+		return md5($input );
 				
 	}
 	

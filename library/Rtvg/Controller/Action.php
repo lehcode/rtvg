@@ -403,10 +403,10 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 			throw new Zend_Exception("channel was not provided");
 	    }
         
-        if ($this->cache->enabled && APPLICATION_ENV!='development') {
-            $this->cache->setLifetime(604800);
+        if ($this->cache->enabled) {
+            (APPLICATION_ENV=='production') ? $this->cache->setLifetime(600) : $this->cache->setLifetime(604800);
             $f = "/Channels/Info";
-            $hash = Rtvg_Cache::getHash( 'ch_'.$alias.'_info' );
+            $hash = md5( 'channel_'.$alias.'_'.$f.'_info' );
 
             if ((bool)($data = $this->cache->load($hash, 'Core', $f))===false){
                 $data = $this->channelsModel->getByAlias( $alias );
@@ -415,6 +415,10 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 
         } else {
             $data = $this->channelsModel->getByAlias( $alias );
+        }
+        
+        if ($data['alias'] != $alias){
+            throw new Zend_Exception("Wrong channel loded from cache");
         }
         
         return $data;
