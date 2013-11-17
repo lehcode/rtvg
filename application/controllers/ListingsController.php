@@ -81,21 +81,12 @@ class ListingsController extends Rtvg_Controller_Action
         }
         $this->view->assign('channel', $channel );
         
-        //Данные для модуля категорий каналов
-        //$cats = $this->getChannelsCategories();
-        //$this->view->assign('channels_cats', $cats);
-        
         //Текущая дата
         $listingDate = $this->bcModel->listingDate($this->input);
         $this->view->assign('listing_date', $listingDate);
         
         //Assign today's date to view 
-        if ($listingDate->isToday()) {
-            $this->view->assign('is_today', true);
-        } else {
-            $this->view->assign('is_today', false);
-            $this->view->assign('pageclass', $pageClass.' other-day');
-        }
+        ($listingDate->isToday()) ? $this->view->assign('is_today', true) : $this->view->assign('is_today', false);
         
         //Detect timeshift and adjust listing time
         $timeShift = (int)$this->input->getEscaped( 'tz', 'msk' );
@@ -107,7 +98,7 @@ class ListingsController extends Rtvg_Controller_Action
         //Fetch programs list for day and make decision on current program
         $amt = 4;
         if ($this->cache->enabled) {
-            $this->cache->setLifetime(3600);
+            (APPLICATION_ENV!='production') ? $this->cache->setLifetime(600) : $this->cache->setLifetime(1800);
             $f = "/Listings/Programs";
             $hash = Rtvg_Cache::getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
             if (!$list = $this->cache->load( $hash, 'Core', $f)) {
@@ -136,7 +127,7 @@ class ListingsController extends Rtvg_Controller_Action
             //Articles
             $amt = 10;
             if ($this->cache->enabled) {
-                $this->cache->setLifetime(86400);
+                (APPLICATION_ENV!='production') ? $this->cache->setLifetime(600) : $this->cache->setLifetime(86400);
                 $f = "/Content/Articles";
                 $hash = 'dayListingArticles_'.Rtvg_Cache::getHash( $channel['id'] );
                 if (!$articles = $this->cache->load( $hash, 'Core', $f)) {
@@ -150,87 +141,31 @@ class ListingsController extends Rtvg_Controller_Action
             $this->view->assign( 'announces', $articles );
             $this->view->assign( 'show_announces', true );
 
-            //Update start and end times of each program in listing
-            if ($this->_getParam('tz', null)!==null) {
-                if ($timeShift!=0){
-                    foreach ($list as $item) {
-                        $item['start'] = $item['start']->addHour($timeShift);
-                        $item['end']   = $item['end']->addHour($timeShift);
-                        $this->view->headMeta()->setName('robots', 'noindex,follow');
-                    }
-                }
-            }
-            
+            //Channel videos
             if ($listingDate->isToday()) {
-                
                 $listingVideos = array();
-            
                 // Запрос в файловый кэш
                 if ($this->cache->enabled){
-
-                    $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->listings->get( 'lifetime' );
-                    $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
+                    $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->listings->lifetime;
+                    (APPLICATION_ENV!='production') ? $this->cache->setLifetime(600) : $this->cache->setLifetime($t);
                     $f = '/Listings/Videos';
                     $hash = Rtvg_Cache::getHash( 'listingVideo_'.$channel['title'].'-'.$listingDate->toString( 'YYYY-MM-dd' ));
-
-                    if (parent::$videoCache) {
-
-                        // Ищем видео в кэше БД если он включен
-                        if (false === ($listingVideos = $this->vCacheModel->listingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate ))){
-
-                            if (false === ($listingVideos=$this->cache->load( $hash, 'Core', $f) )){
-
-                                // Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
-                                $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
-
-                                if (!count($listingVideos) || ($listingVideos===false)) {
-                                    return false;
-                                }
-
-                                // Сохраняем в кэш БД если он включен
-                                if (parent::$videoCache===true){
-                                    foreach ($listingVideos as $k=>$vid) {
-                                        $listingVideos[$k]['hash'] = $k;
-                                        $this->vCacheModel->saveListingVideo( $listingVideos[$k] );
-                                    }
-                                }
-                                // Сохранение в файловый кэш
-                                $this->cache->save( $listingVideos, $hash, 'Core', $f);
-                            }     
-                        }
-
-                    } else {
-
-                        if ((false === ($listingVideos=$this->cache->load( $hash, 'Core', $f)))){
-                            // Если не найдено ни в одном из кэшей, то делаем запрос к Yoututbe
-                            $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
-
-                            if (!count($listingVideos) || ($listingVideos===false)) {
-                                return false;
-                            }
-
-                            $this->cache->save($listingVideos, $hash, 'Core', $f);
-
-                        }
-                    }               
+                    if ((false === ($listingVideos=$this->cache->load( $hash, 'Core', $f)))){
+                        $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
+                        $this->cache->save($listingVideos, $hash, 'Core', $f);
+                    }          
                 } else {
-                    // Кэширование не используется 
-                    // запрос к Yoututbe
                     $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
                 }
                 $this->view->assign('listing_videos', $listingVideos);
-                
             }
             
         }
         
-        
-        
-        
         /*
         if ($listingDate->isToday() && (int)Zend_Registry::get('site_config')->channels->comments->enabled===1){
             //Комменты
-            if ($this->cache->enabled){
+            if ($this->cache->enabled && APPLICATION_ENV!='development'){
                 $t = (int)Zend_Registry::get( 'site_config' )->cache->system->lifetime;
                 $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400);
                 $f = '/Listings/Comments';
@@ -260,11 +195,15 @@ class ListingsController extends Rtvg_Controller_Action
             
             $this->view->assign('comments', $comments);
         }
-         * 
-         */
+        */
         
+        //Channels top
+        $chTop = $this->channelsModel->topChannels(10);
+        $this->view->assign('channelsTop', $chTop );
+        
+        //Sidebar videos
         $vids = $this->channelSidebarVideos($channel);
-        $this->view->assign('sidebar_videos', $vids );
+        $this->view->assign('sidebarVideos', $vids );
         
         //Tinyurl data
         $tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias']), 
@@ -295,7 +234,6 @@ class ListingsController extends Rtvg_Controller_Action
                 //skip
             }
             $this->view->assign( 'channelNews', $news);
-            
         }
         
         $this->view->assign('pageclass', 'dayListing');
@@ -322,7 +260,7 @@ class ListingsController extends Rtvg_Controller_Action
         
         if ( $this->input->getEscaped( 'date' )=='неделя' ) {
             return $this->_forward( 'broadcast-week', 'listings', 'default', array( 
-                'date'=>Zend_Date::now()->toString('dd-MM-yyyy')));
+                'date'=>Zend_Date::now()->toString('dd-MM-YYYY')));
         }
         
         $bcAlias = $this->input->getEscaped( 'alias' );

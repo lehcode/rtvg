@@ -39,14 +39,38 @@ $this->headStyle()->appendStyle($css);
 ?>
 
 <div class="row">
-    <h1>&laquo;<?= $channelTitle ?>&raquo; <?= Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?>
+    <h1>&laquo;<?= $channelTitle ?>&raquo; 
+        <time itemprop="startDate" datetime="<?= $this->listing_date->toString(Zend_Date::ISO_8601) ?>">
+            <?= Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?>
+        </time>
+    </h1>
 </div>
 
 
 
 <div class="top row">
+    
 	<span class="span4" id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
-    <h3 class="span8 weekLink">
+    
+    <?php 
+    try {
+        $linkAttrHref  = $this->url(array('channel'=>$channelAlias), 'default_listings_day-listing');
+    } catch (Exception $e) {
+        throw new Zend_Exception("Cannot assemble URL", 500, $e);
+    }
+    $linkAttrTitle = $this->escape( sprintf('Телепрограмма «%s» на сегодня', $channelTitle) );
+    $linkText = sprintf ('«%s» сегодня', $channelTitle);
+    ?>
+	<h2 class="span4">
+		<a href="<?php echo $linkAttrHref; ?>" 
+           title="<?php echo $linkAttrTitle; ?>" 
+           class="btn btn-mini btn-info">
+               <?php echo $linkText; ?>
+        </a>
+	</h2>
+	
+    
+    <h3 class="span4 weekLink">
 		<?php 
         try {
             $linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
@@ -56,24 +80,26 @@ $this->headStyle()->appendStyle($css);
         $linkAttrTitle = $this->escape( sprintf('Передачи %s', $channelTitle) );
 		$linkText      = $this->escape( sprintf ('Программа на неделю', $channelTitle) );
 		?>
-		<a href="<?php echo $linkAttrHref; ?>" title="<?php echo $linkAttrTitle; ?>" class="btn btn-mini btn-info">
+		<a href="<?php echo $linkAttrHref; ?>" 
+           title="<?php echo $linkAttrTitle; ?>" 
+           class="btn btn-mini btn-info">
 			<?php echo $linkText; ?>
 		</a>
 	</h3>
+    
 </div>
 
 <div class="row">
 	<?php
-	$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
-	$this->headScript()->appendScript($js);
+	//$this->headScript()->appendScript("$(function(){ $('#DIV_DA_78318 table').hide(); });");
 	?>
-	<div id="DIV_DA_126314" class="advm"></div>
+	<div id="DIV_DA_78318"></div>
 	
     <?php 
-    if ((int)$this->channel['stream'] > 0){
+    //if ((int)$this->channel['stream'] > 0){
         $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; 
         echo $this->aceStream($siteId, (int)$this->channel['stream'], 580, 326);
-    } ?>
+    //} ?>
 </div>
 
 
@@ -99,12 +125,10 @@ if (count($this->programs)){
 }
 ?>
 
-
-
 <div class="row">
     <p class="ace">Для просмотра телеканала &laquo;<?= $this->channel['title'] ?>&raquo; с помощью <em>Торрент-ТВ в отличном качестве</em> вам нужно
         скачать и установить специальный плагин <a href="http://acestream.org/ru/" target="blank" rel="nofollow" title="Скачать Торрент ТВ">Ace Stream</a>.
-        Установка занимает минуту. После того как плагин <em>Торрент-ТВ<em> установлен, перезапустите свой браузер. Смотрите - хоть обсмотритесь :)</p>
-
-    <div class="span12"><script type="text/javascript" src="http://adc.rutvgid.ru/adc.js"></script></div>
+        Установка занимает минуту. После того как плагин <em>Торрент-ТВ</em> установлен, перезапустите свой браузер. Смотрите - хоть обсмотритесь :)
+    </p>
 </div>
+

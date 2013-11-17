@@ -50,7 +50,8 @@ $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.p
 	'bcTop'=>$this->bcTop,
 	'spans'=>$this->leftWidth,
 	'channelNews'=>$this->channelNews,
-    'videos'=>$this->sidebar_videos,
+    'videos'=>$this->sidebarVideos,
+    'channelsTop'=>$this->channelsTop,
 )));
 
 // #### Right Sidebar ####
@@ -58,6 +59,8 @@ $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-righ
 	'channel'=>$this->channel,
 	'ads'=>$this->ads,
 	'spans'=>$this->rightWidth,
+	'channelNews'=>$this->channelNews,
+	'videos'=>$this->sidebarVideos,
 )));
 
 /*
@@ -193,7 +196,7 @@ _gaq.push(['_trackPageview']);
 <script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <?php } ?>
 
-<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314"></script>
+<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=78318&div=DIV_DA_78318"></script>
 <script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script>
 
 <script type="text/javascript">

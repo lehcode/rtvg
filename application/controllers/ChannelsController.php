@@ -84,7 +84,7 @@ class ChannelsController extends Rtvg_Controller_Action
         $this->view->assign('bcTop', $top);
         
         $ads = $this->_helper->getHelper('AdCodes');
-        $adCodes = $ads->direct(1, 250);
+        $adCodes = $ads->direct(2, 350, 240);
         $this->view->assign('ads', $adCodes);
         
         

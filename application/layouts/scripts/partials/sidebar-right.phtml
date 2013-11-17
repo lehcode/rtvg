@@ -14,48 +14,45 @@ $this->headScript()->appendScript("$(document).ready(function(){
     $('#rumor-ads').show(300); 
     $('#rumor-ads table').hide(); 
 });");
+
 ?>
 
 <div class="span<?= $this->spans ?>" id="col_r">
     
     <?php
-    /*
-    if (count($this->videos) && $this->videos !== false) {
-        
-        $channelTitle = $this->escape($this->channel['title']);
-        ?>
-
-        <div class="module hidden-phone">
-
-            <h3 class="label">Видео <?= $channelTitle ?></h3>
-
-            <div class="videos_sidebar">
-            
-            <?php
-            foreach ($this->videos as $video) {
-                $data['title'] = $this->escape( $video['title'] );
-                $data['alias'] = $this->escape( $video['alias'] );
-                $data['published'] = $video['published']->toString( 'd MMMM YYYY');
-                $data['duration']  = $video['duration']->toString( 'MM мин ss сек');
-                $data['desc'] = $this->escape( $video['desc'] );
-                $data['link_title'] = empty($video['desc']) ? $data['title']. $this->truncateString( $data['desc'], 40, 'letters') : $video['title'] ;
-                $data['link_href'] = $this->url(array('alias'=>$data['alias'], 'id'=>$video['rtvg_id']), 'default_videos_show-video');
-                $data['thumb'] = $video['thumbs'][mt_rand( 0, count( $video['thumbs'])-1)];
-                $data['views'] = (int)$video['views'];
-                $data['desc'] = $this->truncateString( $data['desc'], 30, 'words') ;
-                $channelHref = '<a href="'.$this->url(array('channel'=>$this->channel['alias']), 'default_listings_day-listing') . '"
-                    target="_blank"
-                    title="Программа канала '.$this->channel['title'].'">'.$this->channel['title'].'</a>';
-                
-                $data['desc'] = Xmltv_String::str_ireplace($this->channel['title'], $channelHref, $data['desc']);
-                echo $this->sidebarVideo($data, $channelHref);
-            }
+    if ((bool)$this->channelNews===false){
+        if (count($this->videos) && $this->videos !== false) {
+            $channelTitle = $this->escape($this->channel['title']);
             ?>
 
-        </div>
+    <div class="module sidebarVideos hidden-phone">
+
+        <h3 class="label">Видео <?= $channelTitle ?></h3>
+
+            <?php
+        foreach ($this->videos as $video) {
+            $data['title'] = $this->escape( $video['title'] );
+            $data['alias'] = $this->escape( $video['alias'] );
+            $data['published'] = $video['published']->toString( 'd MMMM YYYY');
+            $data['duration']  = $video['duration']->toString( 'HH:MM:ss');
+            $data['desc'] = $this->escape( $video['desc'] );
+            $data['link_title'] = empty($video['desc']) ? $data['title']. $this->truncateString( $data['desc'], 40, 'letters') : $video['title'] ;
+            $data['link_href'] = $this->url(array('alias'=>$data['alias'], 'id'=>$video['rtvg_id']), 'default_videos_show-video');
+            $data['thumb'] = $video['thumbs'][mt_rand( 0, count( $video['thumbs'])-1)];
+            $data['views'] = (int)$video['views'];
+            $data['desc'] = $this->truncateString( $data['desc'], 30, 'words') ;
+            $channelHref = '<a href="'.$this->url(array('channel'=>$this->channel['alias']), 'default_listings_day-listing') . '"
+                target="_blank"
+                title="Программа канала '.$this->channel['title'].'">'.$this->channel['title'].'</a>';
+
+            $data['desc'] = Xmltv_String::str_ireplace($this->channel['title'], $channelHref, $data['desc']);
+            echo $this->sidebarVideo($data, $channelHref);
+        }
+        ?>
     </div>
-    <?php
-    }*/
+        <?php
+        }
+    }
     ?>
 
     <?php

@@ -42,8 +42,6 @@ $('#channels').accordion({ icons:false, heightStyle:'content' });
 $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js ;
 $this->headScript()->appendScript( $js );
 ?>
-
-<h2>Передачи сегодня и на неделе</h2>
 	
 <?php 
 if ( isset($this->category) && $this->category!==null) {
@@ -51,7 +49,7 @@ if ( isset($this->category) && $this->category!==null) {
 	printf('<p class="label label-info">Телеканалы в категории «%s»: %d</p>', $categoryTitle, count($this->channels)) ;
 } ?>
 
-<h1>Все каналы</h1>
+<h1>Все каналы на Rutvgid</h1>
 
 <div id="channels">
 
@@ -86,7 +84,7 @@ if ( isset($this->category) && $this->category!==null) {
 		</a>
         
         <?php if ((int)$channel['stream']>0){ ?>
-        <a class="label label-info" href="<?= $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_channels_live"); ?>">онлайн</a>
+        <a class="label label-info linkLive" href="<?= $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_channels_live"); ?>">онлайн</a>
         <?php } ?>
 		
 		<p>

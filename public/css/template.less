@@ -254,35 +254,42 @@ li.lastcol:after {
  */
 #topBroadcasts.module{
     h4{
-        background: none repeat scroll 0 0 #C41247;
-        color: #FFFFFF;
+        color: #C41247;
         font-weight: bold;
-        padding-left: 0.5em;
         line-height: 26px;
-        font-size: 14px;
+        font-size: 16px;
+        margin-top: 0;
     }
     ul {
         list-style: none;
         margin: 0;
+        background: #dedede;
+        border-radius: 6px;
+        padding: 1em 0.25em;
         li{
             display: block;
-            height: 3em;
+            margin-bottom: 0.25em;
             img{
-                width: 24px;
+                width: 16px;
                 border: 1px solid #888;
                 border-radius: 4px;
+                -moz-border-radius: 4px;
                 -o-border-radius: 4px;
                 -webkit-border-radius: 4px;
                 float: left;
             }
             a{
-                color: #2B2B2B;
-                display: inline-block;
+                color: #555555;
+                display: table-cell;
+                float: left;
+                font-size: 10px;
+                font-weight: bold;
+                line-height: 12px;
                 padding-left: 0.5em;
                 width: 78%;
-                font-size: 10px;
-                line-height: 12px;
             }
+            &:before{ .clearAll; }
+            &:after{ .clearAll; }
         }
     }
 }
@@ -732,20 +739,21 @@ ul#channels_categories {
     }
     
     .advm{
-        p{
-            background-color: @white;
+        [class*="span"]{
+            display: table-cell;
+            min-height:180px;
+            background: @lightYellow;
             border-radius: 8px;
-            border: 2px solid @lightYellow;
-            font-family: @universCondensedMediumItalic;
             padding: 0.5em;
-            min-height: 80px;
-            behavior:url("/css/PIE.htc");
+        }
+        p{            
             a{
                 text-align: left;
-                font-size: 16px;
+                font-size: 14px;
                 color: @darkGray;
+                font-family: @tahoma;
                 img{
-                    width: 60px;
+                    width: 48px;
                     float: left;
                     margin: 0 1em 0 0;
                     border: 6px solid #DDDDDD;
@@ -756,6 +764,7 @@ ul#channels_categories {
                     /* color: @white; */
                 }
             }
+            /*
             &:hover {
                 background-color: @lightYellow;
                 text-decoration: none;
@@ -764,6 +773,7 @@ ul#channels_categories {
                 -webkit-animation: directadvert-link 0.5s; 
                 -o-animation: directadvert-link 0.5s; 	
             }
+            */
         }
     }
     
@@ -789,7 +799,11 @@ ul#channels_categories {
 
 #content.dayListing{
     
-     
+    h2{
+        background-color: transparent;
+        border:none;
+        border-radius: 0;
+    }
     
     .weekLink{
         margin: 0;

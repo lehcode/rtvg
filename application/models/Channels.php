@@ -573,28 +573,44 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'title',
                 'alias',
                 'featured',
-                'icon'
+                'icon'=>"CONCAT('/images/channel_logo/', CH.icon, '')",
+                'free',
+                'format',
             ))
-	    	->join( array('RATING'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `RATING`.`channel`", array(
+            ->join(array("LANG"=>'rtvg_languages'), "`CH`.`lang` = `LANG`.`iso`", array(
+                'lang_iso'=>'iso',
+                'language'=>'name',
+            ))
+            ->join(array("COUNTRY"=>'rtvg_countries'), "`CH`.`country` = `COUNTRY`.`iso`", array(
+                'country_iso'=>'iso',
+                'country'=>'name',
+            ))
+	    	->joinLeft( array('RATING'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `RATING`.`channel`", array(
                 'hits',
                 'rating',
-            ))
-	    	->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category`=`CHCAT`.`id`", array(
-                'category_title'=>'title',
-                'category_alias'=>'alias',
-                'category_image'=>'image'
             ))
 	    	->where("`CH`.`published` = TRUE")
 	    	->order("RATING.hits DESC")
             ->limit($amt)
         ;
         
-        //var_dump($select->assemble());
-        //die(__FILE__ . ': ' . __LINE__);
-	    	
-	    $result = $this->db->fetchAll($select);
-	    
-	    return $result;
+        $result = $this->db->fetchAll($select);
+        
+        if ((bool)$result!==false){
+            foreach ($result as $k=>$v){
+                $result[$k]['id'] = (int)$v['id'];
+                $result[$k]['hits'] = (int)$v['hits'];
+                $result[$k]['rating'] = (int)$v['rating'];
+                $result[$k]['featured'] = (bool)$v['featured'];
+                ksort($result[$k]);
+            }
+        }
+        
+        var_dump($result);
+        die(__FILE__ . ': ' . __LINE__);
+        
+        
+        return $result;
 	    
 	}
 

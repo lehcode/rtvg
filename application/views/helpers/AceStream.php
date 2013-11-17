@@ -13,7 +13,7 @@ class Rtvg_View_Helper_AceStream extends Zend_View_Helper_Abstract
 		    throw new Zend_Exception("Site ID is undefined");
 		}
 		if (!$stream_id) {
-		    throw new Zend_Exception("Stream ID is undefined");
+		    $stream_id='';
 		}
         
         ob_start();

@@ -47,11 +47,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
         
-		try {
-		    $response = $fc->dispatch();
-		} catch (Exception $e) {
-            throw new Exception($e->getMessage(), 500, $e);
-		}
+		$response = $fc->dispatch();
 		
         if (isset($response) && !$response->isException()) {
 			$response->sendHeaders();

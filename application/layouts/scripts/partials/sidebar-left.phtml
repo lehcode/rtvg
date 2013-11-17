@@ -15,7 +15,7 @@
     if (isset($this->bcTop) && !empty($this->bcTop)) {
         ?>
     <div id="topBroadcasts" class="module hidden-phone">
-        <h4>Топ 20 программ</h4>
+        <h4>Топ 20 недели</h4>
         <ul>
             <?php 
             foreach ($this->bcTop as $bc){
@@ -29,7 +29,7 @@
                 <img src="<?= $this->baseUrl( 'images/channel_logo/'.$this->escape($bc['channel_icon']) ) ?>" />
                 <a href="<?= $hrefUrl ?>"
                     title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
-                        <?= $this->escape($this->truncateString( $bc['title'], 4, 'words')) ?>
+                        <?= $this->escape($bc['title']) ?>
                 </a>
             </li>
             <?php 	
@@ -76,6 +76,41 @@
         ?>
     </div>
         <?php
+    }
+    ?>
+    
+    <?php 
+    //Top channels block
+    if (isset($this->channelsTop) && !empty($this->channelsTop)) {
+        ?>
+    <div id="topChannels" class="module hidden-phone">
+        <h4>Популярные каналы</h4>
+        <ul>
+            <?php 
+            foreach ($this->channelsTop as $item){
+                
+                var_dump($item);
+                die(__FILE__ . ': ' . __LINE__);
+                
+                $hrefUrl = $this->url( array(
+                    'channel'=>$this->escape($item['channel_alias']), 
+                    'date'=>  Zend_Date::now()->toString("dd-MM-YYYY")), 
+                    'default_listings_day-date'
+                );
+            ?>
+            <li>
+                <img src="<?= $this->baseUrl( $this->escape($item['channel_icon']) ) ?>" />
+                <a href="<?= $hrefUrl ?>"
+                    title="«<?= $item['channel_title'] ?>» сегодня"">
+                        <?= $this->escape($item['title']) ?>
+                </a>
+            </li>
+            <?php 	
+            }
+            ?>
+        </ul>
+    </div>	
+        <?php 
     }
     ?>
 

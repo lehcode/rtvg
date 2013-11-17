@@ -35,19 +35,22 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 
 ?>
 
-<p>
-    <?php 
-    echo $this->escape( sprintf("Короткая ссылка на программу канала «%s»", $channelTitle) );
-    $linkAttrTitle = $this->escape( sprintf('Телепрограмма канала «%s» на каждый день', $channelTitle) );
-    ?>
-    <a href="<?php echo $this->short_link ?>" title="<?php echo $linkAttrTitle; ?>" class="badge short-link" rel="alternate" target="_blank">
-        <?php echo $this->short_link; ?>
-    </a>
-</p>
-
-
 <div id="programlist" class="row">
 
+    <p>
+        <?php 
+        echo $this->escape( sprintf("Короткая ссылка на программу канала «%s»", $channelTitle) );
+        $linkAttrTitle = $this->escape( sprintf('Телепрограмма канала «%s» на каждый день', $channelTitle) );
+        ?>
+        <a href="<?php echo $this->short_link ?>" 
+           title="<?php echo $linkAttrTitle; ?>" 
+           class="badge short-link" 
+           rel="alternate" 
+           target="_blank">
+            <?php echo $this->short_link; ?>
+        </a>
+    </p>
+    
     <?php 
     $pc=0;
     foreach ($this->items as $k=>$prog) {
@@ -88,7 +91,11 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
         <span class="label"><?php echo $timespan; ?></span>
         <?php endif; ?>
 
-        <span class="start label label-info"><?php echo $prog['start']->toString('HH:mm') ?></span>
+        <span itemscope class="start label label-info">
+            <time itemprop="startDate" datetime="<?= $prog['start']->toString(Zend_Date::ISO_8601) ?>">
+                <?php echo $prog['start']->toString('HH:mm') ?>
+            </time>
+        </span>
 
         <?php if (isset($prog['live']) && ($prog['live']===true)): ?>
         <img src="<?php echo $this->baseUrl('images/icons/live.png'); ?>" class="iconLive" />
