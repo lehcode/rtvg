@@ -606,10 +606,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             }
         }
         
-        var_dump($result);
-        die(__FILE__ . ': ' . __LINE__);
-        
-        
         return $result;
 	    
 	}
