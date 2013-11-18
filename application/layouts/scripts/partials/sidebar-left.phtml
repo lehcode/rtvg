@@ -7,29 +7,39 @@
  * @version $Id: sidebar-left.phtml,v 1.14 2013-04-06 22:35:03 developer Exp $
  *
  */
+
+$this->headScript()->appendScript("$(function(){
+    $('.flagImg').tooltip();
+});");
+
 ?>
 <div class="span<?= $this->spans ?>" id="col_l">
     
     <?php 
-    //Top broadcasts block
-    if (isset($this->bcTop) && !empty($this->bcTop)) {
+    //Top channels block
+    if (isset($this->channelsTop) && !empty($this->channelsTop)) {
         ?>
-    <div id="topBroadcasts" class="module hidden-phone">
-        <h4>Топ 20 недели</h4>
+    <div id="topChannels" class="module hidden-phone">
+        <h4>Топ 10 каналов</h4>
         <ul>
             <?php 
-            foreach ($this->bcTop as $bc){
-                try {
-                    $hrefUrl = $this->url( array('channel'=>$this->escape($bc['channel_alias']), 'alias'=>$this->escape($bc['alias'])), 'default_listings_broadcast-week');
-                } catch (Exception $e) {
-                    throw new Zend_Exception("Cannot assemble URL", 500, $e);
-                }
-                    ?>
+            foreach ($this->channelsTop as $item){
+                $hrefUrl = $this->url( array(
+                    'channel'=>$this->escape($item['alias']), 
+                    'date'=>'сегодня'), 
+                    'default_listings_day-date'
+                );
+            ?>
             <li>
-                <img src="<?= $this->baseUrl( 'images/channel_logo/'.$this->escape($bc['channel_icon']) ) ?>" />
+                <img src="<?= $this->baseUrl( $this->escape($item['icon']) ) ?>"
+                     class="channelLogo" />
+                <img src="<?= $this->baseUrl('/images/flags/32/'.$item['country_iso'].'.png') ?>" 
+                     alt="Страна канала <?= $item['country'] ?>" 
+                     class="flagImg"
+                     title="Страна: <?= $item['country'] ?>"/>
                 <a href="<?= $hrefUrl ?>"
-                    title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
-                        <?= $this->escape($bc['title']) ?>
+                   title="&laquo;<?= $item['title'] ?>&raquo; сегодня">
+                        <?= $this->escape($item['title']) ?>
                 </a>
             </li>
             <?php 	
@@ -41,10 +51,11 @@
     }
     ?>
     
+    
     <?php
     if (isset($this->channelNews) && (bool)$this->channelNews!==false){ 
         ?>
-    <div class="module channelNews">
+    <div class="module" id="channelNews">
             <h4>Новости канала</h4>
         <?php
         $i=0;
@@ -80,31 +91,27 @@
     ?>
     
     <?php 
-    //Top channels block
-    if (isset($this->channelsTop) && !empty($this->channelsTop)) {
+    //Top broadcasts block
+    if (isset($this->bcTop) && !empty($this->bcTop)) {
         ?>
-    <div id="topChannels" class="module hidden-phone">
-        <h4>Популярные каналы</h4>
+    <div id="topBroadcasts" class="module hidden-phone">
+        <h4>Топ 20 недели</h4>
         <ul>
             <?php 
-            foreach ($this->channelsTop as $item){
-                
-                var_dump($item);
-                die(__FILE__ . ': ' . __LINE__);
-                
-                $hrefUrl = $this->url( array(
-                    'channel'=>$this->escape($item['channel_alias']), 
-                    'date'=>  Zend_Date::now()->toString("dd-MM-YYYY")), 
-                    'default_listings_day-date'
-                );
-            ?>
+            foreach ($this->bcTop as $bc){
+                try {
+                    $hrefUrl = $this->url( array('channel'=>$this->escape($bc['channel_alias']), 'alias'=>$this->escape($bc['alias'])), 'default_listings_broadcast-week');
+                } catch (Exception $e) {
+                    throw new Zend_Exception("Cannot assemble URL", 500, $e);
+                }
+                    ?>
             <li>
-                <img src="<?= $this->baseUrl( $this->escape($item['channel_icon']) ) ?>" />
+                <img src="<?= $this->baseUrl( 'images/channel_logo/'.$this->escape($bc['channel_icon']) ) ?>"
+                     class="channelLogo" />
                 <a href="<?= $hrefUrl ?>"
-                    title="«<?= $item['channel_title'] ?>» сегодня"">
-                        <?= $this->escape($item['title']) ?>
+                    title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
+                        <?= $this->escape($bc['title']) ?>
                 </a>
-                <?php  ?>
             </li>
             <?php 	
             }

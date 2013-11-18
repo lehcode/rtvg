@@ -82,8 +82,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             ->order("CH.title ASC")
         ;
         
-        if ((bool)Zend_Registry::get('adult') === false){
-            $select->where("`CH`.`adult` = '0' OR `CH`.`adult` IS NULL ");
+        if ((bool)Zend_Registry::get('adult') !== true){
+            $select->where("`CH`.`adult` != '1'");
         }
         
         $channels = $this->db->fetchAll($select);
@@ -152,7 +152,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'format',
                 'desc_body',
                 'site_url'=>'url',
-                'adult',
                 'keywords',
                 'video_aspect',
                 'video_quality',
@@ -201,7 +200,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         $result['free'] = (bool)$result['free'];
         $result['featured'] = (bool)$result['featured'];
         $result['category_id'] = (int)$result['category_id'];
-        $result['adult'] = (bool)$result['adult'];
         $result['rss_enabled'] = (bool)$result['rss_enabled'];
         $result['geo_lt'] = (float)$result['geo_lt'];
         $result['geo_lg'] = (float)$result['geo_lg'];
@@ -382,8 +380,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 			->where("`CH`.`published` IS TRUE")
 			->order("CH.title ASC");
         
-        if (Zend_Registry::get('adult') !== true){
-            $select->where("CH.adult IS NOT TRUE");
+        if ((bool)Zend_Registry::get('adult') !== true){
+            $select->where("`CH`.`adult` != '1'");
         }
         
         $result = $this->db->fetchAll($select);
@@ -463,13 +461,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    
 		$table = new Xmltv_Model_DbTable_ChannelsCategories();
 		$result = $table->fetchAll(null, "title ASC")->toArray();
-		$allChannels = array(
-				'id'=>'',
-				'title'=>'Все каналы',
-				'alias'=>'',
-				'image'=>'all-channels.gif',
-		);
-		array_push( $result, $allChannels );
 		return $result;
 		
 	}
@@ -543,7 +534,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'video_quality',
 				'audio',
 			))
-			->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+			->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
 				'category_title'=>'title',
 				'category_alias'=>'alias',
 				'category_image'=>'image')
@@ -579,7 +570,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             ))
             ->join(array("LANG"=>'rtvg_languages'), "`CH`.`lang` = `LANG`.`iso`", array(
                 'lang_iso'=>'iso',
-                'language'=>'name',
+                'lang'=>'name',
             ))
             ->join(array("COUNTRY"=>'rtvg_countries'), "`CH`.`country` = `COUNTRY`.`iso`", array(
                 'country_iso'=>'iso',

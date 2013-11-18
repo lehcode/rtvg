@@ -53,7 +53,7 @@ class FrontpageControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         
         // Routing
 		$this->assertModule( $urlParams['module'] );
-		$this->assertController( 'frontpage' );
+		$this->assertController( $urlParams['controller'] );
 		$this->assertAction( 'index' );
         $this->assertNotRedirect();
         

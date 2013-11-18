@@ -101,7 +101,6 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'hash',
             ))
             ->joinLeft(array('EVT'=>$this->_eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
-                'channel',
                 'start',
                 'end',
                 'premiere',
@@ -119,32 +118,37 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',
             ))
-            ->joinLeft(array('CHC'=>'rtvg_countries'), "`CH`.`country`=`CHC`.`iso`", array(
+            ->joinLeft(array('CHC'=>'rtvg_countries'), "`CH`.`country` = `CHC`.`iso`", array(
                 'channel_country_name'=>'name',
                 'channel_country_iso'=>'iso',
             ))
-            ->joinLeft(array('BCC'=>'rtvg_countries'), "`BC`.`country`=`BCC`.iso", array(
+            ->joinLeft(array('BCC'=>'rtvg_countries'), "`BC`.`country` = `BCC`.iso", array(
                 'bc_country_name'=>'name',
                 'bc_country_iso'=>'iso',
             ))
-            ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd")." 00:00:00") )
-            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->addDay(2)->toString("YYYY-MM-dd")." 00:00") )
-            ->where( "`EVT`.`channel` = $channel_id")
-            ->where( "`CH`.`published` = TRUE")
-            ->group( "EVT.hash")
-            ->order( "EVT.start ASC")
+            ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")) )
+            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->addDay(1)->toString("YYYY-MM-dd 00:00:00")) )
+            ->where("`EVT`.`channel` = $channel_id")
+            ->where("`CH`.`published` = '1'")
+            ->group("EVT.hash")
+            ->order("EVT.start ASC")
         ;
         
-        $result = $this->_db->fetchAssoc($select->assemble());
-		
+        $result = $this->_db->fetchAll($select, array(), Zend_Db::FETCH_NAMED);
+
         foreach ($result as $k=>$row) {
 			$result[$k]['start'] = new Zend_Date( $row['start'] );
 			$result[$k]['end']   = new Zend_Date( $row['end'] );
-			$result[$k]['premiere'] = isset($row['premiere']) ? (bool)$row['premiere'] : false ;
-			$result[$k]['live']	    = isset($row['live']) ? (bool)$row['live'] : false ;
-			$result[$k]['new']	    = isset($row['new']) ? (bool)$row['new'] : false ;
+			$result[$k]['premiere'] = (bool)$row['premiere'];
+			$result[$k]['live'] = (bool)$row['live'];
+			$result[$k]['new'] = (bool)$row['new'];
+			$result[$k]['category_id'] = (int)$row['category_id'];
+			$result[$k]['channel_id'] = (int)$row['channel_id'];
+			$result[$k]['episode_num'] = (int)$row['episode_num'];
+			$result[$k]['category'] = (int)$row['category'];
+			$result[$k]['date'] = new Zend_Date($row['date']);
 		}
-		
+        
         return $result;
 		
 	}

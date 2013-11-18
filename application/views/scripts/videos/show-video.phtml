@@ -76,37 +76,35 @@ if (isset($this->main_video)){
 							alt="<?php echo $v['title'] ?>" />
 					</a>
 					
-					<p class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></p>
+					<div class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></div>
 					
 					<?php if (isset($v['category_ru']) && !empty($v['category_ru'])) { ?>
-					<p class="category">
+					<div class="category">
                         <?php
                         $urlHref = $this->url( array(
                             'category'=>Xmltv_String::strtolower( $v['category_ru']['channel_cat_alias'] )), 'default_channels_category');
                         ?>
 						Категория: 
-						<a href="<?= $urlHref;  ?>"
+						<a href="<?php echo $urlHref;  ?>"
 							target="_self"
 							title="<?php printf("%s каналы телепрограмма", $v['category_ru']) ?>">
 							<?php echo $v['category_ru']['channel_cat_title']; ?>
 						</a>
-					</p>
+					</div>
 					<?php 
 					} ?>
 					
-					<p class="date">
+					<div class="date">
 						<?php 
 						$date = new Zend_Date ( $v['published'] ); 
-						printf("Добавлено %s", $date->toString('d MMM YYYY'));
+						echo $date->toString('d MMM YYYY');
 						?>
-					</p>
+					</div>
 					
 				</div>
 					
-				<div class="description">
-					<p>
-						<?php echo $this->truncateString( $v['desc'], 35, 'words' ) ?>
-					</p>
+				<p class="description">
+					<?php echo $this->truncateString( $v['desc'], 55, 'words' ) ?>
 				</div>
 				
 			</div>

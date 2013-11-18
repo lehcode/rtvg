@@ -39,74 +39,82 @@ $this->headStyle()->appendStyle($css);
 ?>
 
 <div class="row">
-    <h1>&laquo;<?= $channelTitle ?>&raquo; 
-        <time itemprop="startDate" datetime="<?= $this->listing_date->toString(Zend_Date::ISO_8601) ?>">
-            <?= Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?>
+    <h1>&laquo;<?php echo $channelTitle ?>&raquo; 
+        <time itemprop="startDate" datetime="<?php echo $this->listing_date->toString(Zend_Date::ISO_8601) ?>">
+            <?php echo Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?>
         </time>
     </h1>
 </div>
 
 
 
-<div class="top row">
+<div class="row">
     
-	<span class="span4" id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
-    
-    <?php 
-    try {
-        $linkAttrHref  = $this->url(array('channel'=>$channelAlias), 'default_listings_day-listing');
-    } catch (Exception $e) {
-        throw new Zend_Exception("Cannot assemble URL", 500, $e);
-    }
-    $linkAttrTitle = $this->escape( sprintf('Телепрограмма «%s» на сегодня', $channelTitle) );
-    $linkText = sprintf ('«%s» сегодня', $channelTitle);
-    ?>
-	<h2 class="span4">
-		<a href="<?php echo $linkAttrHref; ?>" 
-           title="<?php echo $linkAttrTitle; ?>" 
-           class="btn btn-mini btn-info">
-               <?php echo $linkText; ?>
-        </a>
-	</h2>
-	
-    
-    <h3 class="span4 weekLink">
+	<h3 id="weekButton" class="span4">
 		<?php 
-        try {
-            $linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
-        } catch (Exception $e) {
-            throw new Zend_Exception("Cannot assemble URL", 500, $e);
-        }
+        $linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
         $linkAttrTitle = $this->escape( sprintf('Передачи %s', $channelTitle) );
-		$linkText      = $this->escape( sprintf ('Программа на неделю', $channelTitle) );
 		?>
 		<a href="<?php echo $linkAttrHref; ?>" 
            title="<?php echo $linkAttrTitle; ?>" 
-           class="btn btn-mini btn-info">
-			<?php echo $linkText; ?>
+           class="btn btn-mini">
+			Программа на неделю
 		</a>
 	</h3>
-    
+    <div class="span4 offset4 badge" id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</div>
+</div>
+
+<div class="row">
+    <?php 
+    $linkAttrHref  = $this->url(array('channel'=>$channelAlias, 'date'=>'сегодня'), 'default_listings_day-date');
+    $linkAttrTitle = $this->escape( sprintf('Все передачи «%s» сегодня', $channelTitle) );
+    ?>
+	<h2 id="dayButton" class="span12">
+		<a href="<?php echo $linkAttrHref; ?>" 
+           title="<?php echo $linkAttrTitle; ?>"
+           class="btn btn-small">
+               <?php echo sprintf ('Все передачи &laquo;%s&raquo; сегодня', $channelTitle) ?>
+        </a>
+	</h2>
+</div>
+
+<div class="row" id="tinyUrl">
+    <p class="badge">
+        <?php echo $this->escape( sprintf("Короткая ссылка на программу канала «%s»", $channelTitle) ); ?>
+        <?php $linkAttrTitle = $this->escape( sprintf('Телепрограмма канала «%s» на каждый день', $channelTitle) ); ?>
+        <a href="<?php echo $this->short_link ?>" 
+           title="<?php echo $linkAttrTitle; ?>" 
+           rel="alternate" 
+           target="_blank">
+            <?php echo $this->short_link; ?>
+        </a>
+    </p>
 </div>
 
 <div class="row">
 	<?php
-	//$this->headScript()->appendScript("$(function(){ $('#DIV_DA_78318 table').hide(); });");
+	$this->headScript()->appendScript("$(function(){ $('#DIV_DA_126314 table').hide(); });");
 	?>
-	<div id="DIV_DA_78318"></div>
+	<div id="DIV_DA_126314"></div>
 	
     <?php 
-    //if ((int)$this->channel['stream'] > 0){
+    if ((int)$this->channel['stream'] > 0){
         $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; 
         echo $this->aceStream($siteId, (int)$this->channel['stream'], 580, 326);
-    //} ?>
+    } ?>
 </div>
 
 
 
 <?php 
 if (count($this->programs)){
-    if ($this->is_today) {
+    if (!$this->is_today || $this->tableDisplay===true) {
+        echo $this->partial( 'listings/partials/programtable.phtml', array(
+            'items'        => $this->programs,
+            'channel'      => $this->channel,
+            'listing_date' => $this->listing_date,
+        )); 
+    } else {
         echo $this->partial( 'listings/partials/programlist.phtml', array( 
             'items'          => $this->programs, 
             'channel'        => $this->channel, 
@@ -114,19 +122,13 @@ if (count($this->programs)){
             'is_today'       => $this->is_today, 
             'short_link'     => $this->short_link,
             'listing_date'   => $this->listing_date,
-        )); 
-    } else {
-        echo $this->partial( 'listings/partials/programtable.phtml', array(
-            'items'        => $this->programs,
-            'channel'      => $this->channel,
-            'listing_date' => $this->listing_date,
         ));
     }
 }
 ?>
 
 <div class="row">
-    <p class="ace">Для просмотра телеканала &laquo;<?= $this->channel['title'] ?>&raquo; с помощью <em>Торрент-ТВ в отличном качестве</em> вам нужно
+    <p class="ace">Для просмотра телеканала &laquo;<?php echo $this->channel['title'] ?>&raquo; с помощью <em>Торрент-ТВ в отличном качестве</em> вам нужно
         скачать и установить специальный плагин <a href="http://acestream.org/ru/" target="blank" rel="nofollow" title="Скачать Торрент ТВ">Ace Stream</a>.
         Установка занимает минуту. После того как плагин <em>Торрент-ТВ</em> установлен, перезапустите свой браузер. Смотрите - хоть обсмотритесь :)
     </p>

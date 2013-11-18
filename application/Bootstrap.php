@@ -79,7 +79,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$siteConfig = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', APPLICATION_ENV );
 		Zend_Registry::set('site_config', $siteConfig);
         
-        Zend_Registry::set( 'adult', (bool)$siteConfig->get('frontend')->adult );
+        Zend_Registry::set( 'adult', (bool)$siteConfig->frontend->adult );
 		
 	}
 	
@@ -197,7 +197,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	{	
 	    $this->bootstrap('view');
 	    $view = $this->getResource('view');
-	    $view->doctype( 'HTML5' );
+	    $view->doctype( 'XHTML1_RDFA' );
 	    $view->setEncoding( 'UTF-8' );
 	    $view->headMeta()
 	    	->setHttpEquiv( 'Content-Type', 'text/html;charset=utf-8' )
@@ -214,6 +214,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             ->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
             ->prependStylesheet($view->baseUrl('css/bootstrap.css'))
             ->appendStylesheet($view->baseUrl('css/fonts.css'))
+            ->prependStylesheet( $view->baseUrl('css/jquery-ui.css'), 'screen');
         ;
 
 	    $view->headScript()

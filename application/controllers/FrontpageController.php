@@ -46,15 +46,15 @@ class FrontpageController extends Rtvg_Controller_Action
 	public function indexAction () {
         
         $amt = (int)Zend_Registry::get('site_config')->frontend->frontpage->channels;
-        if(!$amt){
+        if($amt==0){
             $list = array();
         } else {
             $top = $this->channelsModel->topChannels($amt);
-            if ($this->cache->enabled && APPLICATION_ENV!='development'){
-                $this->cache->setLifetime(600);
+            if ($this->cache->enabled){
+                (APPLICATION_ENV=='development') ? $this->cache->setLifetime(100) :  $this->cache->setLifetime(600) ;
                 $f = 'Listings/Frontpage';
-                $hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
-                if (($list = $this->cache->load( $hash, 'Core', $f))===false) {
+                $hash = (APPLICATION_ENV=='development') ? 'frontpage_listings' : Rtvg_Cache::getHash('frontpage_listings');
+                if ((bool)($list = $this->cache->load( $hash, 'Core', $f))===false) {
                     $list = $this->bcModel->frontpageListing($top);
                     $this->cache->save( $list, $hash, 'Core', $f);
                 }
@@ -63,13 +63,13 @@ class FrontpageController extends Rtvg_Controller_Action
             }
         }
         $this->view->assign('list', $list);
-	    
+        
         // Channels data for dropdown
 		if ($this->cache->enabled && APPLICATION_ENV!='development'){
-		    $this->cache->setLifetime(600);
+		    (APPLICATION_ENV=='development') ? $this->cache->setLifetime(100) :  $this->cache->setLifetime(600) ;
 		    $f = 'Channels';
-			$hash = md5('frontpage-channels-'.self::TOP_CHANNELS_AMT);
-	        if (($channels = $this->cache->load( $hash, 'Core', $f))===false) {
+			$hash = (APPLICATION_ENV=='development') ? 'channels_dropdown' : Rtvg_Cache::getHash('channels_dropdown') ;
+	        if ((bool)($channels = $this->cache->load( $hash, 'Core', $f))===false) {
 		        $channels = $this->channelsModel->allChannels("title ASC");
 		        $this->cache->save( $channels, $hash, 'Core', $f);
 		    }
@@ -82,10 +82,10 @@ class FrontpageController extends Rtvg_Controller_Action
 	    $articlesAmt = (int)Zend_Registry::get('site_config')->frontend->frontpage->get('articles');
 	    $this->view->assign( 'articles_amt', $articlesAmt);
         if ($articlesAmt>0){
-            if ( $this->cache->enabled && APPLICATION_ENV!='development' ){
-                $this->cache->setLifetime(600);
+            if ( $this->cache->enabled ){
+                (APPLICATION_ENV=='development') ? $this->cache->setLifetime(100) :  $this->cache->setLifetime(600) ;
                 $f = 'Content/Articles';
-                $hash = md5( 'frontpage-articles' );
+                $hash = (APPLICATION_ENV=='development') ? 'frontpage_articles' : Rtvg_Cache::getHash('frontpage_articles') ;
                 if (($channels = $this->cache->load( $hash, 'Core', $f))===false ) {
                     $articles = $this->articlesModel->frontpageItems( $articlesAmt );
                     $this->cache->save( $channels, $hash, 'Core', $f);

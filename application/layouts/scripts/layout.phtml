@@ -30,7 +30,7 @@ if (!$isFrontpage && (int)$this->rightWidth > 0){
 //#### Header ####
 $this->placeholder('header')->set( $this->partial('partials/header.phtml', array(
 		'pageclass'=>$this->pageclass,
-		'nav_data'=>$this->nav_data['topnav'],
+		'navData'=>$this->navData['topnav'],
 		'is_frontpage'=>$this->is_frontpage,
 )));
 
@@ -54,7 +54,7 @@ $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.p
     'channelsTop'=>$this->channelsTop,
 )));
 
-// #### Right Sidebar ####
+//#### Right Sidebar ####
 $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', array(
 	'channel'=>$this->channel,
 	'ads'=>$this->ads,
@@ -63,46 +63,30 @@ $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-righ
 	'videos'=>$this->sidebarVideos,
 )));
 
-/*
- * #### Footer ####
- */
+//#### Footer ####
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
-
-/* 
-$this->headStyle()
-	->appendStyle("");
- */
-
 ?>
 
-<?php echo $this->doctype(); ?>
-<html xmlns="http://www.w3.org/1999/xhtml"
-<?php 
-if ($this->doctype()->isRdfa()){
-    if (isset($this->ogp_ns)){ ?>
-	prefix="og: <?php echo $this->ogp_ns; ?>#" 
-<?php }
-} ?>
-xml:lang="ru" lang="ru">
+<?= $this->doctype(); ?>
+<html itemscope itemtype="http://schema.org/WebPage" xmlns:fb="https://www.facebook.com/2008/fbml"
+<?= ($this->doctype()->isRdfa() && isset($this->ogp_ns)) ? 'prefix="og:'.$this->ogp_ns.'#"' : null ; ?> xml:lang="ru" lang="ru">
 <head>
-<?= $this->headTitle() ?>
-<?= $this->headMeta() ?>
-<?= $this->headLink() ?>
-<?= $this->jQuery() ?>
-<?= $this->headScript() ?>
-<?= $this->headStyle() ?>
-    
-<?php 
-if (APPLICATION_ENV=='production') {
-?>
-<script type="text/javascript">new Image().src = "//counter.yadro.ru/hit?r"+
-escape(document.referrer)+((typeof(screen)=="undefined")?"":
-";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
-screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
-";h"+escape(document.title.substring(0,80))+
-";"+Math.random();</script>
-<?php
-} ?>
+    <?php /*
+    <meta content="An Example Title" itemprop="name" property="og:title" />
+    <meta content="Lorem ipsum dolor sit amet" itemprop="description" name="description" property="og:description" />
+    <meta content="http://www.example.com/image.jpg" itemprop="image" property="og:image" />
+    <meta content="http://www.example.com/permalink" itemprop="url" property="og:url" />
+    <link rel="canonical" href="http://www.example.com/permalink" />
+     */ ?>
+    <?= $this->headTitle() ?>
+    <?= $this->headMeta() ?>
+    <?= $this->headLink() ?>
+    <?= $this->jQuery() ?>
+    <?= $this->headScript() ?>
+    <?= $this->headStyle() ?>
+    <?php  if (APPLICATION_ENV=='production') : ?>
+    <script type="text/javascript">new Image().src = "//counter.yadro.ru/hit?r"+escape(document.referrer)+((typeof(screen)=="undefined")?"":";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+";h"+escape(document.title.substring(0,80))+";"+Math.random();</script>
+    <?php endif; ?>
 </head>
 <body>
 
@@ -144,7 +128,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
             <?= $this->placeholder('sidebar_left'); ?>
             <?php endif; ?>
 
-            <div class="span<?php echo $this->contentWidth ?>" style="background:#EFEFEF; padding-left: 2em; padding-right: 2em;">
+            <div class="span<?= $this->contentWidth ?>" style="background:#EFEFEF; padding-left: 2em; padding-right: 2em;">
                 <?= $this->placeholder('maincontent'); ?>
             </div>	
 
@@ -196,7 +180,7 @@ _gaq.push(['_trackPageview']);
 <script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <?php } ?>
 
-<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=78318&div=DIV_DA_78318"></script>
+<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314"></script>
 <script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script>
 
 <script type="text/javascript">

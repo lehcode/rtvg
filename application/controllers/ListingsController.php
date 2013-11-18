@@ -72,7 +72,7 @@ class ListingsController extends Rtvg_Controller_Action
         
         parent::validateRequest();
         
-        $this->view->assign( 'pageclass', 'DayListing' );
+        $this->view->assign( 'pageclass', 'dayListing' );
         
         $channel = $this->channelInfo( $this->input->getEscaped('channel') );
         
@@ -80,6 +80,9 @@ class ListingsController extends Rtvg_Controller_Action
             throw new Zend_Exception("Channel not found.", 404);
         }
         $this->view->assign('channel', $channel );
+        
+        //Set display as list
+        $this->view->assign('tableDisplay',  false);
         
         //Текущая дата
         $listingDate = $this->bcModel->listingDate($this->input);
@@ -102,7 +105,7 @@ class ListingsController extends Rtvg_Controller_Action
             $f = "/Listings/Programs";
             $hash = Rtvg_Cache::getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
             if (!$list = $this->cache->load( $hash, 'Core', $f)) {
-                if ($listingDate->isToday()){
+                if ($listingDate->isToday() && $this->getParam('date')===null){
                     $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'], $amt );
                 } else {
                     $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'] );
@@ -111,7 +114,7 @@ class ListingsController extends Rtvg_Controller_Action
             }
             
         } else {
-             if ($listingDate->isToday()){
+             if ($listingDate->isToday() && $this->getParam('date')===null){
                 $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'], $amt );
             } else {
                 $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'] );
@@ -147,7 +150,7 @@ class ListingsController extends Rtvg_Controller_Action
                 // Запрос в файловый кэш
                 if ($this->cache->enabled){
                     $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->listings->lifetime;
-                    (APPLICATION_ENV!='production') ? $this->cache->setLifetime(600) : $this->cache->setLifetime($t);
+                    (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime($t);
                     $f = '/Listings/Videos';
                     $hash = Rtvg_Cache::getHash( 'listingVideo_'.$channel['title'].'-'.$listingDate->toString( 'YYYY-MM-dd' ));
                     if ((false === ($listingVideos=$this->cache->load( $hash, 'Core', $f)))){
@@ -206,8 +209,8 @@ class ListingsController extends Rtvg_Controller_Action
         $this->view->assign('sidebarVideos', $vids );
         
         //Tinyurl data
-        $tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias']), 
-            'default_listings_day-listing',
+        $tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias'], 'date'=>'сегодня'), 
+            'default_listings_day-date',
             array(
                 $this->_getParam('module'),
                 $this->_getParam('controller'),
@@ -217,7 +220,7 @@ class ListingsController extends Rtvg_Controller_Action
         );
         $this->view->assign('short_link', $tinyUrl);
         
-        //Add hit for channel and model
+        //Add hit for channel
         $this->channelsModel->addHit( (int)$channel['id'] );
         $this->view->assign('featured', $this->getFeaturedChannels());
         
@@ -240,8 +243,12 @@ class ListingsController extends Rtvg_Controller_Action
         
         
         //Данные для модуля самых популярных программ
-        $top = $this->bcModel->topBroadcasts();
+        $top = $this->bcModel->topBroadcasts(20);
         $this->view->assign('bcTop', $top);
+        
+        if ($this->_getParam('date')=='сегодня'){
+            $this->view->assign('tableDisplay',  true);
+        }
         
     }
     

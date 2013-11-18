@@ -230,7 +230,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		}
         
         $nav  = $this->navData('topnav');
-        $this->view->assign('nav_data', $nav);
+        $this->view->assign('navData', $nav);
 		
         $this->fireLog = new Zend_Log( new Zend_Log_Writer_Firebug() );
         
@@ -353,14 +353,11 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	
 		$tinyurl = new Zend_Service_ShortUrl_BitLy( self::$bitlyLogin, self::$bitlyKey);
 		$url	 = 'http://rutvgid.ru'.$this->view->url( $parts, $route);
-		$e = (bool)Zend_Registry::get('site_config')->cache->tinyurl->get('enabled');
-		
+		$e = (bool)Zend_Registry::get('site_config')->cache->tinyurl->enabled;
 		if ($e===true){
-		    
-			$t = (int)Zend_Registry::get('site_config')->cache->tinyurl->get('lifetime');
-			$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
+		    $t = (int)Zend_Registry::get('site_config')->cache->tinyurl->lifetime;
+			$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(604800) ;
 			$f = '/Tinyurl/Pages';
-			
 			$hash = Rtvg_Cache::getHash('tinyurl_'.implode(';', $parts).implode(';', $uniq));
 			if (($link = $this->cache->load($hash, 'Core', $f))===false) {
 				$link = trim($tinyurl->shorten( $url ));
@@ -531,7 +528,9 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         if (!$channel || !is_array($channel)){
             throw new Zend_Exception('$channel is not defined');
         }
-        return $this->videosModel->sidebarVideos($channel);
+        $result = $this->videosModel->sidebarVideos($channel);
+        
+        return $result;
         
     }
     
@@ -572,28 +571,20 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         
         $nav = array();
         $model = new Xmltv_Model_Abstract();
+        $l = strlen(substr($type, 0, strpos($type, 'nav')));
+        $m = substr($type, 0, $l);
+        $methodName = $m.'navData';
         
         if ($this->cache->enabled && APPLICATION_ENV!='development'){
-            
             $this->cache->setLifetime(604800);
             $f  = '/Misc';
-            $hash = $this->cache->getHash('navMenus');
-            
-            if (($nav = $this->cache->load( $hash, 'Core', $f))===false) {
-                switch ($type){
-                    case 'topnav':
-                        $nav[$type] = $model->getTopnavData();
-                        break;
-                }
+            $hash = $this->cache->getHash($methodName);
+            if ((bool)($nav = $this->cache->load( $hash, 'Core', $f))===false) {
+                $nav[$type] = $model->$methodName;
                 $this->cache->save($nav, $hash, 'Core', $f);
-                
             }
         } else {
-            switch ($type){
-                case 'topnav':
-                    $nav[$type] = $model->getTopnavData();
-                    break;
-            }
+            $nav[$type] = $model->$methodName;
         }
         
         return $nav;

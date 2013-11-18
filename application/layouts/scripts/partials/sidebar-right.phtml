@@ -12,12 +12,13 @@
 <?php
 $this->headScript()->appendScript("$(document).ready(function(){ 
     $('#rumor-ads').show(300); 
-    $('#rumor-ads table').hide(); 
+    $('#rumor-ads table').hide();
+    $('#sidebarVideos').accordion({ header: 'h4', heightStyle: 'content' });
 });");
 
 ?>
 
-<div class="span<?= $this->spans ?>" id="col_r">
+<div class="span<?php echo $this->spans ?>" id="col_r">
     
     <?php
     if ((bool)$this->channelNews===false){
@@ -25,16 +26,16 @@ $this->headScript()->appendScript("$(document).ready(function(){
             $channelTitle = $this->escape($this->channel['title']);
             ?>
 
-    <div class="module sidebarVideos hidden-phone">
+    <div class="module" id="sidebarVideos">
 
-        <h3 class="label">Видео <?= $channelTitle ?></h3>
+        <h3>Видео <?php echo $channelTitle ?></h3>
 
-            <?php
+        <?php
         foreach ($this->videos as $video) {
             $data['title'] = $this->escape( $video['title'] );
             $data['alias'] = $this->escape( $video['alias'] );
-            $data['published'] = $video['published']->toString( 'd MMMM YYYY');
-            $data['duration']  = $video['duration']->toString( 'HH:MM:ss');
+            $data['published'] = $video['published'];
+            $data['duration']  = $video['duration'];
             $data['desc'] = $this->escape( $video['desc'] );
             $data['link_title'] = empty($video['desc']) ? $data['title']. $this->truncateString( $data['desc'], 40, 'letters') : $video['title'] ;
             $data['link_href'] = $this->url(array('alias'=>$data['alias'], 'id'=>$video['rtvg_id']), 'default_videos_show-video');
@@ -62,7 +63,7 @@ $this->headScript()->appendScript("$(document).ready(function(){
         foreach ($this->ads as $ad){
             ?>
             <div class="msg" style="width: 270px; overflow: hidden;">
-                <?= $ad['html'] ?>
+                <?php echo $ad['html'] ?>
             </div>
             <?php
         }

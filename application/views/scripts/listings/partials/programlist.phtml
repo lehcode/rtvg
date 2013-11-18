@@ -15,7 +15,7 @@ $this->headMeta()->setName('title', sprintf ('«%s» онлайн, %s', $channel
 //Browser window title
 $this->headTitle( sprintf ('«%s» сегодня. Телепрограмма и онлайн-вещание', $channelTitle ) );
 
-$this->inlineScript()->appendScript("$(function(){ $('.iconLive').popover({ content:'Прямой эфир' }) });");
+$this->inlineScript()->appendScript("$(function(){ $('.iconLive').tooltip() });");
 
 //Generate keywords
 $kw = array(
@@ -37,20 +37,6 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 
 <div id="programlist" class="row">
 
-    <p>
-        <?php 
-        echo $this->escape( sprintf("Короткая ссылка на программу канала «%s»", $channelTitle) );
-        $linkAttrTitle = $this->escape( sprintf('Телепрограмма канала «%s» на каждый день', $channelTitle) );
-        ?>
-        <a href="<?php echo $this->short_link ?>" 
-           title="<?php echo $linkAttrTitle; ?>" 
-           class="badge short-link" 
-           rel="alternate" 
-           target="_blank">
-            <?php echo $this->short_link; ?>
-        </a>
-    </p>
-    
     <?php 
     $pc=0;
     foreach ($this->items as $k=>$prog) {
@@ -83,22 +69,33 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
             break;
             default: break;
         }
+        
+        //Item width
+        $spans = 3;
+        if (count($this->items)==3){
+            $spans = 4;
+        } elseif (count($this->items)==2){
+            $spans = 6;
+        } elseif (count($this->items)==1){
+            $spans = 12;
+        }
+        
         ?>
 
-    <div class="item<?php echo $active; ?> span3">
+    <div class="item<?php echo $active; ?> span<?php echo $spans ?>">
 
         <?php if ($this->is_today): ?>
         <span class="label"><?php echo $timespan; ?></span>
         <?php endif; ?>
 
-        <span itemscope class="start label label-info">
-            <time itemprop="startDate" datetime="<?= $prog['start']->toString(Zend_Date::ISO_8601) ?>">
+        <span itemscope itemtype="http://schema.org/Event" class="start label label-info">
+            <time itemprop="startDate" datetime="<?php echo $prog['start']->toString(Zend_Date::ISO_8601) ?>">
                 <?php echo $prog['start']->toString('HH:mm') ?>
             </time>
         </span>
 
         <?php if (isset($prog['live']) && ($prog['live']===true)): ?>
-        <img src="<?php echo $this->baseUrl('images/icons/live.png'); ?>" class="iconLive" />
+        <img src="<?php echo $this->baseUrl('images/icons/live.png'); ?>" class="iconLive" title="В прямом эфире" />
         <?php endif; ?>
 
 

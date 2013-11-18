@@ -131,18 +131,6 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             return array();
         }
         
-        /*
-        $nowShowing=false;
-        foreach ($result as $row){
-            if ((bool)$row['now_showing']===true){
-                $nowShowing=true;
-            }
-        }
-        if (!$nowShowing){
-            $result[0]['now_showing'] = true;
-        }
-         * */
-        
         return $result;
     }
     
@@ -642,16 +630,13 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
      * @throws Zend_Exception
      */
     public function frontpageListing($channels=array()){
-        
+                
         if (empty($channels)){
             throw new Zend_Exception( "Channels cannot be empty" );
         }
         if (!is_array($channels)){
             throw new Zend_Exception( "Channels must be an array" );
         }
-        
-        //var_dump(func_get_args());
-        //die(__FILE__ . ': ' . __LINE__);
         
         $select = $this->db->select()
             ->from( array('BC'=>$this->bcTable->getName()), array(
@@ -690,8 +675,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             ));
         
         if ((bool)Zend_Registry::get('adult') !== true) {
-            $select->where("`CH`.`adult` IS NULL");
-            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
+            $select->where("`CH`.`adult` != '1'");
+            $select->where("`BC`.`age_rating` >= 16 OR `BC`.`age_rating` = 0");
         }
         
         if (is_array($channels) && !empty($channels)){
@@ -887,8 +872,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         ;
         
         if ((bool)Zend_Registry::get('adult') !== true){
-            $select->where("`CH`.`adult` IS NULL");
-            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
+            $select->where("`CH`.`adult` != '1'");
+            $select->where("`BC`.`age_rating` >= 16 OR `BC`.`age_rating` = 0");
         }
         
         $result = $this->db->fetchAll($select);
@@ -933,8 +918,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         ;
         
         if ((bool)Zend_Registry::get('adult') !== true) {
-            $select->where("`CH`.`adult` IS NULL");
-            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
+            $select->where("`CH`.`adult` != '1'");
+            $select->where("`BC`.`age_rating` >= 16 OR `BC`.`age_rating` = 0");
         }
     
         $result = $this->db->fetchAll($select);

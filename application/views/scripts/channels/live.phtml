@@ -4,13 +4,59 @@
  * @author Antony Repin <egeshisolutions@gmail.com>
  */
 
-$this->headTitle( sprintf('Канал %s онлайн', $this->channel['title'] ));
+$channelTitle = $this->escape($this->channel['title']);
+$channelAlias = $this->escape($this->channel['alias']);
+
+$this->headTitle( sprintf('Канал %s онлайн', $channelTitle ));
 $this->headMeta()
     ->setName('title', $this->channel['title'] )
-    ->setName('description', "Смотреть ". $this->channel['title'].' онлайн на rutvgid.ru. Телепрограмма '.$this->channel['title'].' на сегодня и на неделю.')
-    ->setName('keywords', $this->channel['title'].',смотреть онлайн' );
+    ->setName('description', $this->channel['title'].' в высоком качестве онлайн на rutvgid.ru')
+    ->setName('keywords', $this->channel['title'].',смотреть онлайн,высокое качество,торрент-тв' );
 
 ?>
+<h1 class="row"><?php echo $this->channel['title'] ?> онлайн</h1>
+
+<div class="row" id="tinyUrl">
+    <p class="badge">
+        <?php echo sprintf("Короткая ссылка на программу канала &laquo;%s&raquo;", $channelTitle); ?>
+        <?php $linkAttrTitle = sprintf('Телепрограмма канала &laquo;%s&raquo; на каждый день', $channelTitle); ?>
+        <a href="<?php echo $this->tinyUrl ?>" 
+           title="<?php echo $linkAttrTitle; ?>"
+           rel="alternate"
+           target="_blank">
+            <?php echo $this->tinyUrl; ?>
+        </a>
+    </p>
+</div>
+
+<div class="row">
+    
+	<h3 id="weekButton" class="span4">
+		<?php 
+        $linkAttrHref  = $this->url( array('channel'=>$this->escape($channelAlias)), 'default_channels_channel-week' );
+        $linkAttrTitle = sprintf('Передачи &laquo;%s&raquo;', $channelTitle);
+		?>
+		<a href="<?php echo $linkAttrHref; ?>" 
+           title="<?php echo $linkAttrTitle; ?>" 
+           class="btn btn-mini">
+			Программа на неделю
+		</a>
+	</h3>
+</div>
+
+<div class="row">
+    <?php 
+    $linkAttrHref  = $this->url(array('channel'=>$channelAlias, 'date'=>'сегодня'), 'default_listings_day-date');
+    $linkAttrTitle = sprintf('Все передачи &laquo;%s&raquo; сегодня', $channelTitle);
+    ?>
+	<h2 id="dayButton" class="span12">
+		<a href="<?php echo $linkAttrHref; ?>" 
+           title="<?php echo $linkAttrTitle; ?>"
+           class="btn btn-small">
+               <?php echo sprintf ('Все передачи &laquo;%s&raquo; сегодня', $channelTitle) ?>
+        </a>
+	</h2>
+</div>
 
 <?php 
 if ((int)$this->channel['stream'] > 0){

@@ -53,9 +53,6 @@ class ChannelsController extends Rtvg_Controller_Action
         
         parent::validateRequest();
         
-        $this->view->headLink()
-            ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
-
         $this->channelsModel = new Xmltv_Model_Channels();
         
         if ($this->cache->enabled && APPLICATION_ENV!='development'){
@@ -134,9 +131,7 @@ class ChannelsController extends Rtvg_Controller_Action
         
         if (parent::validateRequest()) {
            
-            $this->view->assign('pageclass', 'category');
-            $this->view->headLink()
-                ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
+            $this->view->assign('pageclass', 'channelsCategory');
             
             $this->channelsModel = new Xmltv_Model_Channels();
             $catProps = $this->channelsModel->category( $this->input->getEscaped('category') );
@@ -321,13 +316,49 @@ class ChannelsController extends Rtvg_Controller_Action
         
         parent::validateRequest();
         
+        $this->view->assign('pageclass', 'live');
         
         $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
         $this->view->assign('channel', $channel);
         
+        //Ad codes
         $ads = $this->_helper->getHelper('AdCodes');
         $adCodes = $ads->direct(2, 300, 240);
         $this->view->assign('ads', $adCodes);
+        
+        //Channels top
+        $chTop = $this->channelsModel->topChannels(10);
+        $this->view->assign('channelsTop', $chTop );
+        
+        //TinyUrl
+        $tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias']), 
+            'default_channels_live',
+            array(
+                $this->_getParam('module'),
+                $this->_getParam('controller'),
+                $this->_getParam('action'),
+                (int)$channel['id'],
+            )
+        );
+        $this->view->assign('tinyUrl', $tinyUrl);
+        
+        //Add hit for channel
+        $this->channelsModel->addHit( (int)$channel['id'] );
+        $this->view->assign('featured', $this->getFeaturedChannels());
+        
+        //Channel news
+        if ($channel['rss_url']){
+            try{
+                $news = $this->channelsModel->channelFeed($channel, 10);
+            } catch (Exception $e){
+                //skip
+            }
+            $this->view->assign( 'channelNews', $news);
+        }
+        
+        //Данные для модуля самых популярных программ
+        $top = $this->bcModel->topBroadcasts(20);
+        $this->view->assign('bcTop', $top);
         
     }
     

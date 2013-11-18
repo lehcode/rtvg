@@ -178,7 +178,6 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             ), 
             array(
                 'channel'=>self::CHANNEL_ALIAS_REGEX,
-                'dale'=>'('.self::DATE_REGEX.'|сегодня)',
             )));
         
         

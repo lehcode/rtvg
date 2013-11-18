@@ -43,10 +43,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$v['category_ru'] = $this->getCatRu($v['category']);
             
 			date_default_timezone_set("Etc/UTC");
-            
 			$v['published'] = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
             $v['duration']  = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
-            
             date_default_timezone_set("Europe/Moscow");
             
             $thumbs = $entry->getVideoThumbnails();
@@ -638,24 +636,20 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$videos = array();
 		$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
 		
-		// If file cache is enabled
 		if ($this->cache->enabled) {			 
-			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
-			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
+			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->lifetime;
+            (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime($t);
 			$f = '/Youtube/SidebarRight';
 			$hash = Rtvg_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
-            // Database cache is disabled
-            // Try to fetch from file cache
             if (($videos = $this->cache->load( $hash, 'Core', $f))===false) {
                 $videos = $this->ytSearch( $ytSearch, $ytConfig);
                 $this->cache->save( $videos, $hash, 'Core', $f );
             }
 		} else {
-		    // No caching
 			$videos = $this->ytSearch( $ytSearch, $ytConfig);
 		}
-		
-		return $videos;
+        
+        return $videos;
 		 
 	}
 	
