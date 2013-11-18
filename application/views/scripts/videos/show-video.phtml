@@ -45,7 +45,7 @@ if (isset($this->main_video)){
 	
 	<div class="related">
 	<?php
-	$amount=(int)Zend_Registry::get('site_config')->videos->related->get('amt');
+	$amount=(int)Zend_Registry::get('site_config')->videos->related->amount;
 	$i=0;
 	if (!empty($this->related_videos)) {
 	    
@@ -64,9 +64,8 @@ if (isset($this->main_video)){
 				</h3>
 			
 				<div class="image" itemscope itemtype="http://schema.org/ImageObject">
-					<?php 
-					$thumb = $v['thumbs'][mt_rand(0, count($v['thumbs'])-1)];
-						?>
+					
+                    <?php  $thumb = $v['thumbs'][mt_rand(0, count($v['thumbs'])-1)]; ?>
 					<a href="<?php echo $this->url( array(
 						'alias'=>$v['alias'], 
 						'id'=>$v['rtvg_id']), 'default_videos_show-video' ) ?>"
@@ -76,7 +75,9 @@ if (isset($this->main_video)){
 							alt="<?php echo $v['title'] ?>" />
 					</a>
 					
-					<div class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></div>
+					<div class="viewcount">
+                        Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?>
+                    </div>
 					
 					<?php if (isset($v['category_ru']) && !empty($v['category_ru'])) { ?>
 					<div class="category">
@@ -103,7 +104,7 @@ if (isset($this->main_video)){
 					
 				</div>
 					
-				<p class="description">
+				<div class="description">
 					<?php echo $this->truncateString( $v['desc'], 55, 'words' ) ?>
 				</div>
 				
@@ -111,9 +112,7 @@ if (isset($this->main_video)){
 			<?php 
 				$i++;
 			}
-			
 		}
-		
 	} ?>
 		
 	</div>
