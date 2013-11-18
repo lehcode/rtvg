@@ -21,6 +21,23 @@ $this->headScript()->appendScript("$(document).ready(function(){
 <div class="span<?php echo $this->spans ?>" id="col_r">
     
     <?php
+    if (count($this->ads)){ ?>
+        <div class="module" style="overflow:hidden;">
+        <?php
+        foreach ($this->ads as $ad){
+            ?>
+            <div class="msg" style="width: 270px; overflow: hidden;">
+                <?php echo $ad['html'] ?>
+            </div>
+            <?php
+        }
+        ?>
+        </div>
+        <?php
+    }
+    ?>
+    
+    <?php
     if ((bool)$this->channelNews===false){
         if (count($this->videos) && $this->videos !== false) {
             $channelTitle = $this->escape($this->channel['title']);
@@ -53,23 +70,6 @@ $this->headScript()->appendScript("$(document).ready(function(){
     </div>
         <?php
         }
-    }
-    ?>
-
-    <?php
-    if (count($this->ads)){ ?>
-        <div class="module" style="overflow:hidden;">
-        <?php
-        foreach ($this->ads as $ad){
-            ?>
-            <div class="msg" style="width: 270px; overflow: hidden;">
-                <?php echo $ad['html'] ?>
-            </div>
-            <?php
-        }
-        ?>
-        </div>
-        <?php
     }
     ?>
 
