@@ -124,9 +124,9 @@ $this->headScript()->appendScript( $js );
                     </a>
                 </h3>
                 
-                    <?php if($channel[$keys[0]]['stream']): ?>
+                    <?php if($channel[$keys[0]]['torrenttv_id'] || $channel[$keys[0]]['tvforsite_id']): ?>
                 <h3 class="title">
-                    <a href="<?php echo $this->baseUrl('/телепрограмма/'.$alias) ?>" target="_blank" title="<?php echo $weekLinkAttrTitle ?>">
+                    <a href="<?php echo $this->baseUrl('/live/'.$alias) ?>" target="_blank" title="<?php echo $weekLinkAttrTitle ?>">
                         Онлайн
                     </a>
                 </h3>

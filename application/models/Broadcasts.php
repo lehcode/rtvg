@@ -664,7 +664,12 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'adult',
             ))
             ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel`", null)
-            ->joinLeft(array('STREAM'=>'rtvg_ref_streams'), "`CH`.`id` = `STREAM`.`channel`", 'stream')
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
+                'tvforsite_id'=>'stream'
+            ))
             ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")))
             ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm:00")))
             ->group("EVT.start")
@@ -960,23 +965,22 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             throw new Zend_Controller_Action_Exception("Validator not passed", 500);
         }
 		
-	    $now = Zend_Date::now();
+	    $d = $now = Zend_Date::now();
 		if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $validator->getEscaped('date'))) {
 			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'dd-MM-YYYY' ), 'dd-MM-YYYY' );
 		} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $validator->getEscaped('date'))) {
 			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
-			
 		}
-		
-		if (isset($d) && ($d->compare($now, 'DD')!=0)) {
+        
+        if ($d->compare($now, 'DD')!=0) {
 		    $date = $d->toString('YYYY-MM-dd');
 		    $time = $now->toString('HH:mm:ss');
-		    return new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
+		    $result = new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
 		} else {
-			return $now;
+			$result = $now;
 		}
 		
-		return $d;
+        return $result;
 		
 	}
     

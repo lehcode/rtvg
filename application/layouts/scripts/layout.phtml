@@ -52,6 +52,7 @@ $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.p
 	'channelNews'=>$this->channelNews,
     'videos'=>$this->sidebarVideos,
     'channelsTop'=>$this->channelsTop,
+    'channelsCategories'=>$this->channelsCategories,
 )));
 
 //#### Right Sidebar ####
@@ -67,9 +68,9 @@ $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-righ
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
 ?>
 
-<?= $this->doctype(); ?>
+<?php echo $this->doctype(); ?>
 <html itemscope itemtype="http://schema.org/WebPage" xmlns:fb="https://www.facebook.com/2008/fbml"
-<?= ($this->doctype()->isRdfa() && isset($this->ogp_ns)) ? 'prefix="og:'.$this->ogp_ns.'#"' : null ; ?> xml:lang="ru" lang="ru">
+<?php echo ($this->doctype()->isRdfa() && isset($this->ogp_ns)) ? 'prefix="og:'.$this->ogp_ns.'#"' : null ; ?> xml:lang="ru" lang="ru">
 <head>
     <?php /*
     <meta content="An Example Title" itemprop="name" property="og:title" />
@@ -78,12 +79,12 @@ $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array
     <meta content="http://www.example.com/permalink" itemprop="url" property="og:url" />
     <link rel="canonical" href="http://www.example.com/permalink" />
      */ ?>
-    <?= $this->headTitle() ?>
-    <?= $this->headMeta() ?>
-    <?= $this->headLink() ?>
-    <?= $this->jQuery() ?>
-    <?= $this->headScript() ?>
-    <?= $this->headStyle() ?>
+    <?php echo $this->headTitle() ?>
+    <?php echo $this->headMeta() ?>
+    <?php echo $this->headLink() ?>
+    <?php echo $this->jQuery() ?>
+    <?php echo $this->headScript() ?>
+    <?php echo $this->headStyle() ?>
     <?php  if (APPLICATION_ENV=='production') : ?>
     <script type="text/javascript">new Image().src = "//counter.yadro.ru/hit?r"+escape(document.referrer)+((typeof(screen)=="undefined")?"":";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+";h"+escape(document.title.substring(0,80))+";"+Math.random();</script>
     <?php endif; ?>
@@ -96,9 +97,9 @@ $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array
 
 <div class="container">
     
-    <?= $this->placeholder('header'); ?>
+    <?php echo $this->placeholder('header'); ?>
 
-    <div id="content" class="row-fluid <?= $pageClass; ?>">
+    <div id="content" class="row-fluid <?php echo $pageClass; ?>">
         
         <?php 
         if (count($this->messages)) {
@@ -118,22 +119,22 @@ $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array
         if ($isFrontpage) {
             ?>
         <div class="span12">
-            <?= $this->placeholder('maincontent'); ?>
+            <?php echo $this->placeholder('maincontent'); ?>
         </div>
             <?php 
         } else {
             ?>
 
             <?php if ((int)$this->leftWidth > 0): ?>
-            <?= $this->placeholder('sidebar_left'); ?>
+            <?php echo $this->placeholder('sidebar_left'); ?>
             <?php endif; ?>
 
-            <div class="span<?= $this->contentWidth ?>" style="background:#EFEFEF; padding-left: 2em; padding-right: 2em;">
-                <?= $this->placeholder('maincontent'); ?>
+            <div class="span<?php echo $this->contentWidth ?>" style="background:#EFEFEF; padding-left: 2em; padding-right: 2em;">
+                <?php echo $this->placeholder('maincontent'); ?>
             </div>	
 
             <?php if ((int)$this->rightWidth > 0): ?>
-            <?= $this->placeholder('sidebar_right'); ?>
+            <?php echo $this->placeholder('sidebar_right'); ?>
             <?php endif; ?>
 
         <?php 
@@ -142,7 +143,7 @@ $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array
     </div>
 
     <div class="row" id="footer">
-        <?= $this->placeholder('footer'); ?>
+        <?php echo $this->placeholder('footer'); ?>
     </div>
     
 </div>
@@ -163,7 +164,7 @@ s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru
 if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f); } 
 else { f(); }
 })(document, window, "yandex_metrika_callbacks");'; ?>
-<script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <?php } ?>
 
@@ -177,11 +178,13 @@ _gaq.push(['_trackPageview']);
   ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
   var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();"; ?>
-<script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <?php } ?>
 
-<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=126314&div=DIV_DA_126314"></script>
-<script charset="windows-1251" type="text/javascript" src="http://code.directadvert.ru/show.cgi?adp=85753&div=DIV_DA_85753"></script>
+
+<?php /* if (!$this->hideSiteunder) : ?>
+<script type="text/javascript" src="http://adc.rutvgid.ru/adcsu.js"></script>
+<?php endif; */ ?>
 
 <script type="text/javascript">
    (function(w) {
@@ -205,7 +208,7 @@ $(document).ready(function(){
 $js = (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
 $this->inlineScript()->appendScript( $js ); ?>
 
-<?= $this->inlineScript(); ?>
+<?php echo $this->inlineScript(); ?>
 
 
 </body>

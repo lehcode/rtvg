@@ -55,26 +55,23 @@ class ChannelsController extends Rtvg_Controller_Action
         
         $this->channelsModel = new Xmltv_Model_Channels();
         
-        if ($this->cache->enabled && APPLICATION_ENV!='development'){
-
-            $this->cache->setLifetime(86400);
+        if ($this->cache->enabled){
+            (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(86400);
             $f = '/Channels';
-
+            (APPLICATION_ENV=='testing') ? $notEmpty = true : $notEmpty = false ;
             $hash = Rtvg_Cache::getHash('published_channels');
             if (!$rows = $this->cache->load($hash, 'Core', $f)) {
-                $rows = $this->channelsModel->getPublished();
+                $rows = $this->channelsModel->getPublished($notEmpty);
                 $this->cache->save($rows, $hash, 'Core', $f);
             }
-        } elseif(APPLICATION_ENV!='testing'){
-            $rows = $this->channelsModel->getPublished(true);
         } else {
-            $rows = $this->channelsModel->getPublished(true);
+            $rows = $this->channelsModel->getPublished($notEmpty);
         }
-
         $this->view->assign('channels', $rows);
 
         //Channels categories
-        $this->view->assign('channels_cats', $this->getChannelsCategories());
+        $cats = $this->channelsCategories();
+        $this->view->assign('channelsCategories', $cats);
 
         //Данные для модуля самых популярных программ
         $top = $this->bcModel->topBroadcasts();
@@ -129,70 +126,47 @@ class ChannelsController extends Rtvg_Controller_Action
      */
     public function categoryAction() {
         
-        if (parent::validateRequest()) {
-           
-            $this->view->assign('pageclass', 'channelsCategory');
-            
-            $this->channelsModel = new Xmltv_Model_Channels();
-            $catProps = $this->channelsModel->category( $this->input->getEscaped('category') );
-            if ($catProps===false){
-                $this->getResponse()->setHttpResponseCode(404);
-                $this->_helper->layout()->setLayoutPath(APPLICATION_PATH.'/layouts/scripts/');
-                $this->_helper->layout()->setLayout('not-found');
-                return;
-            }
-            
-            $ads = $this->_helper->getHelper('AdCodes');
-            $adCodes = $ads->direct(2, 300, 240);
-            $this->view->assign('ads', $adCodes);
-            
-            if ($this->cache->enabled && APPLICATION_ENV != 'development'){
-                
-                $this->cache->setLifetime(86400);
-                $f = "/Channels/Category";
-                
-                $hash = md5('category_'.$catProps['alias']);
-                if (!$rows = $this->cache->load($hash, 'Core', $f)){
-                    $rows = $this->channelsModel->categoryChannels($catProps['alias']);
-                    
-                    foreach ($rows as $k=>$row) {
-                        $rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
-                    }
-                    $this->cache->save($rows, $hash, 'Core', $f);
-                }
-                
-            } else {
-                $rows = $this->channelsModel->categoryChannels($catProps['alias']);
-                foreach ($rows as $k=>$row) {
-                    $rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
-                }
-            }
-            
-            $this->view->assign('channels', $rows);
-            
-            //Данные для модуля самых популярных программ
-            $this->view->assign('bcTop', $this->bcModel->topBroadcasts());
-            
-            //Channels categories
-            if ($this->cache->enabled){
-                
-                $this->cache->setLifetime(86400);
-                $f = "/Channels";
-                
-                $hash  = $this->cache->getHash("channelscategories");
-                if (!$cats = $this->cache->load($hash, 'Core', $f)) {
-                    $cats = $this->channelsModel->channelsCategories();
-                    $this->cache->save($cats, $hash, 'Core', $f);
-                }
-            } else {
-                $cats = $this->channelsModel->channelsCategories();
-            }
-            
-            $this->view->assign('channels_cats', $cats);
-            
-            $this->render('list');
-            
+        parent::validateRequest();
+        
+        $this->view->assign('pageclass', 'channelsCategory');
+        
+        $this->channelsModel = new Xmltv_Model_Channels();
+        $catProps = $this->channelsModel->category( $this->input->getEscaped('category') );
+        if ($catProps===false){
+            $this->getResponse()->setHttpResponseCode(404);
+            $this->_helper->layout()->setLayoutPath(APPLICATION_PATH.'/layouts/scripts/');
+            $this->_helper->layout()->setLayout('not-found');
+            return;
         }
+        $this->view->assign('category', $catProps);
+        
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(2, 300, 240);
+        $this->view->assign('ads', $adCodes);
+        
+        if ($this->cache->enabled){
+            (APPLICATION_ENV != 'production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(604800);
+            $f = "/Channels/Category";
+            $hash = $this->cache->getHash('category_'.$catProps['alias']);
+            if (!$rows = $this->cache->load($hash, 'Core', $f)){
+                $rows = $this->channelsModel->categoryChannels($catProps['alias']);
+                $this->cache->save($rows, $hash, 'Core', $f);
+            }
+
+        } else {
+            $rows = $this->channelsModel->categoryChannels($catProps['alias']);
+        }
+        
+        $this->view->assign('channels', $rows);
+
+        //Данные для модуля самых популярных программ
+        $this->view->assign('bcTop', $this->bcModel->topBroadcasts());
+        
+        //Channels categories
+        $cats = $this->channelsCategories();
+        $this->view->assign('channelsCategories', $cats);
+        
+        $this->render('list');
         
     }
     
@@ -205,7 +179,7 @@ class ChannelsController extends Rtvg_Controller_Action
         // Validation routines
         parent::validateRequest();
         
-        $this->view->assign('pageclass', 'channel-week');
+        $this->view->assign('pageclass', 'channelWeek');
 
         // Channel properties
         $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
@@ -231,9 +205,14 @@ class ChannelsController extends Rtvg_Controller_Action
 
         $this->channelsModel->addHit( $channel['id'] );
 
+        //Ad codes for right sidebar
         $ads = $this->_helper->getHelper('AdCodes');
         $adCodes = $ads->direct(2, 300, 240);
         $this->view->assign('ads', $adCodes);
+        
+        //Channels categories
+        $cats = $this->channelsCategories();
+        $this->view->assign('channelsCategories', $cats);
         
     }
     
@@ -359,6 +338,13 @@ class ChannelsController extends Rtvg_Controller_Action
         //Данные для модуля самых популярных программ
         $top = $this->bcModel->topBroadcasts(20);
         $this->view->assign('bcTop', $top);
+        
+        //Текущая дата
+        $date = $this->bcModel->listingDate( $this->input );
+        $this->view->assign('listing_date', $date);
+        
+        //Channel videos
+        $this->view->assign('listing_videos', $this->channelRelatedVideos($channel));
         
     }
     

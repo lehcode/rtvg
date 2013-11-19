@@ -197,11 +197,6 @@ class Xmltv_Youtube {
 		
 		$query->setVideoQuery($q);
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump( $query->getQueryUrl(2));
-			//var_dump(urldecode( $query->getQueryUrl(2)));
-		}
-		
 		try {
 		    $videos = $this->client->getVideoFeed( $query->getQueryUrl(2) );
 		} catch (Zend_Gdata_App_Exception $e) {

@@ -15,37 +15,33 @@ $channelAlias = $this->escape( $this->channel['alias'] );
 $channelDesc  = $this->escape( $this->truncateString( $this->channel['desc_body'], 100, 'words' ));
 ?>
 
-<h1>
-	<?php printf( 'Программа канала «%s» на неделю', $this->channel['title'] ); ?>
-</h1>
+<div class="row">
+    <h1>
+        <?php printf( 'Программа канала «%s» на неделю', $this->channel['title'] ); ?>
+    </h1>
 
-<p class="weekdate">
-	<em><?php echo Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') ).' - '. Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') ); ?></em>
-</p>
+    <h2 class="weekdate">
+        <?php echo Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') ).' - '. Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') ); ?>
+    </h2>
 
-<?php if (!empty($channelDesc)): ?>
-<p><?php echo $channelDesc; ?></p>
-<?php endif; ?>
-
-
-
-<a class="btn btn-mini btn-primary" href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing' ) ?>" 
-	title="<?php printf( 'Программа %s на сегодня, %s', $this->channel['title'] , Zend_Date::now()->toString('EEEE, d MMMM yyyy')) ?>">
-	<?php printf("Передачи канала «%s» сегодня", $this->channel['title']); ?>
-</a>
-
-<div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
-
+    <?php if (!empty($channelDesc)): ?>
+    <p><?php echo $channelDesc; ?></p>
+    <?php endif; ?>
+    
+    <a class="btn btn-small" href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing' ) ?>" 
+        title="<?php printf( 'Программа %s на сегодня, %s', $this->channel['title'] , Zend_Date::now()->toString('EEEE, d MMMM yyyy')) ?>">
+        <?php printf("Передачи канала «%s» сегодня", $this->channel['title']); ?>
+    </a>
+    
+</div>
 
 <?php 
-$this->inlineScript()
-	->prependScript("$(function(){
-	$('#programlist').tabs({ collapsible: false });
-});");
+$this->inlineScript()->appendScript("$(function(){ $('#weekList').tabs({ collapsible: false }); });");
 ?>
-<div class="week-list container-fluid" id="programlist">
 
-	<ul class="nav nav-pills" id="days-tabs">
+<div class="row" id="weekList">
+
+	<ul class="nav" id="daysTabs">
 	<?php 
 	$i=0;
 	foreach ($this->days as $timestamp=>$programs) {
@@ -69,35 +65,51 @@ $this->inlineScript()
 	    $date = new Zend_Date( $timestamp, Zend_Date::TIMESTAMP );
 	    $dayId = $date->toString(Zend_Date::WEEKDAY_DIGIT);
 	    ?>
-	    <table class="table day" id="<?php echo "day$dayId" ?>">
-	    	<caption><?php echo Xmltv_String::ucfirst( $date->toString('EEEE, d MMMM yyyy')); ?></caption>
-	    	<tbody>
-	    		<?php foreach ($programs as $k=>$prog) {
-	    		    $programTitle = $this->escape($prog['title']);
-	    		    $programAlias = $this->escape($prog['alias']);
-					$linkAttrHref = $this->url( array(
-						'channel'=>$this->escape($this->channel['alias']),
-						'alias'=>$programAlias), 'default_listings_broadcast-week' 
-					);
-					$linkAttrTitle = sprintf("«%s на этой неделе»", $programTitle);
-					?>
-	    		<tr>
-	    			<td><?php echo $prog['start']->toString("HH:mm"); ?></td>
-	    			<td><a href="<?php echo $linkAttrHref ?>">
-	    				<?php echo $programTitle; ?></a>
-	    				<span class="label"><?php echo (isset($prog['category_title_single']) && !empty($prog['category_title_single'])) ? $prog['category_title_single'].' ' : '' ; ?></span>
-	    			</td>
-	    		</tr>
-	    			<?php if (!empty($prog['desc'])) { ?>
-	    			<tr>
-	    				<td>&nbsp;</td>
-	    				<td><?php echo $this->escape( $prog['desc'] ); ?></td>
-	    			</tr>
-	    			<?php
-					} ?>
-	    		<?php } ?>
-	    	</tbody>
-	    </table>
+        <div id="<?php echo "day$dayId" ?>">
+            <h3><?php echo Xmltv_String::ucfirst( $date->toString('EEEE, d MMMM yyyy')); ?></h3>
+            <table class="table day">
+                <tbody>
+                    <?php 
+                    foreach ($programs as $k=>$prog) {
+                        $programTitle = $this->escape($prog['title']);
+                        $programAlias = $this->escape($prog['alias']);
+                        $linkAttrHref = $this->url( array(
+                            'channel'=>$this->escape($this->channel['alias']),
+                            'alias'=>$programAlias), 'default_listings_broadcast-week' 
+                        );
+                        $linkAttrTitle = sprintf("«%s на этой неделе»", $programTitle);
+                        ?>
+                    <tr>
+                        <td>
+                            <?php echo $prog['start']->toString("HH:mm"); ?>
+                        </td>
+                        <td>
+                            <p>
+                                <a href="<?php echo $linkAttrHref ?>" title="<?php echo $linkAttrTitle ?>">
+                                    <strong>
+                                        <?php echo $programTitle; ?>
+                                    </strong>
+                                </a>
+                                <br />
+                                <span class="badge">
+                                    <?php echo (isset($prog['category_title_single']) && !empty($prog['category_title_single'])) ? $prog['category_title_single'].' ' : '' ; ?>
+                                </span>
+                            <p>
+                        </td>
+                    </tr>
+                        
+                    <?php if (!empty($prog['desc'])): ?>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td><?php echo $this->escape( $prog['desc'] ); ?></td>
+                    </tr>
+                    <?php endif; ?>
+                    
+                    <?php 
+                    } ?>
+                </tbody>
+            </table>
+        </div>
 	    <?php 
 	}
 	?>

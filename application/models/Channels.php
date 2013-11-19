@@ -77,7 +77,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'alias',
                 'icon'=>"CONCAT('images/channel_logo/', CH.icon)"
             ))
-            ->joinLeft(array('STREAM'=>'rtvg_ref_streams'), "`CH`.`id` = `STREAM`.`channel`", 'stream')
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", 'stream')
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", 'stream')
             ->where("`CH`.`published` = '1'")
             ->order("CH.title ASC")
         ;
@@ -181,8 +182,11 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'rss_url'=>'url',
                 'rss_enabled'=>'active',
             ))
-            ->joinLeft(array('STREAM'=>'rtvg_ref_streams'), '`CH`.`id` = `STREAM`.`channel`', array(
-                'stream'
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), '`CH`.`id` = `TORRENTTV`.`channel`', array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), '`CH`.`id` = `TVFORSITE`.`channel`', array(
+                'tvforsite_id'=>'stream'
             ))
 			->where( "`CH`.`alias` = '$alias'")
 			->where( "`CH`.`published` IS TRUE")
@@ -195,7 +199,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         }
         
         $result = $this->db->fetchRow($select);
-        $result['stream'] = ($result['stream']!==null) ? (int)$result['stream'] : null ;
+        $result['torrenttv_id'] = ($result['torrenttv_id'] !== null) ? (int)$result['torrenttv_id'] : null ;
+        $result['tvforsite_id'] = ($result['tvforsite_id'] !== null) ? $result['tvforsite_id'] : null ;
         $result['id'] = (int)$result['id'];
         $result['free'] = (bool)$result['free'];
         $result['featured'] = (bool)$result['featured'];
@@ -363,7 +368,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'desc_body',
 				'category',
 				'featured',
-				'icon',
+				'icon'=>"CONCAT('/images/channel_logo/', `CH`.`icon`, '')",
 				'format',
 				'lang',
 				'url',
@@ -375,7 +380,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'audio',
             ))
 			->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category` = `CHCAT`.`id`", null)
-			->joinLeft(array('STREAM'=>'rtvg_ref_streams'), "`CH`.`id` = `STREAM`.`channel`", 'stream')
+			->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), '`CH`.`id` = `TORRENTTV`.`channel`', 'stream' )
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), '`CH`.`id` = `TVFORSITE`.`channel`', 'stream' )
 			->where("`CHCAT`.`alias` = '$cat_alias'")
 			->where("`CH`.`published` IS TRUE")
 			->order("CH.title ASC");
@@ -471,12 +477,16 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function category($alias=null){
 		
-		if (null !== $alias){
-		    $table = new Xmltv_Model_DbTable_ChannelsCategories();
-		    return $table->fetchRow("`alias` LIKE '".$alias."'");
-		} else {
-			return false;
-		}
+        $table = new Xmltv_Model_DbTable_ChannelsCategories();
+		$result = $table->fetchRow("`alias` = '$alias'")->toArray();
+        
+        if ($result){
+            $result['id'] = (int)$result['id'];
+            $result['featured'] = ($result['featured'] != 1) ? false : true ;
+        }
+        
+        return $result;
+		
 	}
 	
 	/**

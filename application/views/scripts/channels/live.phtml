@@ -58,10 +58,22 @@ $this->headMeta()
 	</h2>
 </div>
 
-<?php 
-if ((int)$this->channel['stream'] > 0){
-    $siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; 
-    echo $this->aceStream($siteId, (int)$this->channel['stream'], 580, 326);
-} ?>
+<div class="row">
+    <?php 
+    if ((int)$this->channel['torrenttv_id']>0 || $this->channel['tvforsite_id']) {
+        $w = 530;
+        $h = 352;
+        
+        if ((int)$this->channel['torrenttv_id']>0){
+            $player = $this->aceStream(((APPLICATION_ENV=='production') ? 762 : 923), (int)$this->channel['torrenttv_id'], $w, $h, 'torrenttv');
+        } else if ($this->channel['tvforsite_id']){
+            $player = $this->aceStream(null, $this->channel['tvforsite_id'], $w, $h, 'tvforsite');
+        } else {
+            
+        }
+    }
+    echo $player;
+    ?>
+</div>
 
 

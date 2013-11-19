@@ -403,9 +403,9 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @param  Zend_Date $date
 	 * @return array|boolean
 	 */
-	public function ytListingRelatedVideos( $list=array(), $channel_title=null, Zend_Date $date ){
+	public function ytListingRelatedVideos( $list=array() ){
 		
-		$conf = Zend_Registry::get('site_config')->videos->get('listing');
+		$conf = Zend_Registry::get('site_config')->videos->listing;
 		$ytConfig['max_results'] = 1;
 		$ytConfig['order'] = $conf->get('order');
 		$ytConfig['safe_search'] = $conf->get('safe_search');
@@ -421,14 +421,32 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 				    }
 				}
 			}
-            
-            return $result;
-			
-		} else {
+        } else {
 			return array();
 		}
+        
+        return $result;
 		
 	}
+    
+    public function channelRelatedVideos($channel=null, $max=5){
+        
+        $conf = Zend_Registry::get('site_config')->videos->listing;
+		$ytConfig['max_results'] = 5;
+		$ytConfig['order'] = $conf->get('order');
+		$ytConfig['safe_search'] = $conf->get('safe_search');
+		$ytConfig['language'] = 'ru';
+		
+		$result = array();
+		if (($ytParsed = $this->ytSearch( $channel, $ytConfig))!==false){
+            if (!empty($ytParsed) && $ytParsed!==false){
+                $result[] = $ytParsed[0];
+            }
+        }
+        
+        return $result;
+        
+    }
 	
 	/**
 	 * Save listing-related video to database
@@ -517,7 +535,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$search = preg_replace('/[^\p{Cyrillic}\p{Latin}\d\s]+/ui', ' ', $search);
 		$search = preg_replace('/\s+/ui', ' ', $search);
 		
-		$vids = $yt->fetchVideos( $search );
+        $vids = $yt->fetchVideos( $search );
 		if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
 			$c=0;
 			foreach ($vids as $v){
@@ -528,8 +546,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			    }
 			}
 		}
-		
-		return $result;
+        
+        return $result;
 		
 	}
 	

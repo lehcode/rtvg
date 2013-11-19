@@ -66,8 +66,6 @@ RewriteCond %{QUERY_STRING} start [OR,NC]
 RewriteCond %{QUERY_STRING} layout
 RewriteRule .* /телепрограмма? [R=301,L]
 
-RewriteRule ^каналы/новости$ /каналы/информационные [R=301,L]
-RewriteRule ^каналы$ /телепрограмма [R=301,L]
 RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]
 RewriteRule ^телепрограмма/лад-беларусь(.*)$ /телепрограмма/беларусь-2$1 [R=301,L]
 RewriteRule ^телепрограмма/jetix(.*)$ /телепрограмма [R=301,L]

@@ -51,6 +51,32 @@ $this->headScript()->appendScript("$(function(){
     }
     ?>
     
+    <?php
+    //Channels categories block
+    if (isset($this->channelsCategories) && !empty($this->channelsCategories)) {
+        ?>
+    <div class="module categories">
+        <ul id="channels_categories" class="nav nav-list">
+        <?php 
+        foreach ($this->channelsCategories as $c) {
+            $title = Xmltv_String::ucfirst( Xmltv_String::strtolower( $this->escape($c['title'] )));
+            $imgAttrAlt   = $this->escape( $c['title'] );
+            $imgAttrSrc   = $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] ));
+            $linkAttrHref = $this->url(array('category'=>$this->escape( $c['alias'] )), 'default_channels_category' );
+            ?>
+            <li><a href="<?php echo $linkAttrHref ?>" title="Канал <?php echo $title ?>">
+                <img src="<?php echo $imgAttrSrc ?>" class="icon" alt="<?php echo $imgAttrAlt ?>" />
+                <?php echo $title ?>
+            </a></li>		
+            <?php 
+        }
+        ?>
+        </ul>
+    </div>	
+        <?php 
+    }
+    ?>
+    
     
     <?php
     if (isset($this->channelNews) && (bool)$this->channelNews!==false){ 

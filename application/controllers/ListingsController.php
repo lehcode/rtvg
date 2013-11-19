@@ -92,10 +92,10 @@ class ListingsController extends Rtvg_Controller_Action
         ($listingDate->isToday()) ? $this->view->assign('is_today', true) : $this->view->assign('is_today', false);
         
         //Detect timeshift and adjust listing time
-        $timeShift = (int)$this->input->getEscaped( 'tz', 'msk' );
-        $listingDate = $timeShift!='msk' ? $listingDate->addHour( $timeShift ) : $listingDate ;
+        //$timeShift = (int)$this->input->getEscaped( 'tz', 'msk' );
+        //$listingDate = $timeShift!='msk' ? $listingDate->addHour( $timeShift ) : $listingDate ;
         
-        $this->view->assign('timeshift', $timeShift);
+        //$this->view->assign('timeshift', $timeShift);
         $this->view->assign('listing_date', $listingDate);
         
         //Fetch programs list for day and make decision on current program
@@ -103,7 +103,13 @@ class ListingsController extends Rtvg_Controller_Action
         if ($this->cache->enabled) {
             (APPLICATION_ENV!='production') ? $this->cache->setLifetime(600) : $this->cache->setLifetime(1800);
             $f = "/Listings/Programs";
-            $hash = Rtvg_Cache::getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
+            
+            if ($this->_getParam('date')){
+                $hash = Rtvg_Cache::getHash( $channel['alias'].'_complete_'.$listingDate->toString('DDD') );
+            } else {
+                $hash = Rtvg_Cache::getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
+            }
+            
             if (!$list = $this->cache->load( $hash, 'Core', $f)) {
                 if ($listingDate->isToday() && $this->getParam('date')===null){
                     $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'], $amt );
@@ -141,27 +147,12 @@ class ListingsController extends Rtvg_Controller_Action
                 $articles = $this->articlesModel->dayListingArticles( $currentBc, $amt );
             }
 
-            $this->view->assign( 'announces', $articles );
-            $this->view->assign( 'show_announces', true );
-
-            //Channel videos
-            if ($listingDate->isToday()) {
-                $listingVideos = array();
-                // Запрос в файловый кэш
-                if ($this->cache->enabled){
-                    $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->listings->lifetime;
-                    (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime($t);
-                    $f = '/Listings/Videos';
-                    $hash = Rtvg_Cache::getHash( 'listingVideo_'.$channel['title'].'-'.$listingDate->toString( 'YYYY-MM-dd' ));
-                    if ((false === ($listingVideos=$this->cache->load( $hash, 'Core', $f)))){
-                        $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
-                        $this->cache->save($listingVideos, $hash, 'Core', $f);
-                    }          
-                } else {
-                    $listingVideos = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel['title'], $listingDate );
-                }
-                $this->view->assign('listing_videos', $listingVideos);
-            }
+            $this->view->assign('announces', $articles);
+            $this->view->assign('show_announces', true);
+            
+            //Listing videos
+            $vids = $this->listingVideos($channel, $listingDate, $list);
+            $this->view->assign('listing_videos', $vids);
             
         }
         
@@ -321,7 +312,7 @@ class ListingsController extends Rtvg_Controller_Action
         if (count($broadcasts)>1){
             
             //Данные для модуля категорий каналов
-            $cats = parent::getChannelsCategories();
+            $cats = $this->channelsCategories();
             $this->view->assign( 'channels_cats', $cats );
             
             //Короткая ссылка на страницу
@@ -412,7 +403,7 @@ class ListingsController extends Rtvg_Controller_Action
             $this->view->assign('bcTop', parent::topBroadcasts());
             
             //Данные для модуля категорий каналов
-            $cats = $this->getChannelsCategories();
+            $cats = $this->channelsCategories();;
             $this->view->assign('channels_cats', $cats);
             
             //Список передач
@@ -498,7 +489,7 @@ class ListingsController extends Rtvg_Controller_Action
             $this->view->assign('bcTop', $top);
             
             //Данные для модуля категорий каналов
-            $cats = $this->getChannelsCategories();
+            $cats = $this->channelsCategories();;
             $this->view->assign('channels_cats', $cats);
             
             $ads = $this->_helper->getHelper('AdCodes');

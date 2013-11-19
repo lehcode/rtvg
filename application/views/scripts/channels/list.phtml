@@ -11,7 +11,7 @@
 
 $categoryTitle = isset($this->category['title']) && !empty($this->category['title']) ? $this->escape( $this->category['title'] ) : null ;
 $categoryAlias = isset($this->category['alias']) && !empty($this->category['alias']) ? $this->escape( $this->category['alias'] ) : null ;
-$keywords = Xmltv_String::strtolower($categoryTitle) . ',' . Zend_Registry::get('site_config')->site->get('keywords', 'телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв');
+$keywords = Xmltv_String::strtolower($categoryTitle) . ',' . Zend_Registry::get('site_config')->site->keywords;
 
 if ($categoryTitle) {
 	$this->headTitle( $categoryTitle.' телеканалы: передачи сегодня и на текущей неделе.' );
@@ -42,70 +42,80 @@ $js = "$(function(){
 $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js ;
 $this->headScript()->appendScript( $js );
 ?>
-	
-<?php 
-if ( isset($this->category) && $this->category!==null) {
-	echo '<h1>'.$categoryTitle.' каналы'.'</h1>';
-	printf('<p class="label label-info">Телеканалы в категории «%s»: %d</p>', $categoryTitle, count($this->channels)) ;
-} else {
-    //Scroll to channel (with autocomplete)
-    /*echo new Xmltv_Form_TypeaheadForm( array(
-        'method'   => 'post',
-        'enctype'  => 'application/x-www-form-urlencoded',
-        'name'     => 'typeahead',
-        'id'       => 'typeahead',
-        'html_tag' => array( 
-            'tag'   => 'div',
-            'class' => 'container-fluid'
-        ),
-        'input'    => array( 
-            'style' => 'width:100%;',
-            'label' => 'Быстрый поиск канала',
-            'id'    => 'searchinput',
-            'html_tag' => array(
-                'tag'=>'div'
-            )
-        ),
-        'append'   => '#maincontent',
-        'scroll'   => false,
-    ));*/
-    echo '<h1>Все каналы на Rutvgid</h1>';
-} ?>
 
-<div id="channels">
+<div class="row">
+    <?php
+    if ($this->category) {
+        echo '<h1>'.$categoryTitle.'</h1>';
+        //printf('<p class="label label-info">Телеканалы в категории «%s»: %d</p>', $categoryTitle, count($this->channels)) ;
+    } else {
+        //Scroll to channel (with autocomplete)
+        /*echo new Xmltv_Form_TypeaheadForm( array(
+            'method'   => 'post',
+            'enctype'  => 'application/x-www-form-urlencoded',
+            'name'     => 'typeahead',
+            'id'       => 'typeahead',
+            'html_tag' => array( 
+                'tag'   => 'div',
+                'class' => 'container-fluid'
+            ),
+            'input'    => array( 
+                'style' => 'width:100%;',
+                'label' => 'Быстрый поиск канала',
+                'id'    => 'searchinput',
+                'html_tag' => array(
+                    'tag'=>'div'
+                )
+            ),
+            'append'   => '#content',
+            'scroll'   => false,
+        ));*/
+        echo '<h1>Все каналы на Rutvgid</h1>';
+    } ?>
+</div>
 
+<div id="channels" class="row">
     
     <?php
-	foreach ($this->channels as $channel) { 
+    foreach ($this->channels as $channel) { 
+        
+        $id = (int)$channel['id'];
+        $alias = $this->escape($channel['alias']);
+        $title = $this->escape($channel['title']);
+        $logo = $this->baseUrl($this->escape($channel['icon']));
         ?>
 	
 	<h3 class="channeltitle" id="#channeltitle<?php echo $id ?>">
 		<img class="channelicon" 
 			width="40" 
-			src="<?php echo $icon; ?>" 
+			src="<?php echo $logo; ?>" 
 			alt="<?php printf('%s', Xmltv_String::strtolower($title)) ?>" />
 		<?php echo $channel['title'] ?>
 	</h3>
 	
 	<div class="channeldesc">
-		<a class="label" 
-			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_listings_day-listing"); ?>" 
-			title="<?php printf('%s сегодня', $title) ?>"
-			target="_blank">
-			Сегодня
-		</a>
-		<a class="label label-info" 
-			href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_channels_channel-week"); ?>" 
-			title="<?php printf('%s на неделю', $channel['title']) ?>">
-			На неделю
-		</a>
         
-        <?php if ((int)$channel['stream']>0){ ?>
-        <a href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_channels_live'); ?>"
-           class="label label-info linkLive">Онлайн</a>
-        <?php } ?>
-		
-		<p>
+        <div class="span12">
+            <?php if ((int)$channel['stream']>0){ ?>
+            <a href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_channels_live'); ?>"
+               class="btn btn-small btn-info linkLive">Онлайн</a>
+            <?php } ?>
+
+            <a class="btn btn-small" 
+                href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_listings_day-listing"); ?>" 
+                title="<?php printf('%s сегодня', $title) ?>"
+                target="_blank">
+                Передачи сегодня
+            </a>
+
+            <a class="btn btn-small" 
+                href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_channels_channel-week"); ?>" 
+                title="<?php printf('%s на неделю', $channel['title']) ?>">
+                Неделя
+            </a>
+        </div>
+        
+        <p class="span12">
 			<?php echo $this->escape( $channel['desc_intro'] ) ?>
 		</p>
         

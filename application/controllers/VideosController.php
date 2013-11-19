@@ -24,6 +24,8 @@ class VideosController extends Rtvg_Controller_Action
         	$this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
         }
         
+        $this->view->assign('hideSiteunder', true);
+        
     }
 	
 	/**
