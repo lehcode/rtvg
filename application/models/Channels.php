@@ -272,6 +272,12 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'category_title'=>'title',
                 'category_alias'=>'alias',
             ))
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
+                'tvforsite_id'=>'stream'
+            ))
             ->where("CH.id = ".(int)$id)
             ->limit(1)
         ;
@@ -283,6 +289,9 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		$result['end']   = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
 		$result['id'] = (int)$result['id'];
 		$result['category'] = (int)$result['category'];
+		$result['torrenttv_id'] = (int)$result['torrenttv_id'];
+		$result['free'] = (bool)$result['free'];
+		$result['featured'] = (bool)$result['featured'];
 		
 		return $result;
 		

@@ -431,11 +431,15 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
     
     public function channelRelatedVideos($channel=null, $max=5){
         
-        $conf = Zend_Registry::get('site_config')->videos->listing;
-		$ytConfig['max_results'] = 5;
-		$ytConfig['order'] = $conf->get('order');
-		$ytConfig['safe_search'] = $conf->get('safe_search');
+        if (!$channel){
+            throw new Zend_Exception("Channel is required");
+        }
+        
+		$ytConfig['max_results'] = $max;
+		$ytConfig['order'] = 'published';
+		$ytConfig['safe_search'] = 'moderate';
 		$ytConfig['language'] = 'ru';
+        $channel = str_replace('-', ' ', $channel);
 		
 		$result = array();
 		if (($ytParsed = $this->ytSearch( $channel, $ytConfig))!==false){

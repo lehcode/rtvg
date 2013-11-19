@@ -13,7 +13,7 @@ $this->headScript()->appendScript("$(function(){
 });");
 
 ?>
-<div class="span<?= $this->spans ?>" id="col_l">
+<div class="span<?php echo $this->spans ?>" id="col_l">
     
     <?php 
     //Top channels block
@@ -31,15 +31,15 @@ $this->headScript()->appendScript("$(function(){
                 );
             ?>
             <li>
-                <img src="<?= $this->baseUrl( $this->escape($item['icon']) ) ?>"
+                <img src="<?php echo $this->baseUrl( $this->escape($item['icon']) ) ?>"
                      class="channelLogo" />
-                <img src="<?= $this->baseUrl('/images/flags/32/'.$item['country_iso'].'.png') ?>" 
-                     alt="Страна канала <?= $item['country'] ?>" 
+                <img src="<?php echo $this->baseUrl('/images/flags/32/'.$item['country_iso'].'.png') ?>" 
+                     alt="Страна канала <?php echo $item['country'] ?>" 
                      class="flagImg"
-                     title="Страна: <?= $item['country'] ?>"/>
-                <a href="<?= $hrefUrl ?>"
-                   title="&laquo;<?= $item['title'] ?>&raquo; сегодня">
-                        <?= $this->escape($item['title']) ?>
+                     title="Страна: <?php echo $item['country'] ?>"/>
+                <a href="<?php echo $hrefUrl ?>"
+                   title="&laquo;<?php echo $item['title'] ?>&raquo; сегодня">
+                        <?php echo $this->escape($item['title']) ?>
                 </a>
             </li>
             <?php 	
@@ -94,18 +94,26 @@ $this->headScript()->appendScript("$(function(){
         <div class="message">
             
             <?php if (is_a($n['pubDate'], 'Zend_Date') && is_string($n['category'])) : ?>
-                <p class="pubDate"><?= Xmltv_String::ucfirst($n['pubDate']->toString(Zend_Date::WEEKDAY)) .' :: '. $this->escape($n['category']) ?></p>
+            <p class="pubDate"><?php echo Xmltv_String::ucfirst($n['pubDate']->toString(Zend_Date::WEEKDAY)) .' :: '. $this->escape($n['category']) ?></p>
             <?php endif; ?>
             
-            <p class="title"><?= $vid['desc'] ?></p>
+            <?php if ($vid['desc']): ?>
+            <p class="title">
+                <?php echo $vid['desc'] ?>
+            </p>
+            <?php endif; ?>
             
             <p class="description">
-                <a href="<?= $href1 ?>" title="<?= $this->escape($n['title']) ?>">
-                    <img src="<?= $thumb['url'] ?>" class="channelNewsImage" />
-                </a><?= $n['desc'] ?>
+                <a href="<?php echo $href1 ?>" title="<?php echo $this->escape($n['title']) ?>">
+                    <?php if ($thumb['url']): ?>
+                    <img src="<?php echo $thumb['url'] ?>" class="channelNewsImage" />
+                    <?php endif; ?>
+                </a><?php echo $n['desc'] ?>
             </p>
             
-            <p class="link"><a href="<?= $href2 ?>" target="blank"<?= ($i<3) ? '' : ' rel="nofollow"' ; ?>>вся новость</a> > </p>
+            <p class="link">
+                <a href="<?php echo $href2 ?>" target="blank"<?php echo ($i<3) ? '' : ' rel="nofollow"' ; ?>>вся новость</a> >
+            </p>
         </div>
             <?php
             $i++;
@@ -132,11 +140,11 @@ $this->headScript()->appendScript("$(function(){
                 }
                     ?>
             <li>
-                <img src="<?= $this->baseUrl( 'images/channel_logo/'.$this->escape($bc['channel_icon']) ) ?>"
+                <img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$this->escape($bc['channel_icon']) ) ?>"
                      class="channelLogo" />
-                <a href="<?= $hrefUrl ?>"
-                    title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
-                        <?= $this->escape($bc['title']) ?>
+                <a href="<?php echo $hrefUrl ?>"
+                    title="<?php echo $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
+                        <?php echo $this->escape($bc['title']) ?>
                 </a>
             </li>
             <?php 	

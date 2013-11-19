@@ -344,7 +344,8 @@ class ChannelsController extends Rtvg_Controller_Action
         $this->view->assign('listing_date', $date);
         
         //Channel videos
-        $this->view->assign('listing_videos', $this->channelRelatedVideos($channel));
+        $vids = $this->channelRelatedVideos($channel, 10);
+        $this->view->assign('sidebarVideos', $vids);
         
     }
     

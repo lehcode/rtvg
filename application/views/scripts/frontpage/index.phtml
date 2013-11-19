@@ -44,7 +44,7 @@ $this->headScript()->appendScript( $js );
 
 <div class="page">
 	
-	<div id="news" class="row">
+    <div id="news" class="row">
 		<?php 
 		foreach ($this->articles as $article){
             
@@ -72,32 +72,36 @@ $this->headScript()->appendScript( $js );
 		?>
 	</div>
 	
-	<div class="row" style="margin: 10px 0;"><?php
-    $dropdown = new Zend_Form_Element_Select('channel');
-	$options  = array();
-	foreach ($this->channels as $k=>$c){
-	    $options[$k] = array('key'=>(int)$c['id'], 'value'=>$c['title']);
-	}
-	$dropdown->setMultiOptions($options);
-	$dropdown->setAttribs( array(
-		'name'=>'channelselect',
-		'size'=>1,
-		))
-		->setLabel("Передачи сейчас на канале")
-		->setDecorators(array(
-			'ViewHelper',
-			'Errors',
-			array( 'HtmlTag', array( 
-                'tag'=>'div', 
-                'class'=>'select-container' ) ),
-			'Label',
-		));
-	echo $dropdown;
-	?>
+	<div class="row">
+        <?php
+        $dropdown = new Zend_Form_Element_Select('channel');
+        $options  = array();
+        foreach ($this->channels as $k=>$c){
+            $options[$k] = array('key'=>(int)$c['id'], 'value'=>$c['title']);
+        }
+        $dropdown->setMultiOptions($options);
+        $dropdown->setAttribs( array(
+            'name'=>'channelselect',
+            'size'=>1,
+            ))
+            ->setLabel("Передачи сейчас на канале")
+            ->setDecorators(array(
+                'ViewHelper',
+                'Errors',
+                array( 'HtmlTag', array( 
+                    'tag'=>'div', 
+                    'class'=>'select-container' ) ),
+                'Label',
+            ));
+        echo $dropdown;
+        ?>
 	</div>
 	
+    <div class="row" id="adCode">
+        <?php echo $this->shareCode ?>
+    </div>
 	
-    <div id="listing">
+    <div id="listing" class="row">
 	<?php 
 	$max=4;
     foreach ($this->list as $channel){
@@ -130,7 +134,7 @@ $this->headScript()->appendScript( $js );
                         Онлайн
                     </a>
                 </h3>
-                <?php endif; ?>
+                    <?php endif; ?>
                 
             </div>
 	    	<h2 class="title"><a href="<?php echo $dayLinkAttrHref ?>" title="<?php echo $dayLinkAttrTitle ?>"><?php echo $dayLinkText ?></a></h2>

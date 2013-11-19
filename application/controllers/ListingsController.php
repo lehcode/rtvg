@@ -101,7 +101,8 @@ class ListingsController extends Rtvg_Controller_Action
         //Fetch programs list for day and make decision on current program
         $amt = 4;
         if ($this->cache->enabled) {
-            (APPLICATION_ENV!='production') ? $this->cache->setLifetime(600) : $this->cache->setLifetime(1800);
+            
+            (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(1800);
             $f = "/Listings/Programs";
             
             if ($this->_getParam('date')){
@@ -110,12 +111,14 @@ class ListingsController extends Rtvg_Controller_Action
                 $hash = Rtvg_Cache::getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
             }
             
-            if (!$list = $this->cache->load( $hash, 'Core', $f)) {
+            if ((bool)$list = $this->cache->load( $hash, 'Core', $f)===false) {
+                
                 if ($listingDate->isToday() && $this->getParam('date')===null){
                     $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'], $amt );
                 } else {
                     $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'] );
                 }
+                
                 $this->cache->save( $list, $hash, 'Core', $f);
             }
             
@@ -136,7 +139,7 @@ class ListingsController extends Rtvg_Controller_Action
             //Articles
             $amt = 10;
             if ($this->cache->enabled) {
-                (APPLICATION_ENV!='production') ? $this->cache->setLifetime(600) : $this->cache->setLifetime(86400);
+                (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(86400);
                 $f = "/Content/Articles";
                 $hash = 'dayListingArticles_'.Rtvg_Cache::getHash( $channel['id'] );
                 if (!$articles = $this->cache->load( $hash, 'Core', $f)) {
@@ -370,86 +373,86 @@ class ListingsController extends Rtvg_Controller_Action
      */
     public function broadcastWeekAction(){
         
-        if (parent::validateRequest()) {
-            
-            $this->view->assign( 'pageclass', 'broadcastWeek' );
-            $bcAlias = $this->input->getEscaped('alias');
-            
-            $channel = parent::channelInfo( $this->input->getEscaped('channel') );
-            if (!isset($channel['id'])){
-                return $this->render('channel-not-found');
-            }
-            $this->view->assign( 'channel', $channel );
-            
-            $dg = $this->input->getEscaped('date');
-            $listingDate = Zend_Date::now();
-            if ($dg!='сегодня' && $dg!='неделя') {
-                if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $dg)) {
-                    $listingDate = new Zend_Date($this->input->getEscaped('date'), 'dd-MM-yyyy');
-                }
-            }
-            
-            if (!$this->checkDate($listingDate)){
-                return $this->_forward('outdated');
-            }
-            
-            $weekDays = $this->_helper->getHelper('weekDays');
-            $weekStart = $weekDays->getStart( $listingDate );
-            $this->view->assign('week_start', $weekStart);
-            $weekEnd = $weekDays->getEnd( $listingDate );
-            $this->view->assign('week_end', $weekEnd);
-            
-            //Данные для модуля самых популярных программ
-            $this->view->assign('bcTop', parent::topBroadcasts());
-            
-            //Данные для модуля категорий каналов
-            $cats = $this->channelsCategories();;
-            $this->view->assign('channels_cats', $cats);
-            
-            //Список передач
-            if ($this->cache->enabled){
-                $this->cache->setLifetime(21600);
-                $f = '/Listings/Program/Week';
-                $hash = md5('currentProgram_'.$bcAlias.'_'.$channel['id']);
-                if (!$list = $this->cache->load( $hash, 'Core', $f )) {
-                    $list = $this->bcModel->broadcastThisWeek( $bcAlias, $channel['id'], $weekStart, $weekEnd );
-                    $this->cache->save($list, $hash, 'Core', $f );
-                }
-            } else {
-                $list = $this->bcModel->broadcastThisWeek( $bcAlias, $channel['id'], $weekStart, $weekEnd);
-            }
-            
-            $this->view->assign( 'list', $list );
-            
-            if ($this->cache->enabled){
-                $this->cache->setLifetime(86400);
-                $f = '/Listings/Similar/Week';
-                $hash = $this->cache->getHash( $bcAlias.'_'.$channel['id'] );
-                if (($similarBcs = $this->cache->load( $hash, 'Core', $f))===false) {
-                    $similarBcs = $this->bcModel->similarBroadcastsThisWeek( $bcAlias, $weekStart, $weekEnd, $channel['id'] );
-                    $this->cache->save($similarBcs, $hash, 'Core', $f);
-                }
-            } else {
-                $similarBcs = $this->bcModel->similarBroadcastsThisWeek( $bcAlias, $weekStart, $weekEnd, $channel['id'] );
-            }
-            $this->view->assign( 'similar', $similarBcs );
-            
-            $ads = $this->_helper->getHelper('AdCodes');
-            $adCodes = $ads->direct(2, 300, 240);
-            $this->view->assign('ads', $adCodes);
-            
-            if(empty($list[0]) && !empty($similarBcs)){
-                return $this->render('similar-week');
-            }
-            
-            if (empty($list[0]) && empty($similarBcs)) {
-                return $this->render('not-found');
-            }
-            
-            $this->bcModel->addHit( $list[0]['hash'] );
-            return $this->render('broadcast-week');
-            
+        parent::validateRequest();
+        
+        $this->view->assign( 'pageclass', 'broadcastWeek' );
+        $bcAlias = $this->input->getEscaped('alias');
+
+        $channel = parent::channelInfo( $this->input->getEscaped('channel') );
+        if (!isset($channel['id'])){
+            return $this->render('channel-not-found');
         }
+        $this->view->assign( 'channel', $channel );
+
+        $dg = $this->input->getEscaped('date');
+        $listingDate = Zend_Date::now();
+        if ($dg!='сегодня' && $dg!='неделя') {
+            if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $dg)) {
+                $listingDate = new Zend_Date($this->input->getEscaped('date'), 'dd-MM-yyyy');
+            }
+        }
+
+        if (!$this->checkDate($listingDate)){
+            return $this->_forward('outdated');
+        }
+
+        $weekDays = $this->_helper->getHelper('weekDays');
+        
+        $weekStart = $weekDays->getStart( $listingDate );
+        $this->view->assign('week_start', $weekStart);
+        
+        $weekEnd = $weekDays->getEnd( $listingDate );
+        $this->view->assign('week_end', $weekEnd);
+
+        //Данные для модуля самых популярных программ
+        $this->view->assign('bcTop', $this->bcModel->topBroadcasts());
+
+        //Данные для модуля категорий каналов
+        $cats = $this->channelsCategories();;
+        $this->view->assign('channels_cats', $cats);
+
+        //Список передач
+        if ($this->cache->enabled){
+            $this->cache->setLifetime(21600);
+            $f = '/Listings/Program/Week';
+            $hash = md5('currentProgram_'.$bcAlias.'_'.$channel['id']);
+            if (!$list = $this->cache->load( $hash, 'Core', $f )) {
+                $list = $this->bcModel->broadcastThisWeek( $bcAlias, $channel['id'], $weekStart, $weekEnd );
+                $this->cache->save($list, $hash, 'Core', $f );
+            }
+        } else {
+            $list = $this->bcModel->broadcastThisWeek( $bcAlias, $channel['id'], $weekStart, $weekEnd);
+        }
+
+        $this->view->assign( 'list', $list );
+
+        if ($this->cache->enabled){
+            $this->cache->setLifetime(86400);
+            $f = '/Listings/Similar/Week';
+            $hash = $this->cache->getHash( $bcAlias.'_'.$channel['id'] );
+            if (($similarBcs = $this->cache->load( $hash, 'Core', $f))===false) {
+                $similarBcs = $this->bcModel->similarBroadcastsThisWeek( $bcAlias, $weekStart, $weekEnd, $channel['id'] );
+                $this->cache->save($similarBcs, $hash, 'Core', $f);
+            }
+        } else {
+            $similarBcs = $this->bcModel->similarBroadcastsThisWeek( $bcAlias, $weekStart, $weekEnd, $channel['id'] );
+        }
+        $this->view->assign( 'similar', $similarBcs );
+
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(2, 300, 240);
+        $this->view->assign('ads', $adCodes);
+
+        if(empty($list[0]) && !empty($similarBcs)){
+            return $this->render('similar-week');
+        }
+
+        if (empty($list[0]) && empty($similarBcs)) {
+            return $this->render('not-found');
+        }
+
+        $this->bcModel->addHit( $list[0]['hash'] );
+        return $this->render('broadcast-week');
         
     }
     

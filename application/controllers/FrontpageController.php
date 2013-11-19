@@ -116,11 +116,10 @@ class FrontpageController extends Rtvg_Controller_Action
 	        $channelId = $this->input->getEscaped('id');
 	        
 	        if ($this->cache->enabled && APPLICATION_ENV!='development'){
-	            
-	            $this->cache->setLifetime(3600);
+	            (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(600);
 	            $f = '/Listings/Frontpage';
-	            $hash = md5('single_channel_'.$channelId);
-	            if (($channel = $this->cache->load( $hash, 'Core', $f))===false) {
+	            $hash = $this->cache->getHash('single_channel_'.$channelId);
+	            if ((bool)($channel = $this->cache->load( $hash, 'Core', $f))===false) {
 	            	$channel = $this->channelsModel->getById($this->input->getEscaped('id'));
 	            	$this->cache->save( $channel, $hash, 'Core', $f);
 	            }

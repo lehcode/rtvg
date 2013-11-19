@@ -38,12 +38,12 @@ $this->placeholder('header')->set( $this->partial('partials/header.phtml', array
 $this->placeholder('maincontent')->set( $this->layout()->content );
 
 //#### Featured channels list ####
-if ($pageClass=='show-video'){
+/*if ($pageClass=='show-video'){
     $this->placeholder('featured_channels')->set( 
     	$this->partial('partials/featured-channels.phtml', array(
     		'list'=>$this->featured_channels)) );
 }
-
+*/
 
 //#### Left Sidebar ####
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
@@ -180,11 +180,6 @@ _gaq.push(['_trackPageview']);
 })();"; ?>
 <script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <?php } ?>
-
-
-<?php /* if (!$this->hideSiteunder) : ?>
-<script type="text/javascript" src="http://adc.rutvgid.ru/adcsu.js"></script>
-<?php endif; */ ?>
 
 <script type="text/javascript">
    (function(w) {

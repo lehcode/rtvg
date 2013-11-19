@@ -108,7 +108,9 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
      */
     public function getBroadcastsForDay(Zend_Date $date=null, $channel_id=null, $count=null){
         
-        $d = new Zend_Date($date);
+        if (!$channel_id || !is_int($channel_id)){
+            throw new Zend_Exception("Channel ID is required and must be INT");
+        }
         
         $rows = $this->bcTable->fetchDayItems( $channel_id, $date, $count );
         
@@ -128,7 +130,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             }
             
         } else {
-            return array();
+            $result = array();
         }
         
         return $result;

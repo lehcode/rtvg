@@ -158,6 +158,11 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      * @var int
      */
     protected $rightWidthSpans = 3;
+    
+    /**
+     * @var string
+     */
+    protected $shareCode = '<div class="yashare-auto-init pull-left" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>';
 
 
     /**
@@ -234,6 +239,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         $this->view->assign('leftWidth', $this->leftWidthSpans);
         $this->view->assign('contentWidth', $this->contentWidthSpans);
         $this->view->assign('rightWidth', $this->rightWidthSpans);
+        $this->view->assign('shareCode', $this->shareCode);
 		
 	}
 	

@@ -80,8 +80,8 @@ $this->headStyle()->appendStyle($css);
 
 <div class="row" id="tinyUrl">
     <p class="badge">
-        <?php echo $this->escape( sprintf("Короткая ссылка на программу канала «%s»", $channelTitle) ); ?>
-        <?php $linkAttrTitle = $this->escape( sprintf('Телепрограмма канала «%s» на каждый день', $channelTitle) ); ?>
+        <?php echo sprintf("Короткая ссылка на программу канала<br />«%s»", $this->escape($channelTitle) ); ?>
+        <?php $linkAttrTitle = sprintf('Телепрограмма канала «%s» на каждый день', $this->escape($channelTitle) ); ?>
         <a href="<?php echo $this->short_link ?>" 
            title="<?php echo $linkAttrTitle; ?>" 
            rel="alternate" 

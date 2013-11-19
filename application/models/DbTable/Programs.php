@@ -100,29 +100,29 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'desc',
                 'hash',
             ))
-            ->joinLeft(array('EVT'=>$this->_eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
+            ->join(array('EVT'=>$this->_eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
                 'start',
                 'end',
                 'premiere',
                 'new',
                 'live'
             ))
-            ->joinLeft( array('CAT'=>$this->_bcCategoriesTable->getName()), "`BC`.`category`=`CAT`.`id`", array( 
+            ->join( array('CAT'=>$this->_bcCategoriesTable->getName()), "`BC`.`category`=`CAT`.`id`", array( 
                 'category_id'=>'id',
                 'category_title'=>'title',
                 'category_title_single'=>'title_single',
                 'category_alias'=>'alias',
             ))
-            ->joinLeft( array( 'CH'=>$this->_channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
+            ->join( array( 'CH'=>$this->_channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
                 'channel_id'=>'id',
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',
             ))
-            ->joinLeft(array('CHC'=>'rtvg_countries'), "`CH`.`country` = `CHC`.`iso`", array(
+            ->join(array('CHC'=>'rtvg_countries'), "`CH`.`country` = `CHC`.`iso`", array(
                 'channel_country_name'=>'name',
                 'channel_country_iso'=>'iso',
             ))
-            ->joinLeft(array('BCC'=>'rtvg_countries'), "`BC`.`country` = `BCC`.iso", array(
+            ->join(array('BCC'=>'rtvg_countries'), "`BC`.`country` = `BCC`.iso", array(
                 'bc_country_name'=>'name',
                 'bc_country_iso'=>'iso',
             ))

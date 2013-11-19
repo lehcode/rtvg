@@ -18,8 +18,8 @@ $this->headMeta()
 
 <div class="row" id="tinyUrl">
     <p class="badge">
-        <?php echo sprintf("Короткая ссылка на программу канала &laquo;%s&raquo;", $channelTitle); ?>
-        <?php $linkAttrTitle = sprintf('Телепрограмма канала &laquo;%s&raquo; на каждый день', $channelTitle); ?>
+        <?php echo sprintf("Короткая ссылка на программу канала<br />&laquo;%s&raquo;", $this->escape($channelTitle)); ?>
+        <?php $linkAttrTitle = sprintf('Телепрограмма канала &laquo;%s&raquo; на каждый день', $this->escape($channelTitle)); ?>
         <a href="<?php echo $this->tinyUrl ?>" 
            title="<?php echo $linkAttrTitle; ?>"
            rel="alternate"
