@@ -56,7 +56,7 @@ class ChannelsController extends Rtvg_Controller_Action
         $this->channelsModel = new Xmltv_Model_Channels();
         
         if ($this->cache->enabled){
-            (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(86400);
+            (APPLICATION_ENV != 'production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(86400);
             $f = '/Channels';
             (APPLICATION_ENV=='testing') ? $notEmpty = true : $notEmpty = false ;
             $hash = Rtvg_Cache::getHash('published_channels');
@@ -67,6 +67,7 @@ class ChannelsController extends Rtvg_Controller_Action
         } else {
             $rows = $this->channelsModel->getPublished($notEmpty);
         }
+        
         $this->view->assign('channels', $rows);
 
         //Channels categories

@@ -75,10 +75,14 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'id',
                 'title',
                 'alias',
-                'icon'=>"CONCAT('images/channel_logo/', CH.icon)"
+                'icon'=>"CONCAT('/images/channel_logo/', CH.icon)"
             ))
-            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", 'stream')
-            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", 'stream')
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
+                'tvforsite_id'=>'stream'
+            ))
             ->where("`CH`.`published` = '1'")
             ->order("CH.title ASC")
         ;

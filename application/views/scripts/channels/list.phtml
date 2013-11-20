@@ -101,20 +101,22 @@ $this->headScript()->appendScript( $js );
 	<div class="channeldesc">
         
         <div class="span12">
-            <?php if ((int)$channel['stream']>0){ ?>
-            <a href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), 'default_channels_live'); ?>"
+            <?php 
+            if ((int)$channel['torrenttv_id']>0 || $channel['tvforsite_id']){ 
+                ?>
+            <a href="<?php echo $this->url(array('channel'=>$alias), 'default_channels_live'); ?>"
                class="btn btn-small btn-info linkLive">Онлайн</a>
             <?php } ?>
 
             <a class="btn btn-small" 
-                href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_listings_day-listing"); ?>" 
+                href="<?php echo $this->url(array('channel'=>$alias), "default_listings_day-listing"); ?>" 
                 title="<?php printf('%s сегодня', $title) ?>"
                 target="_blank">
                 Передачи сегодня
             </a>
 
             <a class="btn btn-small" 
-                href="<?php echo $this->url(array('channel'=>Xmltv_String::strtolower($alias)), "default_channels_channel-week"); ?>" 
+                href="<?php echo $this->url(array('channel'=>$alias), "default_channels_channel-week"); ?>" 
                 title="<?php printf('%s на неделю', $channel['title']) ?>">
                 Неделя
             </a>
