@@ -49,7 +49,8 @@ RewriteCond %{QUERY_STRING} date [OR,NC]
 RewriteCond %{QUERY_STRING} tag [OR,NC]
 RewriteCond %{QUERY_STRING} start [OR,NC]
 RewriteCond %{QUERY_STRING} layout [OR]
-RewriteCond %{REQUEST_URI} ^/видео/онлайн/.+/телепрограмма/.+$
+RewriteCond %{REQUEST_URI} ^/видео/онлайн/.+/телепрограмма/.+$ [OR]
+RewriteCond %{REQUEST_URI} ^.+/indefined.+$
 RewriteRule .* /телепрограмма? [R=301,L]
 
 RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]

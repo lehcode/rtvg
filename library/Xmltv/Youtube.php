@@ -286,9 +286,7 @@ class Xmltv_Youtube {
 		$input = new Zend_Filter_Input(array(), $validators, $params);
 		
 		if ($input->isValid('id')!==true){
-            //var_dump(base64_decode( strrev($rtvg_id).'='));
-            //die(__FILE__ . ': ' . __LINE__);
-            throw new Zend_Exception("Не могу декодировать ID");
+            return false;
 		}
 		
 		return $input->getEscaped('id');
