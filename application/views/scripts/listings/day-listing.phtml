@@ -80,6 +80,10 @@ $this->headStyle()->appendStyle($css);
 	</h2>
 </div>
 
+<div class="row" id="shareCode">
+    <?php echo $this->shareCode ?>
+</div>
+
 <div class="row" id="tinyUrl">
     <p class="badge">
         <?php echo sprintf("Короткая сылка на канал &laquo;%s&raquo;", $this->escape($channelTitle) ); ?>

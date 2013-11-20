@@ -173,6 +173,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							    $validators['date']['presence'] = 'required';
 							    
 							    $validators['channel'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
+							    $validators['ts'] = new Zend_Validate_Digits();
 							    
 							break;
 							

@@ -58,14 +58,14 @@ class VideosController extends Rtvg_Controller_Action
 		$youtube = new Xmltv_Youtube($ytConfig);
 		$rtvgId = $this->input->getEscaped('id');
 		
-		if ($rtvgId) {
+        if ($rtvgId) {
 		    
 		    $ytId = Xmltv_Youtube::decodeRtvgId( $rtvgId );
-			
+            
             if ($this->cache->enabled){
                 $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->main->lifetime;
 			    $t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400) ;
-                (APPLICATION_ENV=='development') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(86400);
+                (APPLICATION_ENV=='development') ? $this->cache->setLifetime(100) : $this->cache->setLifetime($t);
 				$f = '/Youtube/ShowVideo/Main';
 				$hash = $this->cache->getHash( $ytId );
                 

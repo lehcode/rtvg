@@ -189,15 +189,18 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             )));
         
         
-        $this->_router->addRoute( 'default_listings_day-date', 
-            new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', array(
+        $this->_router->addRoute( 'default_listings_day-date',  new Zend_Controller_Router_Route( 'телепрограмма/:channel/:date', 
+            array(
                 'module'=>'default',
                 'controller'=>'listings',
                 'action'=>'day-date'
             ),
             array(
                 'channel'=>self::CHANNEL_ALIAS_REGEX,
-                'date'=>'('.self::DATE_REGEX.'|сегодня)')));
+                'date'=>'('.self::DATE_REGEX.'|сегодня)',
+                'ts'=>'[0-9]{10,12}',
+            )
+        ));
             
         $this->_router->addRoute( 'default_listings_premieres-week', 
         new Zend_Controller_Router_Route( 'телепрограмма/премьеры/:timespan', array(

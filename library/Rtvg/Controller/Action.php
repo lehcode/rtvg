@@ -258,8 +258,8 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 					$invalid[$k] = $this->_getParam($k);
 				}
 			}
-			
-			if (APPLICATION_ENV=='development'){
+            
+            if (APPLICATION_ENV=='development'){
 				foreach ($this->_getAllParams() as $k=>$v){
 					if (!$this->input->isValid($k)) {
 						throw new Zend_Controller_Action_Exception("Invalid ".$k.'! Value: '.$invalid[$k]);

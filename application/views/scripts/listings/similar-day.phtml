@@ -4,7 +4,6 @@
  *
  * @author  Antony Repin
  * @package rutvgid
- * @version $Id: similar-day.phtml,v 1.3 2013-03-22 17:51:44 developer Exp $
  *
  */
 ?>
@@ -15,36 +14,45 @@ $this->headTitle( $this->escape( 'Похожие программы сегодн
 
 ?>
 
-<h1>Похожие передачи сегодня</h1>
-<p>
-<?php 
-if (isset($this->similar)) {
-    foreach ($this->similar as $single) {
-        $channelIcon = $this->baseUrl('images/channel_logo/'.$single['channel_icon']);
-        $date = new Zend_Date($single['start'], 'YYYY-MM-dd HH:mm:ss' );
-        $channelUrl = $this->url( array( 'channel'=>$single['channel_alias'] ), 'default_listings_day-listing' );
-        $programUrl = $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U");
-		?>
-		
-		
-			<img src="<?php echo $channelIcon ?>" 
-				alt="<?php echo $single['channel_title'] ?>" />
-			
-			<span class="label">
-				<?php echo $single['start']->toString( 'd MMMM') ?></span>&nbsp;<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?>
-			</span>
-			
-			<?php printf('<a href="%s">%s</a> на канале <a href="%s" title="Передачи %s сегодня">%s</a>', 
-				$programUrl, 
-				$single['title'], 
-				$channelUrl, 
-				$single['channel_title'], 
-				$single['channel_title'] );
-			?>
-			 
-		<br />
-		<?php 
+<div class="row">
+    <h1>Похожие передачи сегодня</h1>
+</div>
+
+
+<div class="row" id="shareCode">
+    <?php echo $this->shareCode ?>
+</div>
+
+<div class="row">
+    <p>
+    <?php 
+    if (isset($this->similar)) {
+        foreach ($this->similar as $single) {
+            $channelIcon = $this->baseUrl('images/channel_logo/'.$single['channel_icon']);
+            //$date = new Zend_Date($single['start'], 'YYYY-MM-dd HH:mm:ss' );
+            $channelUrl = $this->url( array( 'channel'=>$single['channel_alias'] ), 'default_listings_day-listing' );
+            $programUrl = $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U");
+            ?>
+        
+        <img src="<?php echo $channelIcon ?>" 
+            alt="<?php echo $single['channel_title'] ?>" />
+
+        <span class="label">
+            <?php echo $single['start']->toString( 'd MMMM') ?></span>&nbsp;<span class="label label-info"><?php echo $single['start']->toString( 'HH:mm') ?>
+        </span>
+
+        <?php printf('<a href="%s">%s</a> на канале <a href="%s" title="Передачи %s сегодня">%s</a>', 
+            $programUrl, 
+            $single['title'], 
+            $channelUrl, 
+            $single['channel_title'], 
+            $single['channel_title'] );
+        ?>
+
+        <br />
+        <?php 
+        }
     }
-}
-?>
-</p>
+    ?>
+    </p>
+</div>

@@ -49,9 +49,16 @@ if (count($this->broadcasts)) {
 	}
 	
 	?>
+<div class="row">
+    
+    <h1>
+        <?php echo $programTitle ?> на <?php echo $channelTitle ?>
+    </h1>
 	
-	<h1><?php echo $programTitle ?> на <?php echo $channelTitle ?></h1>
-	
+    <div id="shareCode">
+        <?php echo $this->shareCode ?>
+    </div>
+    
 	<h2>
         <a class="btn btn-small" href="<?php echo $this->url( array('channel'=>$channelAlias), 'default_listings_day-listing'); ?>">
             <em><?php printf("Программа «%s» на сегодня", $channelTitle) ?></em>
@@ -73,8 +80,11 @@ if (count($this->broadcasts)) {
 	
 	<?php echo $this->partial( 'listings/partials/day-item.phtml', array( 'items'=>$this->broadcasts )); ?>
 	
-	<h3><?php printf( "Про канал «%s»" ,$channelTitle); ?></h3>
-	<p>
+	<h3>
+        <?php printf( "Про канал «%s»" ,$channelTitle); ?>
+    </h3>
+	
+    <p>
 		<?php echo $this->truncateString( $this->channel['desc_intro'].$this->channel['desc_body'], 80, 'words' ) ; ?>
 	</p>
 	
@@ -82,36 +92,40 @@ if (count($this->broadcasts)) {
 	
 } else {
 	
-	/*
-	 * Set META title
-	 */
 	if ($this->is_today) {
 		$this->headMeta()->setName('title', "Эта программа сегодня не выходит");
 	} else {
 		$this->headMeta()->setName('title', sprintf ('Эта программа не выходит в эфир %s', $this->escape( $this->date->toString('dd MMM YYYY'))));
 	}
 	$this->headMeta()->setName('robots', 'noidex,follow');
-	/*
-	 * Set page title
-	 */
-	if ($this->is_today) {
+	
+    if ($this->is_today) {
 		$this->headTitle( "Эта программа сегодня не выходит в эфир");
 	} else {
 		$this->headTitle( sprintf ('Эта программа не выходит в эфир %s', $this->escape( $this->date->toString('dd MMM YYYY'))));
 	}
 	?>
-	<h2>Канал <?php echo $channelTitle ?></h2>
+	<h2>
+        Канал <?php echo $channelTitle ?>
+    </h2>
+    
 	<?php if (!empty($this->channel->desc_intro)): ?>
-	<p><?php echo strip_tags( $this->channel->desc_intro ) ?></p> 
+	<p>
+        <?php echo strip_tags( $this->channel->desc_intro ) ?>
+    </p> 
 	<?php endif; ?>
 	
-	<p>Эта программа сегодня не выходит в эфир на канале <?php echo $channelTitle ?>.<br />
-	<a class="btn btn-mini" href="/телепрограмма/<?php echo $channelAlias ?>">Программа <?php echo $channelTitle ?> на сегодня, <?php echo $this->escape( $this->date->toString('dd MMM YYYY')) ?></a>
+	<p>
+        Эта программа сегодня не выходит в эфир на канале <?php echo $channelTitle ?>.<br />
+        <a class="btn btn-mini" href="/телепрограмма/<?php echo $channelAlias ?>">
+            <?php echo $channelTitle ?> сегодня, <?php echo $this->escape( $this->date->toString('dd MMM YYYY')) ?>
+        </a>
+    </p>
 	
 <?php 
 
 } ?>
-
+</div>
 
 
 
