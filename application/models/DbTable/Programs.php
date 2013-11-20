@@ -134,19 +134,23 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
             ->order("EVT.start ASC")
         ;
         
-        $result = $this->_db->fetchAll($select, array(), Zend_Db::FETCH_NAMED);
-
-        foreach ($result as $k=>$row) {
-			$result[$k]['start'] = new Zend_Date( $row['start'] );
-			$result[$k]['end']   = new Zend_Date( $row['end'] );
-			$result[$k]['premiere'] = (bool)$row['premiere'];
-			$result[$k]['live'] = (bool)$row['live'];
-			$result[$k]['new'] = (bool)$row['new'];
-			$result[$k]['category_id'] = (int)$row['category_id'];
-			$result[$k]['channel_id'] = (int)$row['channel_id'];
-			$result[$k]['episode_num'] = (int)$row['episode_num'];
-			$result[$k]['category'] = (int)$row['category'];
-			$result[$k]['date'] = new Zend_Date($row['date']);
+        $rows = $this->_db->fetchAll($select);
+        $result = array();
+        foreach ($rows as $k=>$row) {
+            foreach ($row as $kk=>$val){
+                $result[$k][$kk] = $val;
+            }
+            $result[$k]['start'] = new Zend_Date( $row->start );
+			$result[$k]['end']   = new Zend_Date( $row->end );
+			$result[$k]['premiere'] = (bool)$row->premiere;
+			$result[$k]['live'] = (bool)$row->live;
+			$result[$k]['new'] = (bool)$row->new;
+			$result[$k]['category_id'] = (int)$row->category_id;
+			$result[$k]['channel_id'] = (int)$row->channel_id;
+			$result[$k]['episode_num'] = (int)$row->episode_num;
+			$result[$k]['category'] = (int)$row->category;
+			$result[$k]['date'] = new Zend_Date($row->date);
+            ksort($result[$k]);
 		}
         
         return $result;

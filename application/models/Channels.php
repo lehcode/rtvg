@@ -595,6 +595,12 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'country_iso'=>'iso',
                 'country'=>'name',
             ))
+            ->join(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
+                'tvforsite_id'=>'stream'
+            ))
 	    	->joinLeft( array('RATING'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `RATING`.`channel`", array(
                 'hits',
                 'rating',
@@ -612,6 +618,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 $result[$k]['hits'] = (int)$v['hits'];
                 $result[$k]['rating'] = (int)$v['rating'];
                 $result[$k]['featured'] = (bool)$v['featured'];
+                $result[$k]['free'] = (bool)$v['featured'];
+                $result[$k]['torrenttv_id'] = (int)$v['torrenttv_id'];
                 ksort($result[$k]);
             }
         }

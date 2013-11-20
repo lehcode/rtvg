@@ -33,6 +33,14 @@ class Rtvg_Gdata_Youtube extends Zend_Gdata_YouTube
     public function getVideoEntry($videoId = null, $location = null,
         $fullEntry = false)
     {
+        
+        if (!$videoId) {
+			throw new Zend_Exception("YT ID is required");
+		}
+        if (is_numeric($videoId)){
+            throw new Zend_Exception("YT ID cannot be digit");
+        }
+        
         if ($videoId !== null) {
             if ($fullEntry) {
                 return $this->getFullVideoEntry($videoId);

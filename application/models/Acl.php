@@ -62,6 +62,7 @@ class Xmltv_Model_Acl extends Zend_Acl
 	    $this->add( new Zend_Acl_Resource( 'default:listings.channel-week' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.category' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:listings.premieres-week' ), $default );
+	    $this->add( new Zend_Acl_Resource( 'default:listings.undefined' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:sitemap.sitemap' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:smth.rich' ), $default );
 	    $this->add( new Zend_Acl_Resource( 'default:videos.show-video' ), $default );

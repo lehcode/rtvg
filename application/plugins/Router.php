@@ -45,6 +45,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             throw new Exception( "Не загружен роутер", 500);
         }
         
+        
         $this->_router->addRoute( 'default', new Zend_Controller_Router_Route( '',  array(
             'module'=>'default',
             'controller'=>'frontpage',
@@ -68,7 +69,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'controller'=>'channels',
                 'action'=>'list'))
         );
-        
+        /*
         $this->_router->addRoute( 'default_channels_typeahead', new Zend_Controller_Router_Route( 'channels/typeahead/format/json', 
             array(
                 'module'=>'default',
@@ -78,20 +79,21 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             array('format'=>'json')
             )
         );
-        
+        */
         $this->_router->addRoute( 'default_channels_index', new Zend_Controller_Router_Route( 'каналы/', array(
             'module'=>'default',
             'controller'=>'channels',
             'action'=>'index'))
         );
-            
+          
         $this->_router->addRoute( 'default_channels_channel-week', new Zend_Controller_Router_Route( 'телепрограмма/:channel/неделя', array(
             'module'=>'default',
             'controller'=>'channels',
             'action'=>'channel-week'),
         array(
             'channel' => self::CHANNEL_ALIAS_REGEX)));
-            
+        
+        /*
         $this->_router->addRoute( 'default_series_week', 
         new Zend_Controller_Router_Route( 'сериалы',
         array(
@@ -112,13 +114,19 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
             'module'=>'default',
             'controller'=>'persons',
             'action'=>'actors')));
-            
+        */
+        
         $this->_router->addRoute( 'default_channels_category', 
-        new Zend_Controller_Router_Route( 'каналы/:category',
-        array(
-            'module'=>'default',
-            'controller'=>'channels',
-            'action'=>'category')));
+            new Zend_Controller_Router_Route( 'каналы/:category',
+            array(
+                'module'=>'default',
+                'controller'=>'channels',
+                'action'=>'category'),
+            array(
+                'category'=>self::ALIAS_REGEX
+            )
+            )
+        );
         
         $this->_router->addRoute( 'default_channels_live', new Zend_Controller_Router_Route( 
             'live/:channel',
@@ -354,6 +362,15 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                     'action'=>'typeahead',
                 ), array(
                     'format'=>'json'
+                ))
+        );
+
+        $this->_router->addRoute( 'default_listings_undefined', 
+            new Zend_Controller_Router_Route( 'телепрограмма/undefined', 
+                array(
+                    'module'=>'default',
+                    'controller'=>'listings',
+                    'action'=>'undefined',
                 ))
         );
         

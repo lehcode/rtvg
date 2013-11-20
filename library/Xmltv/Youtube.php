@@ -128,10 +128,6 @@ class Xmltv_Youtube {
 	 */
 	public function fetchVideo($yt_id=null){
 		
-		if (!$yt_id) {
-			throw new Zend_Exception(Rtvg_Message::ERR_MISSING_PARAM, 500);
-		}
-		
         $result = $this->client->getVideoEntry($yt_id);
         return $result;
 		
@@ -169,9 +165,6 @@ class Xmltv_Youtube {
 	 */
 	public function fetchVideos($query_string=null){
 		
-		//var_dump(func_get_args());
-		//die(__FILE__.': '.__LINE__);
-		
 		if (!$query_string)
 			throw new Zend_Exception("Не задан параметр поиска видео");
 		if (is_array($query_string))
@@ -202,6 +195,9 @@ class Xmltv_Youtube {
 		} catch (Zend_Gdata_App_Exception $e) {
 		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
+        
+        var_dump($videos);
+        die(__FILE__ . ': ' . __LINE__);
 		
 		return $videos;
 			

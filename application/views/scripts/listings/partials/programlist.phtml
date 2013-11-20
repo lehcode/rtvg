@@ -10,11 +10,8 @@
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
 
-//META title
-$this->headMeta()->setName('title', sprintf ('«%s» онлайн, %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' )));
-//Browser window title
-$this->headTitle( sprintf ('«%s» сегодня. Телепрограмма и онлайн-вещание', $channelTitle ) );
-
+$this->headMeta()->setName('title', sprintf ('«%s» онлайн, %s', $channelTitle, $this->listingDate->toString( 'EEEE, d MMMM YYYY' )));
+$this->headTitle( sprintf ('Передачи сейчас', $channelTitle ));
 $this->inlineScript()->appendScript("$(function(){ $('.iconLive').tooltip() });");
 
 //Generate keywords
@@ -191,7 +188,7 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
 <ul id="daynav" class="nav nav-pills pull-right">
     <li>
         <?php 
-        $d = new Zend_Date($this->listing_date->toString('U'), 'U');
+        $d = new Zend_Date($this->listingDate->toString('U'), 'U');
         $d->subDay(1);
         ?>
         <a href="<?php echo $this->url(array('channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-YYYY')), 'default_listings_day-date') ?>"
@@ -200,7 +197,7 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
     </li>
     <li>
         <?php 
-        $d = new Zend_Date($this->listing_date->toString('U'), 'U');
+        $d = new Zend_Date($this->listingDate->toString('U'), 'U');
         $d->addDay(1);
         ?>
         <a href="<?php echo $this->url(array( 'channel'=>$channelAlias, 'date'=>$d->toString('dd-MM-yyyy')), 'default_listings_day-date') ?>"

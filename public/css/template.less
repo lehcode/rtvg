@@ -262,7 +262,6 @@ li.lastcol:after {
     margin: 0;
     background: #dedede;
     border-radius: 6px;
-    padding: 8px;
     border: 2px solid #f7f7f7;
     box-shadow: 0 0 8px 2px rgba(125, 125, 125, 0.3);
     background: #ffcc00;
@@ -290,6 +289,7 @@ li.lastcol:after {
         li{
             display: block;
             margin-bottom: 5px;
+            padding: 2px 6px;
             img.channelLogo{
                 .channelLogoSidebar;
                 width: 16px;
@@ -303,9 +303,16 @@ li.lastcol:after {
                 line-height: 16px;
                 padding-left: 0.5em;
                 width: 78%;
+                &:hover{
+                    text-decoration:none;
+                    cursor: pointer;
+                }
             }
             &:before{ .clearAll; }
             &:after{ .clearAll; }
+            &:hover{
+                background: white;
+            }
         }
     }
 }
@@ -320,6 +327,7 @@ li.lastcol:after {
         li{
             margin-bottom: 5px;
             line-height: 24px;
+            padding: 2px 6px;
             img.channelLogo{
                 .channelLogoSidebar;
                 width: 24px;
@@ -332,9 +340,16 @@ li.lastcol:after {
                 font-size: 11px;
                 line-height: 16px;
                 padding-left: 0.5em;
+                &:hover{
+                    text-decoration:none;
+                    cursor: pointer;
+                }
             }
             &:before{ .clearAll; }
             &:after{ .clearAll; }
+            &:hover{
+                background: white;
+            }
         }
     }
 }

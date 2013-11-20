@@ -86,17 +86,10 @@ class ListingsController extends Rtvg_Controller_Action
         
         //Текущая дата
         $listingDate = $this->bcModel->listingDate($this->input);
-        $this->view->assign('listing_date', $listingDate);
+        $this->view->assign('listingDate', $listingDate);
         
         //Assign today's date to view 
         ($listingDate->isToday()) ? $this->view->assign('is_today', true) : $this->view->assign('is_today', false);
-        
-        //Detect timeshift and adjust listing time
-        //$timeShift = (int)$this->input->getEscaped( 'tz', 'msk' );
-        //$listingDate = $timeShift!='msk' ? $listingDate->addHour( $timeShift ) : $listingDate ;
-        
-        //$this->view->assign('timeshift', $timeShift);
-        $this->view->assign('listing_date', $listingDate);
         
         //Fetch programs list for day and make decision on current program
         $amt = 4;
@@ -106,12 +99,12 @@ class ListingsController extends Rtvg_Controller_Action
             $f = "/Listings/Programs";
             
             if ($this->_getParam('date')){
-                $hash = Rtvg_Cache::getHash( $channel['alias'].'_complete_'.$listingDate->toString('DDD') );
+                $hash = $this->cache->getHash( $channel['alias'].'_complete_'.$listingDate->toString('DDD') );
             } else {
-                $hash = Rtvg_Cache::getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
+                $hash = $this->cache->getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
             }
             
-            if ((bool)$list = $this->cache->load( $hash, 'Core', $f)===false) {
+            if ((bool)($list = $this->cache->load( $hash, 'Core', $f))===false) {
                 
                 if ($listingDate->isToday() && $this->getParam('date')===null){
                     $list = $this->bcModel->getBroadcastsForDay( $listingDate, $channel['id'], $amt );
@@ -130,6 +123,8 @@ class ListingsController extends Rtvg_Controller_Action
             }
         }
         
+        $this->view->assign('list', $list);
+        
         if (!empty($list)){
             
             $list[0]['now_showing']=true;
@@ -142,7 +137,7 @@ class ListingsController extends Rtvg_Controller_Action
                 (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(86400);
                 $f = "/Content/Articles";
                 $hash = 'dayListingArticles_'.Rtvg_Cache::getHash( $channel['id'] );
-                if (!$articles = $this->cache->load( $hash, 'Core', $f)) {
+                if ((bool)($articles = $this->cache->load( $hash, 'Core', $f))===false) {
                     $articles = $this->articlesModel->dayListingArticles( $currentBc, $amt );
                     $this->cache->save( $articles, $hash, 'Core', $f);
                 }
@@ -195,8 +190,10 @@ class ListingsController extends Rtvg_Controller_Action
         */
         
         //Channels top
-        $chTop = $this->channelsModel->topChannels(10);
+        $amt = 10;
+        $chTop = $this->channelsModel->topChannels($amt);
         $this->view->assign('channelsTop', $chTop );
+        $this->view->assign('channelsTopAmt', $amt );
         
         //Sidebar videos
         $vids = $this->channelSidebarVideos($channel);
@@ -581,6 +578,11 @@ class ListingsController extends Rtvg_Controller_Action
         $weekEnd = $this->_helper->WeekDays( array( 'method'=>'getEnd', 'data'=>$data));
         $seriesList = $this->bcModel->getCategoryForPeriod( $weekStart, $weekEnd, $this->categoriesMap['series'] );
         
+    }
+    
+    public function undefinedAction(){
+        $this->_helper->layout->disableLayout();
+        echo "";
     }
     
     

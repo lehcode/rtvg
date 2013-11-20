@@ -8,9 +8,7 @@
  *
  */
 
-$this->headScript()->appendScript("$(function(){
-    $('.flagImg').tooltip();
-});");
+$this->inlineScript()->appendScript("$(function(){ $('.flagImg').tooltip(); });");
 
 ?>
 <div class="span<?php echo $this->spans ?>" id="col_l">
@@ -20,26 +18,28 @@ $this->headScript()->appendScript("$(function(){
     if (isset($this->channelsTop) && !empty($this->channelsTop)) {
         ?>
     <div id="topChannels" class="module hidden-phone">
-        <h4>Топ 10 каналов</h4>
+        <h4>Топ <?php echo $this->channelsTopAmt ?> каналов онлайн</h4>
         <ul>
             <?php 
             foreach ($this->channelsTop as $item){
-                $hrefUrl = $this->url( array(
-                    'channel'=>$this->escape($item['alias']), 
-                    'date'=>'сегодня'), 
-                    'default_listings_day-date'
-                );
+                $hrefUrl = $this->url(array( 'channel'=>$this->escape($item['alias']), 'date'=>'сегодня'), 'default_listings_day-date');
+                $title = $this->escape($item['title']);
+                $lang = $this->escape($item['lang']);
             ?>
             <li>
-                <img src="<?php echo $this->baseUrl( $this->escape($item['icon']) ) ?>"
-                     class="channelLogo" />
-                <img src="<?php echo $this->baseUrl('/images/flags/32/'.$item['country_iso'].'.png') ?>" 
-                     alt="Страна канала <?php echo $item['country'] ?>" 
-                     class="flagImg"
-                     title="Страна: <?php echo $item['country'] ?>"/>
                 <a href="<?php echo $hrefUrl ?>"
-                   title="&laquo;<?php echo $item['title'] ?>&raquo; сегодня">
-                        <?php echo $this->escape($item['title']) ?>
+                    title="&laquo;<?php echo $title ?>&raquo; онлайн">
+                    <span>
+                       <img src="<?php echo $this->baseUrl( $this->escape($item['icon']) ) ?>" 
+                            class="channelLogo" />
+                    </span>
+                    <span>
+                        <img src="<?php echo $this->baseUrl('/images/flags/32/'.$this->escape($item['lang_iso']).'.png') ?>" 
+                            alt="<?php echo $lang ?>"
+                            class="flagImg"
+                            title="Язык: <?php echo $lang ?>"/>
+                    </span>
+                    <?php echo $title ?>
                 </a>
             </li>
             <?php 	
@@ -129,7 +129,7 @@ $this->headScript()->appendScript("$(function(){
     if (isset($this->bcTop) && !empty($this->bcTop)) {
         ?>
     <div id="topBroadcasts" class="module hidden-phone">
-        <h4>Топ 20 недели</h4>
+        <h4>Топ 20 передач недели</h4>
         <ul>
             <?php 
             foreach ($this->bcTop as $bc){

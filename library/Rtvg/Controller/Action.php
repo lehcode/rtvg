@@ -194,38 +194,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
             $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->lifetime);
         }
         
-        /**
-         * Load bootstrap
-         * @var Bootstrap
-         */
-        $bootstrap = $this->getInvokeArg('bootstrap');
-        
-        self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
-		if (self::$videoCache){
-			$this->vCacheModel = new Xmltv_Model_Vcache();
-		}
-				
-		$this->weekDays = $this->_helper->getHelper('WeekDays');
+        $this->weekDays = $this->_helper->getHelper('WeekDays');
 		$this->channelsModel = new Xmltv_Model_Channels();
 		$this->bcModel = new Xmltv_Model_Broadcasts();
 		$this->videosModel = new Xmltv_Model_Videos();
 		$this->commentsModel = new Xmltv_Model_Comments();
 		$this->usersModel = new Xmltv_Model_Users();
-		
-		$kc = Zend_Registry::get('site_config')->channels->kids;
-		if (stristr($kc, ',')){
-			$kc = explode(',', $kc);
-			foreach ($kc as $k=>$c){
-				if (!empty($c)) {
-					$this->kidsChannels[$k] = intval($c);
-				}
-			}
-		} else {
-			if (!is_numeric($kc)){
-				throw new Exception("Wrong data in Config site.ini");
-			}
-			$this->kidsChannels = intval($kc);
-		}
 		
 		if (!$this->_request->isXmlHttpRequest()){
 		    $this->view->assign( 'hide_sidebar', 'both' );
@@ -400,7 +374,7 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	public function channelInfo($alias=null){
 		
         if (!$alias) {
-			throw new Zend_Exception("channel was not provided");
+			throw new Zend_Exception("Channel was not provided");
 	    }
         
         if ($this->cache->enabled) {
@@ -417,8 +391,11 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
             $data = $this->channelsModel->getByAlias( $alias );
         }
         
+        if (empty($data)){
+            return $data;
+        }
         if ($data['alias'] != $alias){
-            throw new Zend_Exception("Wrong channel loded from cache");
+            throw new Zend_Exception("Wrong channel loaded from cache");
         }
         
         return $data;
@@ -629,12 +606,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
                 (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime($t);
                 $f = '/Listings/Videos';
                 $hash = Rtvg_Cache::getHash( 'listingVideos_'.$channel['title'].'-'.$date->toString( 'YYYY-MM-dd' ));
-                if ((bool)($result=$this->cache->load( $hash, 'Core', $f)) === false){
-                    $result = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3) );
+                if ((bool)($result = $this->cache->load( $hash, 'Core', $f)) === false){
+                    $result = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel, $date );
                     $this->cache->save($listingVideos, $hash, 'Core', $f);
                 }          
             } else {
-                $result = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3) );
+                $result = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel, $date );
             }
         }
         

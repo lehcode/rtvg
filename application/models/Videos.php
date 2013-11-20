@@ -23,7 +23,6 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public function parseYtEntry($entry, $img_width=120){
 		
-		
         if (is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
 		    
 		    $v = array();
@@ -69,7 +68,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			$v['thumbs']	= is_array($entry['thumbs']) ? $entry['thumbs'] : Zend_Json::decode($entry['thumbs']);
 			
 		} else {
-			throw new Zend_Exception("Error parsing YT Entry");
+			throw new Zend_Exception("Error parsing YT Entry. " . get_class($entry));
 		}
 		
 		return $v;
@@ -411,10 +410,10 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$ytConfig['safe_search'] = $conf->get('safe_search');
 		$ytConfig['language']	= 'ru';
 		
-		$result = array();
+        $result = array();
 		if (count($list)){
 		    foreach ($list as $li){
-				$progTitle = Xmltv_String::strtolower($li['title']);
+                $progTitle = Xmltv_String::strtolower($li['title']);
 				if (($ytParsed = $this->ytSearch( $progTitle, $ytConfig))!==false){
 				    if (!empty($ytParsed) && $ytParsed!==false){
 						$result[$li['hash']] = $ytParsed[0];
@@ -540,6 +539,10 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$search = preg_replace('/\s+/ui', ' ', $search);
 		
         $vids = $yt->fetchVideos( $search );
+        
+        var_dump($vids);
+        die(__FILE__ . ': ' . __LINE__);
+        
 		if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
 			$c=0;
 			foreach ($vids as $v){

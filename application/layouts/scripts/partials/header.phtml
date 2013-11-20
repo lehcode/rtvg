@@ -23,15 +23,21 @@
                     <ul class="dropdown-menu">
                         <?php 
                         foreach ($cat['channels'] as $c){
+                            $title = $this->escape($c['title']);
+                            $onlineSpan = '';
+                            $hrefAttrTitle = "Программа $title на сегодня";
+                            if ((int)$c['torrenttv_id']>0 || $c['tvforsite_id']){ 
+                                $onlineSpan = '<span class="btn btn-mini">онлайн</span>';
+                                $hrefAttrTitle = "Смотреть $title онлайн";
+                            }
                             ?>
                         <li>
                             <a href="/телепрограмма/<?php echo $this->escape($c['alias']) ?>"
                                class="pull-left" 
-                               style="vertical-align: middle;">
-                                <?php echo $this->escape($c['title']) ?>
-                                <?php if ((int)$c['torrenttv_id']>0 || $c['tvforsite_id']){ ?>
-                                    <span class="btn btn-mini">онлайн</span>
-                                <?php } ?>
+                               style="vertical-align: middle;"
+                               title="<?php echo $hrefAttrTitle ?>">
+                                <?php echo $title ?>
+                                <?php echo $onlineSpan ?>
                             </a>
                         </li>
                             <?php

@@ -11,8 +11,10 @@
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
 
-$this->headMeta()->setName('title', sprintf ('«%s» онлайн в отличной качестве', $channelTitle ));
-$this->headMeta()->setName('description', sprintf ('Телепрограмма канала «%s» на сегодня', $channelTitle ));
+$headTitle = sprintf("«%s» онлайн. Телепрограмма на сегодня", $this->escape($channelTitle)); 
+$this->headTitle($headTitle);
+$this->headMeta()->setName('title', sprintf ('«%s» онлайн в отличном качестве', $channelTitle ));
+$this->headMeta()->setName('description', sprintf ('Канал «%s» онлайн с телепрограммой на сегодня и неделю', $channelTitle ));
 
 $js = "$(function(){
 	var minHeight = 0;
@@ -40,8 +42,8 @@ $this->headStyle()->appendStyle($css);
 
 <div class="row">
     <h1>&laquo;<?php echo $channelTitle ?>&raquo; 
-        <time itemprop="startDate" datetime="<?php echo $this->listing_date->toString(Zend_Date::ISO_8601) ?>">
-            <?php echo Xmltv_String::ucfirst( $this->listing_date->toString("EEEE, d MMMM YYYY") ); ?>
+        <time itemprop="startDate" datetime="<?php echo $this->listingDate->toString(Zend_Date::ISO_8601) ?>">
+            <?php echo Xmltv_String::ucfirst( $this->listingDate->toString("EEEE, d MMMM YYYY") ); ?>
         </time>
     </h1>
 </div>
@@ -50,7 +52,7 @@ $this->headStyle()->appendStyle($css);
 
 <div class="row">
     
-	<h3 id="weekButton" class="span4">
+	<h3 id="weekButton" class="span5">
 		<?php 
         $linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
         $linkAttrTitle = $this->escape( sprintf('Передачи %s', $channelTitle) );
@@ -61,7 +63,7 @@ $this->headStyle()->appendStyle($css);
 			Программа на неделю
 		</a>
 	</h3>
-    <div class="span4 offset4 badge" id="timer">Сейчас <?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</div>
+    <div class="span4 offset3 badge" id="timer">Сейчас <?php echo $this->listingDate->toString("HH:mm") ?> (MSK)</div>
 </div>
 
 <div class="row">
@@ -80,8 +82,9 @@ $this->headStyle()->appendStyle($css);
 
 <div class="row" id="tinyUrl">
     <p class="badge">
-        <?php echo sprintf("Короткая ссылка на программу канала<br />«%s»", $this->escape($channelTitle) ); ?>
+        <?php echo sprintf("Короткая сылка на канал &laquo;%s&raquo;", $this->escape($channelTitle) ); ?>
         <?php $linkAttrTitle = sprintf('Телепрограмма канала «%s» на каждый день', $this->escape($channelTitle) ); ?>
+        <br />
         <a href="<?php echo $this->short_link ?>" 
            title="<?php echo $linkAttrTitle; ?>" 
            rel="alternate" 
@@ -117,7 +120,7 @@ if (count($this->programs)){
         echo $this->partial( 'listings/partials/programtable.phtml', array(
             'items'        => $this->programs,
             'channel'      => $this->channel,
-            'listing_date' => $this->listing_date,
+            'listingDate' => $this->listingDate,
         )); 
     } else {
         echo $this->partial( 'listings/partials/programlist.phtml', array( 
@@ -126,7 +129,7 @@ if (count($this->programs)){
             'listing_videos' => $this->listing_videos, 
             'is_today'       => $this->is_today, 
             'short_link'     => $this->short_link,
-            'listing_date'   => $this->listing_date,
+            'listingDate'   => $this->listingDate,
         ));
     }
 }

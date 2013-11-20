@@ -341,7 +341,7 @@ class ChannelsController extends Rtvg_Controller_Action
         
         //Текущая дата
         $date = $this->bcModel->listingDate( $this->input );
-        $this->view->assign('listing_date', $date);
+        $this->view->assign('listingDate', $date);
         
         //Channel videos
         $vids = $this->channelRelatedVideos($channel, 10);
