@@ -30,7 +30,6 @@ class ChannelsController extends Rtvg_Controller_Action
            
            if (false === (bool)$this->_request->isXmlHttpRequest()){
                $this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
-               $this->view->assign( 'hide_sidebar', null );
            }
            
     }
@@ -54,40 +53,33 @@ class ChannelsController extends Rtvg_Controller_Action
         
         parent::validateRequest();
         
-        $this->view->headLink()
-            ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
-
         $this->channelsModel = new Xmltv_Model_Channels();
-        $this->view->assign( 'hide_sidebar', false );
-        $this->view->assign( 'gcse', false );
-
+        
         if ($this->cache->enabled){
-
-            $this->cache->setLifetime(86400);
+            (APPLICATION_ENV != 'production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(86400);
             $f = '/Channels';
-
+            (APPLICATION_ENV=='testing') ? $notEmpty = true : $notEmpty = false ;
             $hash = Rtvg_Cache::getHash('published_channels');
             if (!$rows = $this->cache->load($hash, 'Core', $f)) {
-                $rows = $this->channelsModel->getPublished();
+                $rows = $this->channelsModel->getPublished($notEmpty);
                 $this->cache->save($rows, $hash, 'Core', $f);
             }
         } else {
-            $rows = $this->channelsModel->getPublished();
+            $rows = $this->channelsModel->getPublished($notEmpty);
         }
-
-        (APPLICATION_ENV=='development') ? Zend_Registry::get('fireLog')->log($rows, Zend_Log::INFO) : null ;
-
+        
         $this->view->assign('channels', $rows);
 
         //Channels categories
-        $this->view->assign('channels_cats', $this->getChannelsCategories());
+        $cats = $this->channelsCategories();
+        $this->view->assign('channelsCategories', $cats);
 
         //Данные для модуля самых популярных программ
         $top = $this->bcModel->topBroadcasts();
-        $this->view->assign('bc_top', $top);
+        $this->view->assign('bcTop', $top);
         
         $ads = $this->_helper->getHelper('AdCodes');
-        $adCodes = $ads->direct(1, 'random', 300, 250);
+        $adCodes = $ads->direct(2, 350, 240);
         $this->view->assign('ads', $adCodes);
         
         
@@ -135,72 +127,47 @@ class ChannelsController extends Rtvg_Controller_Action
      */
     public function categoryAction() {
         
-        if (parent::validateRequest()) {
-           
-            $this->view->assign('pageclass', 'category');
-            $this->view->headLink()
-                ->prependStylesheet( 'http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css', 'screen');
-            
-            $this->channelsModel = new Xmltv_Model_Channels();
-            $catProps = $this->channelsModel->category( $this->input->getEscaped('category') );
-            if ($catProps===false){
-                $this->getResponse()->setHttpResponseCode(404);
-                $this->_helper->layout()->setLayoutPath(APPLICATION_PATH.'/layouts/scripts/');
-                $this->_helper->layout()->setLayout('not-found');
-                return;
-            }
-            
-            $ads = $this->_helper->getHelper('AdCodes');
-            $adCodes = $ads->direct(1, 'random', 300, 250);
-            $this->view->assign('ads', $adCodes);
-            
-            if ($this->cache->enabled){
-                
-                $this->cache->setLifetime(86400);
-                $f = "/Channels/Category";
-                
-                $hash = md5('category_'.$catProps['alias']);
-                if (!$rows = $this->cache->load($hash, 'Core', $f)){
-                    $rows = $this->channelsModel->categoryChannels($catProps['alias']);
-                    
-                    foreach ($rows as $k=>$row) {
-                        $rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
-                    }
-                    $this->cache->save($rows, $hash, 'Core', $f);
-                }
-                
-            } else {
-                $rows = $this->channelsModel->categoryChannels($catProps['alias']);
-                foreach ($rows as $k=>$row) {
-                    $rows[$k]['icon'] = $this->view->baseUrl('images/channel_logo/'.$row['icon']);
-                }
-            }
-            
-            $this->view->assign('channels', $rows);
-            
-            //Данные для модуля самых популярных программ
-            $this->view->assign('bc_top', $this->bcModel->topBroadcasts());
-            
-            //Channels categories
-            if ($this->cache->enabled){
-                
-                $this->cache->setLifetime(86400);
-                $f = "/Channels";
-                
-                $hash  = $this->cache->getHash("channelscategories");
-                if (!$cats = $this->cache->load($hash, 'Core', $f)) {
-                    $cats = $this->channelsModel->channelsCategories();
-                    $this->cache->save($cats, $hash, 'Core', $f);
-                }
-            } else {
-                $cats = $this->channelsModel->channelsCategories();
-            }
-            
-            $this->view->assign('channels_cats', $cats);
-            
-            $this->render('list');
-            
+        parent::validateRequest();
+        
+        $this->view->assign('pageclass', 'channelsCategory');
+        
+        $this->channelsModel = new Xmltv_Model_Channels();
+        $catProps = $this->channelsModel->category( $this->input->getEscaped('category') );
+        if ($catProps===false){
+            $this->getResponse()->setHttpResponseCode(404);
+            $this->_helper->layout()->setLayoutPath(APPLICATION_PATH.'/layouts/scripts/');
+            $this->_helper->layout()->setLayout('not-found');
+            return;
         }
+        $this->view->assign('category', $catProps);
+        
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(2, 300, 240);
+        $this->view->assign('ads', $adCodes);
+        
+        if ($this->cache->enabled){
+            (APPLICATION_ENV != 'production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(604800);
+            $f = "/Channels/Category";
+            $hash = $this->cache->getHash('category_'.$catProps['alias']);
+            if (!$rows = $this->cache->load($hash, 'Core', $f)){
+                $rows = $this->channelsModel->categoryChannels($catProps['alias']);
+                $this->cache->save($rows, $hash, 'Core', $f);
+            }
+
+        } else {
+            $rows = $this->channelsModel->categoryChannels($catProps['alias']);
+        }
+        
+        $this->view->assign('channels', $rows);
+
+        //Данные для модуля самых популярных программ
+        $this->view->assign('bcTop', $this->bcModel->topBroadcasts());
+        
+        //Channels categories
+        $cats = $this->channelsCategories();
+        $this->view->assign('channelsCategories', $cats);
+        
+        $this->render('list');
         
     }
     
@@ -211,44 +178,42 @@ class ChannelsController extends Rtvg_Controller_Action
     public function channelWeekAction(){
         
         // Validation routines
-        if (parent::validateRequest()) {
-            
-            $this->view->assign('hide_sidebar', 'left');
-            //$this->view->assign('sidebar_videos', true);
-            $this->view->assign('pageclass', 'channel-week');
-            
-            // Channel properties
-            $this->channelsModel = new Xmltv_Model_Channels();
-            $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
-            $this->view->assign('channel', $channel);
-            
-            //Week start and end dates
-            $ws = $this->_helper->getHelper('weekDays')
-                ->getStart();
-            $this->view->assign('week_start', $ws);
-            $we = $this->_helper->getHelper('weekDays')
-                ->getEnd();
-            $this->view->assign('week_end', $we);
-            
-            if ($this->cache->enabled){
-                $hash = Rtvg_Cache::getHash('channel_'.$channel['alias'].'_week');
-                $f = '/Channels/Week';
-                if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
-                    $schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($ws), new Zend_Date($we));
-                    $this->cache->save($schedule, $hash, 'Core', $f);
-                }
-            } else {
+        parent::validateRequest();
+        
+        $this->view->assign('pageclass', 'channelWeek');
+
+        // Channel properties
+        $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
+        $this->view->assign('channel', $channel);
+
+        //Week start and end dates
+        $ws = $this->_helper->getHelper('weekDays')->getStart();
+        $this->view->assign('week_start', $ws);
+        $we = $this->_helper->getHelper('weekDays')->getEnd();
+        $this->view->assign('week_end', $we);
+
+        if ($this->cache->enabled){
+            $hash = Rtvg_Cache::getHash('channel_'.$channel['alias'].'_week');
+            $f = '/Channels/Week';
+            if (!$schedule = $this->cache->load($hash, 'Core', $f)) {
                 $schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($ws), new Zend_Date($we));
+                $this->cache->save($schedule, $hash, 'Core', $f);
             }
-            $this->view->assign('days', $schedule);
-            
-            $this->channelsModel->addHit( $channel['id'] );
-            
-            $ads = $this->_helper->getHelper('AdCodes');
-            $adCodes = $ads->direct(1, 'random', 300, 250);
-            $this->view->assign('ads', $adCodes);
-            
+        } else {
+            $schedule = $this->channelsModel->getWeekSchedule($channel, new Zend_Date($ws), new Zend_Date($we));
         }
+        $this->view->assign('days', $schedule);
+
+        $this->channelsModel->addHit( $channel['id'] );
+
+        //Ad codes for right sidebar
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(2, 300, 240);
+        $this->view->assign('ads', $adCodes);
+        
+        //Channels categories
+        $cats = $this->channelsCategories();
+        $this->view->assign('channelsCategories', $cats);
         
     }
     
@@ -308,7 +273,7 @@ class ChannelsController extends Rtvg_Controller_Action
     }
     
     /**
-     * AJAX
+     * AJAX action
      * Get channel alias from $_GET['title']
      */
     public function aliasAction(){
@@ -320,7 +285,68 @@ class ChannelsController extends Rtvg_Controller_Action
         parent::validateRequest();
         
         $title = $this->input->getEscaped('t');
-        $this->view->assign( 'alias', $this->view->escape( $this->channelsModel->getByTitle( $title )->alias ) );
+        $this->view->assign( 'alias', $this->channelsModel->getByTitle( $title )->alias );
+        
+    }
+    
+    /**
+     * Channel live casting page
+     */
+    public function liveAction(){
+        
+        parent::validateRequest();
+        
+        $this->view->assign('pageclass', 'live');
+        
+        $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
+        $this->view->assign('channel', $channel);
+        
+        //Ad codes
+        $ads = $this->_helper->getHelper('AdCodes');
+        $adCodes = $ads->direct(2, 300, 240);
+        $this->view->assign('ads', $adCodes);
+        
+        //Channels top
+        $chTop = $this->channelsModel->topChannels(10);
+        $this->view->assign('channelsTop', $chTop );
+        
+        //TinyUrl
+        $tinyUrl = $this->getTinyUrl(array('channel'=>$channel['alias']), 
+            'default_channels_live',
+            array(
+                $this->_getParam('module'),
+                $this->_getParam('controller'),
+                $this->_getParam('action'),
+                (int)$channel['id'],
+            )
+        );
+        $this->view->assign('tinyUrl', $tinyUrl);
+        
+        //Add hit for channel
+        $this->channelsModel->addHit( (int)$channel['id'] );
+        $this->view->assign('featured', $this->getFeaturedChannels());
+        
+        //Channel news
+        if ($channel['rss_url']){
+            try{
+                $news = $this->channelsModel->channelFeed($channel, 10);
+            } catch (Exception $e){
+                //skip
+            }
+            $this->view->assign( 'channelNews', $news);
+        }
+        
+        //Данные для модуля самых популярных программ
+        $top = $this->bcModel->topBroadcasts(20);
+        $this->view->assign('bcTop', $top);
+        
+        //Текущая дата
+        $date = $this->bcModel->listingDate( $this->input );
+        $this->view->assign('listingDate', $date);
+        
+        //Channel videos
+        $vids = $this->channelRelatedVideos($channel, 10);
+        $this->view->assign('sidebarVideos', $vids);
         
     }
     

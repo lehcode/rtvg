@@ -84,7 +84,7 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	 */
 	public function fetchDayItems($channel_id=null, $date=null) {
 		
-		if (!$channel_id || !$date) {
+        if (!$channel_id || !$date) {
 			throw new Zend_Db_Table_Exception( Rtvg_Message::ERR_MISSING_PARAM );
 		}
 		
@@ -100,51 +100,59 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'desc',
                 'hash',
             ))
-            ->joinLeft(array('EVT'=>$this->_eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
-                'channel',
+            ->join(array('EVT'=>$this->_eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
                 'start',
                 'end',
                 'premiere',
                 'new',
                 'live'
             ))
-            ->joinLeft( array('CAT'=>$this->_bcCategoriesTable->getName()), "`BC`.`category`=`CAT`.`id`", array( 
+            ->join( array('CAT'=>$this->_bcCategoriesTable->getName()), "`BC`.`category`=`CAT`.`id`", array( 
                 'category_id'=>'id',
                 'category_title'=>'title',
                 'category_title_single'=>'title_single',
                 'category_alias'=>'alias',
             ))
-            ->joinLeft( array( 'CH'=>$this->_channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
+            ->join( array( 'CH'=>$this->_channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
                 'channel_id'=>'id',
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',
             ))
-            ->joinLeft(array('CHC'=>'rtvg_countries'), "`CH`.`country`=`CHC`.`iso`", array(
+            ->join(array('CHC'=>'rtvg_countries'), "`CH`.`country` = `CHC`.`iso`", array(
                 'channel_country_name'=>'name',
                 'channel_country_iso'=>'iso',
             ))
-            ->joinLeft(array('BCC'=>'rtvg_countries'), "`BC`.`country`=`BCC`.iso", array(
+            ->join(array('BCC'=>'rtvg_countries'), "`BC`.`country` = `BCC`.iso", array(
                 'bc_country_name'=>'name',
                 'bc_country_iso'=>'iso',
             ))
-            ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd")." 00:00:00") )
-            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->addDay(2)->toString("YYYY-MM-dd")." 00:00") )
-            ->where( "`EVT`.`channel` = $channel_id")
-            ->where( "`CH`.`published` = TRUE")
-            ->group( "EVT.hash")
-            ->order( "EVT.start ASC")
+            ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")) )
+            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->addDay(1)->toString("YYYY-MM-dd 00:00:00")) )
+            ->where("`EVT`.`channel` = $channel_id")
+            ->where("`CH`.`published` = '1'")
+            ->group("EVT.hash")
+            ->order("EVT.start ASC")
         ;
         
-        $result = $this->_db->fetchAssoc($select->assemble());
-		
-        foreach ($result as $k=>$row) {
-			$result[$k]['start'] = new Zend_Date( $row['start'] );
-			$result[$k]['end']   = new Zend_Date( $row['end'] );
-			$result[$k]['premiere'] = isset($row['premiere']) ? (bool)$row['premiere'] : false ;
-			$result[$k]['live']	    = isset($row['live']) ? (bool)$row['live'] : false ;
-			$result[$k]['new']	    = isset($row['new']) ? (bool)$row['new'] : false ;
+        $rows = $this->_db->fetchAll($select);
+        $result = array();
+        foreach ($rows as $k=>$row) {
+            foreach ($row as $kk=>$val){
+                $result[$k][$kk] = $val;
+            }
+            $result[$k]['start'] = new Zend_Date( $row->start );
+			$result[$k]['end']   = new Zend_Date( $row->end );
+			$result[$k]['premiere'] = (bool)$row->premiere;
+			$result[$k]['live'] = (bool)$row->live;
+			$result[$k]['new'] = (bool)$row->new;
+			$result[$k]['category_id'] = (int)$row->category_id;
+			$result[$k]['channel_id'] = (int)$row->channel_id;
+			$result[$k]['episode_num'] = (int)$row->episode_num;
+			$result[$k]['category'] = (int)$row->category;
+			$result[$k]['date'] = new Zend_Date($row->date);
+            ksort($result[$k]);
 		}
-		
+        
         return $result;
 		
 	}

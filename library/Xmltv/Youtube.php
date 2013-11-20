@@ -1,4 +1,5 @@
 <?php
+require_once 'Rtvg/Gdata/Youtube.php';
 class Xmltv_Youtube {
 	
     /**
@@ -88,7 +89,7 @@ class Xmltv_Youtube {
 		
 		$httpClient = new Zend_Http_Client();
 		$httpClient->setConfig( $clientConf );
-		$this->client  =@ new Zend_Gdata_YouTube( $httpClient );
+		$this->client  =@ new Rtvg_Gdata_Youtube( $httpClient );
 		$this->client->setGzipEnabled(true);
 		$this->client->setMajorProtocolVersion(2);
 				
@@ -127,18 +128,8 @@ class Xmltv_Youtube {
 	 */
 	public function fetchVideo($yt_id=null){
 		
-		if (!$yt_id) {
-			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
-		}
-		
-		try {
-			$result = $this->client->getVideoEntry($yt_id);
-		} catch (Zend_Gdata_App_Exception $e) {
-		    var_dump($e->getMessage());
-		    die(__FILE__.': '.__LINE__);
-		}
-		
-		return $result;
+        $result = $this->client->getVideoEntry($yt_id);
+        return $result;
 		
 	}
 	
@@ -174,9 +165,6 @@ class Xmltv_Youtube {
 	 */
 	public function fetchVideos($query_string=null){
 		
-		//var_dump(func_get_args());
-		//die(__FILE__.': '.__LINE__);
-		
 		if (!$query_string)
 			throw new Zend_Exception("Не задан параметр поиска видео");
 		if (is_array($query_string))
@@ -202,17 +190,12 @@ class Xmltv_Youtube {
 		
 		$query->setVideoQuery($q);
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump( $query->getQueryUrl(2));
-			//var_dump(urldecode( $query->getQueryUrl(2)));
-		}
-		
 		try {
 		    $videos = $this->client->getVideoFeed( $query->getQueryUrl(2) );
 		} catch (Zend_Gdata_App_Exception $e) {
 		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
-		
+        
 		return $videos;
 			
 	}
@@ -295,15 +278,15 @@ class Xmltv_Youtube {
 		if (!$rtvg_id) {
 			throw new Zend_Exception("Не указан ID");
 		}
-	
-		$params['id'] = base64_decode( strrev($rtvg_id).'=');
-		$validators = array( 'id'=>array(
-			new Zend_Validate_Regex('/^[a-z0-9]+$/i')
+        
+        $params['id'] = base64_decode( strrev($rtvg_id).'=');
+        $validators = array( 'id'=>array(
+			new Zend_Validate_Regex('/^[a-z0-9-_]+$/i')
 		));
 		$input = new Zend_Filter_Input(array(), $validators, $params);
 		
 		if ($input->isValid('id')!==true){
-		    throw new Zend_Exception("Не могу декодировать ID");
+            return false;
 		}
 		
 		return $input->getEscaped('id');

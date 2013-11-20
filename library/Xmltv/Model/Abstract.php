@@ -259,7 +259,9 @@ class Xmltv_Model_Abstract
         
         $menuData = array();
         $i = 0;
-        foreach ($this->channelsCategoriesTable->fetchAll("featured = '1'", "title ASC") as $c){
+        $cats = $this->channelsCategoriesTable->fetchAll("featured IS TRUE", "title ASC");
+        
+        foreach ($cats as $c){
             
             $menuData[$i] = array(
                 'id'=>(int)$c->id,
@@ -273,7 +275,7 @@ class Xmltv_Model_Abstract
                     'id',
                     'title',
                     'alias',
-                    'logo'=>"CONCAT('images/channel_logo', `CH`.`icon`, '/')",
+                    'logo'=>"CONCAT('images/channel_logo/', `CH`.`icon`, '')",
                 ))
                 ->join(array('LANG'=>'rtvg_languages'), "`CH`.`lang` = `LANG`.`iso`", array(
                     'lang_iso'=>'iso',
@@ -283,13 +285,24 @@ class Xmltv_Model_Abstract
                     'country_iso'=>'iso',
                     'country_name'=>'name',
                 ))
-                ->joinLeft(array('STREAM'=>'rtvg_ref_streams'), "`CH`.`id` = `STREAM`.`channel`", 'stream')
+                ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), '`CH`.`id` = `TORRENTTV`.`channel`', array(
+                    'torrenttv_id'=>'stream'
+                ))
+                ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), '`CH`.`id` = `TVFORSITE`.`channel`', array(
+                    'tvforsite_id'=>'stream'
+                ))
                 ->where("`CH`.`published` = '1'")
                 ->where("`CH`.`category` = ".(int)$c->id)
                 ->order("CH.title")
             ;
             
             $result = $this->db->fetchAll($select); 
+            
+            foreach ($result as $k=>$item){
+                $result[$k]['id'] = (int)$item['id'];
+                $result[$k]['torrenttv_id'] = (int)$item['torrenttv_id'];
+            }
+            
             $menuData[$i]['channels'] = $result;
             $i++;
         }

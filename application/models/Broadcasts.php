@@ -108,13 +108,11 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
      */
     public function getBroadcastsForDay(Zend_Date $date=null, $channel_id=null, $count=null){
         
-        $d = new Zend_Date($date);
-        
-        try{
-            $rows = $this->bcTable->fetchDayItems( $channel_id, $date, $count );
-        } catch (Exception $e){
-            return array();
+        if (!$channel_id || !is_int($channel_id)){
+            throw new Zend_Exception("Channel ID is required and must be INT");
         }
+        
+        $rows = $this->bcTable->fetchDayItems( $channel_id, $date, $count );
         
         if (count($rows)>0) {
             $result = array();
@@ -132,20 +130,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             }
             
         } else {
-            return array();
+            $result = array();
         }
-        
-        /*
-        $nowShowing=false;
-        foreach ($result as $row){
-            if ((bool)$row['now_showing']===true){
-                $nowShowing=true;
-            }
-        }
-        if (!$nowShowing){
-            $result[0]['now_showing'] = true;
-        }
-         * */
         
         return $result;
     }
@@ -222,26 +208,14 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'sub_title',
                 'alias',
                 'age_rating',
-                //'last_chance',
-                //'previously_shown',
                 'country',
-                //'actors',
-                //'directors',
-                //'writers',
-                //'adapters',
-                //'producers',
-                //'composers',
-                //'editors',
-                //'presenters',
-                //'commentators',
-                //'guests',
                 'episode_num',
-                //'date',
-                //'length',
                 'desc',
-                //'hash',
+                'hash',
             ))
             ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
+                'start',
+                'end',
                 'premiere',
                 'new',
                 'live',
@@ -286,7 +260,12 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             $result[$idx]['live']     = (bool)$row['live'];
             $result[$idx]['premiere'] = (bool)$row['premiere'];
             $result[$idx]['episode_num'] = (int)$row['episode_num'];
+            if (strlen($row['hash'])!=32){
+                throw new Zend_Exception("Data inregrity broken");
+            }
         }
+        
+        
         
         return $result;
         
@@ -403,26 +382,33 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'episode_num',
                 'hash' 
             ))
-            ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
+            ->join(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", array(
                 'start',
                 'end',
                 'premiere',
                 'new',
                 'live',
             ))
-            ->joinLeft( array('CH'=>$this->channelsTable->getName() ), "`EVT`.`channel`=`CH`.`id`", array(
+            ->join( array('CH'=>$this->channelsTable->getName() ), "`EVT`.`channel`=`CH`.`id`", array(
                 'channel_id'=>'id',
                 'channel_title'=>'title',
-                'channel_alias'=>'LOWER(`CH`.`alias`)',
+                'channel_alias'=>'alias',
                 'channel_icon'=>'icon'
             ))
-            ->joinLeft( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array(
+            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array(
                 'category_id'=>'title',
                 'category_title'=>'title',
                 'category_title_single'=>'title_single',
-                'category_alias'=>'LOWER(`BCCAT`.`alias`)'
+                'category_alias'=>'alias'
             ))
+            ->where( "`EVT`.`start` >= '".$date->toString('YYYY-MM-dd 00:00:00')."'" )
+            ->where( "`CH`.`published`='1'")
+            ->order( "EVT.channel ASC" )
+            ->order( "EVT.start DESC" )
+            ->where( "`EVT`.`channel` = ".(int)$channel_id)
         ;
+        
+        
         
         $parts = explode('-', $program_alias);
         $where = array();
@@ -439,14 +425,6 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         $where = implode(' OR ', $where);
         $select->where( $where );
         
-        $select
-            ->where( "`EVT`.`start` >= '".$date->toString('YYYY-MM-dd 00:00:00')."'" )
-            ->where( "`CH`.`published`='1'")
-            ->order( "EVT.channel ASC" )
-            ->order( "EVT.start DESC" );    
-
-        $select->where( "`EVT`.`channel` = ".(int)$channel_id);
-        
         $result = $this->db->fetchAll($select);
         
         if (count($result)){
@@ -459,8 +437,6 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 $result[$k]['age_rating'] = (int)$item['age_rating'];
                 $result[$k]['channel_id'] = (int)$item['channel_id'];
             }
-        } else {
-            return false;
         }
         
         return $result;
@@ -656,16 +632,13 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
      * @throws Zend_Exception
      */
     public function frontpageListing($channels=array()){
-        
+                
         if (empty($channels)){
             throw new Zend_Exception( "Channels cannot be empty" );
         }
         if (!is_array($channels)){
             throw new Zend_Exception( "Channels must be an array" );
         }
-        
-        //var_dump(func_get_args());
-        //die(__FILE__ . ': ' . __LINE__);
         
         $select = $this->db->select()
             ->from( array('BC'=>$this->bcTable->getName()), array(
@@ -693,6 +666,12 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'adult',
             ))
             ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel`", null)
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
+                'tvforsite_id'=>'stream'
+            ))
             ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")))
             ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm:00")))
             ->group("EVT.start")
@@ -703,8 +682,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             ));
         
         if ((bool)Zend_Registry::get('adult') !== true) {
-            $select->where("`CH`.`adult` IS NULL");
-            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
+            $select->where("`CH`.`adult` != '1'");
+            $select->where("`BC`.`age_rating` >= 16 OR `BC`.`age_rating` = 0");
         }
         
         if (is_array($channels) && !empty($channels)){
@@ -729,6 +708,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                     $items[$d['channel']][$d['hash']]['age_rating'] = (int)$d['age_rating']>0 ? (int)$d['age_rating']>0 : null ;
                     $items[$d['channel']][$d['hash']]['channel'] = (int)$d['channel'];
                     $items[$d['channel']][$d['hash']]['category'] = (int)$d['category'];
+                    $items[$d['channel']][$d['hash']]['stream'] = (int)$d['stream'];
                 }
             }
         }
@@ -899,8 +879,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         ;
         
         if ((bool)Zend_Registry::get('adult') !== true){
-            $select->where("`CH`.`adult` IS NULL");
-            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
+            $select->where("`CH`.`adult` != '1'");
+            $select->where("`BC`.`age_rating` >= 16 OR `BC`.`age_rating` = 0");
         }
         
         $result = $this->db->fetchAll($select);
@@ -945,8 +925,8 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
         ;
         
         if ((bool)Zend_Registry::get('adult') !== true) {
-            $select->where("`CH`.`adult` IS NULL");
-            $select->where("`BC`.`age_rating` <= 16 OR `BC`.`age_rating` = 0");
+            $select->where("`CH`.`adult` != '1'");
+            $select->where("`BC`.`age_rating` >= 16 OR `BC`.`age_rating` = 0");
         }
     
         $result = $this->db->fetchAll($select);
@@ -987,23 +967,22 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             throw new Zend_Controller_Action_Exception("Validator not passed", 500);
         }
 		
-	    $now = Zend_Date::now();
+	    $d = $now = Zend_Date::now();
 		if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $validator->getEscaped('date'))) {
 			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'dd-MM-YYYY' ), 'dd-MM-YYYY' );
 		} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $validator->getEscaped('date'))) {
 			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
-			
 		}
-		
-		if (isset($d) && ($d->compare($now, 'DD')!=0)) {
+        
+        if ($d->compare($now, 'DD')!=0) {
 		    $date = $d->toString('YYYY-MM-dd');
 		    $time = $now->toString('HH:mm:ss');
-		    return new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
+		    $result = new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
 		} else {
-			return $now;
+			$result = $now;
 		}
 		
-		return $d;
+        return $result;
 		
 	}
     

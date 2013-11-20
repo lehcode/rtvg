@@ -128,8 +128,8 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         //Channels comments
         $this->_commentsModel->channelComments( $channel['id'] );
         
-        $this->assertQueryCount("#maincontent h1", 1 );
-        $this->assertQueryContentContains( "#maincontent h1", $channel['title']);
+        $this->assertQueryCount("#content h1", 1 );
+        $this->assertQueryContentContains( "#content h1", $channel['title']);
         
 	}
     
@@ -161,8 +161,8 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertAction( $urlParams['action'] );
         $this->assertResponseCode(200);
         
-        //$this->assertQueryCount("#maincontent h1", 1 );
-        $this->assertQueryContentContains( "#maincontent h1", $channel['title']);
+        $this->assertQueryCount("#content h1", 1 );
+        $this->assertQueryContentContains( "#content h1", $channel['title']);
         
     }
     
@@ -193,7 +193,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertAction( 'day-listing' );
         $this->assertResponseCode(200);
         
-        //$this->assertQueryContentContains( "#maincontent h1", $channel['title']);
+        $this->assertQueryContentContains( "#content h1", $channel['title']);
         
     }
     
@@ -204,6 +204,7 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
 		
         $channels = $this->_channelsModel->getPublished();
         $this->assertNotEmpty($channels);
+        
         $channel = $channels[array_rand($channels, 1)];
         $this->assertNotEmpty($channel);
         
@@ -228,13 +229,18 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         $this->assertModule( $urlParams['module'] );
         $this->assertController( $urlParams['controller'] );
         $this->assertAction( $urlParams['action'] );
+        
         $bcTop = $this->_bcModel->topBroadcasts();
         $this->assertNotEmpty($bcTop);
+        
         $chCats = $this->_channelsModel->channelsCategories();
         $this->assertNotEmpty($chCats);
+        
         $list = $this->_bcModel->broadcastThisWeek( $bc['alias'], $channel['id'], $this->weekStart, $this->weekEnd);
         $this->assertNotEmpty($list);
+        
         $this->_bcModel->similarBroadcastsThisWeek( $bc['alias'], $this->weekStart, $this->weekEnd, $channel['id'] );
+        
         $this->assertResponseCode(200);
         
         $this->markTestIncomplete();

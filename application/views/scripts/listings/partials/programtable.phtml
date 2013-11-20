@@ -10,18 +10,13 @@
 
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
-$channelCat   = $this->escape( $this->channel['cat_title'] );
 
 
-//META title
-$this->headMeta()
-	->setName('title', sprintf ('Программа канала %s за %s.', $channelTitle, $this->listing_date->toString('EEEE, d MMMM YYYY')));
-//Browser window title
-$this->headTitle( sprintf ('Телепрограмма %s за %s', $channelTitle, $this->listing_date->toString( 'EEEE, d MMMM YYYY' ) ) );
-
+$this->headMeta()->setName('title', sprintf ('Канал «%s», %s', $channelTitle, $this->listingDate->toString('EEEE, d MMMM YYYY')));
+$this->headTitle( sprintf ('Все передачи', $channelTitle ));
 
 //Generate keywords
-$kw = array($channelTitle, $this->listing_date->toString('d MMMM YYYY'));
+$kw = array($channelTitle, $this->listingDate->toString('d MMMM YYYY'));
 if (!empty($this->programs)) {
 	foreach ($this->programs as $p) {
 		if (count($kw)<5) {

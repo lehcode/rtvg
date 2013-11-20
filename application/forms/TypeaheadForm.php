@@ -35,7 +35,8 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
         ob_start();
         ?>
         $(function(){
-        	$.getJSON( '<?php echo $view->baseUrl( 'channels/typeahead/format/json') ?>', function(data) {
+            $('#<?php echo $inputId ?>').typeahead();
+        	$.getJSON( '<?php echo $view->baseUrl( '/channels/typeahead/format/json') ?>', function(data) {
 			var typeaheadItems = new Array();
 			$.each(data.result, function( key, val ) {
 				var newItem = new Array(); 
@@ -43,6 +44,7 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
 				newItem['value'] = val.title;
 				typeaheadItems.push( newItem ); 
 			});
+            console.log(typeaheadItems);
 			$('input#<?php echo $inputId; ?>').autocomplete({ 
 				appendTo: '<?php echo $appendTo ?>',
 				source: typeaheadItems,
@@ -61,7 +63,7 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
 				<?php  
 		        } else { ?>
 		            $.ajax({
-		            	url: '<?php echo $view->baseUrl( 'channels/alias/format/json'); ?>', 
+		            	url: '<?php echo $view->baseUrl( '/channels/alias/format/json'); ?>', 
 		            	data: 't='+ui.item.label,
 		            	dataType: 'json',
 		            	success: function(r) {
@@ -91,13 +93,12 @@ class Xmltv_Form_TypeaheadForm extends Zend_Form
 		        } ?>
         
 	    	}});
-			$('#<?php echo $inputId; ?>').show(500);
 		});
 		
     	});
     	<?php 
         $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
-        $view->inlineScript()->appendScript($js);
+        $view->headScript()->appendScript($js);
         
         $search = new Zend_Form_Element_Text( $inputId );
         $tipText = "Начните вводить название канала и выберите его из списка";

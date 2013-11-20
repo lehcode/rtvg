@@ -8,7 +8,7 @@ class Xmltv_Model_DbTable_ChannelsRatings extends Xmltv_Db_Table_Abstract
 
     /**
      * Constructor
-     * @param unknown_type $config
+     * @param array $config
      */
     public function __construct ($config = array()) {
     
@@ -16,20 +16,26 @@ class Xmltv_Model_DbTable_ChannelsRatings extends Xmltv_Db_Table_Abstract
     
     }
     
+    /**
+     * Add rating hit to channel
+     * @param int $channel_id
+     * @throws Zend_Exception
+     */
     public function addHit($channel_id){
     	
     	if (!$channel_id){
 			throw new Zend_Exception('Не указан $channel_id');
         }
         
-        if (!is_numeric($channel_id)){
-            throw new Zend_Exception('Channel ID is wrong');
+        if (!is_int($channel_id)){
+            throw new Zend_Exception('Channel ID is not INT');
         }
         
-		if (!$row = $this->find($channel_id)->current())
-			$row = $this->createRow(array('channel_id'=>$channel_id), true);
-		
-		$row->hits+=1;
+		if (!$row = $this->find($channel_id)->current()){
+			$row = $this->createRow(array('channel'=>$channel_id), true);
+        }
+        
+		$row->hits += 1;
 		$row->save();
 		
     }

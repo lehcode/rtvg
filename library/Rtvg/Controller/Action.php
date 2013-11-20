@@ -142,8 +142,29 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
      *
      * @var Zend_Log_Writer_Firebug
      */
-    protected $fireLog;	
-	
+    protected $fireLog;
+    
+    /**
+     * @var int
+     */
+    protected $leftWidthSpans = 2;
+    
+    /**
+     * @var int
+     */
+    protected $contentWidthSpans = 7;
+    
+    /**
+     * @var int
+     */
+    protected $rightWidthSpans = 3;
+    
+    /**
+     * @var string
+     */
+    protected $shareCode = '<div class="yashare-auto-init pull-left" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>';
+
+
     /**
 	 * (non-PHPdoc)
 	 * @see Zend_Controller_Action::init()
@@ -173,55 +194,26 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
             $this->cache->setLifetime( (int)Zend_Registry::get( 'site_config' )->cache->system->lifetime);
         }
         
-        /**
-         * Load bootstrap
-         * @var Bootstrap
-         */
-        $bootstrap = $this->getInvokeArg('bootstrap');
-        
-        self::$videoCache = (bool)Zend_Registry::get('site_config')->cache->youtube->get('enabled');
-		if (self::$videoCache){
-			$this->vCacheModel = new Xmltv_Model_Vcache();
-		}
-				
-		$this->weekDays = $this->_helper->getHelper('WeekDays');
+        $this->weekDays = $this->_helper->getHelper('WeekDays');
 		$this->channelsModel = new Xmltv_Model_Channels();
 		$this->bcModel = new Xmltv_Model_Broadcasts();
 		$this->videosModel = new Xmltv_Model_Videos();
 		$this->commentsModel = new Xmltv_Model_Comments();
 		$this->usersModel = new Xmltv_Model_Users();
 		
-		$kc = Zend_Registry::get('site_config')->channels->kids;
-		if (stristr($kc, ',')){
-			$kc = explode(',', $kc);
-			foreach ($kc as $k=>$c){
-				if (!empty($c)) {
-					$this->kidsChannels[$k] = intval($c);
-				}
-			}
-		} else {
-			if (!is_numeric($kc)){
-				throw new Exception("Wrong data in Config site.ini");
-			}
-			$this->kidsChannels = intval($kc);
-		}
-		
 		if (!$this->_request->isXmlHttpRequest()){
 		    $this->view->assign( 'hide_sidebar', 'both' );
-		    //$this->view->assign( 'show_popunder', true );
 		    $this->view->assign( 'is_frontpage', false );
 		    $this->view->assign( 'vk_group_init', true );
 		}
         
         $nav  = $this->navData('topnav');
-        $this->view->assign('nav_data', $nav);
+        $this->view->assign('navData', $nav);
 		
-        $this->fireLog = new Zend_Log( new Zend_Log_Writer_Firebug() );
-        
-        if (APPLICATION_ENV!=='testing'){
-            $device = new Rtvg_UserDevice();
-            $device->getUserAgentString();
-        }
+        $this->view->assign('leftWidth', $this->leftWidthSpans);
+        $this->view->assign('contentWidth', $this->contentWidthSpans);
+        $this->view->assign('rightWidth', $this->rightWidthSpans);
+        $this->view->assign('shareCode', $this->shareCode);
 		
 	}
 	
@@ -266,8 +258,8 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 					$invalid[$k] = $this->_getParam($k);
 				}
 			}
-			
-			if (APPLICATION_ENV=='development'){
+            
+            if (APPLICATION_ENV=='development'){
 				foreach ($this->_getAllParams() as $k=>$v){
 					if (!$this->input->isValid($k)) {
 						throw new Zend_Controller_Action_Exception("Invalid ".$k.'! Value: '.$invalid[$k]);
@@ -338,14 +330,11 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	
 		$tinyurl = new Zend_Service_ShortUrl_BitLy( self::$bitlyLogin, self::$bitlyKey);
 		$url	 = 'http://rutvgid.ru'.$this->view->url( $parts, $route);
-		$e = (bool)Zend_Registry::get('site_config')->cache->tinyurl->get('enabled');
-		
+		$e = (bool)Zend_Registry::get('site_config')->cache->tinyurl->enabled;
 		if ($e===true){
-		    
-			$t = (int)Zend_Registry::get('site_config')->cache->tinyurl->get('lifetime');
-			$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(86400) ;
+		    $t = (int)Zend_Registry::get('site_config')->cache->tinyurl->lifetime;
+			$t>0 ? $this->cache->setLifetime((int)$t): $this->cache->setLifetime(604800) ;
 			$f = '/Tinyurl/Pages';
-			
 			$hash = Rtvg_Cache::getHash('tinyurl_'.implode(';', $parts).implode(';', $uniq));
 			if (($link = $this->cache->load($hash, 'Core', $f))===false) {
 				$link = trim($tinyurl->shorten( $url ));
@@ -384,11 +373,32 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 */
 	public function channelInfo($alias=null){
 		
-	    if (!$alias) {
-			$alias = $this->input->getEscaped('channel');
+        if (!$alias) {
+			throw new Zend_Exception("Channel was not provided");
 	    }
-	    
-	    return $this->channelsModel->getByAlias( $alias );
+        
+        if ($this->cache->enabled) {
+            (APPLICATION_ENV=='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(604800);
+            $f = "/Channels/Info";
+            $hash = md5( 'channel_'.$alias.'_'.$f.'_info' );
+
+            if ((bool)($data = $this->cache->load($hash, 'Core', $f))===false){
+                $data = $this->channelsModel->getByAlias( $alias );
+                $this->cache->save($data, $hash, "Core", $f);
+            }
+
+        } else {
+            $data = $this->channelsModel->getByAlias( $alias );
+        }
+        
+        if (empty($data)){
+            return $data;
+        }
+        if ($data['alias'] != $alias){
+            throw new Zend_Exception("Wrong channel loaded from cache");
+        }
+        
+        return $data;
 		
 	}
 	
@@ -489,16 +499,20 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 		
     }
     
-    public function getChannelsCategories(){
-        return $this->channelsModel->channelsCategories();
-    }
-    
+    /**
+     * Sidebar videos for channel
+     * @param int $channel
+     * @return array
+     * @throws Zend_Exception
+     */
     public function channelSidebarVideos($channel=null){
         
         if (!$channel || !is_array($channel)){
             throw new Zend_Exception('$channel is not defined');
         }
-        return $this->videosModel->sidebarVideos($channel);
+        $result = $this->videosModel->sidebarVideos($channel);
+        
+        return $result;
         
     }
     
@@ -539,15 +553,75 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
         
         $nav = array();
         $model = new Xmltv_Model_Abstract();
+        $l = strlen(substr($type, 0, strpos($type, 'nav')));
+        $m = substr($type, 0, $l);
+        $methodName = $m.'navData';
         
-        switch ($type){
-            case 'topnav':
-                $nav[$type] = $model->getTopnavData();
-                break;
+        if ($this->cache->enabled && APPLICATION_ENV!='development'){
+            $this->cache->setLifetime(604800);
+            $f  = '/Misc';
+            $hash = $this->cache->getHash($methodName);
+            if ((bool)($nav = $this->cache->load( $hash, 'Core', $f))===false) {
+                $nav[$type] = $model->$methodName;
+                $this->cache->save($nav, $hash, 'Core', $f);
+            }
+        } else {
+            $nav[$type] = $model->$methodName;
         }
         
         return $nav;
         
+    }
+    
+    public function channelsCategories(){
+        
+        if ($this->cache->enabled){
+            (APPLICATION_ENV != 'production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime(604800);
+            $f = "/Channels";
+            $hash  = $this->cache->getHash("channelscategories");
+            if ((bool)($cats = $this->cache->load($hash, 'Core', $f))===false) {
+                $cats = $this->channelsModel->channelsCategories();
+                $this->cache->save($cats, $hash, 'Core', $f);
+            }
+        } else {
+            $cats = $this->channelsModel->channelsCategories();
+        }
+        return $cats;
+        
+    }
+    
+    public function listingVideos(array $channel, Zend_Date $date, $list=array()){
+        
+        if (!$channel){
+            throw new Zend_Exception("Channel info is required");
+        }
+        if ($list && !is_array($list)){
+            throw new Zend_Exception("Broadcast list must be an array");
+        }
+        
+        if ($date->isToday()) {
+            $listingVideos = array();
+            if ($this->cache->enabled){
+                $t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->listings->lifetime;
+                (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime($t);
+                $f = '/Listings/Videos';
+                $hash = Rtvg_Cache::getHash( 'listingVideos_'.$channel['title'].'-'.$date->toString( 'YYYY-MM-dd' ));
+                if ((bool)($result = $this->cache->load( $hash, 'Core', $f)) === false){
+                    $result = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel, $date );
+                    $this->cache->save($listingVideos, $hash, 'Core', $f);
+                }          
+            } else {
+                $result = $this->videosModel->ytListingRelatedVideos( array_slice($list, 0, 3), $channel, $date );
+            }
+        }
+        
+        return $result;
+        
+    }
+    
+    public function channelRelatedVideos($channel=null, $max=5){
+        
+        return $this->videosModel->channelRelatedVideos($channel['title'], $max);
     }
 	
 }

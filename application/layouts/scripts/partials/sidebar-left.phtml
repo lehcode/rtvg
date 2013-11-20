@@ -7,29 +7,144 @@
  * @version $Id: sidebar-left.phtml,v 1.14 2013-04-06 22:35:03 developer Exp $
  *
  */
+
+$this->inlineScript()->appendScript("$(function(){ $('.flagImg').tooltip(); });");
+
 ?>
-<div class="span<?= $this->spans ?>" id="col_l">
+<div class="span<?php echo $this->spans ?>" id="col_l">
+    
+    <?php 
+    //Top channels block
+    if (isset($this->channelsTop) && !empty($this->channelsTop)) {
+        ?>
+    <div id="topChannels" class="module hidden-phone">
+        <h4>Топ <?php echo $this->channelsTopAmt ?> каналов онлайн</h4>
+        <ul>
+            <?php 
+            foreach ($this->channelsTop as $item){
+                $hrefUrl = $this->url(array( 'channel'=>$this->escape($item['alias']), 'date'=>'сегодня'), 'default_listings_day-date');
+                $title = $this->escape($item['title']);
+                $lang = $this->escape($item['lang']);
+            ?>
+            <li>
+                <a href="<?php echo $hrefUrl ?>"
+                    title="&laquo;<?php echo $title ?>&raquo; онлайн">
+                    <span>
+                       <img src="<?php echo $this->baseUrl( $this->escape($item['icon']) ) ?>" 
+                            class="channelLogo" />
+                    </span>
+                    <span>
+                        <img src="<?php echo $this->baseUrl('/images/flags/32/'.$this->escape($item['lang_iso']).'.png') ?>" 
+                            alt="<?php echo $lang ?>"
+                            class="flagImg"
+                            title="Язык: <?php echo $lang ?>"/>
+                    </span>
+                    <?php echo $title ?>
+                </a>
+            </li>
+            <?php 	
+            }
+            ?>
+        </ul>
+    </div>	
+        <?php 
+    }
+    ?>
+    
+    <?php
+    //Channels categories block
+    if (isset($this->channelsCategories) && !empty($this->channelsCategories)) {
+        ?>
+    <div class="module categories">
+        <ul id="channels_categories" class="nav nav-list">
+        <?php 
+        foreach ($this->channelsCategories as $c) {
+            $title = Xmltv_String::ucfirst( Xmltv_String::strtolower( $this->escape($c['title'] )));
+            $imgAttrAlt   = $this->escape( $c['title'] );
+            $imgAttrSrc   = $this->baseUrl( 'images/categories/channels/'.$this->escape( $c['image'] ));
+            $linkAttrHref = $this->url(array('category'=>$this->escape( $c['alias'] )), 'default_channels_category' );
+            ?>
+            <li><a href="<?php echo $linkAttrHref ?>" title="Канал <?php echo $title ?>">
+                <img src="<?php echo $imgAttrSrc ?>" class="icon" alt="<?php echo $imgAttrAlt ?>" />
+                <?php echo $title ?>
+            </a></li>		
+            <?php 
+        }
+        ?>
+        </ul>
+    </div>	
+        <?php 
+    }
+    ?>
+    
+    
+    <?php
+    if (isset($this->channelNews) && (bool)$this->channelNews!==false){ 
+        ?>
+    <div class="module" id="channelNews">
+            <h4>Новости канала</h4>
+        <?php
+        $i=0;
+        foreach ($this->channelNews as $n){
+            $vid = $this->videos[$i];
+            $thumb = $vid['thumbs'][rand( 0, count( $vid['thumbs'])-1)];
+            $href1 = $this->url(array('alias'=>$vid['alias'], 'id'=>$vid['rtvg_id']), 'default_videos_show-video');
+            $href2 = $this->escape($n['link']);
+            ?>
+        <div class="message">
+            
+            <?php if (is_a($n['pubDate'], 'Zend_Date') && is_string($n['category'])) : ?>
+            <p class="pubDate"><?php echo Xmltv_String::ucfirst($n['pubDate']->toString(Zend_Date::WEEKDAY)) .' :: '. $this->escape($n['category']) ?></p>
+            <?php endif; ?>
+            
+            <?php if ($vid['desc']): ?>
+            <p class="title">
+                <?php echo $vid['desc'] ?>
+            </p>
+            <?php endif; ?>
+            
+            <p class="description">
+                <a href="<?php echo $href1 ?>" title="<?php echo $this->escape($n['title']) ?>">
+                    <?php if ($thumb['url']): ?>
+                    <img src="<?php echo $thumb['url'] ?>" class="channelNewsImage" />
+                    <?php endif; ?>
+                </a><?php echo $n['desc'] ?>
+            </p>
+            
+            <p class="link">
+                <a href="<?php echo $href2 ?>" target="blank"<?php echo ($i<3) ? '' : ' rel="nofollow"' ; ?>>вся новость</a> >
+            </p>
+        </div>
+            <?php
+            $i++;
+        }
+        ?>
+    </div>
+        <?php
+    }
+    ?>
     
     <?php 
     //Top broadcasts block
-    if (isset($this->bc_top) && !empty($this->bc_top)) {
+    if (isset($this->bcTop) && !empty($this->bcTop)) {
         ?>
-    <div class="module hidden-phone">
-        <h4>Популярное на этой неделе</h4>
-        <ul id="program-top">
+    <div id="topBroadcasts" class="module hidden-phone">
+        <h4>Топ 20 передач недели</h4>
+        <ul>
             <?php 
-            foreach ($this->bc_top as $bc){
+            foreach ($this->bcTop as $bc){
                 try {
-                    $hrefUrl = $this->url( array('channel'=>$bc['channel_alias'], 'alias'=>$bc['alias']), 'default_listings_broadcast-week');
+                    $hrefUrl = $this->url( array('channel'=>$this->escape($bc['channel_alias']), 'alias'=>$this->escape($bc['alias'])), 'default_listings_broadcast-week');
                 } catch (Exception $e) {
                     throw new Zend_Exception("Cannot assemble URL", 500, $e);
                 }
                     ?>
             <li>
-                <img src="<?= $this->baseUrl( 'images/channel_logo/'.$bc['channel_icon'] ) ?>" width="16" />
-                <a href="<?= $hrefUrl ?>"
-                    title="<?= $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
-                        <?php echo $this->truncateString( $bc['title'], 3, 'words') ?>
+                <img src="<?php echo $this->baseUrl( 'images/channel_logo/'.$this->escape($bc['channel_icon']) ) ?>"
+                     class="channelLogo" />
+                <a href="<?php echo $hrefUrl ?>"
+                    title="<?php echo $this->escape( sprintf("«%s» на канале «%s» на этой неделе", $bc['title'], $bc['channel_title'])) ?>">
+                        <?php echo $this->escape($bc['title']) ?>
                 </a>
             </li>
             <?php 	
