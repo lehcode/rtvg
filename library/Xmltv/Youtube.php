@@ -196,9 +196,6 @@ class Xmltv_Youtube {
 		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
         
-        var_dump($videos);
-        die(__FILE__ . ': ' . __LINE__);
-		
 		return $videos;
 			
 	}

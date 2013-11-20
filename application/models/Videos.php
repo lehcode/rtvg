@@ -540,10 +540,7 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		
         $vids = $yt->fetchVideos( $search );
         
-        var_dump($vids);
-        die(__FILE__ . ': ' . __LINE__);
-        
-		if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
+        if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
 			$c=0;
 			foreach ($vids as $v){
 			    $r = $this->parseYtEntry($v, $img_width);
