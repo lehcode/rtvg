@@ -259,13 +259,17 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 				}
 			}
             
-            if (APPLICATION_ENV=='development'){
-				foreach ($this->_getAllParams() as $k=>$v){
-					if (!$this->input->isValid($k)) {
-						throw new Zend_Controller_Action_Exception("Invalid ".$k.'! Value: '.$invalid[$k]);
-					}
-				}
-			}
+            foreach ($this->_getAllParams() as $k=>$v){
+                if (!$this->input->isValid($k)) {
+                    if (APPLICATION_ENV=='production'){
+                        throw new Zend_Controller_Action_Exception("Доступ запрещен", 401);
+                    } else {
+                        throw new Zend_Controller_Action_Exception("Invalid ".$k.'! Value: '.$invalid[$k], 404);
+                    }
+                    
+                }
+            }
+            
 			
 			return true;
 	
