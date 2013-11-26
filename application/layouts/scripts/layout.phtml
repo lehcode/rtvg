@@ -17,13 +17,13 @@ $this->jQuery()
 	->setUiVersion('1.10.2') //jQuery UI version, automatically 1.8 = 1.8.latest
 	->uiEnable();
 
-$this->headScript()
+$this->inlineScript()
 	->appendFile( 'http://yandex.st/share/share.js' );
 
 if (!$isFrontpage && (int)$this->rightWidth > 0){
     $this->inlineScript()
         ->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, height: 260, width:250 }, 27716041);');
-    $this->headScript()
+    $this->inlineScript()
         ->appendFile( "//vk.com/js/api/openapi.js?101" );
 }
 
