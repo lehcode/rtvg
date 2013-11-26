@@ -103,57 +103,33 @@ class VideosController extends Rtvg_Controller_Action
                 
 			}
             
-            $this->view->assign( 'main_video', $mainVideo );
+            $this->view->assign( 'main', $mainVideo );
 			
 			
-			/*
-			 * ################################################################################
-			 * Try to load related videos list from cache 
-			 * or fetch it from youtube.com if not found
-			 * in either database or file cache
-			 * ################################################################################
-			 */
-			$relatedAmt = (int)Zend_Registry::get('site_config')->videos->related->get('amount');
+			// Related videos
+            $relatedAmt = (int)Zend_Registry::get('site_config')->videos->related->amount;
 			$relatedVideos = array();
+            
+            if ($this->cache->enabled){
 			
-			if ($this->cache->enabled && APPLICATION_ENV!='development'){
-			
-				$this->cache->setLifetime( 86400 );
+				(APPLICATION_ENV!='production') ? $this->cache->setLifetime( 100 ) : $this->cache->setLifetime( 86400 );
 				$f = '/Youtube/ShowVideo/Related';
 				$hash = Rtvg_Cache::getHash( 'related_'.$ytId);
-			
-				// Try to load videos from file cache
-				if (($cached = $this->cache->load( $hash, 'Core', $f))!==false){
-					$relatedVideos = $cached;
-				} else {
-					
-				    // If was not found in file cache
-				    $relatedVideos = false;
-				    
-                    // If was not found in DB cache either
-				    if ($relatedVideos===false){
-				        
-						// Try to load related videos list from youtube
-						if (($ytRelated = $youtube->fetchRelated( $ytId ))!==false) {
-							foreach ($ytRelated as $ytEntry){
-								if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
-									if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>=256)) {
-									    $relatedVideos[] = $parsed;
-									}
-								}
-							}
-							$this->cache->save( $relatedVideos, $hash, 'Core', $f);
-							
-						} else {
-						    $relatedVideos = null;
-						}
-				    }
-			
+				
+                if ((bool)($relatedVideos = $this->cache->load( $hash, 'Core', $f))===false){
+					$ytRelated = $youtube->fetchRelated( $ytId, $relatedAmt );
+                    foreach ($ytRelated as $ytEntry){
+                        if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
+                            if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
+                                $relatedVideos[] = $parsed;
+                            }
+                        }
+                    }
+                    $this->cache->save($relatedVideos, $hash, 'Core', $f);
 				}
-			
 			} else {
 			
-				$ytRelated = $youtube->fetchRelated( $ytId );
+				$ytRelated = $youtube->fetchRelated( $ytId, $relatedAmt );
 				foreach ($ytRelated as $ytEntry){
 					if (($parsed = $this->videosModel->parseYtEntry($ytEntry))!==false){
 						if (!empty($parsed['desc']) && (Xmltv_String::strlen($parsed['desc'])>128)) {
@@ -163,14 +139,14 @@ class VideosController extends Rtvg_Controller_Action
 				}
 			
 			}
-			
-			$this->view->assign( 'related_videos', $relatedVideos );
+            
+            $this->view->assign( 'related', $relatedVideos );
 			
 		} else {
-			$this->view->assign( 'main_video', null );
-			$this->view->assign( 'related_videos', null );
+			$this->view->assign( 'main', null );
+			$this->view->assign( 'related', null );
 		}
-		
+        
 		
 		//Данные для модуля самых популярных программ
 		$top = $this->bcModel->topBroadcasts();

@@ -23,55 +23,52 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public function parseYtEntry($entry, $img_width=120){
 		
-        if (is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
-		    
-		    $v = array();
-			$v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
-			$v['yt_id']	   = $entry->getVideoId();
-			$v['title']	   = $entry->getVideoTitle();
-			
-			try {
-			    $v['alias'] = Xmltv_Youtube::videoAlias( $v['title'] );
-			} catch (Zend_Exception $e) {
-			    return false;
-			}
-			
-			$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
-			$v['views']	   = (int)$entry->getVideoViewCount();
-			$v['category'] = $entry->getVideoCategory();
-			$v['category_ru'] = $this->getCatRu($v['category']);
-            
-			date_default_timezone_set("Etc/UTC");
-			$v['published'] = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
-            $v['duration']  = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
-            date_default_timezone_set("Europe/Moscow");
-            
-            $thumbs = $entry->getVideoThumbnails();
-			$i=0;
-			$v['thumbs'] = array();
-			foreach($thumbs as $th) {
-				if ( $th['width'] == (int)$img_width ) {
-					if ( stristr($th['url'], '.jpg') ) {
-						$v['thumbs'][$i]['time']  = new Zend_Date($th['time'], 'HH:mm:ss.S');
-						$v['thumbs'][$i]['height'] = (int)$th['height'];
-						$v['thumbs'][$i]['width']  = (int)$th['width'];
-						$v['thumbs'][$i]['url']	= $th['url'];
-						$i++;
-						
-					}
-				}
-			}
-		} elseif (is_array($entry)){
-			
-			$v['published'] = is_a($entry['published'], 'Zend_Date') ? $entry['published'] : new Zend_Date($entry['published'], 'yyyy-MM-dd');
-			$v['duration']  = is_a($entry['published'], 'Zend_Date') ? $entry['duration'] : new Zend_Date($entry['duration'], 'HH:mm:ss');
-			$v['thumbs']	= is_array($entry['thumbs']) ? $entry['thumbs'] : Zend_Json::decode($entry['thumbs']);
-			
-		} else {
-			throw new Zend_Exception("Error parsing YT Entry. " . get_class($entry));
+        if (!is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
+            throw new Zend_Exception("Error parsing YT Entry. " . get_class($entry));
 		}
-		
-		return $v;
+        
+        $v = array();
+        $v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
+        $v['yt_id']	   = $entry->getVideoId();
+        $v['title']	   = $entry->getVideoTitle();
+
+        try {
+            $v['alias'] = Xmltv_Youtube::videoAlias( $v['title'] );
+        } catch (Zend_Exception $e) {
+            return false;
+        }
+
+        $v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
+        $v['views']	   = (int)$entry->getVideoViewCount();
+        $v['category'] = $entry->getVideoCategory();
+        $v['category_ru'] = $this->getCatRu($v['category']);
+
+        date_default_timezone_set("Etc/UTC");
+        $v['published'] = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
+        $v['duration']  = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
+        date_default_timezone_set("Europe/Moscow");
+
+        $thumbs = $entry->getVideoThumbnails();
+        $i=0;
+        $v['thumbs'] = array();
+        foreach($thumbs as $th) {
+            if ( $th['width'] == (int)$img_width ) {
+                if ( stristr($th['url'], '.jpg') ) {
+                    $v['thumbs'][$i]['time']  = new Zend_Date($th['time'], 'HH:mm:ss.S');
+                    $v['thumbs'][$i]['height'] = (int)$th['height'];
+                    $v['thumbs'][$i]['width']  = (int)$th['width'];
+                    $v['thumbs'][$i]['url']	= $th['url'];
+                    $i++;
+
+                }
+            }
+        }
+        
+        $v['ratingInfo'] = $entry->getVideoRatingInfo();
+        $v['ratingInfo']['average'] = floatval($v['ratingInfo']['average']);
+        $v['ratingInfo']['numRaters'] = (int)($v['ratingInfo']['numRaters']);
+        
+        return $v;
 		
 	}
 	
