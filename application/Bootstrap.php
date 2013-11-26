@@ -213,9 +213,22 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             //->headLink( array('rel'=>'stylesheet/less', 'href'=>$baseCss), 'APPEND')
             ->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
             ->prependStylesheet($view->baseUrl('css/bootstrap.css'))
-            ->appendStylesheet($view->baseUrl('css/fonts.css'))
             ->prependStylesheet( $view->baseUrl('css/jquery-ui.css'), 'screen');
         ;
+        
+        // Get browser
+	    $browser = $view->userAgent()->getUserAgent();
+        // Check if browser is IE and add stylesheets
+	    $browserMsie = false;
+	    if (strstr($browser, 'MSIE')) {
+	    	$browserMsie = true;
+	    	$view->headLink()
+	    		->appendStylesheet( $view->baseUrl( 'css/ie.css' ))
+	    		->appendStylesheet( $view->baseUrl( 'css/fonts-ie.css' ));
+	    } else {
+            $view->headLink()
+                ->appendStylesheet($view->baseUrl('css/fonts.css'));
+        }
 
 	    $view->headScript()
 	    	->setAllowArbitraryAttributes(false)
@@ -227,16 +240,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bs/bootstrap.min.js' ));
 	    }
 	    
-        // Get browser
-	    $browser = $view->userAgent()->getUserAgent();
-        // Check if browser is IE and add stylesheets
-	    $browserMsie = false;
-	    if (strstr($browser, 'MSIE')) {
-	    	$browserMsie = true;
-	    	$view->headLink()
-	    		->appendStylesheet( $view->baseUrl( 'css/ie.css' ))
-	    		->appendStylesheet( $view->baseUrl( 'css/fonts-ie.css' ));
-	    }
+        
 	    
 	    $view->addHelperPath( APPLICATION_PATH.'/views/helpers/', 'Rtvg_View_Helper');
         $view->addHelperPath("ZendX/JQuery/View/Helper",'ZendX_JQuery_View_Helper');
