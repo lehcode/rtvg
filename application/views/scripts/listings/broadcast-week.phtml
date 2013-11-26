@@ -9,7 +9,6 @@
  */
 
 $programTitle = $this->escape( $this->list[0]['title'] );
-$programAlias = $this->escape( $this->list[0]['alias'] );
 $channelTitle = isset($this->channel['title']) ? $this->escape( $this->channel['title'] ) : null ;
 $channelAlias = isset($this->channel['alias']) ? $this->escape( $this->channel['alias'] ): null ;
 
@@ -18,27 +17,46 @@ if ($programTitle){
 	$this->headTitle( $this->escape( sprintf ('«%s» на телеканале «%s» :: Всегда на rutvgid.ru', $this->list[0]['title'], $this->channel['title'] )));
 }
 ?>
-<h1><?php if ($programTitle) {
-    printf("«%s» на канале «%s» на этой неделе", $programTitle, $channelTitle);
-} else {
-    echo 'Результаты поиска программы';
-} ?></h1>
 
-<p><?php 
-$ws = Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') );
-$we = Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') );
-printf( "%s - %s", $ws, $we ); ?></p>
-<h2><a class="btn" href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_listings_day-listing' ) ?>">
-		Передачи <?php echo $channelTitle; ?> сегодня
-	</a></h2>
-<h3><a class="btn" href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_channels_channel-week' ) ?>">Телепрограмма <?php echo $channelTitle; ?> на текущую неделю</a></h3>
-<?php
-echo $this->partial( 'listings/partials/week-item.phtml', array( 'items'=>$this->list ));
+<div class="row">
+    <h1>
+        <?php if ($programTitle) {
+        printf("«%s» на канале «%s» на этой неделе", $programTitle, $channelTitle);
+        } else {
+            echo 'Результаты поиска программы';
+        } ?>
+    </h1>
+    
+    <div id="shareCode">
+        <?php echo $this->shareCode ?>
+    </div>
 
-if (isset($this->similar) && !empty($this->similar)) {
-    echo $this->partial( 'listings/partials/week-similar.phtml', array( 'items'=>$this->similar ));
-}
-?>
+    <p>
+        <?php 
+        $ws = Xmltv_String::ucfirst( $this->week_start->toString('EEEE, d MMMM') );
+        $we = Xmltv_String::ucfirst( $this->week_end->toString('EEEE, d MMMM') );
+        printf( "%s - %s", $ws, $we ); ?>
+    </p>
+    <h2>
+        <a class="btn" href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_listings_day-listing' ) ?>">
+            Передачи <?php echo $channelTitle; ?> сегодня
+        </a>
+    </h2>
+    
+    <h3>
+        <a class="btn" href="<?php echo $this->url( array( 'channel'=>$channelAlias ), 'default_channels_channel-week' ) ?>">
+            Телепрограмма <?php echo $channelTitle; ?> на текущую неделю
+        </a>
+    </h3>
+    <?php
+    echo $this->partial( 'listings/partials/week-item.phtml', array( 'items'=>$this->list ));
+
+    if (isset($this->similar) && !empty($this->similar)) {
+        echo $this->partial( 'listings/partials/week-similar.phtml', array( 'items'=>$this->similar ));
+    }
+    ?>
+</div>
+
 
  
 

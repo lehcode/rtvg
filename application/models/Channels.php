@@ -75,16 +75,23 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'id',
                 'title',
                 'alias',
-                'icon'
+                'icon'=>"CONCAT('/images/channel_logo/', CH.icon)"
             ))
-            ->where('`CH`.`published` IS NOT NULL')
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
+                'tvforsite_id'=>'stream'
+            ))
+            ->where("`CH`.`published` = '1'")
+            ->order("CH.title ASC")
         ;
         
         if ((bool)Zend_Registry::get('adult') !== true){
-            $select->where("`CH`.`adult` IS NULL");
+            $select->where("`CH`.`adult` != '1'");
         }
         
-        $channels = $this->db->fetchAll($select->assemble());
+        $channels = $this->db->fetchAll($select);
         
         if (APPLICATION_ENV=='testing' || $not_empty===true){
         
@@ -121,9 +128,9 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             
         }
         
-        $view = new Zend_View();
-        foreach ($channels as $k=>$ch){
-            $channels[$k]['icon'] = $view->baseUrl('images/channel_logo/'.$ch['icon']);
+        foreach ($channels as $k=>$c){
+            $channels[$k]['id'] = (int)$c['id'];
+            $channels[$k]['stream'] = ($c['stream']===null) ? null : (int)$c['stream'] ;
         }
         
         return $channels;
@@ -142,7 +149,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'id',
                 'title',
                 'alias',
-                'category_id'=>'category',
                 'free',
                 'featured',
                 'icon',
@@ -150,8 +156,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'desc_body',
                 'format',
                 'desc_body',
-                'url',
-                'adult',
+                'site_url'=>'url',
                 'keywords',
                 'video_aspect',
                 'video_quality',
@@ -177,8 +182,15 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'lang_iso'=>'iso',
                 'lang'=>'name',
             ))
-            ->joinLeft(array('STREAM'=>'rtvg_ref_streams'), '`CH`.`id` = `STREAM`.`channel`', array(
-                'stream'
+            ->joinLeft(array('NEWS'=>'rtvg_channels_news'), "`CH`.`id` = `NEWS`.`channel`", array(
+                'rss_url'=>'url',
+                'rss_enabled'=>'active',
+            ))
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), '`CH`.`id` = `TORRENTTV`.`channel`', array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), '`CH`.`id` = `TVFORSITE`.`channel`', array(
+                'tvforsite_id'=>'stream'
             ))
 			->where( "`CH`.`alias` = '$alias'")
 			->where( "`CH`.`published` IS TRUE")
@@ -191,13 +203,13 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         }
         
         $result = $this->db->fetchRow($select);
-        $result['stream'] = ($result['stream']!==null) ? (int)$result['stream'] : null ;
+        $result['torrenttv_id'] = ($result['torrenttv_id'] !== null) ? (int)$result['torrenttv_id'] : null ;
+        $result['tvforsite_id'] = ($result['tvforsite_id'] !== null) ? $result['tvforsite_id'] : null ;
         $result['id'] = (int)$result['id'];
         $result['free'] = (bool)$result['free'];
         $result['featured'] = (bool)$result['featured'];
         $result['category_id'] = (int)$result['category_id'];
-        $result['channel_id'] = (int)$result['channel_id'];
-        $result['adult'] = (bool)$result['adult'];
+        $result['rss_enabled'] = (bool)$result['rss_enabled'];
         $result['geo_lt'] = (float)$result['geo_lt'];
         $result['geo_lg'] = (float)$result['geo_lg'];
         $result['keywords'] = explode(',', $result['keywords']);
@@ -264,6 +276,12 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'category_title'=>'title',
                 'category_alias'=>'alias',
             ))
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
+                'tvforsite_id'=>'stream'
+            ))
             ->where("CH.id = ".(int)$id)
             ->limit(1)
         ;
@@ -275,6 +293,9 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		$result['end']   = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
 		$result['id'] = (int)$result['id'];
 		$result['category'] = (int)$result['category'];
+		$result['torrenttv_id'] = (int)$result['torrenttv_id'];
+		$result['free'] = (bool)$result['free'];
+		$result['featured'] = (bool)$result['featured'];
 		
 		return $result;
 		
@@ -308,8 +329,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function addHit($id=null){
 		
-		if (!$id || !is_numeric($id)) {
-			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM);
+		if (!$id || !is_int($id)) {
+			throw new Zend_Exception( 'Wrong channel ID', 500);
 		}
 		
 		$this->ratingsTable->addHit($id);
@@ -347,24 +368,52 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function categoryChannels($cat_alias=null){
 	
-		if (!$cat_alias)
-			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
-		
+		if (!$cat_alias) {
+			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM);
+        }
 		
 		$select = $this->db->select()
-			->from(array('CH'=>$this->channelsTable->getName()), '*')
-			->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category`=`CHCAT`.`id`", array())
-			->where("`CHCAT`.`alias` LIKE '$cat_alias'")
-			->where("`CH`.`published` = TRUE")
+			->from(array('CH'=>$this->channelsTable->getName()), array(
+                'id',
+				'title',
+				'alias',
+				'desc_intro',
+				'desc_body',
+				'category',
+				'featured',
+				'icon'=>"CONCAT('/images/channel_logo/', `CH`.`icon`, '')",
+				'format',
+				'lang',
+				'url',
+				'country',
+				'keywords',
+				'metadesc',
+				'video_aspect',
+				'video_quality',
+				'audio',
+            ))
+			->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category` = `CHCAT`.`id`", null)
+			->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), '`CH`.`id` = `TORRENTTV`.`channel`', 'stream' )
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), '`CH`.`id` = `TVFORSITE`.`channel`', 'stream' )
+			->where("`CHCAT`.`alias` = '$cat_alias'")
+			->where("`CH`.`published` IS TRUE")
 			->order("CH.title ASC");
+        
+        if ((bool)Zend_Registry::get('adult') !== true){
+            $select->where("`CH`.`adult` != '1'");
+        }
+        
+        $result = $this->db->fetchAll($select);
 		
-		$result = $this->db->fetchAll($select);
-		
-		if ($result===false || empty($result)){
-	    	return false;
-	    }
-	    
-	    return $result;
+        foreach ($result as $k=>$v){
+            $result[$k]['id'] = (int)$v['id'];
+            $result[$k]['category'] = (int)$v['category'];
+            $result[$k]['stream'] = (int)$v['stream'];
+            $result[$k]['free'] = (bool)$v['free'];
+            $result[$k]['featured'] = (bool)$v['featured'];
+        }
+        
+        return $result;
 		
 	}
 	
@@ -380,18 +429,18 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                     'episode_num',
                     'hash'
                 ))
-                ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "BC.hash = EVT.hash", array(
+                ->join(array('EVT'=>$this->eventsTable->getName()), "BC.hash = EVT.hash", array(
                     'start',
                     'end',
                     'premiere',
                     'new',
                     'live',
                 ))
-                ->joinLeft( array( 'CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
+                ->join( array( 'CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
                     'channel_id'=>'id',
                     'channel_title'=>'title',
                     'channel_alias'=>'alias'))
-                ->joinLeft( array( 'BCCAT'=>$this->programsCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array(
+                ->join( array( 'BCCAT'=>$this->programsCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array(
                     'category_id'=>'id',
                     'category_title'=>'title',
                     'category_title_single'=>'title_single',
@@ -431,13 +480,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	    
 		$table = new Xmltv_Model_DbTable_ChannelsCategories();
 		$result = $table->fetchAll(null, "title ASC")->toArray();
-		$allChannels = array(
-				'id'=>'',
-				'title'=>'Все каналы',
-				'alias'=>'',
-				'image'=>'all-channels.gif',
-		);
-		array_push( $result, $allChannels );
 		return $result;
 		
 	}
@@ -448,12 +490,16 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 	 */
 	public function category($alias=null){
 		
-		if (null !== $alias){
-		    $table = new Xmltv_Model_DbTable_ChannelsCategories();
-		    return $table->fetchRow("`alias` LIKE '".$alias."'");
-		} else {
-			return false;
-		}
+        $table = new Xmltv_Model_DbTable_ChannelsCategories();
+		$result = $table->fetchRow("`alias` = '$alias'")->toArray();
+        
+        if ($result){
+            $result['id'] = (int)$result['id'];
+            $result['featured'] = ($result['featured'] != 1) ? false : true ;
+        }
+        
+        return $result;
+		
 	}
 	
 	/**
@@ -511,7 +557,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 				'video_quality',
 				'audio',
 			))
-			->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+			->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
 				'category_title'=>'title',
 				'category_alias'=>'alias',
 				'category_image'=>'image')
@@ -541,28 +587,48 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'title',
                 'alias',
                 'featured',
-                'icon'
+                'icon'=>"CONCAT('/images/channel_logo/', CH.icon, '')",
+                'free',
+                'format',
             ))
-	    	->join( array('RATING'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `RATING`.`channel`", array(
+            ->join(array("LANG"=>'rtvg_languages'), "`CH`.`lang` = `LANG`.`iso`", array(
+                'lang_iso'=>'iso',
+                'lang'=>'name',
+            ))
+            ->join(array("COUNTRY"=>'rtvg_countries'), "`CH`.`country` = `COUNTRY`.`iso`", array(
+                'country_iso'=>'iso',
+                'country'=>'name',
+            ))
+            ->join(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
+                'torrenttv_id'=>'stream'
+            ))
+            ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
+                'tvforsite_id'=>'stream'
+            ))
+	    	->joinLeft( array('RATING'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `RATING`.`channel`", array(
                 'hits',
                 'rating',
-            ))
-	    	->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category`=`CHCAT`.`id`", array(
-                'category_title'=>'title',
-                'category_alias'=>'alias',
-                'category_image'=>'image'
             ))
 	    	->where("`CH`.`published` = TRUE")
 	    	->order("RATING.hits DESC")
             ->limit($amt)
         ;
         
-        //var_dump($select->assemble());
-        //die(__FILE__ . ': ' . __LINE__);
-	    	
-	    $result = $this->db->fetchAll($select);
-	    
-	    return $result;
+        $result = $this->db->fetchAll($select);
+        
+        if ((bool)$result!==false){
+            foreach ($result as $k=>$v){
+                $result[$k]['id'] = (int)$v['id'];
+                $result[$k]['hits'] = (int)$v['hits'];
+                $result[$k]['rating'] = (int)$v['rating'];
+                $result[$k]['featured'] = (bool)$v['featured'];
+                $result[$k]['free'] = (bool)$v['featured'];
+                $result[$k]['torrenttv_id'] = (int)$v['torrenttv_id'];
+                ksort($result[$k]);
+            }
+        }
+        
+        return $result;
 	    
 	}
 
@@ -614,5 +680,54 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
 		return true;
 		 
 	}
+    
+    public function channelFeed($channel=null, $amt=5){
+        
+        if (!$channel || !is_array($channel)){
+            throw new Zend_Exception();
+        }
+        
+        if ($channel['rss_enabled']===true){
+            
+            $frontendOptions = array(
+                'lifetime' => 7200,
+                'automatic_serialization' => true
+            );
+            $backendOptions = array('cache_dir' => realpath(APPLICATION_PATH .'/../cache/Feeds/Channels/'));
+            $cache = Zend_Cache::factory(
+                'Core', 'File', $frontendOptions, $backendOptions
+            );
+
+            try{
+                if ((bool)($items = $cache->load(md5($channel['id'].':'.$channel['rss_url'])))===false){
+                    $rss = new Zend_Feed_Rss($channel['rss_url']);
+                    $i=0;
+                    $items = array();
+                    foreach ($rss as $item) {
+                        if ($i<5){
+                            $items[$i]['title'] = $item->title();
+                            $items[$i]['link'] = $item->link();
+                            $items[$i]['desc'] = $item->description();
+                            $items[$i]['category'] = $item->category();
+                            $date = new Zend_Date($item->pubDate(), Zend_Date::RFC_1123);
+                            $date->setTimezone("Europe/Moscow");
+                            $items[$i]['pubDate'] = $date;
+                        }
+                        $i++;
+                    }
+                }
+            } catch (Exception $e){
+                return false;
+            }
+
+            return $items;
+            
+        }
+        
+        
+        
+        
+        
+    }
 }
 

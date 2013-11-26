@@ -25,8 +25,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 	 * @param string $action
 	 */
 	public function isValidRequest($params=null, $options=null) {
-		
-		
+				
 		$filters = array( 
 			'*'=>'StringTrim',
 			'module'=>'StringToLower',
@@ -51,11 +50,14 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 		$module	 = $params['module'];
 		$controller = $params['controller'];
 		$action	 = $params['action'];
+        
+        if (isset($_GET['XDEBUG_SESSION_START'])){
+			$validators['XDEBUG_SESSION_START'] = array(new Zend_Validate_InArray( array('netbeans-xdebug')));
+		}
 		
 		switch ($module){
-			/*
-			 * default module
-			 */
+			
+            //default module
 			case 'default':
 			default:
 				
@@ -90,11 +92,11 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							case 'typeahead':
 								$validators['format'] = array( new Zend_Validate_Regex('/^html|json$/'));
 								if ($this->getRequest()->getParam('c')) {
-									$validators['c'] = array( new Zend_Validate_Regex('/^.+$/'));
+									$validators['c'] = array( new Zend_Validate_Regex('/^[\w\d-]+$/'));
 								}
 								
 								if (!$this->getRequest()->isXmlHttpRequest() && APPLICATION_ENV=='production'){
-									throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500 );
+									throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404 );
 								}
 								
 							break;
@@ -104,6 +106,10 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							break;
 								
 							case 'channel-week':
+								$validators['channel'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
+							break;
+							
+                            case 'live':
 								$validators['channel'] = array( new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
 							break;
 								
@@ -125,9 +131,6 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							break;
 								
 							default:
-							    if (APPLICATION_ENV=='development'){
-							        throw new Zend_Exception( Rtvg_Message::ERR_VALIDATION_FAILED, 404);
-							    }
 							    throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
 								
 						}
@@ -170,6 +173,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							    $validators['date']['presence'] = 'required';
 							    
 							    $validators['channel'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ) );
+							    $validators['ts'] = new Zend_Validate_Digits();
 							    
 							break;
 							
@@ -538,7 +542,8 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 		$input = new Zend_Filter_Input($filters, $validators, $this->getRequest()->getParams(), array(
 			'notEmptyMessage' => "Поле <b>'%field%'</b> должно быть заполнено."
 		));
-		return $input;
+        
+        return $input;
 		
 	}
 	

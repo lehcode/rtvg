@@ -47,11 +47,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
         
-		try {
-		    $response = $fc->dispatch();
-		} catch (Exception $e) {
-            throw new Exception($e->getMessage(), 500, $e);
-		}
+		$response = $fc->dispatch();
 		
         if (isset($response) && !$response->isException()) {
 			$response->sendHeaders();
@@ -83,7 +79,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$siteConfig = new Zend_Config_Ini( APPLICATION_PATH . '/configs/site.ini', APPLICATION_ENV );
 		Zend_Registry::set('site_config', $siteConfig);
         
-        Zend_Registry::set( 'adult', (bool)$siteConfig->get('frontend')->adult );
+        Zend_Registry::set( 'adult', (bool)$siteConfig->frontend->adult );
 		
 	}
 	
@@ -201,31 +197,25 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	{	
 	    $this->bootstrap('view');
 	    $view = $this->getResource('view');
-	    $view->doctype( 'HTML5' );
+	    $view->doctype( 'XHTML1_RDFA' );
 	    $view->setEncoding( 'UTF-8' );
 	    $view->headMeta()
 	    	->setHttpEquiv( 'Content-Type', 'text/html;charset=utf-8' )
 	    	->setHttpEquiv( 'X-UA-Compatible', 'IE=9;IE=8;' )
-	    	->setName('viewport', 'width=device-width, initial-scale=1.0');
+	    	//->setName('viewport', 'width=device-width, initial-scale=1.0')
+        ;
 	    $view->headTitle()
 	    	->setSeparator(' :: ' )
 	    	->prepend( "rutvgid.ru" );
 	    
 	    $baseCss = $view->baseUrl('css/base.less') ;
-	    $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$baseCss), 'APPEND')
+	    $view
+            //->headLink( array('rel'=>'stylesheet/less', 'href'=>$baseCss), 'APPEND')
             ->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
-            ->appendStylesheet($view->baseUrl('css/fonts.css'));
-
-	    $view->headScript()
-	    	->setAllowArbitraryAttributes(false)
-	    	->prependFile( $view->baseUrl( 'js/less.min.js' ));
-	    
-	    if (APPLICATION_ENV=='development'){
-	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bs/base.js' ));
-	    } else {
-	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bs/base.min.js' ));
-	    }
-	    
+            ->prependStylesheet($view->baseUrl('css/bootstrap.css'))
+            ->prependStylesheet( $view->baseUrl('css/jquery-ui.css'), 'screen');
+        ;
+        
         // Get browser
 	    $browser = $view->userAgent()->getUserAgent();
         // Check if browser is IE and add stylesheets
@@ -235,7 +225,22 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    	$view->headLink()
 	    		->appendStylesheet( $view->baseUrl( 'css/ie.css' ))
 	    		->appendStylesheet( $view->baseUrl( 'css/fonts-ie.css' ));
+	    } else {
+            $view->headLink()
+                ->appendStylesheet($view->baseUrl('css/fonts.css'));
+        }
+
+	    $view->headScript()
+	    	->setAllowArbitraryAttributes(false)
+	    	->prependFile( $view->baseUrl( 'js/less.min.js' ));
+	    
+	    if (APPLICATION_ENV=='development'){
+	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bs/bootstrap.js' ));
+	    } else {
+	    	$view->headScript()->prependFile( $view->baseUrl( 'js/bs/bootstrap.min.js' ));
 	    }
+	    
+        
 	    
 	    $view->addHelperPath( APPLICATION_PATH.'/views/helpers/', 'Rtvg_View_Helper');
         $view->addHelperPath("ZendX/JQuery/View/Helper",'ZendX_JQuery_View_Helper');
@@ -244,8 +249,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     
     protected function _initNav(){
 		
-		$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/fp.xml', 'nav' ) );
-		Zend_Registry::set('FpMenu', $menu);
+		//$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/fp.xml', 'nav' ) );
+		//Zend_Registry::set('FpMenu', $menu);
 		
 		$menu = new Zend_Navigation( new Zend_Config_Xml( APPLICATION_PATH . '/configs/nav/admin/main.xml', 'nav' ) );
 		Zend_Registry::set('AdminMenu', $menu);

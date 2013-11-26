@@ -1,4 +1,5 @@
 <?php
+require_once 'Rtvg/Gdata/Youtube.php';
 class Xmltv_Youtube {
 	
     /**
@@ -88,7 +89,7 @@ class Xmltv_Youtube {
 		
 		$httpClient = new Zend_Http_Client();
 		$httpClient->setConfig( $clientConf );
-		$this->client  =@ new Zend_Gdata_YouTube( $httpClient );
+		$this->client  =@ new Rtvg_Gdata_Youtube( $httpClient );
 		$this->client->setGzipEnabled(true);
 		$this->client->setMajorProtocolVersion(2);
 				
@@ -127,18 +128,8 @@ class Xmltv_Youtube {
 	 */
 	public function fetchVideo($yt_id=null){
 		
-		if (!$yt_id) {
-			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM, 500);
-		}
-		
-		try {
-			$result = $this->client->getVideoEntry($yt_id);
-		} catch (Zend_Gdata_App_Exception $e) {
-		    var_dump($e->getMessage());
-		    die(__FILE__.': '.__LINE__);
-		}
-		
-		return $result;
+        $result = $this->client->getVideoEntry($yt_id);
+        return $result;
 		
 	}
 	
@@ -149,18 +140,31 @@ class Xmltv_Youtube {
 	 * @throws Exception
 	 * @return Zend_Gdata_YouTube_VideoFeed
 	 */
-	public function fetchRelated($vid=null){
+	public function fetchRelated($vid=null, $amt=5, $offset=0){
 		
-		if (!$vid)
+		if (!$vid){
 			throw new Exception("Не задан параметр поиска видео");
+        }
 		
 		try {
 			$ytFeed = $this->client->getRelatedVideoFeed($vid);
 		} catch (Zend_Gdata_App_Exception $e) {
 			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
-		
-		return $ytFeed;
+        
+        if ($offset>0){
+            $amt += $offset;
+        }
+        
+        $count = (int)$ytFeed->count();
+        
+        if ($amt<$count){
+            for ($i=$amt; $i<$count; $i++){
+                $ytFeed->offsetUnset($i);
+            }
+        }
+        
+        return $ytFeed;
 	
 	}
 	
@@ -173,9 +177,6 @@ class Xmltv_Youtube {
 	 * @throws Exception
 	 */
 	public function fetchVideos($query_string=null){
-		
-		//var_dump(func_get_args());
-		//die(__FILE__.': '.__LINE__);
 		
 		if (!$query_string)
 			throw new Zend_Exception("Не задан параметр поиска видео");
@@ -202,17 +203,12 @@ class Xmltv_Youtube {
 		
 		$query->setVideoQuery($q);
 		
-		if (APPLICATION_ENV=='development'){
-			//var_dump( $query->getQueryUrl(2));
-			//var_dump(urldecode( $query->getQueryUrl(2)));
-		}
-		
 		try {
 		    $videos = $this->client->getVideoFeed( $query->getQueryUrl(2) );
 		} catch (Zend_Gdata_App_Exception $e) {
 		    throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
-		
+        
 		return $videos;
 			
 	}
@@ -295,15 +291,15 @@ class Xmltv_Youtube {
 		if (!$rtvg_id) {
 			throw new Zend_Exception("Не указан ID");
 		}
-	
-		$params['id'] = base64_decode( strrev($rtvg_id).'=');
-		$validators = array( 'id'=>array(
-			new Zend_Validate_Regex('/^[a-z0-9]+$/i')
+        
+        $params['id'] = base64_decode( strrev($rtvg_id).'=');
+        $validators = array( 'id'=>array(
+			new Zend_Validate_Regex('/^[a-z0-9-_]+$/i')
 		));
 		$input = new Zend_Filter_Input(array(), $validators, $params);
 		
 		if ($input->isValid('id')!==true){
-		    throw new Zend_Exception("Не могу декодировать ID");
+            return false;
 		}
 		
 		return $input->getEscaped('id');
@@ -328,8 +324,9 @@ class Xmltv_Youtube {
 		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[^\p{Latin}\p{Cyrillic}\d\s]+/ui', 'replace'=>' '));
 		$tolower	= new Zend_Filter_StringToLower();
 		$whitespace = new Zend_Filter_PregReplace( array("match"=>'/[\s+|-]+/', 'replace'=>'-'));
+        $trim = new Zend_Filter_StringTrim(array('charlist'=>'-'));
 		
-		$result = $tolower->filter( $whitespace->filter( $separator->filter( $cleanup->filter( $title))));
+		$result = $trim->filter($tolower->filter( $whitespace->filter( $separator->filter( $cleanup->filter( $title)))));
 		
 		if (!preg_match( Zend_Controller_Action_Helper_RequestValidator::ALIAS_REGEX, $result)){
 		    throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ALIAS.': '.$result);

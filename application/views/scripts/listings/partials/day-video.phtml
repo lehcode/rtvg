@@ -27,9 +27,9 @@ if ($this->show_title===true) { ?>
 		echo $videoDesc;
 	}
 	
-	$thW = (int)Zend_Registry::get('site_config')->videos->listing->get('thumb_width'); ?>
+	$thW = (int)Zend_Registry::get('site_config')->videos->listing->thumb_width; ?>
 	<a href="<?php echo $videoUrl ?>" title="<?php printf("Видео %s онлайн", $videoTitle); ?>">
-		<img src="<?php echo $imgAttrSrc; ?>" alt="<?php echo $videoTitle ?>" />
+		<img src="<?php echo $imgAttrSrc; ?>" alt="<?php echo $videoTitle ?>" style="width:<?php echo $thW ?>px;" />
 	</a>
 	
 </p>

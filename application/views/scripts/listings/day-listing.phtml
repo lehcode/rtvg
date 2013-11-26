@@ -10,9 +10,11 @@
 
 $channelTitle = $this->escape( $this->channel['title'] );
 $channelAlias = $this->escape( $this->channel['alias'] );
-//$channelCat   = $this->escape( $this->channel['channel_category'] );
 
-$this->headMeta()->setName('description', sprintf ('Передачи сегодня на канале «%s»', $channelTitle ));
+$headTitle = sprintf("«%s» онлайн. Телепрограмма на сегодня", $this->escape($channelTitle)); 
+$this->headTitle($headTitle);
+$this->headMeta()->setName('title', sprintf ('«%s» онлайн в отличном качестве', $channelTitle ));
+$this->headMeta()->setName('description', sprintf ('Канал «%s» онлайн с телепрограммой на сегодня и неделю', $channelTitle ));
 
 $js = "$(function(){
 	var minHeight = 0;
@@ -35,177 +37,112 @@ $css="#content.day-listing .top form {
 }
 ";
 $this->headStyle()->appendStyle($css);
+
 ?>
 
-<div class="container-fluid">
-	<h1 class="span8"><?php printf('«%s» %s', $channelTitle, Xmltv_String::strtolower( $this->listing_date->toString("EEEE, d MMMM YYYY"))); ?></h1>
-	<span class="span2" id="timer">Сейчас<br /><?php echo $this->listing_date->toString("HH:mm") ?> (MSK)</span>
+<div class="row">
+    <h1>&laquo;<?php echo $channelTitle ?>&raquo; 
+        <time itemprop="startDate" datetime="<?php echo $this->listingDate->toString(Zend_Date::ISO_8601) ?>">
+            <?php echo Xmltv_String::ucfirst( $this->listingDate->toString("EEEE, d MMMM YYYY") ); ?>
+        </time>
+    </h1>
 </div>
 
-<?php 
-if ((int)$this->channel['stream'] > 0){
-$siteId = (APPLICATION_ENV=='production') ? 762 : 923 ; ?>
 
-<iframe scrolling="no" 
-        frameborder="0" 
-        src="http://1ttv.net/iframe.php?site=<?= $siteId ?>&channel=<?= $this->channel['stream'] ?>" 
-        width="640" 
-        height="480" 
-        bgcolor="#FFFFFF" 
-        allowtransparency="true" 
-        allowfullscreen="true" 
-        allowscriptaccess="always">Your browser doesn not support floating frames!</iframe>
-<?php 
-} ?>
 
-<div class="container-fluid top">
-	<?php 
-	if ($this->is_today){
-		/*
-		 * Change time zone
-		 */
-		echo new Xmltv_Form_TimezoneSwitch( array(
-			'action'   => '',
-			'name'     => 'timezone',
-			'method'   => 'get',
-			'id'       => 'timezone',
-			'enctype'  => 'application/x-www-form-urlencoded',
-			'label'    => array( 'class' => 'smallheading' ),
-			'html_tag' => array( 'tag'=>'div', 'class'=>'module span1' ),
-			'diff'     => $this->timeshift,
-		));
-	}
-	
-	/*
-	 * Change channel autocomplete form
-	 */
-	echo new Xmltv_Form_TypeaheadForm( array(
-		'method'   => 'post',
-		'enctype'  => 'application/x-www-form-urlencoded',
-		'name'     => 'typeahead',
-		'scroll'   => false,
-		'html_tag' => array( 'tag' => 'div', 'class' => 'module span4' ),
-		'input'    => array( 
-			'style' => 'width:100%;', 
-			'label' => 'Быстрый поиск канала',
-			'id'    => 'searchinput',
-			'html_tag' => array(
-					'tag'=>'div'
-			)
-		),
-		'ajax_tracking' => true
-	)); 
-	?>
-	
-</div>
-
-<div class="container-fluid">
-	<?php 
-	if (!$this->is_today) {
-        try {
-            $linkAttrHref  = $this->url(array('channel'=>$channelAlias), 'default_listings_day-listing');
-        } catch (Exception $e) {
-            throw new Zend_Exception("Cannot assemble URL", 500, $e);
-        }
-
-        
-		$linkAttrTitle = $this->escape( sprintf('Телепрограмма «%s» на сегодня', $channelTitle) );
-		$linkText = sprintf ('«%s» сегодня', $channelTitle);
-		?>
-	<h2>
-		<a href="<?php echo $linkAttrHref; ?>" title="<?php echo $linkAttrTitle; ?>" class="btn"><strong><?php echo $linkText; ?></strong></a>
-	</h2>
-	<?php 
-	} ?>
-	
-	
-	<h3>
+<div class="row">
+    
+	<h3 id="weekButton" class="span5">
 		<?php 
-        try {
-            $linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
-        } catch (Exception $e) {
-            throw new Zend_Exception("Cannot assemble URL", 500, $e);
-        }
-        $linkAttrTitle = $this->escape( sprintf('Передачи «%s» на неделю', $channelTitle) );
-		$linkText      = $this->escape( sprintf ('Программа передач "%s" на всю неделю', $channelTitle) );
+        $linkAttrHref  = $this->url( array('channel'=>$channelAlias), 'default_channels_channel-week' );
+        $linkAttrTitle = $this->escape( sprintf('Передачи %s', $channelTitle) );
 		?>
-		<a href="<?php echo $linkAttrHref; ?>" title="<?php echo $linkAttrTitle; ?>" class="btn week-link">
-			<?php echo $linkText; ?>
+		<a href="<?php echo $linkAttrHref; ?>" 
+           title="<?php echo $linkAttrTitle; ?>" 
+           class="btn btn-mini">
+			Программа на неделю
 		</a>
 	</h3>
-	
-	
-	<?php
-	$js = "$(function(){ $('#DIV_DA_126314 table').hide(); });";
-	$this->headScript()->appendScript($js);
-	?>
-	<div id="DIV_DA_126314" class="advm"></div>
-	
+    <div class="span4 offset3 badge" id="timer">Сейчас <?php echo $this->listingDate->toString("HH:mm") ?> (MSK)</div>
+</div>
+
+<div class="row">
+    <?php 
+    $linkAttrHref  = $this->url(array('channel'=>$channelAlias, 'date'=>'сегодня'), 'default_listings_day-date');
+    $linkAttrTitle = $this->escape( sprintf('Все передачи «%s» сегодня', $channelTitle) );
+    ?>
+	<h2 id="dayButton" class="span12">
+		<a href="<?php echo $linkAttrHref; ?>" 
+           title="<?php echo $linkAttrTitle; ?>"
+           class="btn btn-small">
+               <?php echo sprintf ('Все передачи &laquo;%s&raquo; сегодня', $channelTitle) ?>
+        </a>
+	</h2>
+</div>
+
+<div class="row" id="shareCode">
+    <?php echo $this->shareCode ?>
+</div>
+
+<div class="row" id="tinyUrl">
+    <p class="badge">
+        <?php echo sprintf("Короткая сылка на канал &laquo;%s&raquo;", $this->escape($channelTitle) ); ?>
+        <?php $linkAttrTitle = sprintf('Телепрограмма канала «%s» на каждый день', $this->escape($channelTitle) ); ?>
+        <br />
+        <a href="<?php echo $this->short_link ?>" 
+           title="<?php echo $linkAttrTitle; ?>" 
+           rel="alternate" 
+           target="_blank">
+            <?php echo $this->short_link; ?>
+        </a>
+    </p>
+</div>
+
+<div class="row">
+    <?php 
+    if ((int)$this->channel['torrenttv_id']>0 || $this->channel['tvforsite_id']) {
+        $w = 530;
+        $h = 352;
+        
+        if ((int)$this->channel['torrenttv_id']>0){
+            $player = $this->aceStream(((APPLICATION_ENV=='production') ? 762 : 923), (int)$this->channel['torrenttv_id'], $w, $h, 'torrenttv');
+        } else if ($this->channel['tvforsite_id']){
+            $player = $this->aceStream(null, $this->channel['tvforsite_id'], $w, $h, 'tvforsite');
+        } else {
+            
+        }
+    }
+    echo $player;
+    ?>
 </div>
 
 
+
 <?php 
-if (count($this->programs) &&  $this->is_today) {
-    echo $this->partial( 'listings/partials/programlist.phtml', array( 
-		'items'          => $this->programs, 
-		'channel'        => $this->channel, 
-		'listing_videos' => $this->listing_videos, 
-		'is_today'       => $this->is_today, 
-		'short_link'     => $this->short_link,
-    	'listing_date'   => $this->listing_date,
-	)); 
-}
-if(count($this->programs) && !$this->is_today) {
-    echo $this->partial( 'listings/partials/programtable.phtml', array(
-    	'items'        => $this->programs,
-    	'channel'      => $this->channel,
-    	'listing_date' => $this->listing_date,
-    ));
+if (count($this->programs)){
+    if (!$this->is_today || $this->tableDisplay===true) {
+        echo $this->partial( 'listings/partials/programtable.phtml', array(
+            'items'        => $this->programs,
+            'channel'      => $this->channel,
+            'listingDate' => $this->listingDate,
+        )); 
+    } else {
+        echo $this->partial( 'listings/partials/programlist.phtml', array( 
+            'items'          => $this->programs, 
+            'channel'        => $this->channel, 
+            'listing_videos' => $this->listing_videos, 
+            'is_today'       => $this->is_today, 
+            'short_link'     => $this->short_link,
+            'listingDate'   => $this->listingDate,
+        ));
+    }
 }
 ?>
 
-<?php 
-/*
-if (isset($this->comments) && !empty($this->comments)) { 
-    ?>
-    <div id="comments">
+<div class="row">
+    <p class="ace">Для просмотра телеканала &laquo;<?php echo $this->channel['title'] ?>&raquo; с помощью <em>Торрент-ТВ в отличном качестве</em> вам нужно
+        скачать и установить специальный плагин <a href="http://acestream.org/ru/" target="blank" rel="nofollow" title="Скачать Торрент ТВ">Ace Stream</a>.
+        Установка занимает минуту. После того как плагин <em>Торрент-ТВ</em> установлен, перезапустите свой браузер. Смотрите - хоть обсмотритесь :)
+    </p>
+</div>
 
-        <h4><?php echo $this->escape( sprintf('В блогах  про %s', $this->channel['title']) ); ?></h4>
-
-            <?php
-            if (isset($this->comments) && (bool)$this->comments!==false) {
-                foreach ($this->comments as $comment) {
-                    ?>
-
-            <div>
-
-                <?php if (!empty($comment['author'])) : ?>
-                <div class="author">
-                    <a href="<?php echo $comment['src_url']  ?>" rel="nofollow" target="_blank">
-                        <small><?php echo $comment['author'] ?></small>
-                    </a>
-                </div>
-                <?php endif; ?>
-
-                <p class="description">
-                    <?php 
-                    $desc =  str_ireplace( $this->channel['title'], '<em>'.$this->channel['title'].'</em>', $comment['intro']);
-                    echo $this->truncateString($desc, 20, 'words', false);
-                    ?>
-                </p>
-
-
-            </div>
-                <?php 
-                }
-            }
-            ?>
-            <a href="<?php //echo $this->url(array(), 'default_comments_create'); ?>">Добавить комментарий</a>
-
-        <div class="copy3rdparty">
-            <a href="http://blogs.yandex.ru/" title="Yandex поиск по блогам" rel="nofollow"><img src="http://img.yandex.net/i/logo100x43.png" width="37" height="16" /></a>
-        </div>
-    </div>
-    <?php 
-} */
-?>

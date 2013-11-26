@@ -31,17 +31,17 @@ class Zend_Controller_Action_Helper_AdCodes extends Zend_Controller_Action_Helpe
      * @param type $height // Filter ads of desired width or more
      * @return string
      */
-    public function direct($amt=1, $output='random', $width=null, $height=null) {
+    public function direct($amt=1, $max_width=null, $min_width=null, $output='random') {
     
-        if (!$width && !$height){
-            throw new Zend_Exception("Width and height of ad are both missing. At least one is required.", 500);
+        if (!$max_width || !$min_width){
+            throw new Zend_Exception("Width or Min width of ad is missing. Both are required.", 500);
         }
         
         $options = array(
             'amt'=>(int)$amt,
             'output'=>$output,
-            'width'=>(int)$width,
-            'height'=>(int)$height,
+            'max_width'=>(int)$max_width,
+            'min_width'=>(int)$min_width,
         );
         
         $result = $this->getCodes($options);
@@ -62,31 +62,31 @@ class Zend_Controller_Action_Helper_AdCodes extends Zend_Controller_Action_Helpe
         $select = $db->select()
             ->from(array('AD'=>'rtvg_ads'), '*')
             ->where("`AD`.`active` IS TRUE")
-            ->where("`AD`.`width` <= ".(int)$options['width'])
-            ->where("`AD`.`height` <= ".(int)$options['height'])
-            //->limit((int)$options['amt'])
+            ->where("`AD`.`width` >= ".(int)$options['min_width'])
+            ->where("`AD`.`width` <= ".(int)$options['max_width'])
         ;
         
         $result = $db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
-        
-        foreach ($result as $k=>$v){
-            $result[$k]['id'] = (int)$v['id'];
-            $result[$k]['width'] = (int)$v['width'];
-            $result[$k]['height'] = (int)$v['height'];
-            $result[$k]['tags'] = explode(',', $v['tags']);
-            $result[$k]['is_script'] = (bool)$v['is_script'];
-            $result[$k]['active'] = (bool)$v['active'];
-            $result[$k]['content_cat_id'] = (int)$v['content_cat_id'];
-            $result[$k]['channel_cat_id'] = (int)$v['channel_cat_id'];
-            $result[$k]['bc_cat_id'] = (int)$v['bc_cat_id'];
+        $ads = array();
+        if (count($result)>1){
+            $idx = array_rand($result, $options['amt']);
+            foreach ($idx as $k=>$ad){
+                $ads[] = $result[$ad];
+            }
         }
         
-        if ($options['output'] == 'random'){
-            $idx = array_rand($result, 1);
-            return array($result[$idx]);
+        foreach ($ads as $k=>$v){
+            $ads[$k]['id'] = (int)$v['id'];
+            $ads[$k]['width'] = (int)$v['width'];
+            $ads[$k]['height'] = (int)$v['height'];
+            $ads[$k]['tags'] = explode(',', $v['tags']);
+            $ads[$k]['active'] = (bool)$v['active'];
+            $ads[$k]['content_cat_id'] = (int)$v['content_cat_id'];
+            $ads[$k]['channel_cat_id'] = (int)$v['channel_cat_id'];
+            $ads[$k]['bc_cat_id'] = (int)$v['bc_cat_id'];
         }
         
-        return $result;
+        return $ads;
 		
 	}
 	

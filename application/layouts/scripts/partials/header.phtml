@@ -1,56 +1,69 @@
 <?php
 /**
- * Чердак страницы
- *
  * @author  Antony Repin
- * @version $Id: header.phtml,v 1.11 2013-04-03 04:08:16 developer Exp $
- *
  */
 ?>
 
-<div class="container-fluid">
-
-	<div class="navbar span4">
+<div class="row-fluid" id="header">
+	<div class="navbar span12">
 		<div class="navbar-inner">
-			<?php echo $this->nav_html; ?>
+            <ul class="nav nav-pills">
+                <li><a href="<?php echo $this->baseUrl('/телепрограмма') ?>">Все каналы</a></li>
+                <?php 
+                $i=0;
+                foreach ($this->navData as $cat){
+                    ?>
+                <li class="dropdown">
+
+                    <a class="dropdown-toggle"
+                       data-toggle="dropdown" 
+                       href="каналы/<?php echo $this->escape( $cat['alias'] ) ?>"><?php echo $this->escape( $cat['title'] ) ?>
+                       <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <?php 
+                        foreach ($cat['channels'] as $c){
+                            $title = $this->escape($c['title']);
+                            $onlineSpan = '';
+                            $hrefAttrTitle = "Программа $title на сегодня";
+                            if ((int)$c['torrenttv_id']>0 || $c['tvforsite_id']){ 
+                                $onlineSpan = '<span class="btn btn-mini">онлайн</span>';
+                                $hrefAttrTitle = "Смотреть $title онлайн";
+                            }
+                            ?>
+                        <li>
+                            <a href="/телепрограмма/<?php echo $this->escape($c['alias']) ?>"
+                               class="pull-left" 
+                               style="vertical-align: middle;"
+                               title="<?php echo $hrefAttrTitle ?>">
+                                <?php echo $title ?>
+                                <?php echo $onlineSpan ?>
+                            </a>
+                        </li>
+                            <?php
+                        }
+                        ?>
+                    </ul>
+                </li>
+                    <?php
+                    $i++;
+                }
+                ?>
+                <li><a href="<?php echo $this->baseUrl('/') ?>">Rutvgid.ru</a></li>
+            </ul>
 		</div>
 	</div>
-	
-	<?php 
-	// Login form
-	if (isset($this->user) && $this->isAllowed('default:auth')){
-	    $wrapClass = 'span3';
-		if ($this->user->role == 'guest') {
-		    $form = new Xmltv_Form_Login( array(
-				'action'=>$this->url( array(), 'default_user_login'),
-				'wrap_class'=>$wrapClass,
-			));
-		} else {
-			$form = new Xmltv_Form_Logout(array(
-				'action'=>$this->url( array(), 'default_user_logout'),
-				'wrap_class'=>$wrapClass,
-			));
-		}
-		echo $form;
-	}
-	?>
-	
-	<div class="span2">
-		<div id="vk_like"></div>
-	</div>
-	
-	<?php 
-	if (isset($this->user) && $this->isAllowed()) { 
-	?>
-	<div class="span2">
-		<a href="javascript:void(0);" id="vklogin" class="vklogin" title="Нажмите чтобы войти через vkontakte"><img src="/images/forms/vklogin.png" alt="Войти vkontakte" /></a>
-	</div>
-	<?php 
-	} ?>
+    
+    <div class="b728x90">
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <!-- 728x90 -->
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:728px;height:90px"
+             data-ad-client="ca-pub-1744616629400880"
+             data-ad-slot="5607721396"></ins>
+        <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
     
 </div>
-
-<div class="container">
-    <div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,moikrug,gplus,surfingbird"></div>
-</div>
-

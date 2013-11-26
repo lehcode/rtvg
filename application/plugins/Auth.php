@@ -72,7 +72,6 @@ class Xmltv_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 
 		if ($module != 'default' && $controller != 'index') {
 			if ($this->_acl->has($resource) && !$this->_acl->isAllowed($role, $resource, $privelege)) {
-			    
 				if (!$this->_identity) {
 					$request->setModuleName($this->_noauth['module']);
 					$request->setControllerName($this->_noauth['controller']);
@@ -84,7 +83,7 @@ class Xmltv_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 					$request->setActionName($this->_noacl['action']);
 					//$request->setParam('authPage', 'noauth');
 				}
-				throw new Exception('Access denied. ' . $resource . '::' . $role);
+				throw new Exception('Access denied. ' . $resource . '::' . $role, 403);
 			}
 		}
 	}

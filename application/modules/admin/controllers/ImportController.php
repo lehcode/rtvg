@@ -113,26 +113,26 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		$channelsMap = $channelsModel->getChannelMap();	
 		foreach ($xml->getElementsByTagName('channel') as $item){
 			
-			$info = array();
-			$info['id'] = (int)$item->getAttribute('id');
+			$channel = array();
+			$channel['id'] = (int)$item->getAttribute('id');
 			$name = $item->getElementsByTagName('display-name');
-			$info['lang']  = $name->item(0)->getAttribute('lang');
+			$channel['lang']  = $name->item(0)->getAttribute('lang');
 			
 			// Title
-			$info['title'] = $name->item(0)->nodeValue;
-			if ( Xmltv_String::stristr( Xmltv_String::strtolower( $info['title']), 'канал')){
-				$info['title'] = Xmltv_String::str_ireplace( array( 'канал. ', 'канал.', 'канал ', 'канал'), '', $info['title']);
+			$channel['title'] = $name->item(0)->nodeValue;
+			if ( Xmltv_String::stristr( Xmltv_String::strtolower( $channel['title']), 'канал')){
+				$channel['title'] = Xmltv_String::str_ireplace( array( 'канал. ', 'канал.', 'канал ', 'канал'), '', $channel['title']);
 			}
-			$info['title'] = trim( $info['title']);
+			$channel['title'] = trim( $channel['title']);
 			
 			if ((bool)$item->getElementsByTagName( 'icon')->item(0)!==false) {
 				$iconOriginal = $item->getElementsByTagName( 'icon')->item(0)->getAttribute('src');
 				$icon = $iconOriginal;
 				$icon = Xmltv_String::substr_replace( $icon, '', 0, Xmltv_String::strrpos($icon, '/')+1);
 				$icon = Xmltv_String::substr_replace( $icon, '.png', Xmltv_String::strrpos($icon, '.'));
-				$info['icon'] = $icon;
+				$channel['icon'] = $icon;
 			} else {
-				$info['icon'] = 'default.png';
+				$channel['icon'] = 'default.png';
 			}
 			
 			$channelsTitles = array();
@@ -140,43 +140,38 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 				$channelsTitles[] = $row['title'];
 			}
 			
-			if (($mapped = $this->_mapChannel($info['title'], $channelsTitles, $channelsMap))!==false){
-			    $info['title'] = $mapped;
+			if (($mapped = $this->_mapChannel($channel['title'], $channelsTitles, $channelsMap))!==false){
+			    $channel['title'] = $mapped;
 			}
 			
 			//Generate channel alias
 			$toDash = new Xmltv_Filter_SeparatorToDash();
-			$info['alias'] = $toDash->filter($info['title']);
+			$channel['alias'] = $toDash->filter($channel['title']);
 			$plusToPlus	   = new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
-			$info['alias'] = $plusToPlus->filter($info['alias']);
-			$info['alias'] = str_replace('--', '-', trim($info ['alias'], ' -'));
+			$channel['alias'] = $plusToPlus->filter($channel['alias']);
+			$channel['alias'] = str_replace('--', '-', trim($channel ['alias'], ' -'));
 			
-            if ( !($present = $channelsTable->fetchRow( array("`alias` LIKE '".$info['alias']."' OR `title` LIKE '%".$info['title']."%'") ))) {
+            if ( !($present = $channelsTable->fetchRow( array("`alias` LIKE '".$channel['alias']."' OR `title` LIKE '%".$channel['title']."%'") ))) {
 				
-			    if ((bool)$channelsTable->find($info['id'])->toArray()===false){
+                if (count($channelsTable->find($channel['id'])->toArray()) == 0) {
 			        //Save if new
 			        try {
-			        	$channelsTable->insert($info);
-			        	$newChannels[] = $info;
-			        } catch (Exception $e) {
-			        	if ($e->getCode()!=1062) {
-                            Zend_Registry::get('fireLog')->log($info, Zend_Log::DEBUG);
-			        		throw new Zend_Exception($e->getMessage(), $e->getCode());
+			        	$channelsTable->insert($channel);
+			        	$newChannels[] = $channel;
+			        } catch (Zend_Db_Statement_Exception $e) {
+                       if ($e->getCode()!=1062) {
+                            throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 			        	}
 			        }
 			        
-			    } else {
-			        echo "<h3>Канал отсутствует!</h3><br />";
-			        Zend_Debug::dump($info);
-			        die();
 			    }
 			    
-				$allChannels[]=$info; //for debugging
+				$allChannels[]=$channel; //for debugging
 				
 			} else {
 				
-                $pngFile	= APPLICATION_PATH.'/../public/images/channel_logo/'.$info['icon'];
-				$bigPngFile = APPLICATION_PATH.'/../public/images/channel_logo/100/'.$info['icon'];
+                $pngFile	= APPLICATION_PATH.'/../public/images/channel_logo/'.$channel['icon'];
+				$bigPngFile = APPLICATION_PATH.'/../public/images/channel_logo/100/'.$channel['icon'];
 				
 				if ( !file_exists($pngFile) || !file_exists($bigPngFile)){
 					
@@ -204,10 +199,10 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 							'max_size'=>45)));
 					}
 					
-					$channelsTable->update($info, "`id`='".$info['id']."'");
+					$channelsTable->update($channel, "`id`='".$channel['id']."'");
 					
 					unlink($gifFile);
-					$allChannels[]=$info;
+					$allChannels[]=$channel;
 						
 					
 				}
@@ -259,8 +254,8 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			
 			//Process program title and detect some properties
 			$parsed = $broadcasts->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
-			
-			$bc->title = $parsed['title'];
+            
+            $bc->title = $parsed['title'];
 			$bc->sub_title = $parsed['sub_title'];
 			$bc->age_rating = (@$parsed['rating']>0) ? $parsed['rating'] : 0 ;
 			$evt->premiere = (@$parsed['premiere']==1) ? '1' : null ;

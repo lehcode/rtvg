@@ -23,60 +23,52 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public function parseYtEntry($entry, $img_width=120){
 		
-		
-		if (!self::okToOutput($entry)){
-			return false;
+        if (!is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
+            throw new Zend_Exception("Error parsing YT Entry. " . get_class($entry));
 		}
-		
-		if (is_a($entry, 'Zend_Gdata_YouTube_VideoEntry')) {
-		    
-		    $v = array();
-			$v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
-			$v['yt_id']	   = $entry->getVideoId();
-			$v['title']	   = $entry->getVideoTitle();
-			
-			try {
-			    $v['alias'] = Xmltv_Youtube::videoAlias( $v['title'] );
-			} catch (Zend_Exception $e) {
-			    return false;
-			}
-			
-			$v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
-			$v['views']	   = (int)$entry->getVideoViewCount();
-			$v['category'] = $entry->getVideoCategory();
-			$v['category_ru'] = $this->getCatRu($v['category']);
-			
-			$d = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
-			$v['published'] = $d->addHour(3);
-			$d = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
-			$v['duration'] = $d;
-			
-			$thumbs = $entry->getVideoThumbnails();
-			$i=0;
-			$v['thumbs'] = array();
-			foreach($thumbs as $th) {
-				if ( $th['width'] == (int)$img_width ) {
-					if ( stristr($th['url'], '.jpg') ) {
-						$v['thumbs'][$i]['time']  = new Zend_Date($th['time'], 'HH:mm:ss.S');
-						$v['thumbs'][$i]['height'] = (int)$th['height'];
-						$v['thumbs'][$i]['width']  = (int)$th['width'];
-						$v['thumbs'][$i]['url']	= $th['url'];
-						$i++;
-						
-					}
-				}
-			}
-		} elseif (is_array($entry)){
-			
-			$v['published'] = is_a($entry['published'], 'Zend_Date') ? $entry['published'] : new Zend_Date($entry['published'], 'yyyy-MM-dd');
-			$v['duration']  = is_a($entry['published'], 'Zend_Date') ? $entry['duration'] : new Zend_Date($entry['duration'], 'HH:mm:ss');
-			$v['thumbs']	= is_array($entry['thumbs']) ? $entry['thumbs'] : Zend_Json::decode($entry['thumbs']);
-			
-		} else {
-			throw new Exception( Rtvg_Message::ERR_WRONG_FORMAT );
-		}
-		
-		return $v;
+        
+        $v = array();
+        $v['rtvg_id']  = Xmltv_Youtube::genRtvgId( $entry->getVideoId() );
+        $v['yt_id']	   = $entry->getVideoId();
+        $v['title']	   = $entry->getVideoTitle();
+
+        try {
+            $v['alias'] = Xmltv_Youtube::videoAlias( $v['title'] );
+        } catch (Zend_Exception $e) {
+            return false;
+        }
+
+        $v['desc']	   = $entry->getVideoDescription()!='' ? $entry->getVideoDescription() : null ;
+        $v['views']	   = (int)$entry->getVideoViewCount();
+        $v['category'] = $entry->getVideoCategory();
+        $v['category_ru'] = $this->getCatRu($v['category']);
+
+        date_default_timezone_set("Etc/UTC");
+        $v['published'] = new Zend_Date($entry->getPublished(), Zend_Date::ISO_8601);
+        $v['duration']  = new Zend_Date($entry->getVideoDuration(), Zend_Date::TIMESTAMP);
+        date_default_timezone_set("Europe/Moscow");
+
+        $thumbs = $entry->getVideoThumbnails();
+        $i=0;
+        $v['thumbs'] = array();
+        foreach($thumbs as $th) {
+            if ( $th['width'] == (int)$img_width ) {
+                if ( stristr($th['url'], '.jpg') ) {
+                    $v['thumbs'][$i]['time']  = new Zend_Date($th['time'], 'HH:mm:ss.S');
+                    $v['thumbs'][$i]['height'] = (int)$th['height'];
+                    $v['thumbs'][$i]['width']  = (int)$th['width'];
+                    $v['thumbs'][$i]['url']	= $th['url'];
+                    $i++;
+
+                }
+            }
+        }
+        
+        $v['ratingInfo'] = $entry->getVideoRatingInfo();
+        $v['ratingInfo']['average'] = floatval($v['ratingInfo']['average']);
+        $v['ratingInfo']['numRaters'] = (int)($v['ratingInfo']['numRaters']);
+        
+        return $v;
 		
 	}
 	
@@ -88,14 +80,14 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 */
 	public static function okToOutput( Zend_Gdata_YouTube_VideoEntry $entry){
 		
-		if (self::isPorn( $entry->getVideoTitle())) {
-			return false;
-		}
+		//if (self::isPorn( $entry->getVideoTitle())) {
+		//	return false;
+		//}
 		
 		
-		if (!self::isRussian( $entry->getVideoTitle())) {
-			return false;
-		}
+		//if (!self::isRussian( $entry->getVideoTitle())) {
+		//	return false;
+		//}
 		
 		//if (self::isHack( $entry->getVideoTitle())) {
 		//	return false;
@@ -162,14 +154,6 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @return bool
 	 */
 	public static function isRussian($string=null){
-		
-		$profile = (bool)Zend_Registry::get('site_config')->profile;
-		if ($profile){
-			//Zend_Debug::dump($string);
-			//Zend_Debug::dump(preg_match('/\p{Cyrillic}+/mui', $string));
-			//Zend_Debug::dump(preg_match('/[^\p{Cyrillic}]+/ui', $string));
-		}
-		
 		
 		if (preg_match('/\p{Cyrillic}+/mui', $string)) {
 			return true;
@@ -415,32 +399,54 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 	 * @param  Zend_Date $date
 	 * @return array|boolean
 	 */
-	public function ytListingRelatedVideos( $list=array(), $channel_title=null, Zend_Date $date ){
+	public function ytListingRelatedVideos( $list=array() ){
 		
-		$conf = Zend_Registry::get('site_config')->videos->get('listing');
+		$conf = Zend_Registry::get('site_config')->videos->listing;
 		$ytConfig['max_results'] = 1;
 		$ytConfig['order'] = $conf->get('order');
 		$ytConfig['safe_search'] = $conf->get('safe_search');
 		$ytConfig['language']	= 'ru';
 		
-		$result = array();
+        $result = array();
 		if (count($list)){
 		    foreach ($list as $li){
-				$progTitle = Xmltv_String::strtolower($li['title']);
+                $progTitle = Xmltv_String::strtolower($li['title']);
 				if (($ytParsed = $this->ytSearch( $progTitle, $ytConfig))!==false){
 				    if (!empty($ytParsed) && $ytParsed!==false){
 						$result[$li['hash']] = $ytParsed[0];
 				    }
 				}
 			}
-            
-            return $result;
-			
-		} else {
+        } else {
 			return array();
 		}
+        
+        return $result;
 		
 	}
+    
+    public function channelRelatedVideos($channel=null, $max=5){
+        
+        if (!$channel){
+            throw new Zend_Exception("Channel is required");
+        }
+        
+		$ytConfig['max_results'] = $max;
+		$ytConfig['order'] = 'published';
+		$ytConfig['safe_search'] = 'moderate';
+		$ytConfig['language'] = 'ru';
+        $channel = str_replace('-', ' ', $channel);
+		
+		$result = array();
+		if (($ytParsed = $this->ytSearch( $channel, $ytConfig))!==false){
+            if (!empty($ytParsed) && $ytParsed!==false){
+                $result[] = $ytParsed[0];
+            }
+        }
+        
+        return $result;
+        
+    }
 	
 	/**
 	 * Save listing-related video to database
@@ -529,8 +535,9 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$search = preg_replace('/[^\p{Cyrillic}\p{Latin}\d\s]+/ui', ' ', $search);
 		$search = preg_replace('/\s+/ui', ' ', $search);
 		
-		$vids = $yt->fetchVideos( $search );
-		if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
+        $vids = $yt->fetchVideos( $search );
+        
+        if (is_a($vids, 'Zend_Gdata_YouTube_VideoFeed')) {
 			$c=0;
 			foreach ($vids as $v){
 			    $r = $this->parseYtEntry($v, $img_width);
@@ -540,8 +547,8 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 			    }
 			}
 		}
-		
-		return $result;
+        
+        return $result;
 		
 	}
 	
@@ -648,24 +655,20 @@ class Xmltv_Model_Videos extends Xmltv_Model_Abstract
 		$videos = array();
 		$ytSearch = 'канал '.Xmltv_String::strtolower($channel['title']);
 		
-		// If file cache is enabled
 		if ($this->cache->enabled) {			 
-			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->get( 'lifetime' );
-			$t>0 ? $this->cache->setLifetime($t): $this->cache->setLifetime(86400*7) ;
+			$t = (int)Zend_Registry::get( 'site_config' )->cache->youtube->sidebar->lifetime;
+            (APPLICATION_ENV!='production') ? $this->cache->setLifetime(100) : $this->cache->setLifetime($t);
 			$f = '/Youtube/SidebarRight';
 			$hash = Rtvg_Cache::getHash( 'related_'.$channel['title'].'_u'.time());
-            // Database cache is disabled
-            // Try to fetch from file cache
             if (($videos = $this->cache->load( $hash, 'Core', $f))===false) {
                 $videos = $this->ytSearch( $ytSearch, $ytConfig);
                 $this->cache->save( $videos, $hash, 'Core', $f );
             }
 		} else {
-		    // No caching
 			$videos = $this->ytSearch( $ytSearch, $ytConfig);
 		}
-		
-		return $videos;
+        
+        return $videos;
 		 
 	}
 	

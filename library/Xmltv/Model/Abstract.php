@@ -255,7 +255,63 @@ class Xmltv_Model_Abstract
         return new Xmltv_Model_DbTable_ProgramsCategories();
     }
     
-    /**
+    public function getTopnavData(){
+        
+        $menuData = array();
+        $i = 0;
+        $cats = $this->channelsCategoriesTable->fetchAll("featured IS TRUE", "title ASC");
+        
+        foreach ($cats as $c){
+            
+            $menuData[$i] = array(
+                'id'=>(int)$c->id,
+                'title'=>$c->title,
+                'alias'=>$c->alias,
+                'image'=>'images/categories/channels/'.$c->image,
+            );
+            
+            $select = $this->db->select()
+                ->from(array('CH'=>$this->channelsTable->getName()), array(
+                    'id',
+                    'title',
+                    'alias',
+                    'logo'=>"CONCAT('images/channel_logo/', `CH`.`icon`, '')",
+                ))
+                ->join(array('LANG'=>'rtvg_languages'), "`CH`.`lang` = `LANG`.`iso`", array(
+                    'lang_iso'=>'iso',
+                    'lang_name'=>'name',
+                ))
+                ->join(array('COUNTRY'=>'rtvg_countries'), "`CH`.`country` = `COUNTRY`.`iso`", array(
+                    'country_iso'=>'iso',
+                    'country_name'=>'name',
+                ))
+                ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), '`CH`.`id` = `TORRENTTV`.`channel`', array(
+                    'torrenttv_id'=>'stream'
+                ))
+                ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), '`CH`.`id` = `TVFORSITE`.`channel`', array(
+                    'tvforsite_id'=>'stream'
+                ))
+                ->where("`CH`.`published` = '1'")
+                ->where("`CH`.`category` = ".(int)$c->id)
+                ->order("CH.title")
+            ;
+            
+            $result = $this->db->fetchAll($select); 
+            
+            foreach ($result as $k=>$item){
+                $result[$k]['id'] = (int)$item['id'];
+                $result[$k]['torrenttv_id'] = (int)$item['torrenttv_id'];
+            }
+            
+            $menuData[$i]['channels'] = $result;
+            $i++;
+        }
+        
+        return $menuData;
+        
+    }
+
+	/**
      * 
      * @param int $channel_id
      * @throws Zend_Exception

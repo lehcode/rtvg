@@ -18,35 +18,43 @@ class Zend_View_Helper_SidebarVideo extends Zend_View_Helper_Abstract
         ob_start();
         ?>
 
-        <h4><i class="icon-plus icon-white"></i><?= $data['title'] ?></h4>
+        <h4><strong><?php echo $data['title'] ?></strong></h4>
 
         <div class="info">
 
-            <p class="viewcount">
-                Посмотрели <?= (int)$data['views'] ?>
+            <?php  if (!empty($data['desc'])): ?>
+            <p class="desc">
+                <?php echo $data['desc'] ?>
             </p>
-
-            <a href="<?= $data['link_href'] ?>" title="Клик чтобы смотреть видео <?= $data['link_title'] ?>" target="_blank">
-                <img src="<?= $data['thumb']['url']; ?>" alt="<?= $data['link_title'] ?>" />
+            <?php endif; ?>
+            
+            <a href="<?php echo $data['link_href'] ?>" 
+               title="Клик чтобы смотреть видео <?php echo $data['link_title'] ?>" 
+               target="_blank">
+                <img src="<?php echo $data['thumb']['url']; ?>" 
+                     alt="<?php echo $data['link_title'] ?>" />
             </a>
 
-            <a class="btn btn-inverse btn-mini" href="<?= $data['link_href'] ?>" title="<?= $data['link_title'] ?> видео" target="_blank">
+            <a href="<?php echo $data['link_href'] ?>"
+               class="btn btn-inverse btn-mini" 
+               title="<?php echo $data['link_title'] ?> видео" 
+               target="_blank">
                 Смотреть
             </a>
 
+            <div class="viewcount">
+                Посмотрели <?php echo (int)$data['views'] ?>
+            </div>
+            
+            <?php /*
             <div class="date">
-                Загружено: <?= $data['published'] ?>
+                Добавлено <?php echo $data['published']->toString( 'd MMMM YYYY') ?>
             </div>
-
+            */ ?>
+            
             <div class="duration">
-                Длительность: <?= $data['duration'] ?>
+                Длительность <?php echo $data['duration']->toString("HH:mm:ss") ?>
             </div>
-
-            <?php  if (!empty($data['desc'])): ?>
-            <p class="desc">
-                <?= $data['desc'] ?>
-            </p>
-            <?php endif; ?>
 
         </div>
         

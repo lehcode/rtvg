@@ -44,7 +44,8 @@ $this->headScript()->appendScript( $js );
 
 <div class="page">
 	
-	<div id="news" class="row-fluid">
+    <?php /*
+    <div id="news" class="row">
 		<?php 
 		foreach ($this->articles as $article){
             
@@ -60,11 +61,10 @@ $this->headScript()->appendScript( $js );
             }
 		    
 		    ?>
-		    <div class="span<?= $w; ?> announce">
+		    <div class="span<?php echo $w; ?> announce">
 		    	<img width="42" height="42" src="/images/icons/article-image-default.png" border="0" />
-		    	<a href="<?= $linkAttrHref; ?>"
-		    		title="<?= $article['metadesc']; ?>"
-		    		target="_blank">
+		    	<a href="<?php echo $linkAttrHref; ?>"
+		    		title="<?php echo $article['metadesc']; ?>">
 		    		<?php echo $this->escape($article['title']); ?>
 		    	</a>
 		    </div>
@@ -72,56 +72,74 @@ $this->headScript()->appendScript( $js );
 		}
 		?>
 	</div>
+     * */ ?>
 	
-	<div class="row-fluid" style="margin: 10px 0;"><?php
-    $dropdown = new Zend_Form_Element_Select('channel');
-	$options  = array();
-	foreach ($this->channels as $k=>$c){
-	    $options[$k] = array('key'=>(int)$c['id'], 'value'=>$c['title']);
-	}
-	$dropdown->setMultiOptions($options);
-	$dropdown->setAttribs( array(
-		'name'=>'channelselect',
-		'size'=>1,
-		))
-		->setLabel("Передачи сейчас на канале")
-		->setDecorators(array(
-			'ViewHelper',
-			'Errors',
-			array( 'HtmlTag', array( 
-                'tag'=>'div', 
-                'class'=>'select-container' ) ),
-			'Label',
-		));
-	echo $dropdown;
-	?>
-		<?php /* <h1><a href="<?php echo $this->url(array(), 'default_channels_list'); ?>">Все каналы</a></h1> */ ?>
+	<div class="row">
+        <?php
+        $dropdown = new Zend_Form_Element_Select('channel');
+        $options  = array();
+        foreach ($this->channels as $k=>$c){
+            $options[$k] = array('key'=>(int)$c['id'], 'value'=>$c['title']);
+        }
+        $dropdown->setMultiOptions($options);
+        $dropdown->setAttribs( array(
+            'name'=>'channelselect',
+            'size'=>1,
+            ))
+            ->setLabel("Передачи сейчас на канале")
+            ->setDecorators(array(
+                'ViewHelper',
+                'Errors',
+                array( 'HtmlTag', array( 
+                    'tag'=>'div', 
+                    'class'=>'select-container' ) ),
+                'Label',
+            ));
+        echo $dropdown;
+        ?>
 	</div>
 	
-	<div id="gcse-results" style="width: 640px; margin: 0 auto;">
-		<gcse:searchbox></gcse:searchbox>
-		<gcse:searchresults></gcse:searchresults>
-	</div>	
+    <div class="row" id="shareCode">
+        <?php echo $this->shareCode ?>
+    </div>
 	
-	<div id="listing">
+    <div id="listing" class="row">
 	<?php 
 	$max=4;
-	foreach ($this->list as $channel){
+    foreach ($this->list as $channel){
 	    
 	    $keys = array_keys($channel);
 	    $channelHash = hash( 'crc32', $channel[$keys[0]]['channel'] );
+        $title = $this->escape($channel[$keys[0]]['channel_title']);
+        $alias = $this->escape($channel[$keys[0]]['channel_alias']);
         $dayLinkAttrHref = $this->url( array(
-	    			'channel'=>$this->escape($channel[$keys[0]]['channel_alias'])), 'default_listings_day-listing');
-	    $dayLinkAttrTitle = $this->escape( sprintf("Передачи «%s» сегодня", $this->escape($channel[$keys[0]]['channel_title'])));
-	    $dayLinkText = $this->escape( sprintf("«%s» сегодня", $channel[$keys[0]]['channel_title']));
+	    			'channel'=>$alias), 'default_listings_day-listing');
+	    $dayLinkAttrTitle = $this->escape( sprintf("Передачи «%s» сегодня", $title));
+	    $dayLinkText = $this->escape( sprintf("«%s» сегодня", $title));
 	    $weekLinkAttrHref = $this->url( array(
-	    			'channel'=>$this->escape($channel[$keys[0]]['channel_alias'])), 'default_channels_channel-week');
-	    $weekLinkAttrTitle = $this->escape( sprintf("Передачи «%s» на этой неделе", $this->escape($channel[$keys[0]]['channel_title'])));
-        $weekLinkText =  $this->escape( sprintf("«%s» расписание на неделю" , $channel[$keys[0]]['channel_title']));
+	    			'channel'=>$alias), 'default_channels_channel-week');
+	    $weekLinkAttrTitle = $this->escape( sprintf("Передачи «%s» на этой неделе", $title));
+        $weekLinkText = $this->escape( sprintf("«%s» на неделю" , $title));
 	    ?>
-	    <div class="channel" id="<?= $channelHash ?>">
-	    	<h3 class="title"><a href="<?= $weekLinkAttrHref ?>" target="_blank" title="<?= $weekLinkAttrTitle ?>"><?= $weekLinkText; ?></a></h3>
-	    	<h2 class="title"><a href="<?= $dayLinkAttrHref ?>" target="_blank" title="<?= $dayLinkAttrTitle ?>"><?= $dayLinkText ?></a></h2>
+	    <div class="channel" id="<?php echo $channelHash ?>">
+            <div class="tabs">
+                
+                <h3 class="title">
+                    <a href="<?php echo $weekLinkAttrHref ?>" target="_blank" title="<?php echo $weekLinkAttrTitle ?>">
+                        <?php echo $weekLinkText; ?>
+                    </a>
+                </h3>
+                
+                    <?php if($channel[$keys[0]]['torrenttv_id'] || $channel[$keys[0]]['tvforsite_id']): ?>
+                <h3 class="title">
+                    <a href="<?php echo $this->baseUrl('/live/'.$alias) ?>" target="_blank" title="<?php echo $weekLinkAttrTitle ?>">
+                        Онлайн
+                    </a>
+                </h3>
+                    <?php endif; ?>
+                
+            </div>
+	    	<h2 class="title"><a href="<?php echo $dayLinkAttrHref ?>" title="<?php echo $dayLinkAttrTitle ?>"><?php echo $dayLinkText ?></a></h2>
 	    	<div class="progs">
 	    <?php 
 	    $w = count($channel)>$max ? floor((100-$max)/$max) : floor((100-count($channel))/count($channel));
@@ -154,31 +172,31 @@ $this->headScript()->appendScript( $js );
 	            }
 		        ?>
 		    
-	        <div class="item" style="width:<?= $w."%" ?>;">
+	        <div class="item" style="width:<?php echo $w."%" ?>;">
 	        
-	        	<div class="time" style="background-color: <?= $bg ?>;">
-	        		<?= $timespan ?>
+	        	<div class="time" style="background-color: <?php echo $bg ?>;">
+	        		<?php echo $timespan ?>
 	        	</div>
 	        	
 	        	<div class="info">
 	        	
 	        		<p>
 	        			<?php $text = $timespan=='Сейчас' ? '' : 'Начало в '  ; ?>
-	        			<?= $text ?><strong><?= $prog['start']->toString("HH:mm") ?></strong>
+	        			<?php echo $text ?><strong><?php echo $prog['start']->toString("HH:mm") ?></strong>
 	        		</p>
 	        		
 	        		<p class="title">
-		        		<a href="<?= $this->url( array(
+		        		<a href="<?php echo $this->url( array(
 		        		'channel'=>$this->escape($prog['channel_alias']),
 		        		'alias'=>$this->escape($prog['alias']) ), 'default_listings_broadcast-week') ?>"
-		        		title="<?= $this->escape(sprintf("Программа «%s» на неделе", $this->escape($prog['title']))) ?>">
-		        			<?= $this->escape( $prog['title'] ) ?>
+		        		title="<?php echo $this->escape(sprintf("Программа «%s» на неделе", $this->escape($prog['title']))) ?>">
+		        			<?php echo $this->escape( $prog['title'] ) ?>
 		        		</a>
 	        		</p>
 	        		
 	        		<?php if (!empty($prog['sub_title'])): ?>
 	        		<p class="sub_title">
-	        			<?= $this->escape( $prog['sub_title'] ) ?>
+	        			<?php echo $this->escape( $prog['sub_title'] ) ?>
 	        		</p>
 	        		<?php endif; ?>
 	        		
@@ -186,11 +204,11 @@ $this->headScript()->appendScript( $js );
 		        		title="<?php printf("Все %s на канале «%s» сегодня", 
 		        			Xmltv_String::strtolower( $this->escape( $prog['category_title'] )),
 		        			$this->escape( $prog['channel_title'] )) ?>">
-		        		<?= $this->escape( $prog['category_single'] ) ?>
+		        		<?php echo $this->escape( $prog['category_single'] ) ?>
 		        	</a>
 		        	<br />
 		        	<?php if ((int)@$prog['rating']>0 && $showRating===true): ?>
-		        	<span class="rating">Возрастной рейтинг: <?= $this->escape( $prog['rating'] ).'+' ?></span>
+		        	<span class="rating">Возрастной рейтинг: <?php echo $this->escape( $prog['rating'] ).'+' ?></span>
 		        	<?php endif; ?>
 	        	</div>
 	        	

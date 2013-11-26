@@ -27,12 +27,17 @@ foreach ($this->list as $single){
 			<span class="label label-warning"><?php echo Xmltv_String::ucfirst( $single['start']->toString( 'EEEE')); ?></span>&nbsp;
 			<u><?php echo $single['start']->toString( 'HH:mm') ?></u>
 			<?php echo $single['category_title_single'] ?> 
-				<a href="<?php echo $this->url( array('channel'=>$single['channel_alias'], 'date'=>$single['start']->toString("dd-MM-yyyy")), 'default_listings_day-date' ).'?ts='.$single['start']->toString("U") ?>"
-					title="<?php echo $single['title'] ?> <?php echo $single['start']->toString( 'dd MMM') ?> на канале <?php echo $single['channel_title'] ?>"
+				<a href="<?php echo $this->url( array(
+                    'channel'=>$single['channel_alias'], 
+                    'date'=>$single['start']->toString("dd-MM-yyyy")), 
+                    'default_listings_day-date' ) ?>"
+					title="<?php printf("«%s» %s на канале %s", $single['title'], $single['start']->toString( 'dd MMM'), $single['channel_title']) ?>"
 					target="_blank">
-					<em><?php echo $single['title'] ?></em>
+					<em>
+                        <?php echo $single['title'] ?>
+                    </em>
 			</a> на канале <b><?php echo $single['channel_title'] ?></b>
-			<?php //echo (bool)$single['live']==-true ? 'в прямом эфире' : '' ; ?>
+			<?php echo (bool)$single['live']==-true ? 'В прямом эфире' : '' ; ?>
 			<?php //echo (bool)$single['premiere']===true ? '. Премьера!' : '' ; ?>
 			
 		</p>
