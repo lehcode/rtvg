@@ -140,18 +140,31 @@ class Xmltv_Youtube {
 	 * @throws Exception
 	 * @return Zend_Gdata_YouTube_VideoFeed
 	 */
-	public function fetchRelated($vid=null){
+	public function fetchRelated($vid=null, $amt=5, $offset=0){
 		
-		if (!$vid)
+		if (!$vid){
 			throw new Exception("Не задан параметр поиска видео");
+        }
 		
 		try {
 			$ytFeed = $this->client->getRelatedVideoFeed($vid);
 		} catch (Zend_Gdata_App_Exception $e) {
 			throw new Zend_Exception($e->getMessage(), $e->getCode(), $e);
 		}
-		
-		return $ytFeed;
+        
+        if ($offset>0){
+            $amt += $offset;
+        }
+        
+        $count = (int)$ytFeed->count();
+        
+        if ($amt<$count){
+            for ($i=$amt; $i<$count; $i++){
+                $ytFeed->offsetUnset($i);
+            }
+        }
+        
+        return $ytFeed;
 	
 	}
 	
@@ -311,8 +324,9 @@ class Xmltv_Youtube {
 		$cleanup    = new Zend_Filter_PregReplace( array("match"=>'/[^\p{Latin}\p{Cyrillic}\d\s]+/ui', 'replace'=>' '));
 		$tolower	= new Zend_Filter_StringToLower();
 		$whitespace = new Zend_Filter_PregReplace( array("match"=>'/[\s+|-]+/', 'replace'=>'-'));
+        $trim = new Zend_Filter_StringTrim(array('charlist'=>'-'));
 		
-		$result = $tolower->filter( $whitespace->filter( $separator->filter( $cleanup->filter( $title))));
+		$result = $trim->filter($tolower->filter( $whitespace->filter( $separator->filter( $cleanup->filter( $title)))));
 		
 		if (!preg_match( Zend_Controller_Action_Helper_RequestValidator::ALIAS_REGEX, $result)){
 		    throw new Zend_Exception( Rtvg_Message::ERR_WRONG_ALIAS.': '.$result);
