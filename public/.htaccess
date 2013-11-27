@@ -50,7 +50,10 @@ RewriteCond %{QUERY_STRING} tag [OR,NC]
 RewriteCond %{QUERY_STRING} start [OR,NC]
 RewriteCond %{QUERY_STRING} layout [OR]
 RewriteCond %{REQUEST_URI} ^/видео/онлайн/.+/телепрограмма/.+$ [OR]
-RewriteCond %{REQUEST_URI} ^.+/indefined.+$
+RewriteCond %{REQUEST_URI} ^.+/indefined.+$ [OR]
+RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/сегодня$ [OR]
+RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/неделя$ [OR]
+RewriteCond %{REQUEST_URI} ^/телепрограмма/неделя$
 RewriteRule .* /телепрограмма? [R=301,L]
 
 RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]
@@ -63,6 +66,10 @@ RewriteRule .* %1/неделя [R=301,L]
 
 RewriteCond %{REQUEST_URI} ^/телепрограмма/(.+)/телепрограмма/.+$
 RewriteRule .* /телепрограмма/%1/неделя [R=301,L]
+
+RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/сегодня$ [OR]
+RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/неделя$
+RewriteRule .* / [R=301,L]
 
 RewriteCond %{REQUEST_FILENAME} -s [OR]
 RewriteCond %{REQUEST_FILENAME} -l [OR]
