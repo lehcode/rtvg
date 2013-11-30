@@ -14,16 +14,13 @@ $this->headTitle( $this->escape( 'Похожие программы сегодн
 
 ?>
 
-<div class="row">
-    <h1>Похожие передачи сегодня</h1>
-</div>
+<h1 class="row">Похожие передачи сегодня</h1>
 
-
-<div class="row" id="shareCode">
+<div class="row-fluid" id="shareCode">
     <?php echo $this->shareCode ?>
 </div>
 
-<div class="row">
+<div class="row-fluid">
     <p>
     <?php 
     if (isset($this->similar)) {

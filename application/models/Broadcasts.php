@@ -631,7 +631,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
      * @param  array $channels
      * @throws Zend_Exception
      */
-    public function frontpageListing($channels=array()){
+    public function frontpageListing($channels=array(), $timespan=8){
                 
         if (empty($channels)){
             throw new Zend_Exception( "Channels cannot be empty" );
@@ -673,7 +673,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'tvforsite_id'=>'stream'
             ))
             ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")))
-            ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour(6)->toString("YYYY-MM-dd HH:mm:00")))
+            ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour($timespan)->toString("YYYY-MM-dd HH:mm:00")))
             ->group("EVT.start")
             ->order(array(
                 "EVT.channel ASC", 
@@ -989,6 +989,56 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
     public function getCategoryByAlias($alias){
         
         return $this->bcCategoriesTable->fetchRow("alias='$alias'");
+        
+    }
+    
+    public function frontpageTimelineData(array $channels){
+        
+        $result = array();
+        $timespan = 8;
+        $list = $this->frontpageListing($channels, $timespan);
+        
+        foreach ($list as $id=>$data){
+            
+            $result[$id] = array('timeline'=>array());
+            $result[$id]['timeline'] = array(
+                'headline'=>$id,
+                'type'=>'default',
+                'text'=>'',
+                'asset'=>array(
+                    'media'=>null,
+                    'credit'=>null,
+                    'caption'=>null,
+                ),
+            );
+            foreach ($data as $hash=>$bc){
+                
+                $result[$id]['timeline']['date']=array(
+                    'startDate'=>$bc['start']->toString("YYYY,MM,dd,HH,mm"),
+                    'endDate'=>$bc['end']->toString("YYYY,MM,dd,HH,mm"),
+                    'headline'=>$bc['title'],
+                    'text'=>$bc['desc'],
+                    'tag'=>null,
+                    'classname'=>$hash,
+                    'asset'=>array(
+                        'media'=>null,
+                        'credit'=>null,
+                        'caption'=>null,
+                    ),
+                );
+            }
+            
+            $result[$id]['timeline']['era'] = array(
+                'startDate'=>  Zend_Date::now()->toString("YYYY,MM,dd,HH,mm"),
+                'endDate'=>  Zend_Date::now()->addDay(1)->toString("YYYY,MM,dd"),
+                'headline'=>  'Era Headline',
+                'text'=>  'Era Text',
+                'tag'=>  null,
+            );
+            
+        }
+        
+        return $result;
         
     }
     

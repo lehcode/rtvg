@@ -40,7 +40,7 @@ $this->headStyle()->appendStyle($css);
 
 ?>
 
-<div class="row">
+<div class="row-fluid">
     <h1>&laquo;<?php echo $channelTitle ?>&raquo; 
         <time itemprop="startDate" datetime="<?php echo $this->listingDate->toString(Zend_Date::ISO_8601) ?>">
             <?php echo Xmltv_String::ucfirst( $this->listingDate->toString("EEEE, d MMMM YYYY") ); ?>
@@ -50,7 +50,7 @@ $this->headStyle()->appendStyle($css);
 
 
 
-<div class="row">
+<div class="row-fluid">
     
 	<h3 id="weekButton" class="span5">
 		<?php 
@@ -66,7 +66,7 @@ $this->headStyle()->appendStyle($css);
     <div class="span4 offset3 badge" id="timer">Сейчас <?php echo $this->listingDate->toString("HH:mm") ?> (MSK)</div>
 </div>
 
-<div class="row">
+<div class="row-fluid">
     <?php 
     $linkAttrHref  = $this->url(array('channel'=>$channelAlias, 'date'=>'сегодня'), 'default_listings_day-date');
     $linkAttrTitle = $this->escape( sprintf('Все передачи «%s» сегодня', $channelTitle) );
@@ -80,11 +80,11 @@ $this->headStyle()->appendStyle($css);
 	</h2>
 </div>
 
-<div class="row" id="shareCode">
+<div class="row-fluid" id="shareCode">
     <?php echo $this->shareCode ?>
 </div>
 
-<div class="row" id="tinyUrl">
+<div class="row-fluid" id="tinyUrl">
     <p class="badge">
         <?php echo sprintf("Короткая сылка на канал &laquo;%s&raquo;", $this->escape($channelTitle) ); ?>
         <?php $linkAttrTitle = sprintf('Телепрограмма канала «%s» на каждый день', $this->escape($channelTitle) ); ?>
@@ -98,7 +98,7 @@ $this->headStyle()->appendStyle($css);
     </p>
 </div>
 
-<div class="row">
+<div class="row-fluid">
     <?php 
     if ((int)$this->channel['torrenttv_id']>0 || $this->channel['tvforsite_id']) {
         $w = 530;
@@ -139,7 +139,7 @@ if (count($this->programs)){
 }
 ?>
 
-<div class="row">
+<div class="row-fluid">
     <p class="ace">Для просмотра телеканала &laquo;<?php echo $this->channel['title'] ?>&raquo; с помощью <em>Торрент-ТВ в отличном качестве</em> вам нужно
         скачать и установить специальный плагин <a href="http://acestream.org/ru/" target="blank" rel="nofollow" title="Скачать Торрент ТВ">Ace Stream</a>.
         Установка занимает минуту. После того как плагин <em>Торрент-ТВ</em> установлен, перезапустите свой браузер. Смотрите - хоть обсмотритесь :)

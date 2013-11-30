@@ -9,14 +9,26 @@ $channelAlias = $this->escape($this->channel['alias']);
 
 $this->headTitle( sprintf('Канал %s онлайн', $channelTitle ));
 $this->headMeta()
-    ->setName('title', $this->channel['title'] )
-    ->setName('description', $this->channel['title'].' в высоком качестве онлайн на rutvgid.ru')
-    ->setName('keywords', $this->channel['title'].',смотреть онлайн,высокое качество,торрент-тв' );
+    ->setName('title', $channelTitle )
+    ->setName('description', $channelTitle.' в высоком качестве онлайн на rutvgid.ru')
+    ->setName('keywords', Xmltv_String::strtolower($channelTitle).',смотреть онлайн,высокое качество,торрент-тв' );
+$this->inlineScript()->appendScript("$(function(){
+    createStoryJS({
+        type:       'timeline',
+        width:      '100%',
+        height:     '400',
+        source:     '" . $this->baseUrl("/channels/timeline/id/".$this->escape($this->channel['id'])."?format=json") . "',
+        embed_id:   'bcTimeline',
+        lang: 'ru',
+        hash_bookmark: true,"
+        . ((APPLICATION_ENV!="production") ? "debug: true" : "") ."
+    });    
+});");
 
 ?>
-<h1 class="row"><?php echo $this->channel['title'] ?> онлайн</h1>
+<h1 class="row-fluid"><?php echo $this->channel['title'] ?> онлайн</h1>
 
-<div class="row" id="tinyUrl">
+<div class="row-fluid" id="tinyUrl">
     <p class="badge">
         <?php echo sprintf("Короткая ссылка на программу канала<br />&laquo;%s&raquo;", $this->escape($channelTitle)); ?>
         <?php $linkAttrTitle = sprintf('Телепрограмма канала &laquo;%s&raquo; на каждый день', $this->escape($channelTitle)); ?>
@@ -29,7 +41,7 @@ $this->headMeta()
     </p>
 </div>
 
-<div class="row">
+<div class="row-fluid">
     
 	<h3 id="weekButton" class="span4">
 		<?php 
@@ -44,7 +56,7 @@ $this->headMeta()
 	</h3>
 </div>
 
-<div class="row">
+<div class="row-fluid">
     <?php 
     $linkAttrHref  = $this->url(array('channel'=>$channelAlias, 'date'=>'сегодня'), 'default_listings_day-date');
     $linkAttrTitle = sprintf('Все передачи &laquo;%s&raquo; сегодня', $channelTitle);
