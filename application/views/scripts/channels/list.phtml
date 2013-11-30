@@ -43,7 +43,7 @@ $js = (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js
 $this->headScript()->appendScript( $js );
 ?>
 
-<div class="row">
+<div class="row-fluid">
     <?php
     if ($this->category) {
         echo '<h1>'.$categoryTitle.'</h1>';
@@ -75,11 +75,11 @@ $this->headScript()->appendScript( $js );
 </div>
 
 
-<div class="row" id="shareCode">
+<div class="row-fluid" id="shareCode">
     <?php echo $this->shareCode ?>
 </div>
 
-<div id="channels" class="row">
+<div id="channels" class="row-fluid">
     
     <?php
     foreach ($this->channels as $channel) { 

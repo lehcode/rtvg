@@ -127,7 +127,7 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'bc_country_iso'=>'iso',
             ))
             ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")) )
-            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->addDay(1)->toString("YYYY-MM-dd 00:00:00")) )
+            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 23:59:00")) )
             ->where("`EVT`.`channel` = $channel_id")
             ->where("`CH`.`published` = '1'")
             ->group("EVT.hash")

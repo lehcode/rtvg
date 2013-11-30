@@ -142,7 +142,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 						
 						$validators['channel'] = array(new Zend_Validate_Regex( '/^[\p{Cyrillic}\p{Latin}\d-]+$/u' ));
 						
-						switch ($action) {
+                        switch ($action) {
 							
 							case 'category':
 								foreach ($options['vars']['programsCategories'] as $c){
@@ -155,7 +155,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							
 							case 'broadcast-day':
 								$validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
-								$validators['date']  = array( new Zend_Validate_Regex( '/^сегодня|неделя|[0-9]{2}-[0-9]{2}-[0-9]{4}$/u' ));
+								$validators['date']  = array( new Zend_Validate_Regex( '/^сегодня|неделя|\d{2}-\d{2}-\d{4}|\d{4}-\d{2}-\d{2}$/u' ));
 							break;
 								
 							case 'broadcast-week':
@@ -180,9 +180,9 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							case 'day-listing':
 								
 								$d = $this->getRequest()->getParam('date');
-								if (preg_match('/^[\d]{2}-[\d]{2}-[\d]{4}$/', $d)) {
+								if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $d)) {
 									$validators['date'] = array( new Zend_Validate_Date( array('format'=>'dd-MM-YYYY')));
-								} elseif (preg_match('/^[\d]{4}-[\d]{2}-[\d]{2}$/', $d)) {
+								} elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
 									$validators['date'] = array( new Zend_Validate_Date( array('format'=>'YYYY-MM-dd')));
 								}
 								$validators['date']['presence'] = 'optional';
@@ -221,9 +221,14 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							
 						switch ($action){
 							case 'single-channel':
-								$validators['format'] = array( new Zend_Validate_Alpha());
+								$validators['format'] = array( new Zend_Validate_InArray(array('html')));
 								$validators['id']	 = array( new Zend_Validate_Digits());
-							break;
+                                break;
+                        
+                            case 'timeline':
+                                $validators['format'] = array( new Zend_Validate_InArray(array('json')));
+                                $validators['callback'] = array( new Zend_Validate_InArray(array('onJSONP_Data')));
+                                break;
 									
 							default: 
 								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
@@ -241,18 +246,15 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 								$validators['openid'] = array( new Zend_Validate_Regex( '/^[\w\d\._-]{2,128}@[\w\d\._-]{2,128}\.[\w]{2,4}$/ui' ));
 								$validators['passwd'] = array( new Zend_Validate_Regex( '/^[\w\d]{6,32}$/ui' ));
 								$validators['submit'] = array( new Zend_Validate_Alpha(false));
-								
-							break;
+								break;
 
 							case 'logout':
 								$validators['submit'] = array( new Zend_Validate_Alpha(false));
-								
-							break;
+                                break;
 
 							case 'profile':
-								die(__FILE__.': '.__LINE__);
-								
-							break;
+								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);
+                                break;
 							
 							default:
 								throw new Zend_Exception( Rtvg_Message::ERR_NOT_FOUND, 404);

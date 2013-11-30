@@ -15,7 +15,7 @@ $channelAlias = $this->escape( $this->channel['alias'] );
 $channelDesc  = $this->escape( $this->truncateString( $this->channel['desc_body'], 100, 'words' ));
 ?>
 
-<div class="row">
+<div class="row-fluid">
     <h1>
         <?php printf( 'Программа канала «%s» на неделю', $this->channel['title'] ); ?>
     </h1>
@@ -39,7 +39,7 @@ $channelDesc  = $this->escape( $this->truncateString( $this->channel['desc_body'
 $this->inlineScript()->appendScript("$(function(){ $('#weekList').tabs({ collapsible: false }); });");
 ?>
 
-<div class="row" id="weekList">
+<div class="row-fluid" id="weekList">
 
 	<ul class="nav" id="daysTabs">
 	<?php 

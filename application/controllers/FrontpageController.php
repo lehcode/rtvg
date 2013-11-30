@@ -26,11 +26,14 @@ class FrontpageController extends Rtvg_Controller_Action
     
     	parent::init();
     
+        $ajaxContext = $this->_helper->getHelper('contextSwitch');
+        $ajaxContext
+            ->addActionContext( 'timeline', 'json' )
+            ->initContext();
+            
         //Change layout for AJAX requests
     	if ($this->getRequest()->isXmlHttpRequest()) {
-    		$this->_helper->getHelper( 'AjaxContext' )
-                ->addActionContext( 'single-channel', 'html' )
-				->initContext();
+    		$this->_helper->layout->disableLayout();
     	} else {
             $this->view->assign( 'pageclass', parent::pageclass(__CLASS__) );
 			$this->view->assign( 'vk_group_init', false );
@@ -153,5 +156,5 @@ class FrontpageController extends Rtvg_Controller_Action
 	    }
 	    
 	}
-	
+    
 }

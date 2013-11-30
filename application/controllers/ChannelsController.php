@@ -350,5 +350,33 @@ class ChannelsController extends Rtvg_Controller_Action
         
     }
     
+    public function timelineAction(){
+        
+        parent::validateRequest();
+        
+        $amt = (int)Zend_Registry::get('site_config')->frontend->frontpage->channels;
+        if(!$amt){
+            throw new Zend_Exception("Не указаны каналы для вывода на главной странице");
+        }
+        
+        $top = $this->channelsModel->topChannels($amt);
+        if ($this->cache->enabled){
+            $this->cache->setLifetime(60);
+            $f = 'Listings/Frontpage';
+            $hash = Rtvg_Cache::getHash('frontpage_timeline');
+            if ((bool)($list = $this->cache->load( $hash, 'Core', $f))===false) {
+                $list = $this->bcModel->frontpageTimelineData($top);
+                $this->cache->save( $list, $hash, 'Core', $f);
+            }
+        } else {
+            $list = $this->bcModel->frontpageTimelineData($top);
+        }
+        
+        $this->getResponse()->setHeader('Content-type', 'application/json');
+        echo Zend_Json::encode($list);
+        die();
+        
+    }
+    
 }
 

