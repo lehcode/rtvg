@@ -155,7 +155,7 @@ class Zend_Controller_Action_Helper_RequestValidator extends Zend_Controller_Act
 							
 							case 'broadcast-day':
 								$validators['alias'] = array( new Zend_Validate_Regex( self::ALIAS_REGEX ));
-								$validators['date']  = array( new Zend_Validate_InArray( array('сегодня','неделя' ) ));
+								$validators['date']  = array( new Zend_Validate_Regex( '/^сегодня|неделя|[0-9]{2}-[0-9]{2}-[0-9]{4}$/u' ));
 							break;
 								
 							case 'broadcast-week':
