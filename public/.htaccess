@@ -39,9 +39,6 @@ RewriteBase /
 RewriteCond %{ENV:REDIRECT_STATUS} !^$
 RewriteRule .* - [L]
 
-RewriteRule %D0%B2%D0%B8%D0%B4%D0%B5%D0%BE/%D1%82%D0%B5%D0%BC%D0%B0 / [R=301,L]
-RewriteRule index.php/(.*) /$1 [R=301,L]
-
 RewriteCond %{REQUEST_URI} -$ [OR,NC]
 RewriteCond %{REQUEST_URI} ^.+3D$ [OR,NC]
 RewriteCond %{QUERY_STRING} id=.+3D$ [OR,NC]
@@ -53,8 +50,10 @@ RewriteCond %{REQUEST_URI} ^/видео/онлайн/.+/телепрограмм
 RewriteCond %{REQUEST_URI} ^.+/indefined.+$ [OR]
 RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/сегодня$ [OR]
 RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/неделя$ [OR]
-RewriteCond %{REQUEST_URI} ^/телепрограмма/неделя$
-RewriteRule .* /телепрограмма? [R=301,L]
+RewriteCond %{REQUEST_URI} ^/телепрограмма/неделя$ [OR]
+RewriteCond %{REQUEST_URI} ^/телепрограмма/.*/сериалы$ [OR]
+RewriteCond %{REQUEST_URI} ^/live/неделя$
+RewriteRule .* / [R=301,L]
 
 RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]
 RewriteRule ^телепрограмма/лад-беларусь(.*)$ /телепрограмма/беларусь-2$1 [R=301,L]
