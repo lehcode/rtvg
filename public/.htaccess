@@ -47,12 +47,16 @@ RewriteCond %{QUERY_STRING} tag [OR,NC]
 RewriteCond %{QUERY_STRING} start [OR,NC]
 RewriteCond %{QUERY_STRING} layout [OR]
 RewriteCond %{REQUEST_URI} ^/видео/онлайн/.+/телепрограмма/.+$ [OR]
-RewriteCond %{REQUEST_URI} ^.+/indefined.+$ [OR]
+RewriteCond %{REQUEST_URI} ^.+/undefined.*$ [OR]
 RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/сегодня$ [OR]
 RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/неделя$ [OR]
 RewriteCond %{REQUEST_URI} ^/телепрограмма/неделя$ [OR]
 RewriteCond %{REQUEST_URI} ^/телепрограмма/.*/сериалы$ [OR]
-RewriteCond %{REQUEST_URI} ^/live/неделя$
+RewriteCond %{REQUEST_URI} ^/live/неделя$ [OR]
+RewriteCond %{REQUEST_URI} ^/каналы/неделя$ [OR]
+RewriteCond %{REQUEST_URI} ^/видео/онлайн.+[^a-zA-Z0-9]$ [OR]
+RewriteCond %{REQUEST_URI} /первый-канал-европа [OR]
+RewriteCond %{REQUEST_URI} /ajaratv
 RewriteRule .* / [R=301,L]
 
 RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]
@@ -67,7 +71,8 @@ RewriteCond %{REQUEST_URI} ^/телепрограмма/(.+)/телепрогр�
 RewriteRule .* /телепрограмма/%1/неделя [R=301,L]
 
 RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/сегодня$ [OR]
-RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/неделя$
+RewriteCond %{REQUEST_URI} ^/видео/онлайн/.*/неделя$ [OR]
+RewriteCond %{REQUEST_URI} ^/каналы/autos$
 RewriteRule .* / [R=301,L]
 
 RewriteCond %{REQUEST_FILENAME} -s [OR]
