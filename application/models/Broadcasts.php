@@ -112,14 +112,13 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             throw new Zend_Exception("Channel ID is required and must be INT");
         }
         
-        $rows = $this->bcTable->fetchDayItems( $channel_id, $date, $count );
-        
-        if (count($rows)>0) {
+        $rows = $this->bcTable->fetchDayItems( $channel_id, new Zend_Date($date) );
+        if (count($rows)) {
             $result = array();
             $c=0;
             foreach ($rows as $k=>$prog) {
                 if ($count!=null && $c<$count){
-                    if ($prog['end']->compare(Zend_Date::now(), 'YYYY-MM-dd HH:mm') >= 0) {
+                    if ($prog['end']->compare($date, 'YYYY-MM-dd HH:mm') >= 0) {
                         $result[$c] = $this->_updateLoadedValues( $prog );
                         $c++;
                     }
@@ -974,14 +973,14 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
 			$d = new Zend_Date( new Zend_Date( $validator->getEscaped('date'), 'YYYY-MM-dd' ), 'YYYY-MM-dd' );
 		}
         
-        if ($d->compare($now, 'DD')!=0) {
+        if ((int)$d->toString("DDD") === (int)$now->toString("DDD")) {
 		    $date = $d->toString('YYYY-MM-dd');
 		    $time = $now->toString('HH:mm:ss');
 		    $result = new Zend_Date( $date.' '.$time, 'YYYY-MM-dd HH:mm:ss' );
 		} else {
 			$result = $now;
 		}
-		
+        
         return $result;
 		
 	}

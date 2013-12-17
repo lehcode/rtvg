@@ -99,9 +99,9 @@ class ListingsController extends Rtvg_Controller_Action
             $f = "/Listings/Programs";
             
             if ($this->_getParam('date')){
-                $hash = $this->cache->getHash( $channel['alias'].'_complete_'.$listingDate->toString('DDD') );
+                $hash = $this->cache->getHash( $channel['alias'].'_day_listing_complete' );
             } else {
-                $hash = $this->cache->getHash( $channel['alias'].'_'.$listingDate->toString('DDD') );
+                $hash = $this->cache->getHash( $channel['alias'].'_day_listing' );
             }
             
             if ((bool)($list = $this->cache->load( $hash, 'Core', $f))===false) {

@@ -82,9 +82,9 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	 * @param string $date
 	 * @param int $count // optional
 	 */
-	public function fetchDayItems($channel_id=null, $date=null) {
+	public function fetchDayItems($channel_id=null, Zend_Date $date=null) {
 		
-        if (!$channel_id || !$date) {
+        if (!$channel_id) {
 			throw new Zend_Db_Table_Exception( Rtvg_Message::ERR_MISSING_PARAM );
 		}
 		
@@ -126,13 +126,19 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'bc_country_name'=>'name',
                 'bc_country_iso'=>'iso',
             ))
-            ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")) )
-            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 23:59:00")) )
             ->where("`EVT`.`channel` = $channel_id")
             ->where("`CH`.`published` = '1'")
             ->group("EVT.hash")
             ->order("EVT.start ASC")
         ;
+        
+        if (!$date){
+            $select->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")) )
+                ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->addDay(1)->toString("YYYY-MM-dd 00:00:00")) );
+        } else {
+            $select->where("`EVT`.`start` >= ".$this->_db->quote( $date->toString("YYYY-MM-dd HH:mm:00")) )
+                ->where("`EVT`.`start` < ".$this->_db->quote( $date->addDay(1)->toString("YYYY-MM-dd HH:mm:00")) );
+        }
         
         $rows = $this->_db->fetchAll($select);
         $result = array();
