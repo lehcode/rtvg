@@ -318,22 +318,13 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			
 			//Channel
 			$evt->channel = (int)$node->getAttribute('channel');
+            // MGM HD has duplicate channel ID in XML
+            if ($evt->channel==1422) {
+                $evt->channel=400018;
+            }
 			
-			// Fix category if needed
-			if ((bool)$bc->category===false) {
-                $bc->category = null;
-			    $fixCats = array(
-			    	222=>'Религия',
-			    	300006=>'Религия',
-			    	300037=>'Музыка' );
-			    if (array_key_exists($evt->channel, $fixCats)){
-			    	$bc->category = $this->broadcasts->getProgramCategory( $fixCats[$evt->channel]);
-			    }
-			}
-			
-            /*
-			 * Fix split title for particular channels
-			 * mostly movies
+			/*
+			 * Fix split title for particular channels mostly movies
 			 */
 			$splitTitles = array(100037);
 			if (in_array($evt->channel, $splitTitles) && Xmltv_String::strlen($bc->sub_title)){
