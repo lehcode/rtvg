@@ -247,13 +247,27 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		$programs = $xml->getElementsByTagName('programme');
 		$broadcasts = new Admin_Model_Broadcasts();
 		$eventsModel = new Xmltv_Model_Event();
+        $c=0;
 		foreach ($programs as $node){
 			
 			$bc  = new stdClass();
             $evt = $eventsModel->create();
 			
 			//Process program title and detect some properties
-			$parsed = $broadcasts->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
+            $category = $node->getElementsByTagName('category')->item(0)->nodeValue ;
+            if ($category){
+                switch (Xmltv_String::strtolower($category)){
+                    case 'спорт':
+                        $parsed = $broadcasts->parseSportsTitle( array('title'=>trim($node->getElementsByTagName('title')->item(0)->nodeValue, '. ')) );
+                        break;
+                    default:
+                        $parsed = $broadcasts->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
+                        break;
+                }
+            }
+            
+            //var_dump($parsed);
+            //die(__FILE__ . ': ' . __LINE__);
             
             $bc->title = $parsed['title'];
 			$bc->sub_title = $parsed['sub_title'];
@@ -342,6 +356,15 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$bc->hash  = $this->broadcasts->getBroadcastHash($bc);
             $evt->hash = $bc->hash;
             
+            /*
+            if ($c<50){
+                Zend_Debug::dump($bc);
+                $c++;
+            } else {
+                die(__FILE__ . ': ' . __LINE__);
+            }
+             */
+            
             // Save records
             try {
                 $broadcasts->create($bc);
@@ -364,7 +387,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
                     die("Event save failed!");
                 }
             }
-			
 		}		
 		
 		$response['success'] = true;
