@@ -77,7 +77,11 @@ class ListingsController extends Rtvg_Controller_Action
         $channel = $this->channelInfo( $this->input->getEscaped('channel') );
         
         if ((bool)$channel['id']===false){
-            throw new Zend_Exception("Channel not found.", 404);
+            $this->_response->clearBody();
+            $this->_response->clearHeaders();
+            $this->_response->setHttpResponseCode(404);
+            $this->render('channel-not-found');
+            return true;
         }
         $this->view->assign('channel', $channel );
         
