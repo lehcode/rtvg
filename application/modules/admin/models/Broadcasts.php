@@ -293,6 +293,12 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 		if($result['title']=='' || !isset($result['title'])){
             throw new Zend_Exception("Error parsing Series broadcast with title '" . $title . "'");
         }
+        
+        // Спортивные программы
+		$result = $this->parseSportsTitle( $result );
+		if($result['title']=='' || !isset($result['title'])){
+            throw new Zend_Exception("Error parsing Sports broadcast with title '" . $title . "'");
+        }
 		
 		// Музыкальные программы
 		$result = $this->parseMusicTitle( $result );
@@ -1338,9 +1344,11 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
             'Горнолыжный спорт',
             'Горные лыжи',
             'Гребля',
+            'Дзюдо',
             'Клиффдайвинг',
             'Конный спорт',
             'Конькобежный спорт',
+            'Лыжное двоеборье',
             'Лыжные гонки',
             'Мотоспорт',
             'Мотофристайл',
@@ -1383,43 +1391,70 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
             'Единая лига ВТБ',
             'Зимняя Универсиада',
             'Мировой Кубок',
+            '2-я Бундеслига',
+            'Чемпионат Англии',
 	    );
         
-        //var_dump($data['title']);
+        var_dump($data['title']);
         
         $regex= array(
-            '/^('.implode('|', $sports).')\. ([\p{Common}\w\d]+)\.([\p{Common}\w\d])$/u',
-            '/^('.implode('|', $champs).')\. ([\p{Common}\w\d]+)\.([\p{Common}\w\d])$/ui',
+            '/^('.implode('|', $sports).')\. ([\s\w\d]+)\. ([\p{Common}\w\d])$/ui',
+            '/^('.implode('|', $champs).')\. ([\s\w\d]+)\. ([\p{Common}\w\d])$/ui',
             //"Sochi-Плюс". Лыжные гонки. Этап Кубка мира в Швейцарии. Женщины. Мужчины. Спринт
-            '/^"([\p{Common}\w\d]+)"\.\s+('.implode('|', $sports).')\.\s+([\p{Common}\w\d]+)$/u',
+            '/^"([\p{Common}\w\d]+)"\. ('.implode('|', $sports).')\.\s+([\p{Common}\w\d]+)$/ui',
             //"В дни теннисных каникул". Уимблдон-2012. Сабина Лисицки - Божана Йовановски
-            '/^"([\p{Common}\w\d]+)"\.\s+([\p{Common}\w\d]+)\.\s+([\p{Common}\w\d]+)$/u',
+            '/^"([\p{Common}\w\d]+)"\. ([\w\d\s]+)\. ([\p{Common}\w\d]+)$/ui',
             //Гандбол. Чемпионат мира в Сербии. Женщины. 1/8 финала
             //Американский футбол. Чемпионат NFL ("Detroit" - "Baltimore")
-            '/^('.implode('|', $sports).')\. (Чемпионат [\w\d\s]+)\.? ([\p{Common}\w\d]+)/u',
+            '/^('.implode('|', $sports).')\. (Чемпионат [\w\d\s]+)\.? ([\p{Common}\w\d]+)/ui',
             //Баскетбол. Евролига. Мужчины. ЦСКА - "Барселона"
-            '/^('.implode('|', $sports).')\. (Евролига)\. ([\p{Common}\w\d]+)/u',
+            '/^('.implode('|', $sports).')\. (Евролига)\. ([\p{Common}\w\d]+)/ui',
             //Волейбол. Лига чемпионов. Женщины.
-            '/^('.implode('|', $sports).')\. (Лига чемпионов)\. ([\p{Common}\w\d]+)/u',
-	    );
-        
+            '/^('.implode('|', $sports).')\. (Лига чемпионов)\. ([\p{Common}\w\d]+)/ui',
+            //Прыжки на лыжах. Кубок мира. Титизее Нойштадт (Германия). HS-140
+            '/^('.implode('|', $sports).')\. ([\w\d\s]+)\. ([\p{Common}\w\d]+)$/ui',
+            
+        );
+
         foreach ($regex as $r){
-	    	if (preg_match($r, $data['title'], $m)){
+            if (preg_match($r, $data['title'], $m)){
                 //var_dump($m);
                 $data['title'] = $m[1].'. '.trim($m[2]);
-	    		$data['sub_title'] = isset($m[3]) ? trim(Xmltv_String::str_ireplace('"', '', $m[3])) : '' ;
-	    		$data['category'] = $this->catIdFromTitle('спорт');
+                $data['sub_title'] = isset($m[3]) ? trim(Xmltv_String::str_ireplace('"', '', $m[3])) : '' ;
+                $data['category'] = $this->catIdFromTitle('спорт');
                 $matched = true;
-	    	}
-	    }
+            }
+        }
+        
+        //var_dump($data);
+        //die(__FILE__ . ': ' . __LINE__);
+        
+        $regex= array(
+            //Тхэквондо. Финал Гран-При в Англии
+            '/^('.implode('|', $sports).')\. ([\w\d\s]+){1}$/ui',
+            //Чемпионат Италии. "Фиорентина" - "Болонья"
+            '/^('.implode('|', $champs).')\. ([\p{Common}\w\d]+)$/ui',
+            //Чемпионат Испании ("Атлетико" - "Валенсия")
+            //2-я Бундеслига ("Мюнхен 1860" - "Санкт-Паули")
+            '/^('.implode('|', $champs).') \(([\p{Common}\w\d]+)\)$/ui',
+            //"Bundesliga Special". Сидней Сам, Хен Мин Сон, Штефан Кисслинг
+            '/^"([\p{Common}\w\d]+)"\. ([\p{Common}\w\d]+)$/ui',
+        );
+        foreach ($regex as $r){
+            if (preg_match($r, $data['title'], $m)){
+                $data['title'] = trim($m[1], ' .');
+                $sub = trim($m[2], ' .');
+                $data['sub_title'] = (isset($data['sub_title']) && !empty($data['sub_title'])) ? $data['sub_title'].'. '.$sub : $sub ;
+                $data['category'] = $this->catIdFromTitle('спорт');
+                $matched = true;
+            }
+        }
         
         //var_dump($data);
         //die(__FILE__ . ': ' . __LINE__);
         
         if (!$matched){
             $regex = array(
-                //Жеребьевка 1/8 финала Лиги чемпионов. Прямая трансляция
-                '/^(Жеребьевка [\p{Common}\w\d]+)\.\s+([\w\d\s]+)$/ui',
                 //СОГАЗ - Чемпионат России по футболу сезона 2012-2013 года. "Терек" - "Динамо"
                 '/^(.+(Чемпионат России [\p{Common}\w\d]+)) сезона (\d{4}-\d{4}).*\. (.+)/ui',
             );
@@ -1472,30 +1507,52 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
         }
         
         if (!$matched){
-            //Тхэквондо. Финал Гран-При в Англии
-            $regex= array(
-                '/^('.implode('|', $sports).')\. ([\p{Common}\w\d]+)$/ui',
-                '/^('.implode('|', $champs).')\. ([\p{Common}\w\d]+)$/ui',
+            //Звезды прошлого и настоящего Сестры Вильямс. Ролан Гаррос-2002. Финал. С. Вильямс - В. Вильямс
+            if (preg_match('/^(Звезды прошлого и настоящего) ([\w\d\s]+?)\. ([\p{Common}\w\d]+)$/u', $data['title'], $m)){
+                $data['title'] = $m[1];
+                $data['sub_title'] = $m[2].'. '.$m[3];
+                $data['category'] = $this->catIdFromTitle('спорт');
+                $matched = true;
+            }
+        }
+        
+        if (!$matched){
+            if (Xmltv_String::stristr($data['title'], 'АПЛ. Клубы')){
+                $data['title'] = 'АПЛ';
+                $data['sub_title'] = 'Клубы';
+                $data['category'] = $this->catIdFromTitle('спорт');
+                $matched = true;
+            }
+        }
+        
+        if (!$matched){
+            if (preg_match('/^Жеребьевка ([\p{Common}\w\d]+)$/ui', $data['title'], $m)){
+                $data['title']	 = 'Жеребьевка';
+                $data['sub_title'] = isset($m[1]) ? trim($m[1], '. ') : '' ;
+                $data['category']  = $this->catIdFromTitle('спорт');
+                $matched = true;
+            }
+        }
+        
+        if (!$matched){
+            $regex = array(
+                '/^(.+)\. (Журнал)$/ui',
+                '/^(.+)\. (Гран-при)$/ui',
+                '/^(.+)\. (Автоспортивный журнал)$/ui',
             );
             foreach ($regex as $r){
                 if (preg_match($r, $data['title'], $m)){
-                    $data['title'] = $m[1];
-                    $data['sub_title'] = trim($m[2], ' .');
+                    $data['title'] = trim($m[1]);
+                    $data['sub_title'] = $m[2];
                     $data['category'] = $this->catIdFromTitle('спорт');
                     $matched = true;
                 }
             }
         }
         
-        if (!$matched){
-            //Звезды прошлого и настоящего Сестры Вильямс. Ролан Гаррос-2002. Финал. С. Вильямс - В. Вильямс
-            if (preg_match('/^(Звезды прошлого и настоящего) ([\w\d\s]+\.?)\s([\p{Common}\w\d]+)$/u', $data['title'], $m)){
-                $data['title'] = $m[1];
-                $data['sub_title'] = $m[2].' '.$m[3];
-                $data['category'] = $this->catIdFromTitle('спорт');
-                $matched = true;
-            }
-        }
+        
+        //var_dump($data);
+        //die(__FILE__ . ': ' . __LINE__);
         
         return $data; 
         
@@ -1590,7 +1647,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
                 }
             }
         }
-	    
+        
         return $data;
 	    
 	}

@@ -273,7 +273,7 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			$bc->sub_title = $parsed['sub_title'];
 			$bc->age_rating = (@$parsed['rating']>0) ? $parsed['rating'] : 0 ;
 			$evt->premiere = (@$parsed['premiere']==1) ? '1' : null ;
-			$evt->live = (@$parsed['live']==1) ? '1' : null ;
+			$evt->live = (@$parsed['live']===true) ? '1' : null ;
 			$bc->episode_num = (@$parsed['episode']>0)  ? (int)$parsed['episode'] : null;
 			
 			// Detect category ID
@@ -349,21 +349,21 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			// Start and end datetime
 			$start = $broadcasts->startDateFromAttr( $node->getAttribute( 'start' ) );
 			$end   = $broadcasts->endDateFromAttr( $node->getAttribute( 'stop' ) );
-			$evt->start = $start->toString( "yyyy-MM-dd HH:mm:ss" );
-			$evt->end   = $end->toString( "yyyy-MM-dd HH:mm:ss" );
+			$evt->start = $start->toString( "YYYY-MM-dd HH:mm:ss" );
+			$evt->end   = $end->toString( "YYYY-MM-dd HH:mm:ss" );
 			
             // Calculate hash
 			$bc->hash  = $this->broadcasts->getBroadcastHash($bc);
             $evt->hash = $bc->hash;
             
-            /*
-            if ($c<50){
+            
+            /*if ($c<50){
                 Zend_Debug::dump($bc);
                 $c++;
             } else {
                 die(__FILE__ . ': ' . __LINE__);
-            }
-             */
+            }*/
+             
             
             // Save records
             try {
