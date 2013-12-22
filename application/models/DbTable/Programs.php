@@ -107,22 +107,22 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'new',
                 'live'
             ))
-            ->join( array('CAT'=>$this->_bcCategoriesTable->getName()), "`BC`.`category`=`CAT`.`id`", array( 
-                'category_id'=>'id',
-                'category_title'=>'title',
-                'category_title_single'=>'title_single',
-                'category_alias'=>'alias',
-            ))
             ->join( array( 'CH'=>$this->_channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
                 'channel_id'=>'id',
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',
             ))
-            ->join(array('CHC'=>'rtvg_countries'), "`CH`.`country` = `CHC`.`iso`", array(
+            ->join( array('BCCAT'=>$this->_bcCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array( 
+                'category_id'=>'id',
+                'category_title'=>'title',
+                'category_title_single'=>'title_single',
+                'category_alias'=>'alias',
+            ))
+            ->join(array('CHCAT'=>'rtvg_countries'), "`CH`.`country` = `CHCAT`.`iso`", array(
                 'channel_country_name'=>'name',
                 'channel_country_iso'=>'iso',
             ))
-            ->join(array('BCC'=>'rtvg_countries'), "`BC`.`country` = `BCC`.iso", array(
+            ->join(array('BCCOUNTRY'=>'rtvg_countries'), "`BC`.`country` = `BCCOUNTRY`.iso", array(
                 'bc_country_name'=>'name',
                 'bc_country_iso'=>'iso',
             ))
