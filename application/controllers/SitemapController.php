@@ -34,7 +34,7 @@ class SitemapController extends Rtvg_Controller_Action
 		
 	    if ($this->cache->enabled){
 		    
-		    $this->cache->setLifetime(86400*7);
+		    (APPLICATION_ENV!='production') ?  $this->cache->setLifetime(60) : $this->cache->setLifetime(86400*3);
 		    $f = "/Listings";
 		    $hash = 'sitemap';
 		    
@@ -45,7 +45,7 @@ class SitemapController extends Rtvg_Controller_Action
 		} else {
 		    $list = $this->channelsModel->getPublished( $this->view );
 		}
-		
+        
 		$aliases = array();
 		foreach ($list as $i) {
 			$aliases[]=Xmltv_String::strtolower( $i['alias'] );
