@@ -83,7 +83,9 @@ class Xmltv_Plugin_Auth extends Zend_Controller_Plugin_Abstract
 					$request->setActionName($this->_noacl['action']);
 					//$request->setParam('authPage', 'noauth');
 				}
-				throw new Exception('Access denied. ' . $resource . '::' . $role, 403);
+                
+                throw new Zend_Exception('Access denied. ' . $resource . '::' . $role, 403);
+                
 			}
 		}
 	}
