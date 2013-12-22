@@ -1395,7 +1395,7 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
             'Чемпионат Англии',
 	    );
         
-        var_dump($data['title']);
+        //var_dump($data['title']);
         
         $regex= array(
             '/^('.implode('|', $sports).')\. ([\s\w\d]+)\. ([\p{Common}\w\d])$/ui',
