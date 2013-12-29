@@ -82,9 +82,9 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
 	 * @param string $date
 	 * @param int $count // optional
 	 */
-	public function fetchDayItems($channel_id=null, $date=null) {
+	public function fetchDayItems($channel_id=null, Zend_Date $date=null) {
 		
-        if (!$channel_id || !$date) {
+        if (!$channel_id) {
 			throw new Zend_Db_Table_Exception( Rtvg_Message::ERR_MISSING_PARAM );
 		}
 		
@@ -107,32 +107,38 @@ class Xmltv_Model_DbTable_Programs extends Xmltv_Db_Table_Abstract
                 'new',
                 'live'
             ))
-            ->join( array('CAT'=>$this->_bcCategoriesTable->getName()), "`BC`.`category`=`CAT`.`id`", array( 
-                'category_id'=>'id',
-                'category_title'=>'title',
-                'category_title_single'=>'title_single',
-                'category_alias'=>'alias',
-            ))
             ->join( array( 'CH'=>$this->_channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", array(
                 'channel_id'=>'id',
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',
             ))
-            ->join(array('CHC'=>'rtvg_countries'), "`CH`.`country` = `CHC`.`iso`", array(
+            ->join( array('BCCAT'=>$this->_bcCategoriesTable->getName()), "`BC`.`category`=`BCCAT`.`id`", array( 
+                'category_id'=>'id',
+                'category_title'=>'title',
+                'category_title_single'=>'title_single',
+                'category_alias'=>'alias',
+            ))
+            ->join(array('CHCAT'=>'rtvg_countries'), "`CH`.`country` = `CHCAT`.`iso`", array(
                 'channel_country_name'=>'name',
                 'channel_country_iso'=>'iso',
             ))
-            ->join(array('BCC'=>'rtvg_countries'), "`BC`.`country` = `BCC`.iso", array(
+            ->join(array('BCCOUNTRY'=>'rtvg_countries'), "`BC`.`country` = `BCCOUNTRY`.iso", array(
                 'bc_country_name'=>'name',
                 'bc_country_iso'=>'iso',
             ))
-            ->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")) )
-            ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 23:59:00")) )
             ->where("`EVT`.`channel` = $channel_id")
             ->where("`CH`.`published` = '1'")
             ->group("EVT.hash")
             ->order("EVT.start ASC")
         ;
+        
+        if (!$date){
+            $select->where("`EVT`.`start` >= ".$this->_db->quote( Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")) )
+                ->where("`EVT`.`start` < ".$this->_db->quote( Zend_Date::now()->addDay(1)->toString("YYYY-MM-dd 00:00:00")) );
+        } else {
+            $select->where("`EVT`.`start` >= ".$this->_db->quote( $date->toString("YYYY-MM-dd HH:mm:00")) )
+                ->where("`EVT`.`start` < ".$this->_db->quote( $date->addDay(1)->toString("YYYY-MM-dd HH:mm:00")) );
+        }
         
         $rows = $this->_db->fetchAll($select);
         $result = array();

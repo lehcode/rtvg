@@ -262,7 +262,10 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
             foreach ($this->_getAllParams() as $k=>$v){
                 if (!$this->input->isValid($k)) {
                     if (APPLICATION_ENV=='production'){
-                        throw new Zend_Controller_Action_Exception("Доступ запрещен", 401);
+                        $this->_response->clearBody();
+                        $this->_response->clearHeaders();
+                        $this->_response->setHttpResponseCode(404);
+                        die();
                     } else {
                         throw new Zend_Controller_Action_Exception("Invalid ".$k.'! Value: '.$invalid[$k], 404);
                     }
@@ -399,7 +402,10 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
             return $data;
         }
         if ($data['alias'] != $alias){
-            throw new Zend_Exception("Wrong channel loaded from cache");
+            $this->_response->clearBody();
+            $this->_response->clearHeaders();
+            $this->_response->setHttpResponseCode(404);
+            die();
         }
         
         return $data;

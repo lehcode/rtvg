@@ -14,7 +14,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	function run() 
 	{
 		Zend_Registry::set( 'Zend_Locale', new Zend_Locale( 'ru_RU' ) );
-		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "stable" );
+		defined( 'RTVG_VERSION' ) || define( 'RTVG_VERSION', "master" );
 		
 		date_default_timezone_set( Zend_Registry::get( 'site_config' )->site->get( 'timezone', 'Europe/Moscow' ) );
 		
@@ -47,7 +47,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $router->setRouter($fc->getRouter());
 		$fc->setRouter($router->getRouter());
         
-		$response = $fc->dispatch();
+        $response = $fc->dispatch();
 		
         if (isset($response) && !$response->isException()) {
 			$response->sendHeaders();

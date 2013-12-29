@@ -247,19 +247,33 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 		$programs = $xml->getElementsByTagName('programme');
 		$broadcasts = new Admin_Model_Broadcasts();
 		$eventsModel = new Xmltv_Model_Event();
+        $c=0;
 		foreach ($programs as $node){
 			
 			$bc  = new stdClass();
             $evt = $eventsModel->create();
 			
 			//Process program title and detect some properties
-			$parsed = $broadcasts->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
+            $category = $node->getElementsByTagName('category')->item(0)->nodeValue ;
+            if ($category){
+                switch (Xmltv_String::strtolower($category)){
+                    case 'спорт':
+                        $parsed = $broadcasts->parseSportsTitle( array('title'=>trim($node->getElementsByTagName('title')->item(0)->nodeValue, '. ')) );
+                        break;
+                    default:
+                        $parsed = $broadcasts->parseTitle( trim( $node->getElementsByTagName('title')->item(0)->nodeValue, '. '));
+                        break;
+                }
+            }
+            
+            //var_dump($parsed);
+            //die(__FILE__ . ': ' . __LINE__);
             
             $bc->title = $parsed['title'];
 			$bc->sub_title = $parsed['sub_title'];
 			$bc->age_rating = (@$parsed['rating']>0) ? $parsed['rating'] : 0 ;
 			$evt->premiere = (@$parsed['premiere']==1) ? '1' : null ;
-			$evt->live = (@$parsed['live']==1) ? '1' : null ;
+			$evt->live = (@$parsed['live']===true) ? '1' : null ;
 			$bc->episode_num = (@$parsed['episode']>0)  ? (int)$parsed['episode'] : null;
 			
 			// Detect category ID
@@ -318,22 +332,13 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			
 			//Channel
 			$evt->channel = (int)$node->getAttribute('channel');
+            // MGM HD has duplicate channel ID in XML
+            if ($evt->channel==1422) {
+                $evt->channel=400018;
+            }
 			
-			// Fix category if needed
-			if ((bool)$bc->category===false) {
-                $bc->category = null;
-			    $fixCats = array(
-			    	222=>'Религия',
-			    	300006=>'Религия',
-			    	300037=>'Музыка' );
-			    if (array_key_exists($evt->channel, $fixCats)){
-			    	$bc->category = $this->broadcasts->getProgramCategory( $fixCats[$evt->channel]);
-			    }
-			}
-			
-            /*
-			 * Fix split title for particular channels
-			 * mostly movies
+			/*
+			 * Fix split title for particular channels mostly movies
 			 */
 			$splitTitles = array(100037);
 			if (in_array($evt->channel, $splitTitles) && Xmltv_String::strlen($bc->sub_title)){
@@ -342,14 +347,23 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			}
 			
 			// Start and end datetime
-			$start = $broadcasts->startDateFromAttr( $node->getAttribute( 'start' ) );
-			$end   = $broadcasts->endDateFromAttr( $node->getAttribute( 'stop' ) );
-			$evt->start = $start->toString( "yyyy-MM-dd HH:mm:ss" );
-			$evt->end   = $end->toString( "yyyy-MM-dd HH:mm:ss" );
+			$start = $broadcasts->rfcToZendDate( $node->getAttribute( 'start' ) );
+			$end   = $broadcasts->rfcToZendDate( $node->getAttribute( 'stop' ) );
+			$evt->start = $start->toString( "YYYY-MM-dd HH:mm" ).':00';
+			$evt->end   = $end->toString( "YYYY-MM-dd HH:mm" ).':00';
 			
             // Calculate hash
 			$bc->hash  = $this->broadcasts->getBroadcastHash($bc);
             $evt->hash = $bc->hash;
+            
+            
+            /*if ($c<50){
+                Zend_Debug::dump($bc);
+                $c++;
+            } else {
+                die(__FILE__ . ': ' . __LINE__);
+            }*/
+             
             
             // Save records
             try {
@@ -373,7 +387,6 @@ class Admin_ImportController extends Rtvg_Controller_Admin
                     die("Event save failed!");
                 }
             }
-			
 		}		
 		
 		$response['success'] = true;

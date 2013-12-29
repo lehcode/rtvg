@@ -43,6 +43,8 @@ $this->headMeta()->setName('keywords', implode(',', $kw) );
         } else {
             $active = $pc==0 ? ' active' : '' ;
         }
+        
+        var_dump($prog['start']->toString());
 
         switch ($k){
             case 0:
