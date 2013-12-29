@@ -1129,19 +1129,20 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	 */
 	private function _getDateString($input=null){
 		
-		if(!$input)
-			throw new Exception("Пропущен один или все параметры для ".__METHOD__, 500);
-		
-		$date['year']	  = substr($input, 0, 4);
-		$date['month']	 = substr($input, 4,2);
-		$date['day']	   = substr($input, 6,2);
-		$date['hours']	 = substr($input, 8,2);
-		$date['minutes']   = substr($input, 10,2);
-		$date['seconds']   = substr($input, 12,2);
-		$date['gmt_diff']  = substr($input, 16,4);
-		return $date['year'].'-'.$date['month'].'-'.$date['day'].' '.$date['hours'].':'.$date['minutes'].':'.$date['seconds'].' '.$date['gmt_diff'];
-		
-	}
+        if(!$input){
+			throw new Exception("Пропущен один или все параметры", 500);
+        }
+        
+        $date['year'] = substr($input, 0, 4);
+        $date['month'] = substr($input, 4,2);
+        $date['day'] = substr($input, 6,2);
+        $date['hours'] = substr($input, 8,2);
+        $date['minutes'] = substr($input, 10,2);
+        $date['seconds'] = substr($input, 12,2);
+        $date['gmt_diff'] = substr($input, 16,4);
+        return $date['year'].'-'.$date['month'].'-'.$date['day'].' '.$date['hours'].':'.$date['minutes'].':'.$date['seconds'].' '.$date['gmt_diff'];
+        
+    }
 	
 	
 	public function saveActor($data=array()){
@@ -1228,30 +1229,17 @@ class Admin_Model_Broadcasts extends Xmltv_Model_Broadcasts
 	 * @param string $string
 	 * @return Zend_Date
 	 */
-	public function startDateFromAttr($string=null){
+	public function rfcToZendDate($rfcDate=null){
 		
+        if (!$rfcDate){
+            throw new Zend_Exception("No date provided");
+        }
 		$f = Zend_Date::YEAR."-".Zend_Date::MONTH."-".Zend_Date::DAY." ".Zend_Date::HOUR.':'.Zend_Date::MINUTE.':'.Zend_Date::SECOND.' '.Zend_Date::GMT_DIFF;
-		$date_str = $this->_getDateString($string);
-		return new Zend_Date($date_str, $f);
+		return new Zend_Date($this->_getDateString($rfcDate), $f);
 		
 	}
 	
-	/**
-	 *
-	 * Convert date string to Zend_Date object
-	 * @param string $string
-	 * @return Zend_Date
-	 */
-	public function endDateFromAttr($string=null){
-		
-		$f = Zend_Date::YEAR."-".Zend_Date::MONTH."-".Zend_Date::DAY." ".Zend_Date::HOUR.':'.Zend_Date::MINUTE.':'.Zend_Date::SECOND.' '.Zend_Date::GMT_DIFF;
-		$date_str = $this->_getDateString($string);
-		return new Zend_Date($date_str, $f);
-		
-	}
-	
-
-	public function deletePrograms($start=null, $end=null, $linked=false){
+    public function deletePrograms($start=null, $end=null, $linked=false){
 		
 	    if ($start && $end){
 	        

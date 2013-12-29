@@ -630,7 +630,7 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
      * @param  array $channels
      * @throws Zend_Exception
      */
-    public function frontpageListing($channels=array(), $timespan=8){
+    public function frontpageListing($channels=array(), $timespan=12){
                 
         if (empty($channels)){
             throw new Zend_Exception( "Channels cannot be empty" );
@@ -652,17 +652,17 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
                 'end',
                 'channel'
             ))
-            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BC`.`category` = `BCCAT`.`id`", array(
-                'category'=>'id',
-                'category_title'=>'title',
-                'category_alias'=>'alias',
-                'category_single'=>'title_single'
-            ))
             ->join( array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel` = `CH`.`id`", array(
                 'channel'=>'id',
                 'channel_title'=>'title',
                 'channel_alias'=>'alias',
                 'adult',
+            ))
+            ->join( array('BCCAT'=>$this->bcCategoriesTable->getName()), "`BC`.`category` = `BCCAT`.`id`", array(
+                'category'=>'id',
+                'category_title'=>'title',
+                'category_alias'=>'alias',
+                'category_single'=>'title_single'
             ))
             ->join(array('CHRAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `CHRAT`.`channel`", null)
             ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), "`CH`.`id` = `TORRENTTV`.`channel`", array(
@@ -671,14 +671,17 @@ class Xmltv_Model_Broadcasts extends Xmltv_Model_Abstract
             ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
                 'tvforsite_id'=>'stream'
             ))
-            ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd 00:00:00")))
-            ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour($timespan)->toString("YYYY-MM-dd HH:mm:00")))
+            ->where("`EVT`.`start` >= ".$this->db->quote(Zend_Date::now()->toString("YYYY-MM-dd HH:mm").':00'))
+            ->where("`EVT`.`start` < ".$this->db->quote(Zend_Date::now()->addHour($timespan)->toString("YYYY-MM-dd HH:mm").':59'))
             ->group("EVT.start")
             ->order(array(
                 "EVT.channel ASC", 
                 "EVT.start ASC",
                 "CHRAT.hits DESC",
             ));
+        
+        //var_dump($select->assemble());
+        //die(__FILE__ . ': ' . __LINE__);
         
         if ((bool)Zend_Registry::get('adult') !== true) {
             $select->where("`CH`.`adult` != '1'");

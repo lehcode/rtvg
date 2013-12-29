@@ -185,7 +185,12 @@ class ChannelsController extends Rtvg_Controller_Action
         // Channel properties
         $channel = $this->channelsModel->getByAlias( $this->input->getEscaped('channel') );
         $this->view->assign('channel', $channel);
-
+        
+        if (empty($channel)){
+            $this->render('not-found');
+            return true;
+        }
+        
         //Week start and end dates
         $ws = $this->_helper->getHelper('weekDays')->getStart();
         $this->view->assign('week_start', $ws);

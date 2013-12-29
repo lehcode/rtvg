@@ -57,13 +57,16 @@ RewriteCond %{REQUEST_URI} ^/каналы/неделя$ [OR]
 RewriteCond %{REQUEST_URI} ^/видео/онлайн.+[^a-zA-Z0-9]$ [OR]
 RewriteCond %{REQUEST_URI} ^/неделя/.+$ [OR]
 RewriteCond %{REQUEST_URI} /первый-канал-европа [OR]
-RewriteCond %{REQUEST_URI} /ajaratv
+RewriteCond %{REQUEST_URI} ^/телепрограмма/ajaratv [OR]
+RewriteCond %{REQUEST_URI} ^/телепрограмма/первый-национальный-телеканал-беларусь [OR]
+RewriteCond %{REQUEST_URI} ^/телепрограмма/мегаспорт-украина
 RewriteRule .* / [R=301,L]
 
-RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$ /телепрограмма/1-плюс-1$1 [R=301,L]
-RewriteRule ^телепрограмма/лад-беларусь(.*)$ /телепрограмма/беларусь-2$1 [R=301,L]
-RewriteRule ^телепрограмма/jetix(.*)$ /телепрограмма [R=301,L]
-RewriteRule ^телепрограмма/первый-канал-снг(.*)$ /телепрограмма/первый-канал$1 [R=301,L]
+RewriteRule ^телепрограмма/тв-центр-международное(.*)$  /телепрограмма/тв-центр$1 [R=301,L]
+RewriteRule ^телепрограмма/канал-1-плюс-1(.*)$  /телепрограмма/1-плюс-1$1 [R=301,L]
+RewriteRule ^телепрограмма/лад-беларусь(.*)$  /телепрограмма/беларусь-2$1 [R=301,L]
+RewriteRule ^телепрограмма/jetix(.*)$  /телепрограмма [R=301,L]
+RewriteRule ^телепрограмма/первый-канал-снг(.*)$  /телепрограмма/первый-канал$1 [R=301,L]
 
 RewriteCond %{REQUEST_URI} ^/(.+)/каналы/.+$
 RewriteRule .* %1/неделя [R=301,L]

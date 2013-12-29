@@ -347,10 +347,10 @@ class Admin_ImportController extends Rtvg_Controller_Admin
 			}
 			
 			// Start and end datetime
-			$start = $broadcasts->startDateFromAttr( $node->getAttribute( 'start' ) );
-			$end   = $broadcasts->endDateFromAttr( $node->getAttribute( 'stop' ) );
-			$evt->start = $start->toString( "YYYY-MM-dd HH:mm:ss" );
-			$evt->end   = $end->toString( "YYYY-MM-dd HH:mm:ss" );
+			$start = $broadcasts->rfcToZendDate( $node->getAttribute( 'start' ) );
+			$end   = $broadcasts->rfcToZendDate( $node->getAttribute( 'stop' ) );
+			$evt->start = $start->toString( "YYYY-MM-dd HH:mm" ).':00';
+			$evt->end   = $end->toString( "YYYY-MM-dd HH:mm" ).':00';
 			
             // Calculate hash
 			$bc->hash  = $this->broadcasts->getBroadcastHash($bc);

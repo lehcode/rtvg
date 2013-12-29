@@ -42,17 +42,17 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
     public function __construct($config=array()){
         
         if (empty($config)){
-        	$config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
+            $config['db'] = Zend_Registry::get('app_config')->resources->multidb->local;
         }
         parent::__construct($config);
         $this->channelsTable = new Xmltv_Model_DbTable_Channels();
         $this->ratingsTable = new Xmltv_Model_DbTable_ChannelsRatings();
         $this->programsCategoriesTable = new Xmltv_Model_DbTable_ProgramsCategories();
         $this->channelsCategoriesTable = new Xmltv_Model_DbTable_ChannelsCategories();
-		/**
-		 * @TODO Add test for production system to
-		 * load coments without errors
-		 */
+        /**
+         * @TODO Add test for production system to
+         * load coments without errors
+         */
         //$this->commentsTable = new Xmltv_Model_DbTable_ChannelsComments();
         
     }
@@ -63,13 +63,13 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
      */
     public function getBroadcasts(){}
     
-	/**
-	 *
-	 * Load all published channels
+    /**
+     *
+     * Load all published channels
      * @param bool $not_empty //Fetch only channels which have events on this week
-	 */
-	public function getPublished($not_empty=false){
-		
+     */
+    public function getPublished($not_empty=false){
+        
         $select = $this->db->select()
             ->from(array('CH'=>$this->channelsTable->getName()), array(
                 'id',
@@ -98,7 +98,7 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             $ws = new Zend_Date();
             if ($ws->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
                 while ($ws->toString(Zend_Date::WEEKDAY_DIGIT, 'ru')!=1) {
-                    $ws->subDay(1);		
+                    $ws->subDay(1);        
                 };
             }
 
@@ -134,19 +134,19 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         }
         
         return $channels;
-		
-	}
-	
-	/**
-	 *
-	 * @param  string $alias
-	 * @return stdClass
-	 */
-	public function getByAlias($alias=null){
-		
-	    $select = $this->db->select()
-			->from( array('CH'=>$this->channelsTable->getName()), array(
-				'id',
+        
+    }
+    
+    /**
+     *
+     * @param  string $alias
+     * @return stdClass
+     */
+    public function getByAlias($alias=null){
+        
+        $select = $this->db->select()
+            ->from( array('CH'=>$this->channelsTable->getName()), array(
+                'id',
                 'title',
                 'alias',
                 'free',
@@ -167,12 +167,12 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
                 'location',
                 'geo_lt',
                 'geo_lg',
-			))
+            ))
             ->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
-				'category_id'=>'id',
-				'category_title'=>'title',
-				'category_alias'=>'alias',
-				'category_image'=>'image'
+                'category_id'=>'id',
+                'category_title'=>'title',
+                'category_alias'=>'alias',
+                'category_image'=>'image'
             ))
             ->join(array('COUNTRY'=>'rtvg_countries'), "`CH`.`country` = `COUNTRY`.`iso`", array(
                 'country_iso'=>'iso',
@@ -192,8 +192,8 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), '`CH`.`id` = `TVFORSITE`.`channel`', array(
                 'tvforsite_id'=>'stream'
             ))
-			->where( "`CH`.`alias` = '$alias'")
-			->where( "`CH`.`published` IS TRUE")
+            ->where( "`CH`.`alias` = '$alias'")
+            ->where( "`CH`.`published` IS TRUE")
         ;
         
         $result = $this->db->fetchRow($select);
@@ -219,36 +219,36 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         ksort($result);
         
         return $result;
-		
-	}
+        
+    }
 
-	/**
-	 * Get channel properties by channel title
-	 *
-	 * @param  string $title
-	 * @throws Zend_Exception
-	 * @return Zend_Db_Table_Row
-	 */
-	public function getByTitle($title=null){
-		
-		if (!$title) {
-			throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM);
-		}
-		
-		$result = $this->channelsTable->fetchRow(" `title` LIKE '$title'");
-		$result->alias = Xmltv_String::strtolower($result->alias);
-		
-		return $result;
-		
-	}
+    /**
+     * Get channel properties by channel title
+     *
+     * @param  string $title
+     * @throws Zend_Exception
+     * @return Zend_Db_Table_Row
+     */
+    public function getByTitle($title=null){
+        
+        if (!$title) {
+            throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM);
+        }
+        
+        $result = $this->channelsTable->fetchRow(" `title` LIKE '$title'");
+        $result->alias = Xmltv_String::strtolower($result->alias);
+        
+        return $result;
+        
+    }
 
-	public function getById($id=null){
-		
-		if (!$id || !is_numeric($id)) {
-			throw new Zend_Exception("Не указан один или более параметров");
-		}
-		
-		$select = $this->db->select()
+    public function getById($id=null){
+        
+        if (!$id || !is_numeric($id)) {
+            throw new Zend_Exception("Не указан один или более параметров");
+        }
+        
+        $select = $this->db->select()
             ->from(array("CH"=>$this->channelsTable->getName()), array(
                 'id',
                 'title',
@@ -289,122 +289,125 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         $result = $this->db->fetchRow($select);
         
         $result['alias'] = Xmltv_String::strtolower($result['alias']);
-		$result['start'] = new Zend_Date($result['start'], 'YYYY-MM-dd HH:mm:ss');
-		$result['end']   = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
-		$result['id'] = (int)$result['id'];
-		$result['category'] = (int)$result['category'];
-		$result['torrenttv_id'] = (int)$result['torrenttv_id'];
-		$result['free'] = (bool)$result['free'];
-		$result['featured'] = (bool)$result['featured'];
-		
-		return $result;
-		
-	}
-	
-	/**
-	 * Fetch channes info for typeahead
-	 */
-	public function getTypeaheadItems($category_id=null){
-	    
-	    $table = new Xmltv_Model_DbTable_Channels();
-		try {
-		    if ($category_id){
-		        $result = $table->fetchAll("`category`='".$category_id."'", "title ASC")->toArray();
-		    } else {
-		        $result = $table->fetchAll(null, "title ASC")->toArray();
-		    }
-    	} catch (Zend_Db_Table_Exception $e) {
-    		throw new Exception( $e->getMessage(), $e->getCode(), $e);
-    	}
-    	
-    	return $result;
-    	
-	}
-	
-	/**
-	 * Add hit to channel rating
-	 *
-	 * @param  int $id // channel ID
-	 * @throws Zend_Exception
-	 */
-	public function addHit($id=null){
-		
-		if (!$id || !is_int($id)) {
-			throw new Zend_Exception( 'Wrong channel ID', 500);
-		}
-		
-		$this->ratingsTable->addHit($id);
-			
-	}
-	
-	
-	/**
-	 * Load channel description
-	 *
-	 * @param  int $id
-	 * @throws Zend_Exception
-	 */
-	public function getDescription($id=null){
-		
-		if (!$id) {
-			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
-		}
-		
-		$props = $this->channelsTable->find($id)->current();
-		$desc['intro'] = $props->desc_intro;
-		$desc['body']  = $props->desc_body;
-		return $desc;
-		
-	}
-	
-	
-	/**
-	 *
-	 * Channels belonging to particular category
-	 *
-	 * @param  string $cat_alias
-	 * @throws Zend_Exception
-	 * @return array
-	 */
-	public function categoryChannels($cat_alias=null){
-	
-		if (!$cat_alias) {
-			throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM);
+        $result['start'] = new Zend_Date($result['start'], 'YYYY-MM-dd HH:mm:ss');
+        $result['end']   = new Zend_Date($result['end'], 'YYYY-MM-dd HH:mm:ss');
+        $result['id'] = (int)$result['id'];
+        $result['category'] = (int)$result['category'];
+        $result['torrenttv_id'] = (int)$result['torrenttv_id'];
+        $result['free'] = (bool)$result['free'];
+        $result['featured'] = (bool)$result['featured'];
+        
+        return $result;
+        
+    }
+    
+    /**
+     * Fetch channes info for typeahead
+     */
+    public function getTypeaheadItems($category_id=null){
+        
+        $table = new Xmltv_Model_DbTable_Channels();
+        try {
+            if ($category_id){
+                $result = $table->fetchAll("`category`='".$category_id."'", "title ASC")->toArray();
+            } else {
+                $result = $table->fetchAll(null, "title ASC")->toArray();
+            }
+        } catch (Zend_Db_Table_Exception $e) {
+            throw new Exception( $e->getMessage(), $e->getCode(), $e);
         }
-		
-		$select = $this->db->select()
-			->from(array('CH'=>$this->channelsTable->getName()), array(
+        
+        return $result;
+        
+    }
+    
+    /**
+     * Add hit to channel rating
+     *
+     * @param  int $id // channel ID
+     * @throws Zend_Exception
+     */
+    public function addHit($id=null){
+        
+        var_dump($id);
+        die(__FILE__ . ': ' . __LINE__);
+        
+        if (!$id || !is_int($id)) {
+            throw new Zend_Exception( 'Wrong channel ID');
+        }
+        
+        $this->ratingsTable->addHit($id);
+            
+    }
+    
+    
+    /**
+     * Load channel description
+     *
+     * @param  int $id
+     * @throws Zend_Exception
+     */
+    public function getDescription($id=null){
+        
+        if (!$id) {
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM, 500);
+        }
+        
+        $props = $this->channelsTable->find($id)->current();
+        $desc['intro'] = $props->desc_intro;
+        $desc['body']  = $props->desc_body;
+        return $desc;
+        
+    }
+    
+    
+    /**
+     *
+     * Channels belonging to particular category
+     *
+     * @param  string $cat_alias
+     * @throws Zend_Exception
+     * @return array
+     */
+    public function categoryChannels($cat_alias=null){
+    
+        if (!$cat_alias) {
+            throw new Zend_Exception( Rtvg_Message::ERR_WRONG_PARAM);
+        }
+        
+        $select = $this->db->select()
+            ->from(array('CH'=>$this->channelsTable->getName()), array(
                 'id',
-				'title',
-				'alias',
-				'desc_intro',
-				'desc_body',
-				'category',
-				'featured',
-				'icon'=>"CONCAT('/images/channel_logo/', `CH`.`icon`, '')",
-				'format',
-				'lang',
-				'url',
-				'country',
-				'keywords',
-				'metadesc',
-				'video_aspect',
-				'video_quality',
-				'audio',
+                'title',
+                'alias',
+                'desc_intro',
+                'desc_body',
+                'category',
+                'featured',
+                'icon'=>"CONCAT('/images/channel_logo/', `CH`.`icon`, '')",
+                'format',
+                'lang',
+                'url',
+                'country',
+                'keywords',
+                'metadesc',
+                'video_aspect',
+                'video_quality',
+                'audio',
             ))
-			->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category` = `CHCAT`.`id`", null)
-			->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), '`CH`.`id` = `TORRENTTV`.`channel`', 'stream' )
+            ->join(array('CHCAT'=>$this->channelsCategoriesTable->getName()), "`CH`.`category` = `CHCAT`.`id`", null)
+            ->joinLeft(array('TORRENTTV'=>'rtvg_ref_streams_torrtv'), '`CH`.`id` = `TORRENTTV`.`channel`', 'stream' )
             ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), '`CH`.`id` = `TVFORSITE`.`channel`', 'stream' )
-			->where("`CHCAT`.`alias` = '$cat_alias'")
-			->where("`CH`.`published` IS TRUE")
-			->order("CH.title ASC");
+            ->where("`CHCAT`.`alias` = '$cat_alias'")
+            ->where("`CH`.`published` IS TRUE")
+            ->order("CH.title ASC");
         
         if ((bool)Zend_Registry::get('adult') !== true){
             $select->where("`CH`.`adult` != '1'");
         }
         
         $result = $this->db->fetchAll($select);
-		
+        
         foreach ($result as $k=>$v){
             $result[$k]['id'] = (int)$v['id'];
             $result[$k]['category'] = (int)$v['category'];
@@ -414,14 +417,14 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         }
         
         return $result;
-		
-	}
-	
-	public function getWeekSchedule($channel=null, Zend_Date $start, Zend_Date $end){
-	
+        
+    }
+    
+    public function getWeekSchedule($channel=null, Zend_Date $start, Zend_Date $end){
+    
         $days = array();
-	    do{
-	    	$select = $this->db->select()
+        do{
+            $select = $this->db->select()
                 ->from( array( 'BC'=>$this->bcTable->getName()), array(
                     'title',
                     'sub_title',
@@ -454,44 +457,44 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             ;
             
             $days[$start->toString('U')] = $this->db->fetchAll($select, null, Zend_Db::FETCH_ASSOC);
-	    	$start->addDay(1);
-	    		
-	    } while ( $start->toString('DD')<=$end->toString('DD') );
-	    
+            $start->addDay(1);
+                
+        } while ( $start->toString('DD')<=$end->toString('DD') );
+        
         foreach ($days as $timestamp=>$day) {
-	    	foreach ($day as $k=>$bc) {
+            foreach ($day as $k=>$bc) {
                 $days[$timestamp][$k]['start'] = new Zend_Date( $bc['start'], 'YYYY-MM-dd HH:mm:ss');  
                 $days[$timestamp][$k]['end'] = new Zend_Date( $bc['end'], 'YYYY-MM-dd HH:mm:ss');
                 $days[$timestamp][$k]['channel_id'] = (int)$bc['channel_id'];
                 $days[$timestamp][$k]['category_id'] = (int)$bc['category_id'];
                 $days[$timestamp][$k]['episode_num'] = (!empty($bc['episode_num'])) ? (int)$bc['episode_num'] : null ;
             }
-	    	
-	    }
+            
+        }
         
         return $days;
-		
-	}
-	
-	/**
-	 * Channels categories list
-	 */
-	public function channelsCategories(){
-	    
-		$table = new Xmltv_Model_DbTable_ChannelsCategories();
-		$result = $table->fetchAll(null, "title ASC")->toArray();
-		return $result;
-		
-	}
-	
-	/**
-	 *
-	 * @param string $alias
-	 */
-	public function category($alias=null){
-		
+        
+    }
+    
+    /**
+     * Channels categories list
+     */
+    public function channelsCategories(){
+        
         $table = new Xmltv_Model_DbTable_ChannelsCategories();
-		$result = $table->fetchRow("`alias` = '$alias'")->toArray();
+        $result = $table->fetchAll(null, "title ASC")->toArray();
+        return $result;
+        
+    }
+    
+    /**
+     *
+     * @param string $alias
+     */
+    public function category($alias=null){
+        
+        $table = new Xmltv_Model_DbTable_ChannelsCategories();
+        $result = $table->fetchRow("`alias` = '$alias'")->toArray();
         
         if ($result){
             $result['id'] = (int)$result['id'];
@@ -499,90 +502,90 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         }
         
         return $result;
-		
-	}
-	
-	/**
-	 * Search for channel
-	 *
-	 * @param string $string // Search string
-	 */
-	public function searchChannel( $string=null, $strict=false){
-		
-	    if ($string){
-	        $select = $this->db->select()
-	        	->from(array( 'CH'=>$this->channelsTable->getName()), '*')
-	        	->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
-	        		'category_title'=>'title',
-	        		'category_alias'=>'alias',
-	        		'category_icon'=>'image'));
-	        
-	        if ($strict===true){
-	            $select->where("`CH`.`title` = '$string'");
-	            $result = $this->db->fetchRow( $select );
-	        } else {
-	            $select->where("`CH`.`title` LIKE '%$string%'");
-	            $result = $this->db->fetchAll( $select);
-	        }
-	        
+        
+    }
+    
+    /**
+     * Search for channel
+     *
+     * @param string $string // Search string
+     */
+    public function searchChannel( $string=null, $strict=false){
+        
+        if ($string){
+            $select = $this->db->select()
+                ->from(array( 'CH'=>$this->channelsTable->getName()), '*')
+                ->joinLeft( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+                    'category_title'=>'title',
+                    'category_alias'=>'alias',
+                    'category_icon'=>'image'));
+            
+            if ($strict===true){
+                $select->where("`CH`.`title` = '$string'");
+                $result = $this->db->fetchRow( $select );
+            } else {
+                $select->where("`CH`.`title` LIKE '%$string%'");
+                $result = $this->db->fetchAll( $select);
+            }
+            
             return $result;
-	        
-	    }
-	    
-	}
-	
-	/**
-	 * Retrieve all channels info
-	 */
-	public function allChannels($order=null){
-		
-		$select = $this->db->select()
-			->from( array('CH'=>$this->channelsTable->getName()), array(
-				'id',
-				'title',
-				'alias',
-				'desc_intro',
-				'desc_body',
-				'category',
-				'featured',
-				'icon',
-				'format',
-				'lang',
-				'url',
-				'country',
-				'adult',
-				'keywords',
-				'metadesc',
-				'video_aspect',
-				'video_quality',
-				'audio',
-			))
-			->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
-				'category_title'=>'title',
-				'category_alias'=>'alias',
-				'category_image'=>'image')
-			)
-			->where("`CH`.`published` = TRUE");
-		
-		if ($order){
-		    $select->order( $order );
-		}
-		
-		$result = $this->db->fetchAll( $select );
-		
+            
+        }
+        
+    }
+    
+    /**
+     * Retrieve all channels info
+     */
+    public function allChannels($order=null){
+        
+        $select = $this->db->select()
+            ->from( array('CH'=>$this->channelsTable->getName()), array(
+                'id',
+                'title',
+                'alias',
+                'desc_intro',
+                'desc_body',
+                'category',
+                'featured',
+                'icon',
+                'format',
+                'lang',
+                'url',
+                'country',
+                'adult',
+                'keywords',
+                'metadesc',
+                'video_aspect',
+                'video_quality',
+                'audio',
+            ))
+            ->join( array('CHCAT'=>$this->channelsCategoriesTable->getName()), '`CH`.`category`=`CHCAT`.`id`', array(
+                'category_title'=>'title',
+                'category_alias'=>'alias',
+                'category_image'=>'image')
+            )
+            ->where("`CH`.`published` = TRUE");
+        
+        if ($order){
+            $select->order( $order );
+        }
+        
+        $result = $this->db->fetchAll( $select );
+        
         return $result;
-	    
-	}
-	
-	/**
-	 * Top channels list
-	 *
-	 * @param int $amt
-	 */
-	public function topChannels($amt=10){
-		
-		$select = $this->db->select()
-	    	->from( array('CH'=>$this->channelsTable->getName()), array( 
+        
+    }
+    
+    /**
+     * Top channels list
+     *
+     * @param int $amt
+     */
+    public function topChannels($amt=10){
+        
+        $select = $this->db->select()
+            ->from( array('CH'=>$this->channelsTable->getName()), array( 
                 'id',
                 'title',
                 'alias',
@@ -605,12 +608,12 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
             ->joinLeft(array('TVFORSITE'=>'rtvg_ref_streams_tvforsite'), "`CH`.`id` = `TVFORSITE`.`channel`", array(
                 'tvforsite_id'=>'stream'
             ))
-	    	->joinLeft( array('RATING'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `RATING`.`channel`", array(
+            ->joinLeft( array('RATING'=>$this->channelsRatingsTable->getName()), "`CH`.`id` = `RATING`.`channel`", array(
                 'hits',
                 'rating',
             ))
-	    	->where("`CH`.`published` = TRUE")
-	    	->order("RATING.hits DESC")
+            ->where("`CH`.`published` = TRUE")
+            ->order("RATING.hits DESC")
             ->limit($amt)
         ;
         
@@ -629,57 +632,57 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
         }
         
         return $result;
-	    
-	}
+        
+    }
 
-	/**
-	 * Featured channels list
-	 *
-	 * @param int $amt
-	 */
-	public function featuredChannels($amt=null){
-		
-	    $select = $this->db->select()
-    		->from( array( 'CH'=>$this->channelsTable->getName()))
-    		->join( array( 'RAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id`=`RAT`.`channel`", null )
-	    	->where( "`CH`.`featured` IS TRUE" )
-	    	->order( "RAT.hits")
-    		->limit( (int)$amt );
-	    
-	    return $this->db->fetchAll($select);
-	    
-	}
-	
-	public function makeAlias($title=null){
-	    
-	    if (!$title){
-	        throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM );
-	    }
-	    
-		//Generate channel alias
-		$alias = $title;
-		$toDash = new Xmltv_Filter_SeparatorToDash();
-		$alias = $toDash->filter( $alias );
-		$plusToPlus = new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
-		$alias = $plusToPlus->filter( $alias );
-		$alias = str_replace('--', '-', trim( $alias, ' -'));
-		return $alias;
-	}
-	
-	/**
-	 * Unpublish multiple channels at once
-	 *
-	 * @param  array $channels
-	 * @throws Zend_Controller_Action_Exception
-	 * @return bool
-	 */
-	public function unpublishMulti($channels=array()){
-	
-	    $sql = "UPDATE ".$this->channelsTable->getName()." SET `published`='0' WHERE `id` IN ( ".implode(',', $channels)." )";
-		$this->db->query($sql);
-		return true;
-		 
-	}
+    /**
+     * Featured channels list
+     *
+     * @param int $amt
+     */
+    public function featuredChannels($amt=null){
+        
+        $select = $this->db->select()
+            ->from( array( 'CH'=>$this->channelsTable->getName()))
+            ->join( array( 'RAT'=>$this->channelsRatingsTable->getName()), "`CH`.`id`=`RAT`.`channel`", null )
+            ->where( "`CH`.`featured` IS TRUE" )
+            ->order( "RAT.hits")
+            ->limit( (int)$amt );
+        
+        return $this->db->fetchAll($select);
+        
+    }
+    
+    public function makeAlias($title=null){
+        
+        if (!$title){
+            throw new Zend_Exception( Rtvg_Message::ERR_MISSING_PARAM );
+        }
+        
+        //Generate channel alias
+        $alias = $title;
+        $toDash = new Xmltv_Filter_SeparatorToDash();
+        $alias = $toDash->filter( $alias );
+        $plusToPlus = new Zend_Filter_Word_SeparatorToSeparator('+', '-плюс-');
+        $alias = $plusToPlus->filter( $alias );
+        $alias = str_replace('--', '-', trim( $alias, ' -'));
+        return $alias;
+    }
+    
+    /**
+     * Unpublish multiple channels at once
+     *
+     * @param  array $channels
+     * @throws Zend_Controller_Action_Exception
+     * @return bool
+     */
+    public function unpublishMulti($channels=array()){
+    
+        $sql = "UPDATE ".$this->channelsTable->getName()." SET `published`='0' WHERE `id` IN ( ".implode(',', $channels)." )";
+        $this->db->query($sql);
+        return true;
+         
+    }
     
     public function channelFeed($channel=null, $amt=5){
         
