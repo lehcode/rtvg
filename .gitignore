@@ -12,3 +12,4 @@ pinfo.php
 *.tmp
 Xmltv_Model_Comments--*
 zend_cache--*
+/public/.htaccess
