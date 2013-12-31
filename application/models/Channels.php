@@ -329,9 +329,6 @@ class Xmltv_Model_Channels extends Xmltv_Model_Abstract
      */
     public function addHit($id=null){
         
-        var_dump($id);
-        die(__FILE__ . ': ' . __LINE__);
-        
         if (!$id || !is_int($id)) {
             throw new Zend_Exception( 'Wrong channel ID');
         }
