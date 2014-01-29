@@ -13,7 +13,6 @@ $this->headMeta()
 	->setName( 'keywords', Zend_Registry::get('site_config')->site->get('keywords', 'телепрограмма,каналы,программа тв,каналы,телеканалы,каналы тв') )
 	->setName( 'description', Zend_Registry::get('site_config')->site->get('description', 'Программа всех каналов телевидения на сегодня и текущую неделю.') );
 
-$this->headScript()->appendFile($this->baseUrl("/timeline/compiled/js/storyjs-embed.js"));
 $js = '$(function(){
 	$("#channel").change(function(e){
 		var selected = $("#channel :selected").val();
