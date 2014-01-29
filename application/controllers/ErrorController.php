@@ -64,7 +64,7 @@ class ErrorController extends Zend_Controller_Action
         switch ($errors->type) {
 
             case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ROUTE:
-                $this->getResponse()->setHttpResponseCode(404);
+                $this->getResponse()->setHttpResponseCode(501);
                 $priority = Zend_Log::NOTICE;
                 $this->view->message = 'Страница не найдена';
                 $this->view->assign('messages', $this->_flashMessenger->getMessages());
