@@ -37,6 +37,7 @@ class Rtvg_Acl_IsNotBadBotAssertion implements Zend_Acl_Assert_Interface
         	'cr4nk',
         	'SISTRIXCrawler',
         	'SearchBot',
+        	'360Spider',
         );
         foreach ($badAgents as $string){
         	if (stristr($userAgent, $string)) {
