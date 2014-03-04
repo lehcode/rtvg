@@ -79,7 +79,7 @@ class ListingsController extends Rtvg_Controller_Action
         if ((bool)$channel['id']===false){
             $this->_response->clearBody();
             $this->_response->clearHeaders();
-            $this->_response->setHttpResponseCode(404);
+            $this->_response->setHttpResponseCode(501);
             $this->render('channel-not-found');
             return true;
         }
@@ -156,6 +156,9 @@ class ListingsController extends Rtvg_Controller_Action
             $vids = $this->listingVideos($channel, $listingDate, $list);
             $this->view->assign('listing_videos', $vids);
             
+        } else {
+            $this->render('no-listings');
+            return true;
         }
         
         /*
