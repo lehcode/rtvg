@@ -376,9 +376,11 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
 	 * Current channel
 	 * 
 	 * @param  string $alias //channel alias
+	 * @param  string $player //load player
+	 * @param  string $news //load news
 	 * @return array
 	 */
-	public function channelInfo($alias=null){
+	public function channelInfo($alias=null, $player=false, $news=false){
 		
         if (!$alias) {
 			throw new Zend_Exception("Channel was not provided");
@@ -390,12 +392,12 @@ class Rtvg_Controller_Action extends Zend_Controller_Action
             $hash = md5( 'channel_'.$alias.'_'.$f.'_info' );
 
             if ((bool)($data = $this->cache->load($hash, 'Core', $f))===false){
-                $data = $this->channelsModel->getByAlias( $alias );
+                $data = $this->channelsModel->getByAlias( $alias, $player, $news );
                 $this->cache->save($data, $hash, "Core", $f);
             }
 
         } else {
-            $data = $this->channelsModel->getByAlias( $alias );
+            $data = $this->channelsModel->getByAlias( $alias, $player, $news );
         }
         
         if (empty($data)){
