@@ -1,8 +1,11 @@
 /_SQL
 /docs/schema/*.backup
 *.backup
+/bin
+
 pinfo.php
 /uploads/parse/current.xml
+
 /uploads/parse/current.xml.last
 /uploads/parse/current.xml.old
 /uploads/parse
@@ -10,4 +13,3 @@ pinfo.php
 Xmltv_Model_Comments--*
 zend_cache--*
 /public/.htaccess
-/bin/liquibase.jar
