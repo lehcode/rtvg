@@ -51,7 +51,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         try {
             $response = $fc->dispatch();
         } catch (Exception $e) {
-            if(APPLICATION_ENV=='development'){
+            if (APPLICATION_ENV == 'development') {
                 echo $e->getMessage();
                 var_dump($e->getTrace());
             }
@@ -237,13 +237,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         }
 
         $view->headScript()
-            ->setAllowArbitraryAttributes(false)
-            ->prependFile($view->baseUrl('js/less.min.js'));
+            ->setAllowArbitraryAttributes(false);
 
         if (APPLICATION_ENV == 'development') {
-            $view->headScript()->prependFile($view->baseUrl('js/bs/bootstrap.js'));
+            $view->headScript()
+                ->prependFile($view->baseUrl('js/less.min.js'))
+                ->prependFile($view->baseUrl('js/bs/bootstrap.js'));
         } else {
-            $view->headScript()->prependFile($view->baseUrl('js/bs/bootstrap.min.js'));
+            $view->headScript()
+                ->prependFile($view->baseUrl('js/bs/bootstrap.min.js'));
         }
 
 
