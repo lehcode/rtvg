@@ -6,146 +6,165 @@
  * @version $Id: layout.phtml,v 1.40 2013-04-11 05:21:11 developer Exp $
  *
  */
-
-$pageClass = isset($this->pageclass) && !empty($this->pageclass) ? ' '.(string)$this->pageclass : '' ;
-$isFrontpage = trim($pageClass)=='frontpage' ? true  : false ;
+$pageClass = isset($this->pageclass) && !empty($this->pageclass) ? ' ' . (string) $this->pageclass : '';
+$isFrontpage = trim($pageClass) == 'frontpage' ? true : false;
 
 $this->jQuery()
-    ->setRenderMode( ZendX_JQuery::RENDER_ALL )
-	//->setCdnSsl(true) if need to load from ssl location
-	->setVersion('1.10.2') //jQuery version, automatically 1.5 = 1.5.latest
-	->setUiVersion('1.10.3') //jQuery UI version, automatically 1.8 = 1.8.latest
-	->uiEnable();
+    ->setRenderMode(ZendX_JQuery::RENDER_ALL)
+    //->setCdnSsl(true) if need to load from ssl location
+    ->setVersion('1.10.2') //jQuery version, automatically 1.5 = 1.5.latest
+    ->setUiVersion('1.10.3') //jQuery UI version, automatically 1.8 = 1.8.latest
+    ->uiEnable();
 
 $this->inlineScript()
-	->appendFile( 'http://yandex.st/share/share.js' );
+    ->appendFile('http://yandex.st/share/share.js');
 
-if (!$isFrontpage && (int)$this->rightWidth > 0){
+if (!$isFrontpage && (int) $this->rightWidth > 0) {
     $this->inlineScript()
         ->appendScript('VK.Widgets.Group("vk_groups", {mode: 0, height: 260, width:250 }, 27716041);');
     $this->inlineScript()
-        ->appendFile( "//vk.com/js/api/openapi.js?101" );
+        ->appendFile("//vk.com/js/api/openapi.js?101");
 }
 
 //#### Header ####
-$this->placeholder('header')->set( $this->partial('partials/header.phtml', array(
-		'pageclass'=>$this->pageclass,
-		'navData'=>$this->navData['topnav'],
-		'is_frontpage'=>$this->is_frontpage,
+$this->placeholder('header')->set($this->partial('partials/header.phtml', array(
+        'pageclass' => $this->pageclass,
+        'navData' => $this->navData['topnav'],
+        'is_frontpage' => $this->is_frontpage,
 )));
 
 //#### Main content ####
-$this->placeholder('maincontent')->set( $this->layout()->content );
+$this->placeholder('maincontent')->set($this->layout()->content);
 
 //#### Left Sidebar ####
-$this->placeholder('sidebar_left')->set( $this->partial('partials/sidebar-left.phtml', array(
-	'bcTop'=>$this->bcTop,
-	'spans'=>$this->leftWidth,
-	'channelNews'=>$this->channelNews,
-    'videos'=>$this->sidebarVideos,
-    'channelsTop'=>$this->channelsTop,
-    'channelsCategories'=>$this->channelsCategories,
-    'channelsTopAmt'=>$this->channelsTopAmt,
-)));
+if ($this->hide_sidebar != 'left' && $this->hide_sidebar != 'both') {
+    $this->placeholder('sidebar_left')->set($this->partial('partials/sidebar-left.phtml', array(
+            'bcTop' => $this->bcTop,
+            'spans' => $this->leftWidth,
+            'channelNews' => $this->channelNews,
+            'videos' => $this->sidebarVideos,
+            'channelsTop' => $this->channelsTop,
+            'channelsCategories' => $this->channelsCategories,
+            'channelsTopAmt' => $this->channelsTopAmt,
+    )));
+}
 
 //#### Right Sidebar ####
-$this->placeholder('sidebar_right')->set( $this->partial( 'partials/sidebar-right.phtml', array(
-	'channel'=>$this->channel,
-	'ads'=>$this->ads,
-	'spans'=>$this->rightWidth,
-	'channelNews'=>$this->channelNews,
-	'videos'=>$this->sidebarVideos,
-)));
+if ($this->hide_sidebar != 'right' && $this->hide_sidebar != 'both') {
+    $this->placeholder('sidebar_right')->set($this->partial('partials/sidebar-right.phtml', array(
+            'channel' => $this->channel,
+            //'ads'=>$this->ads,
+            'spans' => $this->rightWidth,
+            'channelNews' => $this->channelNews,
+            'videos' => $this->sidebarVideos,
+    )));
+}
 
 //#### Footer ####
-$this->placeholder('footer')->set( $this->partial('partials/footer.phtml', array()) );
+$this->placeholder('footer')->set($this->partial('partials/footer.phtml', array()));
+
+switch ($this->hide_sidebar) {
+    case 'none':
+        $this->contentWidth = 7;
+        break;
+    case 'left':
+        $this->contentWidth = 9;
+        break;
+    case 'right':
+        $this->contentWidth = 10;
+        break;
+    case 'both':
+        $this->contentWidth = 12;
+        break;
+}
 ?>
 
 
 <?= $this->doctype(); ?>
 <html itemscope itemtype="http://schema.org/WebPage" xmlns:fb="https://www.facebook.com/2008/fbml"
 
-<?= ($this->doctype()->isRdfa() && isset($this->ogp_ns)) ? 'prefix="og:'.$this->ogp_ns.'#"' : null ; ?> xml:lang="ru" lang="ru">
-<head>
-    <?php /*
-    <meta content="An Example Title" itemprop="name" property="og:title" />
-    <meta content="Lorem ipsum dolor sit amet" itemprop="description" name="description" property="og:description" />
-    <meta content="http://www.example.com/image.jpg" itemprop="image" property="og:image" />
-    <meta content="http://www.example.com/permalink" itemprop="url" property="og:url" />
-    <link rel="canonical" href="http://www.example.com/permalink" />
-     */ ?>
-    <?= $this->headTitle() ?>
-    <?= $this->headMeta() ?>
-    <?= $this->headLink() ?>
-    <?= $this->jQuery() ?>
-    <?= $this->headScript() ?>
-    <?= $this->headStyle() ?>
-    <?php  if (APPLICATION_ENV=='production') : ?>
-    <script type="text/javascript">new Image().src = "//counter.yadro.ru/hit?r"+escape(document.referrer)+((typeof(screen)=="undefined")?"":";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+";h"+escape(document.title.substring(0,80))+";"+Math.random();</script>
-    <?php endif; ?>
-</head>
-<body>
+      <?= ($this->doctype()->isRdfa() && isset($this->ogp_ns)) ? 'prefix="og:' . $this->ogp_ns . '#"' : null; ?> xml:lang="ru" lang="ru">
+    <head>
+        <?php /*
+          <meta content="An Example Title" itemprop="name" property="og:title" />
+          <meta content="Lorem ipsum dolor sit amet" itemprop="description" name="description" property="og:description" />
+          <meta content="http://www.example.com/image.jpg" itemprop="image" property="og:image" />
+          <meta content="http://www.example.com/permalink" itemprop="url" property="og:url" />
+          <link rel="canonical" href="http://www.example.com/permalink" />
+         */ ?>
+        <?= $this->headTitle() ?>
+        <?= $this->headMeta() ?>
+        <?= $this->headLink() ?>
+        <?= $this->jQuery() ?>
+        <?= $this->headScript() ?>
+        <?= $this->headStyle() ?>
+        <?php if (APPLICATION_ENV == 'production') : ?>
+            <script type="text/javascript">new Image().src = "//counter.yadro.ru/hit?r" + escape(document.referrer) + ((typeof (screen) == "undefined") ? "" : ";s" + screen.width + "*" + screen.height + "*" + (screen.colorDepth ? screen.colorDepth : screen.pixelDepth)) + ";u" + escape(document.URL) + ";h" + escape(document.title.substring(0, 80)) + ";" + Math.random();</script>
+        <?php endif; ?>
+    </head>
+    <body>
 
-<?php if (APPLICATION_ENV=='production') : //Rating@Mail.ru counter ?>
-<div style="position:absolute;left:-10000px;"><img src="http://d8.c6.b3.a2.top.mail.ru/counter?id=2320499" style="border:0;" height="1" width="1" alt="Рейтинг@Mail.ru" /></div>
-<?php endif; ?>
+        <?php if (APPLICATION_ENV == 'production') : //Rating@Mail.ru counter  ?>
+            <div style="position:absolute;left:-10000px;"><img src="http://d8.c6.b3.a2.top.mail.ru/counter?id=2320499" style="border:0;" height="1" width="1" alt="Рейтинг@Mail.ru" /></div>
+        <?php endif; ?>
 
-<div class="container-fluid">
-    
+        <div class="container-fluid">
 
-    <?php echo $this->placeholder('header'); ?>
-    
-    <div id="content" class="row-fluid <?= $pageClass; ?>">
-        
-        <?php 
-        if (count($this->messages)) {
-            foreach ($this->messages as $text) {
-                if (is_array($text)) {
-                    foreach ($text as $string) {
-                        echo $this->showMessage( $string );
+
+            <?php echo $this->placeholder('header'); ?>
+
+            <div id="content" class="row-fluid <?= $pageClass; ?>">
+
+                <?php
+                if (count($this->messages)) {
+                    foreach ($this->messages as $text) {
+                        if (is_array($text)) {
+                            foreach ($text as $string) {
+                                echo $this->showMessage($string);
+                            }
+                        } else {
+                            echo $this->showMessage($text);
+                        }
                     }
-                } else {
-                    echo $this->showMessage( $text );
                 }
-            }
-        }
-        ?>
-        
-        <?php 
-        if ($isFrontpage) {
-            ?>
-        <div class="span12 page">
-            <?= $this->placeholder('maincontent'); ?>
+                ?>
+
+                <?php
+                if ($isFrontpage) {
+                    ?>
+                    <div class="span12 page">
+                        <?= $this->placeholder('maincontent'); ?>
+                    </div>
+                    <?php
+                } else {
+                    ?>
+
+                    <?php if ((int) $this->leftWidth > 0 && $this->hide_sidebar != 'left' && $this->hide_sidebar != 'both'): ?>
+                        <?= $this->placeholder('sidebar_left'); ?>
+                    <?php endif; ?>
+
+                    <div class="span<?= $this->contentWidth ?>" style="background:#EFEFEF;">
+                        <?= $this->placeholder('maincontent'); ?>
+                    </div>	
+
+                    <?php if (((int) $this->rightWidth > 0) && $this->hide_sidebar != 'right' && $this->hide_sidebar != 'both' ): ?>
+                        <?= $this->placeholder('sidebar_right'); ?>
+                    <?php endif; ?>
+
+                <?php }
+                ?>
+
+            </div>
+
+            <div class="row" id="footer">
+                <?= $this->placeholder('footer'); ?>
+            </div>
+
         </div>
-            <?php 
-        } else {
-            ?>
 
-            <?php if ((int)$this->leftWidth > 0): ?>
-            <?= $this->placeholder('sidebar_left'); ?>
-            <?php endif; ?>
-
-            <div class="span<?= $this->contentWidth ?>" style="background:#EFEFEF;">
-                <?= $this->placeholder('maincontent'); ?>
-            </div>	
-
-            <?php if ((int)$this->rightWidth > 0): ?>
-            <?= $this->placeholder('sidebar_right'); ?>
-            <?php endif; ?>
-
-        <?php 
-        } ?>
-
-    </div>
-
-    <div class="row" id="footer">
-        <?= $this->placeholder('footer'); ?>
-    </div>
-    
-</div>
-
-<?php if (APPLICATION_ENV=='production') {
-$js = '(function (d, w, c) {
+        <?php
+        if (APPLICATION_ENV == 'production') {
+            $js = '(function (d, w, c) {
 (w[c] = w[c] || []).push(function() {
 try {
 w.yaCounter16053280 = new Ya.Metrika({id:16053280, enableAll: true, webvisor:true});
@@ -159,13 +178,15 @@ s.async = true;
 s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
 if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f); } 
 else { f(); }
-})(document, window, "yandex_metrika_callbacks");'; ?>
-<script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
-<noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<?php } ?>
+})(document, window, "yandex_metrika_callbacks");';
+            ?>
+            <script type="text/javascript"><?= (APPLICATION_ENV == 'production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+            <noscript><div><img src="//mc.yandex.ru/watch/16053280" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+            <?php } ?>
 
-<?php if (APPLICATION_ENV=='production') {
-$js ="var _gaq = _gaq || [];
+        <?php
+        if (APPLICATION_ENV == 'production') {
+            $js = "var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-778789-8']);
 _gaq.push(['_trackPageview']);
 
@@ -173,20 +194,22 @@ _gaq.push(['_trackPageview']);
   var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
   ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
   var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();"; ?>
-<script type="text/javascript"><?= (APPLICATION_ENV=='production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
-<?php } ?>
+})();";
+            ?>
+            <script type="text/javascript"><?= (APPLICATION_ENV == 'production') ? Rtvg_Compressor_JSMin::minify($js) : $js; ?></script>
+        <?php } ?>
 
-<?php ob_start(); ?>
-$(document).ready(function(){
-	$("#footer .counter_logo").css({ display: "none" });
-});
-<?php
-$js = (APPLICATION_ENV=='production') ?  Rtvg_Compressor_JSMin::minify( ob_get_clean() ) : ob_get_clean() ;
-$this->inlineScript()->appendScript( $js ); ?>
+        <?php ob_start(); ?>
+        $(document).ready(function(){
+        $("#footer .counter_logo").css({ display: "none" });
+        });
+        <?php
+        $js = (APPLICATION_ENV == 'production') ? Rtvg_Compressor_JSMin::minify(ob_get_clean()) : ob_get_clean();
+        $this->inlineScript()->appendScript($js);
+        ?>
 
-<?= $this->inlineScript(); ?>
+        <?= $this->inlineScript(); ?>
 
 
-</body>
+    </body>
 </html>

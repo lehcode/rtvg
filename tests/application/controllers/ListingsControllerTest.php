@@ -210,7 +210,8 @@ class ListingsControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         
         $bcs = new Xmltv_Model_BroadcastsTest();
         $weekBcs = $bcs->thisWeekBroadcasts((int)$channel['id'], $this->weekStart, $this->weekEnd);
-        $bc = $weekBcs[array_rand($weekBcs, 1)];
+        $r = rand(0, count($weekBcs)-1);
+        $bc = $weekBcs[$r];
         
         $urlParams  = $this->urlizeOptions( array(
 	    	'module'=>'default',
