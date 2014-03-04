@@ -217,7 +217,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    $view->headLink()
             ->prependStylesheet($view->baseUrl('css/bootstrap.css'))
             ->prependStylesheet( $view->baseUrl('css/jquery-ui.css'), 'screen')
-            ->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
         ;
         
         // Get browser
