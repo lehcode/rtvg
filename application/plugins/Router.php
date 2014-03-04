@@ -269,7 +269,7 @@ class Xmltv_Plugin_Router extends Zend_Controller_Plugin_Abstract
                 'action'=>'create')));
         
         $this->_router->addRoute( 'default_listings_category', 
-            new Zend_Controller_Router_Route( 'телепрограмма/:category/:timespan', 
+            new Zend_Controller_Router_Route( 'передачи/:category/:timespan', 
             array(
                 'module'=>'default',
                 'controller'=>'listings',
