@@ -1,0 +1,980 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+    <changeSet author="takeshi (generated)" id="1393950175283-1">
+        <createTable tableName="rtvg_3rdparty_feeds">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="url" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="7" name="content_cat_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="9" name="channel_cat_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="53" name="bc_cat_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="tags" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-2">
+        <createTable tableName="rtvg_actors">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="complete_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="f_name" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="m_name" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s_name" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rank" type="VARCHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fullname_en" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-3">
+        <createTable tableName="rtvg_actors_bios">
+            <column name="actor" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bio" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-4">
+        <createTable tableName="rtvg_ad_providers">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column defaultValue="" name="title" type="VARCHAR(255)"/>
+            <column defaultValue="" name="website" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-5">
+        <createTable tableName="rtvg_ad_stats">
+            <column name="ad" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column defaultValueNumeric="0" name="hits" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="0" name="e_cpm" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-6">
+        <createTable tableName="rtvg_ads">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="width" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="height" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="html" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="direct_link" type="VARCHAR(255)"/>
+            <column defaultValue="" name="tags" type="VARCHAR(255)"/>
+            <column defaultValueNumeric="1" name="provider" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="47" name="added_by" remarks="ID of person who added this ad" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false" name="active" remarks="Ad is published at frontend" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="7" name="content_cat_id" type="INT UNSIGNED"/>
+            <column defaultValueNumeric="9" name="channel_cat_id" type="INT UNSIGNED"/>
+            <column defaultValueNumeric="53" name="bc_cat_id" type="INT UNSIGNED"/>
+            <column defaultValue="ru" name="country" type="CHAR(2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-7">
+        <createTable tableName="rtvg_articles">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" remarks="Article title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" remarks="Article slug" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="intro" remarks="Article intro" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" remarks="Article body" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="image" remarks="Image file name" type="VARCHAR(255)"/>
+            <column defaultValue="" name="metadesc" remarks="META description" type="VARCHAR(255)"/>
+            <column defaultValue="" name="tags" remarks="Article tags" type="VARCHAR(255)"/>
+            <column name="channel_cat_id" remarks="Channel category ID" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bc_cat_id" remarks="Broadcast category ID" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_cat_id" remarks="Content category ID" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" remarks="&quot;1&quot; if article is published in frontend" type="BIT"/>
+            <column name="publish_up" remarks="Start publish on this date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="publish_down" type="DATE"/>
+            <column name="added" remarks="Date when article was added" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author" remarks="Author ID" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-8">
+        <createTable tableName="rtvg_articles_ratings">
+            <column name="article" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="0" name="hits" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rating" type="DOUBLE UNSIGNED(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-9">
+        <createTable tableName="rtvg_bc">
+            <column name="title" remarks="BC title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sub_title" remarks="BC sub-title" type="VARCHAR(255)"/>
+            <column name="alias" remarks="BC alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="19" name="category" type="INT UNSIGNED"/>
+            <column defaultValueNumeric="0" name="age_rating" type="INT UNSIGNED"/>
+            <column defaultValue="" name="image" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false" name="last_chance" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="previously_shown" type="DATETIME"/>
+            <column defaultValue="na" name="country" remarks="Broadcast country ISO" type="CHAR(2)"/>
+            <column name="actors" type="VARCHAR(255)"/>
+            <column name="directors" type="VARCHAR(255)"/>
+            <column name="writers" type="VARCHAR(255)"/>
+            <column name="adapters" type="VARCHAR(255)"/>
+            <column name="producers" type="VARCHAR(255)"/>
+            <column name="composers" type="VARCHAR(255)"/>
+            <column name="operators" type="VARCHAR(255)"/>
+            <column name="editors" type="VARCHAR(255)"/>
+            <column name="presenters" type="VARCHAR(255)"/>
+            <column name="commentators" type="VARCHAR(255)"/>
+            <column name="guests" type="VARCHAR(255)"/>
+            <column name="episode_num" remarks="Number of the episode" type="INT UNSIGNED"/>
+            <column name="date" remarks="When this broadcast was created" type="DATE"/>
+            <column name="length" remarks="Length of broadcast" type="TIME"/>
+            <column name="desc" remarks="Broadcast description for listings" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tags" remarks="Broadcast tags" type="VARCHAR(255)"/>
+            <column defaultValue="" name="hash" remarks="Unique hash for BC" type="CHAR(32)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-10">
+        <createTable tableName="rtvg_bc_categories">
+            <column autoIncrement="true" name="id" remarks="Category ID" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title_single" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-11">
+        <createTable tableName="rtvg_bc_events">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="start" remarks="BC event start" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end" remarks="BC event end" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="channel" remarks="BC channel" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false" name="live" remarks="BC is live" type="BIT"/>
+            <column defaultValueBoolean="false" name="premiere" remarks="BC is premiere" type="BIT"/>
+            <column defaultValueBoolean="false" name="new" remarks="BC is new" type="BIT"/>
+            <column name="hash" remarks="BC hash" type="CHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-12">
+        <createTable tableName="rtvg_bc_ratings">
+            <column name="hash" type="CHAR(32)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column defaultValueNumeric="0" name="hits" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="0" name="star_rating" type="DOUBLE UNSIGNED(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-13">
+        <createTable tableName="rtvg_channels">
+            <column defaultValueNumeric="1" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="9" name="category" remarks="Channel category ID" type="INT UNSIGNED"/>
+            <column defaultValueBoolean="false" name="free" remarks="Channel is free or paid" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false" name="featured" remarks="Channel is featured" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="default.png" name="icon" remarks="Channel icon" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_intro" remarks="Description intro" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_body" remarks="Description text" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="'dvb'" name="format" remarks="Video stream format" type="enum('dvb','hd','3d')">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="true" name="published" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="true" name="parse" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="ru" name="lang" remarks="Channel language ISO code" type="CHAR(3)"/>
+            <column defaultValue="" name="url" remarks="Website URL" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="ru" name="country" remarks="Channel country ISO code" type="CHAR(2)"/>
+            <column defaultValueBoolean="false" name="adult" remarks="Channel is adult" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="keywords" remarks="Meta keywords" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="metadesc" remarks="Meta description" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="'4:3'" name="video_aspect" remarks="Video aspect ratio" type="enum('4:3','16:9')">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="'720x576'" name="video_quality" type="enum('720x576','1920x1080','3840x2160')">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="'stereo'" name="audio" type="enum('mono','stereo','dolby','dolby digital','bilingual','surround')">
+                <constraints nullable="false"/>
+            </column>
+            <column name="added" remarks="Date when channel was added" type="DATE"/>
+            <column name="address" remarks="Headquarters  address" type="TEXT"/>
+            <column defaultValue="" name="region" remarks="Region channel operates in" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="location" remarks="City where headquarters is located" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geo_lt" remarks="Headquarters latitude" type="DOUBLE"/>
+            <column name="geo_lg" remarks="Headquarters longitude" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-14">
+        <createTable tableName="rtvg_channels_categories">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="default.png" name="image" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false" name="featured" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-15">
+        <createTable tableName="rtvg_channels_comments">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="author" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="intro" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="added" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="1" name="published" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="src_url" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" remarks="Parent channel ID" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url_crc" type="CHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-16">
+        <createTable tableName="rtvg_channels_news">
+            <column defaultValueNumeric="0" name="channel" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column defaultValue="" name="url" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false" name="rss" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false" name="active" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-17">
+        <createTable tableName="rtvg_channels_ratings">
+            <column name="channel" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column defaultValueNumeric="0" name="hits" type="INT"/>
+            <column defaultValueNumeric="0" name="rating" type="DOUBLE UNSIGNED(1)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-18">
+        <createTable tableName="rtvg_channels_social">
+            <column name="channel" remarks="Channel ID" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column defaultValue="" name="fb" remarks="Facebook page" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="vk" remarks="Vkontakte page" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="yt" remarks="Youtube page" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="insta" remarks="Instagram page" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="tw" remarks="Twitter page" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="odno" remarks="Odnoklassniki page" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="" name="gg" remarks="Google+ page" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-19">
+        <createTable tableName="rtvg_content_categories">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="keywords" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-20">
+        <createTable tableName="rtvg_countries">
+            <column name="iso" type="CHAR(2)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="CHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-21">
+        <createTable tableName="rtvg_directors">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="complete_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="f_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="m_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rank" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fullname_en" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="photo" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-22">
+        <createTable tableName="rtvg_directors_bios">
+            <column name="director" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bio" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueDate="0002-11-30T00:00:00.0" name="born" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueDate="0002-11-30T00:00:00.0" name="dead" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-23">
+        <createTable tableName="rtvg_languages">
+            <column name="iso" type="CHAR(2)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-24">
+        <createTable tableName="rtvg_persons">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="fullname" type="CHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="enum('actor','director','writer','adapter','producer','composer','operator','editor','presenter','commentator')">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-25">
+        <createTable tableName="rtvg_ref_ads_articles">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="ad" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="article" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-26">
+        <createTable tableName="rtvg_ref_categories">
+            <column name="channel_cat_id" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="bc_cat_id" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_cat_id" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-27">
+        <createTable tableName="rtvg_ref_streams_torrtv">
+            <column name="channel" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="stream" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-28">
+        <createTable tableName="rtvg_ref_streams_tvforsite">
+            <column name="channel" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="stream" type="VARCHAR(24)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-29">
+        <createTable tableName="rtvg_users">
+            <column autoIncrement="true" name="id" remarks="User ID" type="INT UNSIGNED">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="real_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="false" name="online" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_login" type="DATETIME"/>
+            <column name="login_source" type="enum('site','vk','fb','gg')">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hash" type="CHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="'guest'" name="role" type="enum('guest','member','publisher','editor','admin','god')">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-30">
+        <createTable tableName="rtvg_vcache_listings">
+            <column name="rtvg_id" type="CHAR(15)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="yt_id" type="CHAR(11)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="listing_date" type="DATE"/>
+            <column name="desc" type="TEXT"/>
+            <column name="views" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="published" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" remarks="Youtube category title, lowercase" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="thumbs" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="delete_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hash" type="CHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-31">
+        <createTable tableName="rtvg_vcache_main">
+            <column name="rtvg_id" type="CHAR(15)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="yt_id" type="CHAR(11)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc" type="TEXT"/>
+            <column name="views" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="published" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" remarks="Youtube category name" type="CHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="thumbs" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="delete_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-32">
+        <createTable tableName="rtvg_vcache_related">
+            <column name="rtvg_id" type="CHAR(15)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="yt_id" type="CHAR(11)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="yt_parent" remarks="Youtube parent video ID" type="CHAR(11)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc" type="TEXT"/>
+            <column name="views" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="published" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="CHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="thumbs" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="delete_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-33">
+        <createTable tableName="rtvg_vcache_sidebar">
+            <column name="rtvg_id" type="CHAR(15)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="yt_id" type="CHAR(11)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="channel" remarks="Parent channel ID" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc" type="TEXT"/>
+            <column name="views" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="published" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="thumbs" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-34">
+        <createTable tableName="rtvg_yt_categories">
+            <column name="title_en" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="ch_cat_id" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bc_cat_id" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_cat_id" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-35">
+        <addForeignKeyConstraint baseColumnNames="ad" baseTableName="rtvg_ad_stats" baseTableSchemaName="dev_rutvgid" constraintName="ADS_STATS_ad_ADS_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_ads" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-36">
+        <addForeignKeyConstraint baseColumnNames="added_by" baseTableName="rtvg_ads" baseTableSchemaName="dev_rutvgid" constraintName="ADS_added_by_USERS_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_users" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-37">
+        <addForeignKeyConstraint baseColumnNames="bc_cat_id" baseTableName="rtvg_ads" baseTableSchemaName="dev_rutvgid" constraintName="ADS_bc_cat_id_BC_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_bc_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-38">
+        <addForeignKeyConstraint baseColumnNames="channel_cat_id" baseTableName="rtvg_ads" baseTableSchemaName="dev_rutvgid" constraintName="ADS_channel_cat_id_CHANNELS_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-39">
+        <addForeignKeyConstraint baseColumnNames="content_cat_id" baseTableName="rtvg_ads" baseTableSchemaName="dev_rutvgid" constraintName="ADS_content_cat_id_CONTENT_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_content_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-40">
+        <addForeignKeyConstraint baseColumnNames="country" baseTableName="rtvg_ads" baseTableSchemaName="dev_rutvgid" constraintName="ADS_country_COUNTRIES_iso" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="iso" referencedTableName="rtvg_countries" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-41">
+        <addForeignKeyConstraint baseColumnNames="provider" baseTableName="rtvg_ads" baseTableSchemaName="dev_rutvgid" constraintName="FK_rtvg_ads_rtvg_ad_providers_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_ad_providers" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-42">
+        <addForeignKeyConstraint baseColumnNames="author" baseTableName="rtvg_articles" baseTableSchemaName="dev_rutvgid" constraintName="FK_ARTICLES_author_USERS_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_users" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-43">
+        <addForeignKeyConstraint baseColumnNames="bc_cat_id" baseTableName="rtvg_articles" baseTableSchemaName="dev_rutvgid" constraintName="ARTICLES_bc_cat_id_CONTENT_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_bc_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-44">
+        <addForeignKeyConstraint baseColumnNames="channel_cat_id" baseTableName="rtvg_articles" baseTableSchemaName="dev_rutvgid" constraintName="ARTICLES_channel_cat_id_CONTENT_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_channels_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-45">
+        <addForeignKeyConstraint baseColumnNames="content_cat_id" baseTableName="rtvg_articles" baseTableSchemaName="dev_rutvgid" constraintName="ARTICLES_content_cat_id_CONTENT_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_content_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-46">
+        <addForeignKeyConstraint baseColumnNames="article" baseTableName="rtvg_articles_ratings" baseTableSchemaName="dev_rutvgid" constraintName="ARTICLES_RATINGS_article_ARTICLES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_articles" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-47">
+        <addForeignKeyConstraint baseColumnNames="category" baseTableName="rtvg_bc" baseTableSchemaName="dev_rutvgid" constraintName="BC_category_BC_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_bc_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-48">
+        <addForeignKeyConstraint baseColumnNames="country" baseTableName="rtvg_bc" baseTableSchemaName="dev_rutvgid" constraintName="BC_country_COUNTRIES_iso" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="iso" referencedTableName="rtvg_countries" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-49">
+        <addForeignKeyConstraint baseColumnNames="channel" baseTableName="rtvg_bc_events" baseTableSchemaName="dev_rutvgid" constraintName="FK_BC_EVENTS_channel_CHANNELS_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-50">
+        <addForeignKeyConstraint baseColumnNames="hash" baseTableName="rtvg_bc_events" baseTableSchemaName="dev_rutvgid" constraintName="FK_BC_EVENTS_hash_BC_hash" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="hash" referencedTableName="rtvg_bc" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-51">
+        <addForeignKeyConstraint baseColumnNames="hash" baseTableName="rtvg_bc_ratings" baseTableSchemaName="dev_rutvgid" constraintName="FK_BC_RATINGS_hash_BC_hash" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="hash" referencedTableName="rtvg_bc" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-52">
+        <addForeignKeyConstraint baseColumnNames="category" baseTableName="rtvg_channels" baseTableSchemaName="dev_rutvgid" constraintName="FK_CHANNELS_category_CHANNELS_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="SET NULL" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-53">
+        <addForeignKeyConstraint baseColumnNames="country" baseTableName="rtvg_channels" baseTableSchemaName="dev_rutvgid" constraintName="FK_CHANNELS_country_REF_COUNTRIES_iso" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="iso" referencedTableName="rtvg_countries" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-54">
+        <addForeignKeyConstraint baseColumnNames="lang" baseTableName="rtvg_channels" baseTableSchemaName="dev_rutvgid" constraintName="FK_CHANNELS_lang_REF_LANGUAGES_iso" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="iso" referencedTableName="rtvg_languages" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-55">
+        <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="rtvg_channels_comments" baseTableSchemaName="dev_rutvgid" constraintName="CHANELS_COMMENTS_parent_id_CHANNELS_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-56">
+        <addForeignKeyConstraint baseColumnNames="channel" baseTableName="rtvg_channels_news" baseTableSchemaName="dev_rutvgid" constraintName="CHANNELS_NEWS_channel_CHANNELS_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-57">
+        <addForeignKeyConstraint baseColumnNames="channel" baseTableName="rtvg_channels_ratings" baseTableSchemaName="dev_rutvgid" constraintName="FK_CHANNELS_RATINGS_rating_id_CHANNELS_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-58">
+        <addForeignKeyConstraint baseColumnNames="channel" baseTableName="rtvg_channels_social" baseTableSchemaName="dev_rutvgid" constraintName="FK_rtvg_channels_social_rtvg_channels_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_channels" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-59">
+        <addForeignKeyConstraint baseColumnNames="ad" baseTableName="rtvg_ref_ads_articles" baseTableSchemaName="dev_rutvgid" constraintName="FK_REF_ADS_ARTICLES_ad_ADS_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_ads" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-60">
+        <addForeignKeyConstraint baseColumnNames="article" baseTableName="rtvg_ref_ads_articles" baseTableSchemaName="dev_rutvgid" constraintName="FK_REF_ADS_ARTICLES_article_ARTICLES_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_articles" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-61">
+        <addForeignKeyConstraint baseColumnNames="bc_cat_id" baseTableName="rtvg_ref_categories" baseTableSchemaName="dev_rutvgid" constraintName="REF_CATEGORIES_bc_cat_id_BC_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_bc_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-62">
+        <addForeignKeyConstraint baseColumnNames="channel_cat_id" baseTableName="rtvg_ref_categories" baseTableSchemaName="dev_rutvgid" constraintName="REF_CATEGORIES_channel_cat_id_CHANNELS_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-63">
+        <addForeignKeyConstraint baseColumnNames="content_cat_id" baseTableName="rtvg_ref_categories" baseTableSchemaName="dev_rutvgid" constraintName="REF_CATEGORIES_content_cat_id_CONTENT_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_content_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-64">
+        <addForeignKeyConstraint baseColumnNames="channel" baseTableName="rtvg_ref_streams_torrtv" baseTableSchemaName="dev_rutvgid" constraintName="STREAMS_channel_CHANNELS_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-65">
+        <addForeignKeyConstraint baseColumnNames="channel" baseTableName="rtvg_ref_streams_tvforsite" baseTableSchemaName="dev_rutvgid" constraintName="REF_STREAMS_TVFORSITE_channel_CHANNELS_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-66">
+        <addForeignKeyConstraint baseColumnNames="category" baseTableName="rtvg_vcache_listings" baseTableSchemaName="dev_rutvgid" constraintName="VCACHE_LISTINGS_category_REF_YT_CATEGORIES_title_en" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="title_en" referencedTableName="rtvg_yt_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-67">
+        <addForeignKeyConstraint baseColumnNames="hash" baseTableName="rtvg_vcache_listings" baseTableSchemaName="dev_rutvgid" constraintName="FK_VCACHE_LISTINGS_hash_BC_hash" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="hash" referencedTableName="rtvg_bc" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-68">
+        <addForeignKeyConstraint baseColumnNames="category" baseTableName="rtvg_vcache_main" baseTableSchemaName="dev_rutvgid" constraintName="VCACHE_MAIN_category_REF_YT_CATEGORIES_title_en" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="title_en" referencedTableName="rtvg_yt_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-69">
+        <addForeignKeyConstraint baseColumnNames="category" baseTableName="rtvg_vcache_related" baseTableSchemaName="dev_rutvgid" constraintName="VCACHE_RELATED_category_REF_YT_CATEGORIES_title_en" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="title_en" referencedTableName="rtvg_yt_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-70">
+        <addForeignKeyConstraint baseColumnNames="channel" baseTableName="rtvg_vcache_sidebar" baseTableSchemaName="dev_rutvgid" constraintName="VCACHE_SIDEBAR_channel_CHANNELS_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-71">
+        <addForeignKeyConstraint baseColumnNames="bc_cat_id" baseTableName="rtvg_yt_categories" baseTableSchemaName="dev_rutvgid" constraintName="YT_CATEGORIES_bc_cat_id_BC_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_bc_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-72">
+        <addForeignKeyConstraint baseColumnNames="ch_cat_id" baseTableName="rtvg_yt_categories" baseTableSchemaName="dev_rutvgid" constraintName="YT_CATEGORIES_rtvg_CHANNELS_CATEGORIES_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="rtvg_channels_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-73">
+        <addForeignKeyConstraint baseColumnNames="content_cat_id" baseTableName="rtvg_yt_categories" baseTableSchemaName="dev_rutvgid" constraintName="YT_CATS_content_cat_id_CONTENT_CATS_bc_category" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="rtvg_content_categories" referencedTableSchemaName="dev_rutvgid" referencesUniqueColumn="false"/>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-74">
+        <createIndex indexName="complete_name" tableName="rtvg_actors" unique="true">
+            <column name="complete_name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-75">
+        <createIndex indexName="f_name" tableName="rtvg_actors" unique="false">
+            <column name="f_name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-76">
+        <createIndex indexName="fullname_en" tableName="rtvg_actors" unique="false">
+            <column name="fullname_en"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-77">
+        <createIndex indexName="m_name" tableName="rtvg_actors" unique="false">
+            <column name="m_name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-78">
+        <createIndex indexName="s_name" tableName="rtvg_actors" unique="false">
+            <column name="s_name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-79">
+        <createIndex indexName="actor" tableName="rtvg_actors_bios" unique="true">
+            <column name="actor"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-80">
+        <createIndex indexName="alias" tableName="rtvg_bc" unique="false">
+            <column name="alias"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-81">
+        <createIndex indexName="title" tableName="rtvg_bc_categories" unique="true">
+            <column name="title"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-82">
+        <createIndex indexName="UK_rtvg_channels_alias" tableName="rtvg_channels" unique="true">
+            <column name="alias"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-83">
+        <createIndex indexName="f_name" tableName="rtvg_directors" unique="false">
+            <column name="f_name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-84">
+        <createIndex indexName="m_name" tableName="rtvg_directors" unique="false">
+            <column name="m_name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-85">
+        <createIndex indexName="s_name" tableName="rtvg_directors" unique="false">
+            <column name="s_name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-86">
+        <createIndex indexName="director" tableName="rtvg_directors_bios" unique="true">
+            <column name="director"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-87">
+        <createIndex indexName="fullname" tableName="rtvg_persons" unique="false">
+            <column name="fullname"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-88">
+        <createIndex indexName="UK_rtvg_ref_streams_stream" tableName="rtvg_ref_streams_torrtv" unique="true">
+            <column name="stream"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="takeshi (generated)" id="1393950175283-89">
+        <createIndex indexName="UK_rtvg_ref_streams_stream" tableName="rtvg_ref_streams_tvforsite" unique="true">
+            <column name="stream"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
