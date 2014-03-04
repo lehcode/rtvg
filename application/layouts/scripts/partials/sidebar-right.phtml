@@ -36,7 +36,7 @@ $this->headScript()->appendScript("$(document).ready(function(){
     ?>
     
     <?php
-    if ((bool)$this->channelNews===false){
+    
         if (count($this->videos) && $this->videos !== false) {
             $channelTitle = $this->escape($this->channel['title']);
             ?>
@@ -62,13 +62,15 @@ $this->headScript()->appendScript("$(document).ready(function(){
                 title="Программа канала '.$this->channel['title'].'">'.$this->channel['title'].'</a>';
 
             $data['desc'] = Xmltv_String::str_ireplace($this->channel['title'], $channelHref, $data['desc']);
+            
             echo $this->sidebarVideo($data, $channelHref);
+            
         }
         ?>
     </div>
         <?php
         }
-    }
+    
     ?>
 
     <div class="module" id="rumor-ads">
