@@ -208,12 +208,16 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	    	->setSeparator(' :: ' )
 	    	->prepend( "rutvgid.ru" );
 	    
-	    $baseCss = $view->baseUrl('css/base.less') ;
-	    $view
-            //->headLink( array('rel'=>'stylesheet/less', 'href'=>$baseCss), 'APPEND')
-            ->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
+        if (APPLICATION_ENV!='production'){
+            $view->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND');
+        } else {
+            $view->headLink( array('rel'=>'stylesheet', 'href'=>$view->baseUrl('css/template.css'), 'type'=>'text/css'), 'APPEND');
+        }
+        
+	    $view->headLink()
             ->prependStylesheet($view->baseUrl('css/bootstrap.css'))
-            ->prependStylesheet( $view->baseUrl('css/jquery-ui.css'), 'screen');
+            ->prependStylesheet( $view->baseUrl('css/jquery-ui.css'), 'screen')
+            ->headLink( array('rel'=>'stylesheet/less', 'href'=>$view->baseUrl('css/template.less')), 'APPEND')
         ;
         
         // Get browser
