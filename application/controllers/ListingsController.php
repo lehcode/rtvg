@@ -2,7 +2,7 @@
 
 /**
  * Programs listings display
- * 
+ *
  * @author  Antony Repin <egeshisolutions@gmail.com>
  * @version $Id: ListingsController.php,v 1.39 2013-04-06 22:35:03 developer Exp $
  *
@@ -94,7 +94,7 @@ class ListingsController extends Rtvg_Controller_Action
         $listingDate = $this->bcModel->listingDate($this->input);
         $this->view->assign('listingDate', $listingDate);
 
-        //Assign today's date to view 
+        //Assign today's date to view
         ($listingDate->isToday()) ? $this->view->assign('is_today', true) : $this->view->assign('is_today', false);
 
         //Fetch programs list for day and make decision on current program
@@ -241,7 +241,7 @@ class ListingsController extends Rtvg_Controller_Action
         } catch (Exception $e) {
             //skip
         }
-        
+
         $this->view->assign('channelNews', $news);
         $this->view->assign('pageclass', 'dayListing');
 
@@ -252,12 +252,13 @@ class ListingsController extends Rtvg_Controller_Action
         if ($this->_getParam('date') == 'сегодня') {
             $this->view->assign('tableDisplay', true);
         }
+        
     }
 
     /**
-     * Выпуски выбранной пользователем передачи сегодня и 
+     * Выпуски выбранной пользователем передачи сегодня и
      * список похожих по названию передач сегодня на других каналах
-     * 
+     *
      * @throws Zend_Exception
      */
     public function broadcastDayAction()
@@ -279,7 +280,7 @@ class ListingsController extends Rtvg_Controller_Action
         $channel = $this->channelInfo($this->input->getEscaped('channel'));
         $this->view->assign('channel', $channel);
 
-        //Decision on listing timespan (date|сегодня) 
+        //Decision on listing timespan (date|сегодня)
         $dg = $this->input->getEscaped('date');
         $listingDate = Zend_Date::now();
         if ($dg != 'сегодня' && !empty($dg)) {
@@ -367,7 +368,7 @@ class ListingsController extends Rtvg_Controller_Action
     }
 
     /**
-     * 
+     *
      * @throws Zend_Exception
      */
     public function broadcastWeekAction()
@@ -409,7 +410,6 @@ class ListingsController extends Rtvg_Controller_Action
 
         //Данные для модуля категорий каналов
         $cats = $this->channelsCategories();
-        ;
         $this->view->assign('channels_cats', $cats);
 
         //Список передач
@@ -428,7 +428,7 @@ class ListingsController extends Rtvg_Controller_Action
         $this->view->assign('list', $list);
 
         if ($this->cache->enabled) {
-            $this->cache->setLifetime(86400);
+            $this->cache->setLifetime(14400);
             $f = '/Listings/Similar/Week';
             $hash = $this->cache->getHash($bcAlias . '_' . $channel['id']);
             if (($similarBcs = $this->cache->load($hash, 'Core', $f)) === false) {
@@ -501,6 +501,8 @@ class ListingsController extends Rtvg_Controller_Action
             $adCodes = $ads->direct(2, 300, 240);
             $this->view->assign('ads', $adCodes);
 
+            $this->view->assign('hide_sidebar', 'right');
+            
             switch ($this->input->getEscaped('timespan')) {
 
                 case 'неделя':
@@ -510,7 +512,7 @@ class ListingsController extends Rtvg_Controller_Action
 
                     if ($this->cache->enabled) {
                         $hash = "categoryWeek_$categoryId";
-                        $this->cache->setLifetime(86400);
+                        $this->cache->setLifetime(14400);
                         $f = "/Listings/Category/Week";
                         if (($list = $this->cache->load($hash, 'Core', $f)) === false) {
                             $list = $this->bcModel->categoryWeek($categoryId, $weekStart, $weekEnd);
@@ -549,6 +551,7 @@ class ListingsController extends Rtvg_Controller_Action
         } else {
             $this->_redirect($this->view->url(array(), 'default_error_missing-page'), array('exit' => true));
         }
+        
     }
 
     /**
@@ -556,15 +559,15 @@ class ListingsController extends Rtvg_Controller_Action
      */
     public function outdatedAction()
     {
-        
+
     }
 
     /**
-     * 
+     *
      */
     public function premieresWeekAction()
     {
-        
+
     }
 
     /**

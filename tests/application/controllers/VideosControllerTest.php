@@ -37,7 +37,7 @@ class VideosControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
         	'module'=>'default',
         	'controller'=>'videos',
         	'action'=>'index', ));
-        $url = $this->url( $urlParams, 'default_videos_index' );
+        $url = $this->url( $urlParams, 'default_videos_show-video' );
         $this->dispatch($url);
         
         // assertions

@@ -19,8 +19,8 @@ class Xmltv_Model_BroadcastsTest extends Xmltv_Model_Broadcasts
         
         $select = $this->db->select()
             ->from(array('BC'=>$this->bcTable->getName()), 'alias')
-            ->joinLeft(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", null)
-            ->joinLeft(array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", null)
+            ->join(array('EVT'=>$this->eventsTable->getName()), "`BC`.`hash`=`EVT`.`hash`", null)
+            ->join(array('CH'=>$this->channelsTable->getName()), "`EVT`.`channel`=`CH`.`id`", null)
             ->where("`EVT`.`start` >= '".$week_start->toString("YYYY-MM-dd 00:00:00")."'")
             ->where("`EVT`.`start` < '".$week_end->toString("YYYY-MM-dd 23:59:59")."'")
             ->where("`EVT`.`channel` = ".$channel_id)
