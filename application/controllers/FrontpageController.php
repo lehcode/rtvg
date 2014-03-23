@@ -65,7 +65,12 @@ class FrontpageController extends Rtvg_Controller_Action
                 $list = $this->bcModel->frontpageListing($top);
             }
         }
-        $this->view->assign('list', $list);
+        
+        if (count($list)){
+            $this->view->assign('list', $list);
+        } else {
+            $this->view->assign('list', array());
+        }
         
         // Channels data for dropdown
 		if ($this->cache->enabled && APPLICATION_ENV!='development'){
