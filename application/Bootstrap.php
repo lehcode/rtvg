@@ -17,7 +17,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         Zend_Registry::set('Zend_Locale', new Zend_Locale('ru_RU'));
         defined('RTVG_VERSION') || define('RTVG_VERSION', "master");
 
-        date_default_timezone_set(Zend_Registry::get('site_config')->site->get('timezone', 'Europe/Moscow'));
+        date_default_timezone_set(Zend_Registry::get('site_config')->site->get('timezone'));
 
         Zend_Registry::set('db_local', $this->getResource('multidb')->getDefaultDb());
         Zend_Layout::startMvc();
